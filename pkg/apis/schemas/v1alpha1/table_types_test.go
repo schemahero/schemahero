@@ -34,7 +34,14 @@ func TestStorageTable(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "default",
-		}}
+		},
+		Spec: TableSpec{
+			Database: "d",
+			Name:     "n",
+			Requires: []string{},
+			Columns:  []string{},
+		},
+	}
 	g := gomega.NewGomegaWithT(t)
 
 	// Test Create

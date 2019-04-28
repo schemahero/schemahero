@@ -17,10 +17,10 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/schemahero/schemahero/pkg/controller/mysql"
+	"github.com/schemahero/schemahero/pkg/controller/database"
 )
 
 func init() {
 	// AddToManagerFuncs is a list of functions to create controllers and add them to a manager.
-	AddToManagerFuncs = append(AddToManagerFuncs, mysql.Add)
+	AddToManagerFuncs = append(AddToManagerFuncs, database.Add)
 }

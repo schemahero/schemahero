@@ -1,0 +1,86 @@
+# Postgres, simple, uri
+apiVersion: databases.schemahero.io/v1alpha1
+kind: Database
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: github-pg
+connection:
+  postgres:
+    uri:
+      value: postgres://schemahero:password@postgres:5432/github
+---
+
+# Postgres URI from a secret
+apiVersion: databases.schemahero.io/v1alpha1
+kind: Database
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: github-pg
+connection:
+  postgres:
+    uri:
+      valueFrom:
+        secretKeyRef:
+          name: postgres
+          key: uri
+---
+apiversion: v1
+kind: Secret
+metadata:
+  name: postgres
+data:
+  uri: cG9zdGdyZXM6Ly9zY2hlbWFoZXJvOnBhc3N3b3JkQHBvc3RncmVzOjU0MzIvZ2l0aHVi
+---
+
+# Postgres connection fields, separately
+apiVersion: databases.schemahero.io/v1alpha1
+kind: Database
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: github-pg
+connection:
+  postgres:
+    host:
+      value: postgres
+    user:
+      value: schemahero
+    password:
+      value: password
+    port:
+      value: 5432
+    dbname:
+      value: github
+---
+
+# Postgres connection fields, separately, using a secret
+apiVersion: databases.schemahero.io/v1alpha1
+kind: Database
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: github-pg
+connection:
+  postgres:
+    host:
+      value: postgres
+    user:
+      value: schemahero
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: postgres
+          key: password
+    port:
+      value: 5432
+    dbname:
+      value: github
+---
+apiversion: v1
+kind: Secret
+metadata:
+  name: postgres
+data:
+  password: cGFzc3dvcmQ=

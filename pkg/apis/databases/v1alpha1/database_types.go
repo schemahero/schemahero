@@ -23,14 +23,14 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// MysqlSpec defines the desired state of Mysql
-type MysqlSpec struct {
+// DatabaseSpec defines the desired state of Database
+type DatabaseSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
 
-// MysqlStatus defines the observed state of Mysql
-type MysqlStatus struct {
+// DatabaseStatus defines the observed state of Database
+type DatabaseStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 }
@@ -38,25 +38,25 @@ type MysqlStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Mysql is the Schema for the mysqls API
+// Database is the Schema for the databases API
 // +k8s:openapi-gen=true
-type Mysql struct {
+type Database struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MysqlSpec   `json:"spec,omitempty"`
-	Status MysqlStatus `json:"status,omitempty"`
+	Spec   DatabaseSpec   `json:"spec,omitempty"`
+	Status DatabaseStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// MysqlList contains a list of Mysql
-type MysqlList struct {
+// DatabaseList contains a list of Database
+type DatabaseList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Mysql `json:"items"`
+	Items           []Database `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Mysql{}, &MysqlList{})
+	SchemeBuilder.Register(&Database{}, &DatabaseList{})
 }

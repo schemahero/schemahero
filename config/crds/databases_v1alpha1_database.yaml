@@ -4,12 +4,12 @@ metadata:
   creationTimestamp: null
   labels:
     controller-tools.k8s.io: "1.0"
-  name: postgres.databases.schemahero.io
+  name: databases.databases.schemahero.io
 spec:
   group: databases.schemahero.io
   names:
-    kind: Postgres
-    plural: postgres
+    kind: Database
+    plural: databases
   scope: Namespaced
   validation:
     openAPIV3Schema:
@@ -27,14 +27,6 @@ spec:
         metadata:
           type: object
         spec:
-          properties:
-            disableDriftDetection:
-              type: boolean
-            uri:
-              type: object
-          required:
-          - uri
-          - disableDriftDetection
           type: object
         status:
           type: object

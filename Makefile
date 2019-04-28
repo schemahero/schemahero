@@ -78,3 +78,10 @@ bin/schemahero:
 		-o bin/schemahero \
 		./cmd/schemahero
 	@echo "built bin/schemahero"
+
+release: build-release
+	docker push schemahero/schemahero-manager:latest
+	docker push schemahero/schemahero:latest
+
+build-release: deploy/.goreleaser.yml $(SRC)
+	curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.yml

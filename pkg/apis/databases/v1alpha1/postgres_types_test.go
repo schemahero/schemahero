@@ -20,46 +20,18 @@ import (
 	"testing"
 
 	"github.com/onsi/gomega"
-	"golang.org/x/net/context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	"gopkg.in/yaml.v2"
 )
 
-func TestStoragePostgres(t *testing.T) {
-	key := types.NamespacedName{
-		Name:      "foo",
-		Namespace: "default",
-	}
-	created := &Postgres{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "foo",
-			Namespace: "default",
-		},
-		Spec: PostgresSpec{
-			URI: InlineOrRef{
-				Value: "postgres-uri",
-			},
-			DisableDriftDetection: true,
-		},
-	}
+func TestUnmarshalPostgresSpec(t *testing.T) {
+	manifest := `
+uri:
+    value: baz`
+
 	g := gomega.NewGomegaWithT(t)
 
-	// Test Create
-	fetched := &Postgres{}
-	g.Expect(c.Create(context.TODO(), created)).NotTo(gomega.HaveOccurred())
-
-	g.Expect(c.Get(context.TODO(), key, fetched)).NotTo(gomega.HaveOccurred())
-	g.Expect(fetched).To(gomega.Equal(created))
-
-	// Test Updating the Labels
-	updated := fetched.DeepCopy()
-	updated.Labels = map[string]string{"hello": "world"}
-	g.Expect(c.Update(context.TODO(), updated)).NotTo(gomega.HaveOccurred())
-
-	g.Expect(c.Get(context.TODO(), key, fetched)).NotTo(gomega.HaveOccurred())
-	g.Expect(fetched).To(gomega.Equal(updated))
-
-	// Test Delete
-	g.Expect(c.Delete(context.TODO(), fetched)).NotTo(gomega.HaveOccurred())
-	g.Expect(c.Get(context.TODO(), key, fetched)).To(gomega.HaveOccurred())
+	p := PostgresConnection{}
+	err := yaml.Unmarshal([]byte(manifest), &p)
+	g.Expect(err).NotTo(gomega.HaveOccurred())
+	g.Expect(p.URI.Value).To(gomega.Equal("baz"))
 }

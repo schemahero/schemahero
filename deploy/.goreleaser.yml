@@ -1,0 +1,63 @@
+project_name: schemahero
+release:
+  github:
+    owner: schemahero
+    name: schemahero
+builds:
+  - goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - "386"
+    env:
+      - CGO_ENABLED=0
+    main: cmd/schemahero/main.go
+    ldflags: -s -w
+      -X github.com/actionblocks/actionblocks/pkg/version.version={{.Version}}
+      -X github.com/actionblocks/actionblocks/pkg/version.gitSHA={{.Commit}}
+      -X github.com/actionblocks/actionblocks/pkg/version.buildTime={{.Date}}
+      -extldflags "-static"
+    flags: -tags netgo -installsuffix netgo
+    binary: schemahero
+    hooks: {}
+  - goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+    main: cmd/manager/main.go
+    flags: -tags netgo -installsuffix netgo
+    binary: manager
+    hooks: {}
+archive:
+  format: tar.gz
+  name_template: '{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{.Arm }}{{ end }}-alpha'
+  files:
+    - licence*
+    - LICENCE*
+    - license*
+    - LICENSE*
+    - readme*
+    - README*
+    - changelog*
+    - CHANGELOG*
+dockers:
+  - dockerfile: ./deploy/Dockerfile.schemahero
+    image_templates:
+      - "schemahero/schemahero:{{ .Version }}"
+      - "schemahero/schemahero:latest"
+    binaries:
+      - schemahero
+    skip_push: true
+  - dockerfile: ./deploy/Dockerfile.manager
+    image_templates:
+      - "schemahero/schemahero-manager:{{ .Version }}"
+      - "schemahero/schemahero-manager:latest"
+    binaries:
+      - manager
+    skip_push: true
+snapshot:
+  name_template: SNAPSHOT-{{ .Commit }}

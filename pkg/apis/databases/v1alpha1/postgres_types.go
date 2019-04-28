@@ -16,47 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// PostgresSpec defines the desired state of Postgres
-type PostgresSpec struct {
-	URI                   InlineOrRef `json:"uri"`
-	DisableDriftDetection bool        `json:"disableDriftDetection"`
-}
-
-// PostgresStatus defines the observed state of Postgres
-type PostgresStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
-// +genclient
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// Postgres is the Schema for the postgres API
-// +k8s:openapi-gen=true
-type Postgres struct {
-	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec   PostgresSpec   `json:"spec,omitempty"`
-	Status PostgresStatus `json:"status,omitempty"`
-}
-
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// PostgresList contains a list of Postgres
-type PostgresList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Postgres `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&Postgres{}, &PostgresList{})
+type PostgresConnection struct {
+	URI                   ValueOrValueFrom `json:"uri,omitempty"`
+	DisableDriftDetection bool             `json:"disableDriftDetection,omitempty"`
 }

@@ -11,7 +11,7 @@ func (ir *InlineOrRef) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	type otherType struct {
-		ValueFrom *ValueFrom `yaml:"valueFrom,omitempty"`
+		ValueFrom *ValueFrom `yaml:"valueFrom,omitempty" yaml:"valueFrom,omitempty"`
 	}
 	var t otherType
 	err = unmarshal(&t)
@@ -37,15 +37,15 @@ func (ir *InlineOrRef) copyValueFrom(valueFrom *ValueFrom) {
 }
 
 type InlineOrRef struct {
-	Value     string     `yaml:"-"`
-	ValueFrom *ValueFrom `yaml:"valueFrom,omitempty"`
+	Value     string     `json:"-" yaml:"-"`
+	ValueFrom *ValueFrom `json:"valueFrom,omitempty" yaml:"valueFrom,omitempty"`
 }
 
 type ValueFrom struct {
-	SecretKeyRef *SecretKeyRef `yaml:"secretKeyRef,omitempty"`
+	SecretKeyRef *SecretKeyRef `json:"secretKeyRef,omitempty" yaml:"secretKeyRef,omitempty"`
 }
 
 type SecretKeyRef struct {
-	Name string `yaml:"name"`
-	Key  string `yaml:"key"`
+	Name string `json:"name" yaml:"name"`
+	Key  string `json:"key" yaml:"key"`
 }

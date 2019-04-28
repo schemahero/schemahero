@@ -25,6 +25,46 @@ rules:
   - update
   - patch
 - apiGroups:
+  - databases.schemahero.io
+  resources:
+  - databases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - databases.schemahero.io
+  resources:
+  - databases/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
   - schemas.schemahero.io
   resources:
   - migrations
@@ -40,86 +80,6 @@ rules:
   - schemas.schemahero.io
   resources:
   - migrations/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - apps
-  resources:
-  - deployments/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - databases.schemahero.io
-  resources:
-  - mysqls
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - databases.schemahero.io
-  resources:
-  - mysqls/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - apps
-  resources:
-  - deployments/status
-  verbs:
-  - get
-  - update
-  - patch
-- apiGroups:
-  - databases.schemahero.io
-  resources:
-  - postgres
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - databases.schemahero.io
-  resources:
-  - postgres/status
   verbs:
   - get
   - update

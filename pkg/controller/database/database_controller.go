@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mysql
+package database
 
 import (
 	"context"
@@ -44,7 +44,7 @@ var log = logf.Log.WithName("controller")
 * business logic.  Delete these comments after modifying this file.*
  */
 
-// Add creates a new Mysql Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
+// Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
@@ -52,28 +52,28 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileMysql{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileDatabase{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("mysql-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New("database-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	// Watch for changes to Mysql
-	err = c.Watch(&source.Kind{Type: &databasesv1alpha1.Mysql{}}, &handler.EnqueueRequestForObject{})
+	// Watch for changes to Database
+	err = c.Watch(&source.Kind{Type: &databasesv1alpha1.Database{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
 
 	// TODO(user): Modify this to be the types you create
-	// Uncomment watch a Deployment created by Mysql - change this for objects you create
+	// Uncomment watch a Deployment created by Database - change this for objects you create
 	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &databasesv1alpha1.Mysql{},
+		OwnerType:    &databasesv1alpha1.Database{},
 	})
 	if err != nil {
 		return err
@@ -82,26 +82,26 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	return nil
 }
 
-var _ reconcile.Reconciler = &ReconcileMysql{}
+var _ reconcile.Reconciler = &ReconcileDatabase{}
 
-// ReconcileMysql reconciles a Mysql object
-type ReconcileMysql struct {
+// ReconcileDatabase reconciles a Database object
+type ReconcileDatabase struct {
 	client.Client
 	scheme *runtime.Scheme
 }
 
-// Reconcile reads that state of the cluster for a Mysql object and makes changes based on the state read
-// and what is in the Mysql.Spec
+// Reconcile reads that state of the cluster for a Database object and makes changes based on the state read
+// and what is in the Database.Spec
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
 // a Deployment as an example
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=databases.schemahero.io,resources=mysqls,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=databases.schemahero.io,resources=mysqls/status,verbs=get;update;patch
-func (r *ReconcileMysql) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	// Fetch the Mysql instance
-	instance := &databasesv1alpha1.Mysql{}
+// +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases/status,verbs=get;update;patch
+func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	// Fetch the Database instance
+	instance := &databasesv1alpha1.Database{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {

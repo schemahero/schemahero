@@ -11,7 +11,7 @@ func TestUnmarshalInlineOrRef(t *testing.T) {
 	g := gomega.NewGomegaWithT(t)
 
 	type testStruct struct {
-		Test InlineOrRef `yaml:"test"`
+		Test InlineOrRef `json:"test"`
 	}
 
 	inlineYAML := `test: "test"`

@@ -20,13 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // TableSpec defines the desired state of Table
 type TableSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Database string   `json:"database"`
+	Name     string   `json:"name"`
+	Requires []string `json:"requires"`
+	Columns  []string `json:"columns"`
 }
 
 // TableStatus defines the observed state of Table

@@ -27,6 +27,24 @@ spec:
         metadata:
           type: object
         spec:
+          properties:
+            columns:
+              items:
+                type: string
+              type: array
+            database:
+              type: string
+            name:
+              type: string
+            requires:
+              items:
+                type: string
+              type: array
+          required:
+          - database
+          - name
+          - requires
+          - columns
           type: object
         status:
           type: object
