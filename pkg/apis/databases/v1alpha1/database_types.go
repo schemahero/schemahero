@@ -27,8 +27,8 @@ type DatabaseConnection struct {
 
 // DatabaseStatus defines the observed state of Database
 type DatabaseStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	IsConnected bool   `json:"isConnected"`
+	LastPing    string `json:"lastPing"`
 }
 
 // +genclient
@@ -36,6 +36,7 @@ type DatabaseStatus struct {
 
 // Database is the Schema for the databases API
 // +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type Database struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -112,9 +112,9 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	// in the namespace specified in the custom resource,
 
 	if instance.Connection.Postgres != nil {
-		// if err = r.ensurePostgresWatch(instance); err != nil {
-		// 	return reconcile.Result{}, err
-		// }
+		if err = r.ensurePostgresWatch(instance); err != nil {
+			return reconcile.Result{}, err
+		}
 	}
 
 	return reconcile.Result{}, nil

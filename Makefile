@@ -2,7 +2,7 @@
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
 
-all: test manager
+all: test bin/schemahero manager
 
 # Run tests
 test: generate fmt vet manifests
@@ -13,7 +13,7 @@ manager: generate fmt vet
 	go build -o bin/manager github.com/schemahero/schemahero/cmd/manager
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet
+run: generate fmt vet bin/schemahero
 	go run ./cmd/manager/main.go
 
 # Install CRDs into a cluster

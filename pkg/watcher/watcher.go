@@ -28,7 +28,7 @@ func (w *Watcher) RunSync() error {
 	}
 
 	for {
-		if err := db.CheckAlive(); err != nil {
+		if _, err := db.CheckAlive(w.Viper.GetString("namespace"), w.Viper.GetString("instance")); err != nil {
 			return err
 		}
 

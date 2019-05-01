@@ -20,9 +20,13 @@ func Watch() *cobra.Command {
 
 	cmd.Flags().StringP("driver", "d", "", "name of the database to connect to")
 	cmd.Flags().StringP("uri", "u", "", "connection string uri")
+	cmd.Flags().StringP("namespace", "n", "", "namespace of the spwaning object")
+	cmd.Flags().StringP("instance", "i", "", "instance name of the spawning object")
 
 	cmd.MarkFlagRequired("driver")
 	cmd.MarkFlagRequired("uri")
+	cmd.MarkFlagRequired("namespace")
+	cmd.MarkFlagRequired("instance")
 
 	viper.BindPFlags(cmd.Flags())
 
