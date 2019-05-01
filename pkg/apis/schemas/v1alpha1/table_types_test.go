@@ -30,6 +30,12 @@ func TestStorageTable(t *testing.T) {
 		Name:      "foo",
 		Namespace: "default",
 	}
+
+	column := PostgresTableColumn{
+		Name: "c",
+		Type: "t",
+	}
+
 	created := &Table{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
@@ -39,7 +45,14 @@ func TestStorageTable(t *testing.T) {
 			Database: "d",
 			Name:     "n",
 			Requires: []string{},
-			Columns:  []string{},
+			Schema: &TableSchema{
+				Postgres: &PostgresTableSchema{
+					PrimaryKey: []string{"pk"},
+					Columns: []*PostgresTableColumn{
+						&column,
+					},
+				},
+			},
 		},
 	}
 	g := gomega.NewGomegaWithT(t)

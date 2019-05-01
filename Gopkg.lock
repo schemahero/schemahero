@@ -45,6 +45,14 @@
   version = "v2.9.3"
 
 [[projects]]
+  digest = "1:2fd7ea1c64915c77ef4649b1b2113f449897d00721383925eca9a1c4b4071910"
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "5858425f75500d40c52783dce87d085a483ce135"
+  version = "v4.2.0"
+
+[[projects]]
   digest = "1:7fc160b460a6fc506b37fcca68332464c3f2cd57b6e3f111f26c5bbfd2d5518e"
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
@@ -239,6 +247,18 @@
   pruneopts = "T"
   revision = "0ff49de124c6f76f8494e194af75bde0f1a49a29"
   version = "v1.1.6"
+
+[[projects]]
+  digest = "1:6f13467d4ab83b8123138f120134a7b022b5fefd67d67ab9ef3d1f070850c049"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid",
+    "scram",
+  ]
+  pruneopts = "T"
+  revision = "51e2106eed1cea199c802d2a49e91e2491b02056"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:53e8c5c79716437e601696140e8b1801aae4204f4ec54a504333702a49572c4f"
@@ -837,6 +857,7 @@
     "rest",
     "rest/watch",
     "restmapper",
+    "testing",
     "third_party/forked/golang/template",
     "tools/auth",
     "tools/cache",
@@ -866,8 +887,7 @@
   version = "kubernetes-1.13.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:fc390edca2f6cddfadca53db5c196e8d8e2122e641bd2bf77e5505e735537b77"
+  digest = "1:dc1ae99dcab96913d81ae970b1f7a7411a54199b14bfb17a7e86f9a56979c720"
   name = "k8s.io/code-generator"
   packages = [
     "cmd/client-gen",
@@ -880,11 +900,11 @@
     "cmd/client-gen/types",
     "cmd/deepcopy-gen",
     "cmd/deepcopy-gen/args",
-    "pkg/namer",
     "pkg/util",
   ]
   pruneopts = "T"
-  revision = "ff26e7842f9d5224562ef78defed0785ae8395cf"
+  revision = "c2090bec4d9b1fb25de3812f868accc2bc9ecbae"
+  version = "kubernetes-1.13.5"
 
 [[projects]]
   branch = "master"
@@ -1007,6 +1027,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/emicklei/go-restful",
+    "github.com/lib/pq",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",
     "github.com/spf13/cobra",
@@ -1018,12 +1039,19 @@
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/types",
+    "k8s.io/apimachinery/pkg/util/runtime",
+    "k8s.io/apimachinery/pkg/watch",
+    "k8s.io/client-go/discovery",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth/gcp",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/testing",
+    "k8s.io/client-go/util/flowcontrol",
     "k8s.io/code-generator/cmd/client-gen",
     "k8s.io/code-generator/cmd/deepcopy-gen",
     "sigs.k8s.io/controller-runtime/pkg/client",

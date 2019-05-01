@@ -1,3 +1,8 @@
+# Project Status
+
+This is a work-in-progress that is not yet functional. SchemaHero is a an experiment right now, and does not have enough implementation to be used in any environment. Work is in progress.
+
+
 # What is SchemaHero?
 
 SchemaHero is a Kubernetes operator that will allow you to deploy database migration schemas as Kubernetes manifests.

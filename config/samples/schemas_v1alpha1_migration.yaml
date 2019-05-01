@@ -5,5 +5,11 @@ metadata:
     controller-tools.k8s.io: "1.0"
   name: migration-sample
 spec:
-  # Add fields here
-  foo: bar
+  query: |
+    CREATE TABLE IF NOT EXISTS `admin_invite` (
+      `id` char(32) NOT NULL,
+      `email` varchar(255) NOT NULL,
+      `created` datetime NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `email` (`email`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;    

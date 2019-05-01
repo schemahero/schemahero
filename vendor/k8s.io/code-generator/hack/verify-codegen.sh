@@ -18,7 +18,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")/..
+SCRIPT_BASE=${SCRIPT_ROOT}/../..
 
 DIFFROOT="${SCRIPT_ROOT}/_examples"
 TMP_DIFFROOT="${SCRIPT_ROOT}/_tmp/_examples"
@@ -49,6 +50,6 @@ fi
 
 # smoke test
 echo "Smoke testing _example by compiling..."
-go build "./${SCRIPT_ROOT}/_examples/crd/..."
-go build "./${SCRIPT_ROOT}/_examples/apiserver/..."
-go build "./${SCRIPT_ROOT}/_examples/MixedCase/..."
+go build ./${SCRIPT_ROOT}/_examples/crd/...
+go build ./${SCRIPT_ROOT}/_examples/apiserver/...
+go build ./${SCRIPT_ROOT}/_examples/MixedCase/...

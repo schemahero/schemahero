@@ -27,3 +27,7 @@ func Connect(uri string) (*Postgres, error) {
 
 	return &postgres, nil
 }
+
+func (pg *Postgres) CheckAlive() error {
+	return pg.db.Ping()
+}

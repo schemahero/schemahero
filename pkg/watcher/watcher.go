@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/schemahero/schemahero/pkg/schemahero/postgres"
 
@@ -26,6 +27,11 @@ func (w *Watcher) RunSync() error {
 		return err
 	}
 
-	fmt.Printf("%#v\n", db)
-	return nil
+	for {
+		if err := db.CheckAlive(); err != nil {
+			return err
+		}
+
+		time.Sleep(time.Second * 10)
+	}
 }

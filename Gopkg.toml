@@ -19,6 +19,9 @@ required = [
 [prune]
   go-tests = true
 
+[[constraint]]
+  name = "k8s.io/code-generator"
+  version = "kubernetes-1.13.5"
 
 # STANZAS BELOW ARE GENERATED AND MAY BE WRITTEN - DO NOT MODIFY BELOW THIS LINE.
 

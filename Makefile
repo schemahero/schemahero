@@ -43,6 +43,7 @@ ifndef GOPATH
 	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
 endif
 	go generate ./pkg/... ./cmd/...
+	rm -r ./pkg/client/schemaheroclientset/fake
 
 # Build the docker image
 docker-build: test

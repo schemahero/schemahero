@@ -20,12 +20,26 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type PostgresTableColumn struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type PostgresTableSchema struct {
+	PrimaryKey []string               `json:"primaryKey"`
+	Columns    []*PostgresTableColumn `json:"columns"`
+}
+
+type TableSchema struct {
+	Postgres *PostgresTableSchema `json:"postgres"`
+}
+
 // TableSpec defines the desired state of Table
 type TableSpec struct {
-	Database string   `json:"database"`
-	Name     string   `json:"name"`
-	Requires []string `json:"requires"`
-	Columns  []string `json:"columns"`
+	Database string       `json:"database"`
+	Name     string       `json:"name"`
+	Requires []string     `json:"requires"`
+	Schema   *TableSchema `json:"schema"`
 }
 
 // TableStatus defines the observed state of Table

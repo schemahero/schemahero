@@ -28,10 +28,6 @@ spec:
           type: object
         spec:
           properties:
-            columns:
-              items:
-                type: string
-              type: array
             database:
               type: string
             name:
@@ -40,11 +36,38 @@ spec:
               items:
                 type: string
               type: array
+            schema:
+              properties:
+                postgres:
+                  properties:
+                    columns:
+                      items:
+                        properties:
+                          name:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - name
+                        - type
+                        type: object
+                      type: array
+                    primaryKey:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - primaryKey
+                  - columns
+                  type: object
+              required:
+              - postgres
+              type: object
           required:
           - database
           - name
           - requires
-          - columns
+          - schema
           type: object
         status:
           type: object

@@ -1,0 +1,20 @@
+apiVersion: schemas.schemahero.io/v1alpha1
+kind: Table
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: users
+spec:
+  database: github-pg
+  name: users
+  requires: []
+  schema:
+    postgres:
+      primaryKey: [id]
+      columns:
+        - name: id
+          type: integer
+        - name: login
+          type: varchar(255)
+        - name: name
+          type: varchar(255)
