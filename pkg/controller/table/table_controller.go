@@ -18,8 +18,9 @@ package table
 
 import (
 	"context"
-	"fmt"
+	goerrors "errors"
 
+	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	databasesclientv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
@@ -113,20 +114,52 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, err
 	}
 
-	cfg, err := config.GetConfig()
+	connection, err := r.getDatabaseConnection(instance.Namespace, instance.Spec.Database)
 	if err != nil {
 		return reconcile.Result{}, err
+	}
+
+	matchingType := r.checkDatabaseTypeMatches(connection, instance.Spec.Schema)
+	if !matchingType {
+		return reconcile.Result{}, goerrors.New("unable to deploy table to connection of different type")
+	}
+
+	if err := r.deploy(connection, instance.Spec); err != nil {
+		return reconcile.Result{}, err
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileTable) getDatabaseConnection(namespace string, name string) (*databasesv1alpha1.DatabaseConnection, error) {
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return nil, err
 	}
 	databasesClient, err := databasesclientv1alpha1.NewForConfig(cfg)
 	if err != nil {
-		return reconcile.Result{}, err
+		return nil, err
 	}
-	database, err := databasesClient.Databases(instance.Namespace).Get(instance.Spec.Database, metav1.GetOptions{})
+	database, err := databasesClient.Databases(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		return reconcile.Result{}, err
+		return nil, err
 	}
 
-	fmt.Printf("database = %#v\n", database)
+	return &database.Connection, nil
+}
 
-	return reconcile.Result{}, nil
+func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.DatabaseConnection, tableSchema *schemasv1alpha1.TableSchema) bool {
+	if connection.Postgres != nil {
+		return tableSchema.Postgres != nil
+	}
+
+	return false
+}
+
+func (r *ReconcileTable) deploy(connection *databasesv1alpha1.DatabaseConnection, instanceSpec schemasv1alpha1.TableSpec) error {
+	if connection.Postgres != nil {
+		return r.deployPostgres(connection.Postgres, instanceSpec.Name, instanceSpec.Schema.Postgres)
+	}
+
+	return goerrors.New("unknown database type")
 }
