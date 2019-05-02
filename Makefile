@@ -86,3 +86,8 @@ release: build-release
 
 build-release: deploy/.goreleaser.yml $(SRC)
 	curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.yml
+
+.PHONY: micok8s
+microk8s: build-release
+	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
+	docker push localhost:32000/schemahero/schemahero:latest

@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"database/sql"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -9,28 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
-
-type Postgres struct {
-	conn *sql.Conn
-	db   *sql.DB
-}
-
-func Connect(uri string) (*Postgres, error) {
-	db, err := sql.Open("postgres", uri)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
-	postgres := Postgres{
-		db: db,
-	}
-
-	return &postgres, nil
-}
 
 func (pg *Postgres) CheckAlive(namespace string, instanceName string) (bool, error) {
 	cfg, err := config.GetConfig()

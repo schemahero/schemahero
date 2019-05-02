@@ -24,3 +24,5 @@ bin
 *~
 
 dist/
+
+.DS_Store
