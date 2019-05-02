@@ -1,10 +1,16 @@
-sudo: required
-services:
-  - docker
 language: go
-go: 1.12.4
+
+os:
+  - linux
+
+go:
+  - "1.12"
+
+install:
+  - ./hack/deps.sh
+
+before_script:
+  - export PATH=$PATH:/usr/local/kubebuilder/bin
+
 script:
   - make
-  # - make integration/postgres
-after_success:
-  - make release
