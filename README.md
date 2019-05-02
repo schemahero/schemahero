@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/schemahero/schemahero.svg?branch=master)](https://travis-ci.org/schemahero/schemahero)
+
 # Project Status
 
 This is a work-in-progress that is not yet functional. SchemaHero is a an experiment right now, and does not have enough implementation to be used in any environment. Work is in progress.
