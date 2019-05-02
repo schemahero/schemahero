@@ -1,43 +1,31 @@
+# SchemaHero
+
 [![Build Status](https://travis-ci.org/schemahero/schemahero.svg?branch=master)](https://travis-ci.org/schemahero/schemahero)
 
-# Project Status
+**Note**: This is a work-in-progress that is not yet functional. SchemaHero is a an experiment right now, and does not have enough implementation to be used in any environment. Work is in progress.
 
-This is a work-in-progress that is not yet functional. SchemaHero is a an experiment right now, and does not have enough implementation to be used in any environment. Work is in progress.
+## What is SchemaHero?
 
+SchemaHero is a Kubernetes operator to manage database migrations and schemas as Kubernetes manifests.
 
-# What is SchemaHero?
+1. Database tables can be expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_table.yaml) that can be updated and deployed to the cluster.
+2. Database migrations can be written as SQL statements, expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_migration.yaml) that can be deployed to the cluster.
+3. Database schemas can be [monitored for drift](https://github.com/schemahero/schemahero/blob/master/config/samples/databases_v1alpha1_database.yaml) and brought back to the desired state automatically.
+4. Schemas and migations can [require other schemas or migrations](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_table.yaml#L30) instead of ordering with timestamps and/or sequences.
 
-SchemaHero is a Kubernetes operator that will allow you to deploy database migration schemas as Kubernetes manifests.
+## Getting Started
 
-For example:
-
-```
-apiVersion: schemas.schemahero.io/v1alpha1
-kind: Migration
-metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
-  name: CreateMoviesTable
-spec:
-  requires: ["CreateActorsTable"]
-  create: |
-    create table movies (
-      id text not null primary key,
-      title text not null
-    );
-
-  delete: |
-    drop table if exists movies;
+The recommended way to deploy SchemaHero is:
 
 ```
+kubectl apply -f https://github.com/schemahero/schemahero/tree/master/install/k8s
+```
 
-Then, you can:
+If you need any customizations, use [Ship](https://github.com/replicatedhq/ship):
 
-```shell
-$ kubectl apply -f ./CreateMoviesTable
-
-$ kubectl get migrations
----
+```
+brew install ship
+ship init github.com/schemahero/schemahero/tree/masterinstall/k8s
 ```
 
 ### Questions
