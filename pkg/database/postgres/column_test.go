@@ -50,6 +50,67 @@ func Test_unaliasParameterizedColumnType(t *testing.T) {
 	}
 }
 
+func Test_unaliasSimpleColumnType(t *testing.T) {
+	tests := []struct {
+		name                  string
+		requestedType         string
+		expectedUnaliasedType string
+	}{
+		{
+			name:                  "int8",
+			requestedType:         "int8",
+			expectedUnaliasedType: "bigint",
+		},
+		{
+			name:                  "serial8",
+			requestedType:         "serial8",
+			expectedUnaliasedType: "bigserial",
+		},
+		{
+			name:                  "bool",
+			requestedType:         "bool",
+			expectedUnaliasedType: "boolean",
+		},
+		{
+			name:                  "int",
+			requestedType:         "int",
+			expectedUnaliasedType: "integer",
+		},
+		{
+			name:                  "int4",
+			requestedType:         "int4",
+			expectedUnaliasedType: "integer",
+		},
+		{
+			name:                  "float4",
+			requestedType:         "float4",
+			expectedUnaliasedType: "real",
+		},
+		{
+			name:                  "int2",
+			requestedType:         "int2",
+			expectedUnaliasedType: "smallint",
+		},
+		{
+			name:                  "serial2",
+			requestedType:         "serial2",
+			expectedUnaliasedType: "smallserial",
+		},
+		{
+			name:                  "serial4",
+			requestedType:         "serial4",
+			expectedUnaliasedType: "serial",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			unaliasedType := unaliasSimpleColumnType(test.requestedType)
+			assert.Equal(t, test.expectedUnaliasedType, unaliasedType)
+		})
+	}
+}
+
 func Test_postgresColumnAsInsert(t *testing.T) {
 	tests := []struct {
 		name              string
