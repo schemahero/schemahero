@@ -162,6 +162,30 @@ func Test_InsertColumnStatement(t *testing.T) {
 			},
 			expectedStatement: `alter table "t" add column "a" integer`,
 		},
+		{
+			name:      "add not null column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha1.PostgresTableColumn{
+				Name: "a",
+				Type: "integer",
+				Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
+					NotNull: true,
+				},
+			},
+			expectedStatement: `alter table "t" add column "a" integer not null`,
+		},
+		{
+			name:      "add null column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha1.PostgresTableColumn{
+				Name: "a",
+				Type: "integer",
+				Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
+					NotNull: false,
+				},
+			},
+			expectedStatement: `alter table "t" add column "a" integer null`,
+		},
 	}
 
 	for _, test := range tests {

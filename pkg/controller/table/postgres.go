@@ -43,7 +43,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 	query = `select
 		column_name, column_default, is_nullable, data_type,
 		character_maximum_length
-		from information_schema.columns 
+		from information_schema.columns
 		where table_name = $1`
 	rows, err := db.Query(query, tableName)
 	if err != nil {
@@ -64,9 +64,11 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 		foundColumnNames = append(foundColumnNames, columnName)
 
 		existingColumn := postgres.Column{
-			Name:       columnName,
-			DataType:   dataType,
-			IsNullable: isNullable == "YES",
+			Name:     columnName,
+			DataType: dataType,
+			Constraints: &postgres.ColumnConstraints{
+				NotNull: isNullable == "NO",
+			},
 		}
 		if columnDefault.Valid {
 			existingColumn.ColumnDefault = &columnDefault.String

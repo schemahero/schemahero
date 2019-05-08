@@ -20,9 +20,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type PostgresTableColumnConstraints struct {
+	NotNull bool `json:"notNull"`
+}
+
 type PostgresTableColumn struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name        string                          `json:"name"`
+	Type        string                          `json:"type"`
+	Constraints *PostgresTableColumnConstraints `json:"constraints,omitempty"`
+	Default     string                          `json:"default,omitempty"`
 }
 
 type PostgresTableSchema struct {

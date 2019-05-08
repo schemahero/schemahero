@@ -33,7 +33,6 @@ func Test_AlterColumnStatment(t *testing.T) {
 			existingColumn: &Column{
 				Name:          "b",
 				DataType:      "integer",
-				IsNullable:    false,
 				ColumnDefault: nil,
 			},
 			expectedStatement: "",
@@ -54,7 +53,6 @@ func Test_AlterColumnStatment(t *testing.T) {
 			existingColumn: &Column{
 				Name:          "b",
 				DataType:      "varchar(255)",
-				IsNullable:    false,
 				ColumnDefault: nil,
 			},
 			expectedStatement: `alter table "t" alter column "b" type integer`,
@@ -71,10 +69,53 @@ func Test_AlterColumnStatment(t *testing.T) {
 			existingColumn: &Column{
 				Name:          "b",
 				DataType:      "varchar(255)",
-				IsNullable:    false,
 				ColumnDefault: nil,
 			},
 			expectedStatement: `alter table "t" drop column "b"`,
+		},
+		{
+			name:      "add not null constraint",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
+				&schemasv1alpha1.PostgresTableColumn{
+					Name: "a",
+					Type: "integer",
+					Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
+						NotNull: true,
+					},
+				},
+			},
+			existingColumn: &Column{
+				Name:          "a",
+				DataType:      "integer",
+				ColumnDefault: nil,
+				Constraints: &ColumnConstraints{
+					NotNull: false,
+				},
+			},
+			expectedStatement: `alter table "t" alter column "a" set not null`,
+		},
+		{
+			name:      "drop not null constraint",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
+				&schemasv1alpha1.PostgresTableColumn{
+					Name: "a",
+					Type: "integer",
+					Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
+						NotNull: false,
+					},
+				},
+			},
+			existingColumn: &Column{
+				Name:          "a",
+				DataType:      "integer",
+				ColumnDefault: nil,
+				Constraints: &ColumnConstraints{
+					NotNull: true,
+				},
+			},
+			expectedStatement: `alter table "t" alter column "a" drop not null`,
 		},
 	}
 

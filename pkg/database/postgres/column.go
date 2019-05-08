@@ -47,12 +47,16 @@ var simpleColumnTypes = []string{
 	"xml",
 }
 
+type ColumnConstraints struct {
+	NotNull bool
+}
+
 type Column struct {
 	Name          string
 	DataType      string
 	CharMaxLength *int64
-	IsNullable    bool
 	ColumnDefault *string
+	Constraints   *ColumnConstraints
 }
 
 func maybeParseComplexColumnType(requestedType string) (string, int64, error) {
@@ -163,9 +167,16 @@ func unaliasParameterizedColumnType(requestedType string) string {
 	return ""
 }
 
-func columnTypeToPostgresColumn(requestedType string) (*Column, error) {
+func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableColumn) (*Column, error) {
 	column := &Column{}
 
+	if schemaColumn.Constraints != nil {
+		column.Constraints = &ColumnConstraints{
+			NotNull: schemaColumn.Constraints.NotNull,
+		}
+	}
+
+	requestedType := schemaColumn.Type
 	unaliasedColumnType := unaliasSimpleColumnType(requestedType)
 	if unaliasedColumnType != "" {
 		requestedType = unaliasedColumnType
@@ -203,7 +214,7 @@ func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string
 	// 2. create table "users" ("id" bigint,"login" varchar(255),"name" varchar(255))
 
 	// if the column type is a known (safe) type, pass it unquoted, else pass whatever we received as quoted
-	postgresColumn, err := columnTypeToPostgresColumn(column.Type)
+	postgresColumn, err := schemaColumnToPostgresColumn(column)
 	if err != nil {
 		return "", err
 	}
@@ -212,6 +223,16 @@ func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string
 
 	if postgresColumn.CharMaxLength != nil {
 		formatted = fmt.Sprintf("%s(%d)", formatted, *postgresColumn.CharMaxLength)
+	}
+
+	fmt.Printf("%#v\n", postgresColumn)
+
+	if postgresColumn.Constraints != nil {
+		if postgresColumn.Constraints.NotNull {
+			formatted = fmt.Sprintf("%s not null", formatted)
+		} else {
+			formatted = fmt.Sprintf("%s null", formatted)
+		}
 	}
 
 	return formatted, nil

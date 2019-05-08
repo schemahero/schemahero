@@ -43,6 +43,15 @@ spec:
                     columns:
                       items:
                         properties:
+                          constraints:
+                            properties:
+                              notNull:
+                                type: boolean
+                            required:
+                            - notNull
+                            type: object
+                          default:
+                            type: string
                           name:
                             type: string
                           type:
