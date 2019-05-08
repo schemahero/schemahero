@@ -1,6 +1,10 @@
 # SchemaHero
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/schemahero/schemahero?style=flat-square)](https://goreportcard.com/report/github.com/schemahero/schemahero)
+[![Coverage](https://codecov.io/gh/schemahero/schemahero/branch/master/graph/badge.svg)](https://codecov.io/gh/schemahero/schemahero)
 [![Build Status](https://travis-ci.org/schemahero/schemahero.svg?branch=master)](https://travis-ci.org/schemahero/schemahero)
+[![Godoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/schemahero/schemahero)
+[![LICENSE](https://img.shields.io/github/license/schemahero/schemahero.svg?style=flat-square)](https://github.com/schemahero/schemahero/blob/master/LICENSE)
 
 **Note**: This is a work-in-progress that is not yet functional. SchemaHero is a an experiment right now, and does not have enough implementation to be used in any environment. Work is in progress.
 
