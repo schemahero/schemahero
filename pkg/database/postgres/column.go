@@ -105,6 +105,7 @@ func unaliasSimpleColumnType(requestedType string) string {
 	case "float8":
 		return "double precision"
 	case "int":
+		return "integer"
 	case "int4":
 		return "integer"
 	case "float4":
