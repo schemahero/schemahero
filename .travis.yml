@@ -13,4 +13,8 @@ before_script:
   - export PATH=$PATH:/usr/local/kubebuilder/bin
 
 script:
+  - go test ./pkg/... ./cmd/... -race -coverprofile=coverage.txt -covermode=atomic
   - make
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

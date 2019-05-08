@@ -12,10 +12,39 @@ import (
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
 )
 
+// simpleColumnTypes are unparameterized, easy-to-parse types
 var simpleColumnTypes = []string{
 	"bigint",
 	"bigserial",
+	"boolean",
+	"box",
+	"bytea",
+	"cide",
+	"circle",
+	"date",
+	"double precision",
+	"inet",
 	"integer",
+	"json",
+	"jsonb",
+	"line",
+	"lseg",
+	"macaddr",
+	"money",
+	"path",
+	"pg_lsn",
+	"point",
+	"polygon",
+	"real",
+	"smallint",
+	"smallserial",
+	"serial",
+	"text",
+	"tsquery",
+	"tsvector",
+	"txid_snapshot",
+	"uuid",
+	"xml",
 }
 
 type Column struct {
@@ -30,10 +59,10 @@ func maybeParseComplexColumnType(requestedType string) (string, int64, error) {
 	columnType := ""
 	maxLength := int64(0)
 
-	if strings.HasPrefix(requestedType, "varchar") {
+	if strings.HasPrefix(requestedType, "character varying") {
 		columnType = "character varying"
 
-		r := regexp.MustCompile(`varchar\s*\((?P<max>\d*)\)`)
+		r := regexp.MustCompile(`character varying\s*\((?P<max>\d*)\)`)
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		maxStr := matchGroups[1]
@@ -90,13 +119,32 @@ func unaliasSimpleColumnType(requestedType string) string {
 	return ""
 }
 
+func unaliasParameterizedColumnType(requestedType string) string {
+	if strings.HasPrefix(requestedType, "varchar") {
+		r := regexp.MustCompile(`varchar\s*\((?P<max>\d*)\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "character varying"
+		}
+
+		return fmt.Sprintf("character varying (%s)", matchGroups[1])
+	}
+
+	return ""
+}
+
 func columnTypeToPostgresColumn(requestedType string) (*Column, error) {
 	column := &Column{}
 
 	unaliasedColumnType := unaliasSimpleColumnType(requestedType)
 	if unaliasedColumnType != "" {
-		column.DataType = unaliasedColumnType
-		return column, nil
+		requestedType = unaliasedColumnType
+	}
+
+	unaliasedColumnType = unaliasParameterizedColumnType(requestedType)
+	if unaliasedColumnType != "" {
+		requestedType = unaliasedColumnType
 	}
 
 	if isSimpleColumnType(requestedType) {

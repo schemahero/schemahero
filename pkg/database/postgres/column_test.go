@@ -9,6 +9,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_unaliasParameterizedColumnType(t *testing.T) {
+	tests := []struct {
+		name                  string
+		requestedType         string
+		expectedUnaliasedType string
+	}{
+		{
+			name:                  "varchar(255)",
+			requestedType:         "varchar(255)",
+			expectedUnaliasedType: "character varying (255)",
+		}, {
+			name:                  "varchar",
+			requestedType:         "varchar",
+			expectedUnaliasedType: "character varying",
+		}, {
+			name:                  "varchar (100)",
+			requestedType:         "varchar (100)",
+			expectedUnaliasedType: "character varying (100)",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			unaliasedType := unaliasParameterizedColumnType(test.requestedType)
+			assert.Equal(t, test.expectedUnaliasedType, unaliasedType)
+		})
+	}
+}
+
 func Test_postgresColumnAsInsert(t *testing.T) {
 	tests := []struct {
 		name              string
