@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/schemahero/schemahero/pkg/schemahero/postgres"
+	"github.com/schemahero/schemahero/pkg/database/postgres"
 
 	"github.com/spf13/viper"
 )
@@ -29,6 +29,7 @@ func (w *Watcher) RunSync() error {
 
 	for {
 		if _, err := db.CheckAlive(w.Viper.GetString("namespace"), w.Viper.GetString("instance")); err != nil {
+			fmt.Printf("%#v\n", err)
 			return err
 		}
 

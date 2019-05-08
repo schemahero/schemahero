@@ -13,6 +13,8 @@ import (
 )
 
 func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha1.Database) error {
+	imageName := "localhost:32000/schemahero/schemahero"
+
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name + "-watch",
@@ -28,8 +30,8 @@ func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha1.Data
 					Containers: []corev1.Container{
 						{
 							Name:            "schemahero",
-							Image:           "schemahero/schemahero",
-							ImagePullPolicy: corev1.PullIfNotPresent,
+							Image:           imageName,
+							ImagePullPolicy: corev1.PullAlways,
 							Args: []string{
 								"watch",
 								"--driver",
