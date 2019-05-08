@@ -59,6 +59,14 @@ func maybeParseComplexColumnType(requestedType string) (string, int64, error) {
 	columnType := ""
 	maxLength := int64(0)
 
+	// if strings.HasPrefix(requestedType, "bit varying" {
+	// 	columnType = "bit varying"
+
+	// 	r := regexp.MustCompile((`bit varying\s*\((?P<max>\d*)\)`))
+
+	// 	matchGroups := r.FindStringSubmatch(requestedType)
+	// 	masStr
+	// }
 	if strings.HasPrefix(requestedType, "character varying") {
 		columnType = "character varying"
 
@@ -120,6 +128,26 @@ func unaliasSimpleColumnType(requestedType string) string {
 }
 
 func unaliasParameterizedColumnType(requestedType string) string {
+	if strings.HasPrefix(requestedType, "varbit") {
+		r := regexp.MustCompile(`varbit\s*\((?P<max>\d*)\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "bit varying"
+		}
+
+		return fmt.Sprintf("bit varying (%s)", matchGroups[1])
+	}
+	if strings.HasPrefix(requestedType, "char") {
+		r := regexp.MustCompile(`char\s*\((?P<len>\d*)\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "character"
+		}
+
+		return fmt.Sprintf("character (%s)", matchGroups[1])
+	}
 	if strings.HasPrefix(requestedType, "varchar") {
 		r := regexp.MustCompile(`varchar\s*\((?P<max>\d*)\)`)
 

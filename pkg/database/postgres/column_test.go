@@ -27,6 +27,18 @@ func Test_unaliasParameterizedColumnType(t *testing.T) {
 			name:                  "varchar (100)",
 			requestedType:         "varchar (100)",
 			expectedUnaliasedType: "character varying (100)",
+		}, {
+			name:                  "varbit (50)",
+			requestedType:         "varbit (50)",
+			expectedUnaliasedType: "bit varying (50)",
+		}, {
+			name:                  "char",
+			requestedType:         "char",
+			expectedUnaliasedType: "character",
+		}, {
+			name:                  "char(36)",
+			requestedType:         "char(36)",
+			expectedUnaliasedType: "character (36)",
 		},
 	}
 
