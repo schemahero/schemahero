@@ -23,4 +23,3 @@ crd:
 	sed -i'' -e 's@image: .*@image: '"${MANAGER_IMAGE_NAME}"'@' ../../config/integration/manager_image_patch.yaml
 
 	KUBECONFIG=$$(kind get kubeconfig-path --name="$(CLUSTER_NAME)") kubectl apply -f ../../config/crds
-	kustomize build ../../config/integration | KUBECONFIG=$$(kind get kubeconfig-path --name="$(CLUSTER_NAME)") kubectl apply -f -
