@@ -43,7 +43,7 @@ func (r *Runner) RunSync() error {
 				cluster.delete()
 			}()
 
-			fmt.Printf("(%s) -----> Applying database.yaml", test.Name())
+			fmt.Printf("(%s) -----> Applying database.yaml\n", test.Name())
 			databaseManifests, err := ioutil.ReadFile(filepath.Join(currentDir, "tests", test.Name(), "database.yaml"))
 			if err != nil {
 				return err
@@ -52,6 +52,11 @@ func (r *Runner) RunSync() error {
 			if err := cluster.apply(databaseManifests); err != nil {
 				return err
 			}
+
+			fmt.Printf("(%s) -----> Applying SchemaHero Operator\n", test.Name())
+
+			fmt.Printf("(%s) -----> Applying database connection\n", test.Name())
+
 		}
 	}
 

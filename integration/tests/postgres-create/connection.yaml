@@ -1,0 +1,10 @@
+apiVersion: databases.schemahero.io/v1alpha1
+kind: Database
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: integrationone
+connection:
+  postgres:
+    uri:
+      value: postgres://schemahero:password@postgresql:5432/integrationone?sslmode=disable

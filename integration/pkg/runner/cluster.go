@@ -99,6 +99,11 @@ func (c Cluster) apply(manifests []byte) error {
 		return err
 	}
 
+	_, err = cli.ImagePull(ctx, "itnami/kubectl:1.14", types.ImagePullOptions{})
+	if err != nil {
+		return err
+	}
+
 	containerConfig := &container.Config{
 		Image: "bitnami/kubectl:1.14",
 		Env: []string{
