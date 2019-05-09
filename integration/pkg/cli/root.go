@@ -11,9 +11,11 @@ import (
 
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "schemahero-integration-tests",
-		Short: "SchemaHero Integration Tests",
-		Long:  `...`,
+		Use:           "schemahero-integration-tests",
+		Short:         "SchemaHero Integration Tests",
+		Long:          `...`,
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 			os.Exit(1)

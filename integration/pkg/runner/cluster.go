@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"sigs.k8s.io/kind/pkg/cluster"
 	"sigs.k8s.io/kind/pkg/cluster/config/encoding"
 	"sigs.k8s.io/kind/pkg/cluster/create"
@@ -109,7 +111,6 @@ func (c Cluster) apply(manifests []byte) error {
 		},
 	}
 	hostConfig := &container.HostConfig{
-		AutoRemove: true,
 		Mounts: []mount.Mount{
 			{
 				Type:   "bind",
@@ -131,6 +132,7 @@ func (c Cluster) apply(manifests []byte) error {
 	if err != nil {
 		return err
 	}
+	defer cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{})
 
 	startOptions := types.ContainerStartOptions{}
 	err = cli.ContainerStart(ctx, resp.ID, startOptions)
@@ -144,7 +146,17 @@ func (c Cluster) apply(manifests []byte) error {
 	}
 
 	if exitCode != 0 {
-		return fmt.Errorf("unexpected exit code running kubectl: %d", exitCode)
+		data, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+		if err != nil {
+			return err
+		}
+
+		stdOut := new(bytes.Buffer)
+		stdErr := new(bytes.Buffer)
+
+		stdcopy.StdCopy(stdOut, stdErr, data)
+
+		return fmt.Errorf("unexpected exit code running kubectl: %d\nstderr:%s\b\bstdout:%s", exitCode, stdErr, stdOut)
 	}
 
 	return nil
