@@ -5,12 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/spf13/viper"
-	"sigs.k8s.io/kind/pkg/cluster"
-	"sigs.k8s.io/kind/pkg/cluster/config/encoding"
-	"sigs.k8s.io/kind/pkg/cluster/create"
 )
 
 type Runner struct {
@@ -39,36 +35,19 @@ func (r *Runner) RunSync() error {
 		if test.IsDir() {
 			fmt.Printf("-----> Beginning test %q\n", test.Name())
 
-			if err := r.createCluster("test"); err != nil {
+			cluster, err := createCluster("test")
+			if err != nil {
 				return err
 			}
 			defer func() {
-				r.deleteCluster("test")
+				cluster.delete()
 			}()
+
+			if err := cluster.apply([]byte("---")); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
-}
-
-func (r *Runner) createCluster(name string) error {
-	cfg, err := encoding.Load("")
-	if err != nil {
-		return err
-	}
-
-	if err := cfg.Validate(); err != nil {
-		return err
-	}
-
-	ctx := cluster.NewContext(name)
-	return ctx.Create(cfg,
-		create.Retain(true),
-		create.WaitForReady(time.Second*90),
-		create.SetupKubernetes(true))
-}
-
-func (r *Runner) deleteCluster(name string) error {
-	ctx := cluster.NewContext(name)
-	return ctx.Delete()
 }
