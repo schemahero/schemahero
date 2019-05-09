@@ -10,6 +10,22 @@
   version = "v0.37.4"
 
 [[projects]]
+  digest = "1:bd3632deea7c224314b504dc51fbd244a59163e89c0cb730877d51bb13f5f74a"
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "44968752391892e1b0d0b821ee79e9a85fa13049"
+  version = "v1.1.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:c739832d67eb1e9cc478a19cc1a1ccd78df0397bf8a32978b759152e205f644b"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
+
+[[projects]]
   digest = "1:464aef731a5f82ded547c62e249a2e9ec59fbbc9ddab53cda7b9857852630a61"
   name = "github.com/appscode/jsonpatch"
   packages = ["."]
@@ -83,6 +99,38 @@
   pruneopts = "T"
   revision = "03f06a783fbb7dfaf3f629c7825480e43a7105e6"
   version = "v0.1.1"
+
+[[projects]]
+  digest = "1:701ec53dfa0182bf25e5c09e664906f11d697e779b59461a2607dbd4dc75a4f9"
+  name = "github.com/go-openapi/jsonpointer"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "ef5f0afec364d3b9396b7b77b43dbe26bf1f8004"
+  version = "v0.19.0"
+
+[[projects]]
+  digest = "1:3f17ebd557845adeb347c9e398394e96ebc18e0ec94cc04972be87851a4679e0"
+  name = "github.com/go-openapi/jsonreference"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "8483a886a90412cd6858df4ea3483dce9c8e35a3"
+  version = "v0.19.0"
+
+[[projects]]
+  digest = "1:40910b9a3f0c63bcbb9da11fe471a95899dc0e139284bd892ac18819a37bbfc5"
+  name = "github.com/go-openapi/spec"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "53d776530bf78a11b03a7b52dd8a083086b045e5"
+  version = "v0.19.0"
+
+[[projects]]
+  digest = "1:8d6ff454d55699bfcfdc2ef77547defda00f7531e4b6c4483e5606b749255168"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "b3e2804c8535ee0d1b89320afd98474d5b8e9e3b"
+  version = "v0.19.0"
 
 [[projects]]
   digest = "1:92755a73daaa2397bbd4fd7b14d920decd24c0669b1d58db7e4ef986b1934e5f"
@@ -249,6 +297,14 @@
   version = "v1.1.6"
 
 [[projects]]
+  digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
+  version = "v1.0.2"
+
+[[projects]]
   digest = "1:6f13467d4ab83b8123138f120134a7b022b5fefd67d67ab9ef3d1f070850c049"
   name = "github.com/lib/pq"
   packages = [
@@ -267,6 +323,18 @@
   pruneopts = "T"
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:d594a6358158ddbd8996cefe7982228a1f57a6d0f27b6ea71b7e04cf578170aa"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    "buffer",
+    "jlexer",
+    "jwriter",
+  ]
+  pruneopts = "T"
+  revision = "1ea4449da9834f4d333f1cc461c374aea217d249"
 
 [[projects]]
   digest = "1:3804a3a02964db8e6db3e5e7960ac1c1a9b12835642dd4f4ac4e56c749ec73eb"
@@ -459,6 +527,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:c3498d1186a4f84897812aa2dccfbd5d805955846f2cd020aa384bf0b218e9e9"
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "8bdbc7bcc01dcbb8ec23dc8a28e332258d25251f"
+  version = "v1.4.1"
+
+[[projects]]
   digest = "1:dee0cc3252ce6fcc3334c9529abd32925f2aaf072c90336a5a38254953564aa5"
   name = "github.com/spf13/afero"
   packages = [
@@ -512,7 +588,10 @@
 [[projects]]
   digest = "1:17c4ccf5cdb1627aaaeb5c1725cb13aec97b63ea2033d4a6824dcaedf94223dc"
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = [
+    "assert",
+    "require",
+  ]
   pruneopts = "T"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
@@ -631,6 +710,7 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
+    "width",
   ]
   pruneopts = "T"
   revision = "342b2e1fbaa52c93f31447ad2c6abc048c63e475"
@@ -813,6 +893,7 @@
     "pkg/util/uuid",
     "pkg/util/validation",
     "pkg/util/validation/field",
+    "pkg/util/version",
     "pkg/util/wait",
     "pkg/util/yaml",
     "pkg/version",
@@ -950,7 +1031,10 @@
   branch = "master"
   digest = "1:1a6691ae0d9a9aad4f90266ba5a20a9243902326c52c9ad8747f3035c3ecaeaa"
   name = "k8s.io/kube-openapi"
-  packages = ["pkg/util/proto"]
+  packages = [
+    "pkg/common",
+    "pkg/util/proto",
+  ]
   pruneopts = "T"
   revision = "c5d3b0f4bee0a2c36e3f715a6b15dcc231c64adc"
 
@@ -1019,6 +1103,80 @@
   version = "v0.1.9"
 
 [[projects]]
+  digest = "1:98cc36c68ed450ee3b5918637c9263e8eac522b4b7b53729e699bcb4807d28d1"
+  name = "sigs.k8s.io/kind"
+  packages = [
+    "pkg/cluster",
+    "pkg/cluster/config",
+    "pkg/cluster/config/defaults",
+    "pkg/cluster/config/encoding",
+    "pkg/cluster/config/v1alpha2",
+    "pkg/cluster/config/v1alpha3",
+    "pkg/cluster/constants",
+    "pkg/cluster/create",
+    "pkg/cluster/internal/context",
+    "pkg/cluster/internal/create",
+    "pkg/cluster/internal/create/actions",
+    "pkg/cluster/internal/create/actions/config",
+    "pkg/cluster/internal/create/actions/kubeadminit",
+    "pkg/cluster/internal/create/actions/kubeadmjoin",
+    "pkg/cluster/internal/create/actions/loadbalancer",
+    "pkg/cluster/internal/create/actions/waitforready",
+    "pkg/cluster/internal/delete",
+    "pkg/cluster/internal/haproxy",
+    "pkg/cluster/internal/kubeadm",
+    "pkg/cluster/logs",
+    "pkg/cluster/nodes",
+    "pkg/container/cri",
+    "pkg/container/docker",
+    "pkg/exec",
+    "pkg/fs",
+    "pkg/kustomize",
+    "pkg/log",
+    "pkg/log/fidget",
+    "pkg/util",
+  ]
+  pruneopts = "T"
+  revision = "5e292845d6d7e736515a8ca4da032acd85e153d1"
+  version = "v0.2.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:6c86e190050577496cf907c8262afee6afb78ff830042016a607863a6cb32d19"
+  name = "sigs.k8s.io/kustomize"
+  packages = [
+    "internal/kusterr",
+    "k8sdeps",
+    "k8sdeps/kv",
+    "k8sdeps/kv/plugin",
+    "k8sdeps/kv/plugin/builtin",
+    "pkg/accumulator",
+    "pkg/commands/build",
+    "pkg/expansion",
+    "pkg/fs",
+    "pkg/git",
+    "pkg/gvk",
+    "pkg/ifc",
+    "pkg/ifc/transformer",
+    "pkg/image",
+    "pkg/loader",
+    "pkg/patch",
+    "pkg/patch/transformer",
+    "pkg/pgmconfig",
+    "pkg/plugins",
+    "pkg/resid",
+    "pkg/resmap",
+    "pkg/resource",
+    "pkg/target",
+    "pkg/transformers",
+    "pkg/transformers/config",
+    "pkg/transformers/config/defaultconfig",
+    "pkg/types",
+  ]
+  pruneopts = "T"
+  revision = "540e4023dae93dc9d8fcab37b18734ef9df08339"
+
+[[projects]]
   digest = "1:290b4da306982122bcdff12dbababbb95c6e4a94a2995db88baf235ef2f6e93e"
   name = "sigs.k8s.io/testing_frameworks"
   packages = [
@@ -1049,6 +1207,7 @@
     "github.com/spf13/cobra",
     "github.com/spf13/viper",
     "github.com/stretchr/testify/assert",
+    "github.com/stretchr/testify/require",
     "golang.org/x/net/context",
     "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
@@ -1084,6 +1243,9 @@
     "sigs.k8s.io/controller-runtime/pkg/runtime/signals",
     "sigs.k8s.io/controller-runtime/pkg/source",
     "sigs.k8s.io/controller-tools/cmd/controller-gen",
+    "sigs.k8s.io/kind/pkg/cluster",
+    "sigs.k8s.io/kind/pkg/cluster/config/encoding",
+    "sigs.k8s.io/kind/pkg/cluster/create",
     "sigs.k8s.io/testing_frameworks/integration",
   ]
   solver-name = "gps-cdcl"

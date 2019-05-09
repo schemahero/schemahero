@@ -4,7 +4,7 @@ os:
   - linux
 
 go:
-  - "1.12"
+  - "1.12.5"
 
 install:
   - ./hack/deps.sh
@@ -15,6 +15,7 @@ before_script:
 script:
   - go test ./pkg/... ./cmd/... -race -coverprofile=coverage.txt -covermode=atomic
   - make
+  - cd integration && make run
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

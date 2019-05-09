@@ -1,0 +1,11 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+  - amwat
+  - BenTheElder
+  - krzyzacy
+  - munnerz
+  - neolit123
+approvers:
+  - BenTheElder
+  - munnerz
