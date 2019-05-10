@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -99,10 +100,11 @@ func (c Cluster) apply(manifests []byte) error {
 		return err
 	}
 
-	_, err = cli.ImagePull(ctx, "docker.io/bitnami/kubectl:1.14", types.ImagePullOptions{})
+	pullReader, err := cli.ImagePull(ctx, "docker.io/bitnami/kubectl:1.14", types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
+	io.Copy(ioutil.Discard, pullReader)
 
 	containerConfig := &container.Config{
 		Image: "bitnami/kubectl:1.14",
