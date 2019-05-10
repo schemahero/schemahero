@@ -35,7 +35,7 @@ func (r *Runner) RunSync() error {
 		if test.IsDir() {
 			fmt.Printf("-----> Beginning test %q\n", test.Name())
 
-			cluster, err := createCluster("test")
+			cluster, err := createCluster(test.Name())
 			if err != nil {
 				return err
 			}
