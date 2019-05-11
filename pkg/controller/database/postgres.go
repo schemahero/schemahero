@@ -13,7 +13,12 @@ import (
 )
 
 func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha1.Database) error {
-	imageName := "localhost:32000/schemahero/schemahero"
+	imageName := "schemahero/schemahero"
+	if instance.SchemaHero != nil {
+		if instance.SchemaHero.Image != "" {
+			imageName = instance.SchemaHero.Image
+		}
+	}
 
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{

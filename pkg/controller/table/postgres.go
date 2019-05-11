@@ -3,6 +3,7 @@ package table
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
@@ -18,6 +19,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 
 	// determine if the table exists
 	query := `select count(1) from information_schema.tables where table_name = $1`
+	fmt.Printf("Executing query %q\n", query)
 	row := db.QueryRow(query, tableName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
@@ -31,6 +33,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 			return err
 		}
 
+		fmt.Printf("Executing query %q\n", query)
 		_, err = db.Exec(query)
 		if err != nil {
 			return err
@@ -45,6 +48,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 		character_maximum_length
 		from information_schema.columns
 		where table_name = $1`
+	fmt.Printf("Executing query %q\n", query)
 	rows, err := db.Query(query, tableName)
 	if err != nil {
 		return err
@@ -104,6 +108,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 	}
 
 	for _, alterOrDropStatement := range alterAndDropStatements {
+		fmt.Printf("Executing query %q\n", alterOrDropStatement)
 		if _, err = db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
 			return err
 		}

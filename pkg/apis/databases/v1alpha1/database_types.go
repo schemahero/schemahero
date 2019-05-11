@@ -25,6 +25,10 @@ type DatabaseConnection struct {
 	Postgres *PostgresConnection `json:"postgres,omitempty"`
 }
 
+type SchemaHero struct {
+	Image string `json:"image,omitempty"`
+}
+
 // DatabaseStatus defines the observed state of Database
 type DatabaseStatus struct {
 	IsConnected bool   `json:"isConnected"`
@@ -41,6 +45,7 @@ type Database struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	SchemaHero *SchemaHero        `json:"schemahero,omitempty"`
 	Connection DatabaseConnection `json:"connection,omitempty"`
 	Status     DatabaseStatus     `json:"status,omitempty"`
 }

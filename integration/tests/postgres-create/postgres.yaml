@@ -40,6 +40,8 @@ spec:
           value: schemahero
         - name: POSTGRES_PASSWORD
           value: password
+        - name: PGPASSWORD  ## This makes psql work in kubectl exec
+          value: password
         - name: POSTGRES_DB
           value: integrationone
         image: docker.io/bitnami/postgresql:10.7.0

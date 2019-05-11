@@ -18,7 +18,8 @@ func Run() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String("manager-image-name", "", "docker image name for the manager to test with")
+	cmd.Flags().String("manager-image-name", "", "docker image for the manager pod")
+	cmd.Flags().String("schemahero-image-name", "", "docker image for the schemahero pod")
 
 	viper.BindPFlags(cmd.Flags())
 

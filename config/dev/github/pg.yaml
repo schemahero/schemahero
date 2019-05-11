@@ -4,6 +4,8 @@ metadata:
   labels:
     controller-tools.k8s.io: "1.0"
   name: github-pg
+schemahero:
+  image: "localhost:32000/schemahero/schemahero"
 connection:
   postgres:
     uri:

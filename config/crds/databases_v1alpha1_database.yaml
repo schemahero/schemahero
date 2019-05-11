@@ -52,6 +52,11 @@ spec:
           type: string
         metadata:
           type: object
+        schemahero:
+          properties:
+            image:
+              type: string
+          type: object
         status:
           properties:
             isConnected:
