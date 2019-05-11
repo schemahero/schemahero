@@ -80,7 +80,7 @@ func (c Cluster) delete() error {
 	return ctx.Delete()
 }
 
-func (c Cluster) apply(manifests []byte) error {
+func (c Cluster) apply(manifests []byte, showStdOut bool) error {
 	cli, err := client.NewEnvClient()
 	if err != nil {
 		return err
@@ -152,18 +152,22 @@ func (c Cluster) apply(manifests []byte) error {
 		return err
 	}
 
+	data, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	if err != nil {
+		return err
+	}
+
+	stdOut := new(bytes.Buffer)
+	stdErr := new(bytes.Buffer)
+
+	stdcopy.StdCopy(stdOut, stdErr, data)
+
 	if exitCode != 0 {
-		data, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
-		if err != nil {
-			return err
-		}
-
-		stdOut := new(bytes.Buffer)
-		stdErr := new(bytes.Buffer)
-
-		stdcopy.StdCopy(stdOut, stdErr, data)
-
 		return fmt.Errorf("unexpected exit code running kubectl: %d\nstderr:%s\b\bstdout:%s", exitCode, stdErr, stdOut)
+	}
+
+	if showStdOut {
+		fmt.Printf("%s\n", stdOut)
 	}
 
 	return nil

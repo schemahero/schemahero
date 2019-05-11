@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -59,25 +60,45 @@ func (r *Runner) RunSync() error {
 					return err
 				}
 
-				if err := cluster.apply(databaseManifests); err != nil {
+				if err := cluster.apply(databaseManifests, false); err != nil {
 					return err
 				}
 			}
 
 			fmt.Printf("(%s) -----> Applying SchemaHero Operator\n", test.Cluster.Name)
-			crd, err := getApplyableCRD(r.Viper.GetString("manager-image-name"))
+			operator, err := getApplyableOperator(r.Viper.GetString("manager-image-name"))
 			if err != nil {
 				return nil
 			}
-			if err := cluster.apply(crd); err != nil {
+			if err := cluster.apply(operator, false); err != nil {
 				return err
 			}
 
-			fmt.Printf("(%s) -----> Applying database connection\n", test.Cluster.Name)
+			// Give the cluster 2 seconds to register the CRDs. This shouldn't be necessary
+			// And for production code this would be better handled in almost any other way
+			// But this test flow is a very specific pattern and this is working for now.
+			time.Sleep(time.Second * 2)
+
+			fmt.Printf("(%s) -----> Applying database connections\n", test.Cluster.Name)
+			for _, connection := range test.Connections {
+				fmt.Printf("(%s) -----> ... %s\n", test.Cluster.Name, connection)
+				connectionManifests, err := ioutil.ReadFile(filepath.Join(root, connection))
+				if err != nil {
+					return err
+				}
+
+				if err := cluster.apply(connectionManifests, false); err != nil {
+					return err
+				}
+			}
 
 			fmt.Printf("(%s) -----> Setting up test\n", test.Cluster.Name)
+			// TODO
 
 			fmt.Printf("(%s) -----> Running test(s)\n", test.Cluster.Name)
+			for _, testStep := range test.Steps {
+				fmt.Printf("(%s) -----> ... %s\n", test.Cluster.Name, testStep.Name)
+			}
 		}
 	}
 

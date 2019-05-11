@@ -9,9 +9,10 @@ connections:
 
 setup: []
 
-test:
- - table:
-    - source: users-table.yaml
+steps:
+ - name: create users table
+   table:
+     source: users-table.yaml
 
 
 
