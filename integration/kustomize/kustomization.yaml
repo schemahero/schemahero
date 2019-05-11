@@ -1,0 +1,7 @@
+bases:
+  - ../../config/default
+
+images:
+- name: IMAGE_URL
+  newName: http://localhost:32000/schemahero-manager
+  newTag: integration-test

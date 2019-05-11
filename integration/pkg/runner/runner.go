@@ -31,11 +31,18 @@ func (r *Runner) RunSync() error {
 		return err
 	}
 
-	for _, test := range tests {
-		if test.IsDir() {
-			fmt.Printf("-----> Beginning test %q\n", test.Name())
+	for _, testFile := range tests {
+		if testFile.IsDir() {
+			fmt.Printf("-----> Beginning test %q\n", testFile.Name())
 
-			cluster, err := createCluster(test.Name())
+			root := filepath.Join(currentDir, "tests", testFile.Name())
+
+			test, err := unmarshalTestFile(filepath.Join(root, "test.yaml"))
+			if err != nil {
+				return err
+			}
+
+			cluster, err := createCluster(test.Cluster.Name)
 			if err != nil {
 				return err
 			}
@@ -43,19 +50,22 @@ func (r *Runner) RunSync() error {
 				cluster.delete()
 			}()
 
-			fmt.Printf("(%s) -----> Applying database.yaml\n", test.Name())
-			databaseManifests, err := ioutil.ReadFile(filepath.Join(currentDir, "tests", test.Name(), "database.yaml"))
-			if err != nil {
-				return err
+			fmt.Printf("(%s) -----> Applying databases\n", test.Cluster.Name)
+			for _, database := range test.Databases {
+				fmt.Printf("(%s) -----> ... %s\n", test.Cluster.Name, database)
+				databaseManifests, err := ioutil.ReadFile(filepath.Join(root, database))
+				if err != nil {
+					return err
+				}
+
+				if err := cluster.apply(databaseManifests); err != nil {
+					return err
+				}
 			}
 
-			if err := cluster.apply(databaseManifests); err != nil {
-				return err
-			}
+			fmt.Printf("(%s) -----> Applying SchemaHero Operator\n", test.Cluster.Name)
 
-			fmt.Printf("(%s) -----> Applying SchemaHero Operator\n", test.Name())
-
-			fmt.Printf("(%s) -----> Applying database connection\n", test.Name())
+			fmt.Printf("(%s) -----> Applying database connection\n", test.Cluster.Name)
 
 		}
 	}
