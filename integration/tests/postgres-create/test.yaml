@@ -1,6 +1,6 @@
 cluster:
   name: postgres-create
-  skipCleanup: true
+  # skipCleanup: true
 
 databases:
   - postgres.yaml
