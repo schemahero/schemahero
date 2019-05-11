@@ -18,6 +18,8 @@ func Run() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().String("manager-image-name", "", "docker image name for the manager to test with")
+
 	viper.BindPFlags(cmd.Flags())
 
 	return cmd

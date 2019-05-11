@@ -4,7 +4,7 @@ SCHEMA_HERO_IMAGE_NAME := $(shell uuidgen)
 
 .PHONY: run
 run: build integration-test-image
-	bin/schemahero-integration-tests run
+	bin/schemahero-integration-tests run --manager-image-name "rgstry.dev/$(MANAGER_IMAGE_NAME):1h"
 
 integration-test-image:
 	cd .. && curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.integration.yml

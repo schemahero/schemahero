@@ -47,6 +47,7 @@ func (r *Runner) RunSync() error {
 				return err
 			}
 			defer func() {
+				fmt.Printf("(%s) -----> Deleting cluster\n", test.Cluster.Name)
 				cluster.delete()
 			}()
 
@@ -64,9 +65,19 @@ func (r *Runner) RunSync() error {
 			}
 
 			fmt.Printf("(%s) -----> Applying SchemaHero Operator\n", test.Cluster.Name)
+			crd, err := getApplyableCRD(r.Viper.GetString("manager-image-name"))
+			if err != nil {
+				return nil
+			}
+			if err := cluster.apply(crd); err != nil {
+				return err
+			}
 
 			fmt.Printf("(%s) -----> Applying database connection\n", test.Cluster.Name)
 
+			fmt.Printf("(%s) -----> Setting up test\n", test.Cluster.Name)
+
+			fmt.Printf("(%s) -----> Running test(s)\n", test.Cluster.Name)
 		}
 	}
 
