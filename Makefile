@@ -84,7 +84,7 @@ release: build-release
 	docker push schemahero/schemahero-manager:latest
 	docker push schemahero/schemahero:latest
 
-build-release: deploy/.goreleaser.yml $(SRC)
+build-release:
 	curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.yml
 
 .PHONY: micok8s

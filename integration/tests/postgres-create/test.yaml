@@ -1,0 +1,20 @@
+cluster:
+  name: postgres-create
+
+databases:
+  - postgres.yaml
+
+connections:
+  - connection.yaml
+
+setup: []
+
+steps:
+ - name: create users table
+   table:
+     source: users-table.yaml
+
+
+
+
+
