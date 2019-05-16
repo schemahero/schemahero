@@ -44,7 +44,7 @@ spec:
       containers:
       - command:
         - /manager
-        image: controller:latest
+        image: schemahero/schemahero:latest
         imagePullPolicy: Always
         name: manager
         env:
