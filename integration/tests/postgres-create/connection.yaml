@@ -4,7 +4,9 @@ metadata:
   labels:
     controller-tools.k8s.io: "1.0"
   name: integrationone
+schemahero:
+  image: __SCHEMAHERO_IMAGE_NAME__
 connection:
   postgres:
     uri:
-      value: postgres://schemahero:password@postgresql:5432/integrationone?sslmode=disable
+      value: postgres://schemahero:password@postgresql.default.svc.cluster.local:5432/integrationone?sslmode=disable

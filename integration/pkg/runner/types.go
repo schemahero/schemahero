@@ -14,16 +14,28 @@ type Test struct {
 }
 
 type TestCluster struct {
-	Name string `json:"name"`
+	Name        string `yaml:"name"`
+	SkipCleanup bool   `yaml:"skipCleanup"`
 }
 
 type TestStep struct {
-	Name  string         `yaml:"name"`
-	Table *TestStepTable `yaml:"table"`
+	Name         string            `yaml:"name"`
+	Table        *TestStepTable    `yaml:"table"`
+	Verification *TestVerification `yaml:"verification"`
 }
 
 type TestStepTable struct {
 	Source string `yaml:"source"`
+}
+
+type TestVerification struct {
+	Exec TestExec `yaml:"exec"`
+}
+
+type TestExec struct {
+	Pod     string   `yaml:"pod"`
+	Command string   `yaml:"command"`
+	Args    []string `yaml:"args"`
 }
 
 func unmarshalTestFile(filename string) (*Test, error) {

@@ -12,8 +12,7 @@ import (
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
 )
 
-// simpleColumnTypes are unparameterized, easy-to-parse types
-var simpleColumnTypes = []string{
+var unparameterizedColumnTypes = []string{
 	"bigint",
 	"bigserial",
 	"boolean",
@@ -59,7 +58,7 @@ type Column struct {
 	Constraints   *ColumnConstraints
 }
 
-func maybeParseComplexColumnType(requestedType string) (string, int64, error) {
+func maybeParseParameterizedColumnType(requestedType string) (string, int64, error) {
 	columnType := ""
 	maxLength := int64(0)
 
@@ -88,17 +87,17 @@ func maybeParseComplexColumnType(requestedType string) (string, int64, error) {
 	return columnType, maxLength, nil
 }
 
-func isSimpleColumnType(requestedType string) bool {
-	for _, simpleColumnType := range simpleColumnTypes {
-		if simpleColumnType == requestedType {
-			return true
+func isParameterizedColumnType(requestedType string) bool {
+	for _, unparameterizedColumnType := range unparameterizedColumnTypes {
+		if unparameterizedColumnType == requestedType {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
-func unaliasSimpleColumnType(requestedType string) string {
+func unaliasUnparameterizedColumnType(requestedType string) string {
 	switch requestedType {
 	case "int8":
 		return "bigint"
@@ -122,9 +121,8 @@ func unaliasSimpleColumnType(requestedType string) string {
 		return "serial"
 	}
 
-	// Simple types just pass through
-	for _, simpleColumnType := range simpleColumnTypes {
-		if simpleColumnType == requestedType {
+	for _, unparameterizedColumnType := range unparameterizedColumnTypes {
+		if unparameterizedColumnType == requestedType {
 			return requestedType
 		}
 	}
@@ -154,7 +152,7 @@ func unaliasParameterizedColumnType(requestedType string) string {
 		return fmt.Sprintf("character (%s)", matchGroups[1])
 	}
 	if strings.HasPrefix(requestedType, "varchar") {
-		r := regexp.MustCompile(`varchar\s*\((?P<max>\d*)\)`)
+		r := regexp.MustCompile(`varchar\s*\(\s*(?P<max>\d*)\s*\)`)
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		if len(matchGroups) == 0 {
@@ -163,7 +161,43 @@ func unaliasParameterizedColumnType(requestedType string) string {
 
 		return fmt.Sprintf("character varying (%s)", matchGroups[1])
 	}
+	if strings.HasPrefix(requestedType, "decimal") {
+		precisionAndScale := regexp.MustCompile(`decimal\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d)\s*\)`)
+		precisionOnly := regexp.MustCompile(`decimal\s*\(\s*(?P<precision>\d*)\s*\)`)
 
+		precisionAndScaleMatchGroups := precisionAndScale.FindStringSubmatch(requestedType)
+		precisionOnlyMatchGroups := precisionOnly.FindStringSubmatch(requestedType)
+
+		if len(precisionAndScaleMatchGroups) == 0 && len(precisionOnlyMatchGroups) == 0 {
+			return "numeric"
+		}
+
+		if len(precisionAndScaleMatchGroups) > 0 {
+			return fmt.Sprintf("numeric (%s, %s)", precisionAndScaleMatchGroups[1], precisionAndScaleMatchGroups[2])
+		}
+
+		return fmt.Sprintf("numeric (%s)", precisionOnlyMatchGroups[1])
+	}
+	if strings.HasPrefix(requestedType, "timetz") {
+		r := regexp.MustCompile(`timetz\s*\(\s*(?P<precision>.*)\s*\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "time with time zone"
+		}
+
+		return fmt.Sprintf("time (%s) with time zone", matchGroups[1])
+	}
+	if strings.HasPrefix(requestedType, "timestamptz") {
+		r := regexp.MustCompile(`timestamptz\s*\(\s*(?P<precision>.*)\s*\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "timestamp with time zone"
+		}
+
+		return fmt.Sprintf("timestamp (%s) with time zone", matchGroups[1])
+	}
 	return ""
 }
 
@@ -177,7 +211,7 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 	}
 
 	requestedType := schemaColumn.Type
-	unaliasedColumnType := unaliasSimpleColumnType(requestedType)
+	unaliasedColumnType := unaliasUnparameterizedColumnType(requestedType)
 	if unaliasedColumnType != "" {
 		requestedType = unaliasedColumnType
 	}
@@ -187,12 +221,12 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 		requestedType = unaliasedColumnType
 	}
 
-	if isSimpleColumnType(requestedType) {
+	if !isParameterizedColumnType(requestedType) {
 		column.DataType = requestedType
 		return column, nil
 	}
 
-	columnType, maxLength, err := maybeParseComplexColumnType(requestedType)
+	columnType, maxLength, err := maybeParseParameterizedColumnType(requestedType)
 	if err != nil {
 		return nil, err
 	}

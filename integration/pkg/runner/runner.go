@@ -1,10 +1,12 @@
 package runner
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -47,10 +49,14 @@ func (r *Runner) RunSync() error {
 			if err != nil {
 				return err
 			}
-			defer func() {
-				fmt.Printf("(%s) -----> Deleting cluster\n", test.Cluster.Name)
-				cluster.delete()
-			}()
+			if test.Cluster.SkipCleanup {
+				fmt.Printf("\n\n WARNING: Skipping Cleanup of %s\n\n\n", test.Cluster.Name)
+			} else {
+				defer func() {
+					fmt.Printf("(%s) -----> Deleting cluster\n", test.Cluster.Name)
+					cluster.delete()
+				}()
+			}
 
 			fmt.Printf("(%s) -----> Applying databases\n", test.Cluster.Name)
 			for _, database := range test.Databases {
@@ -64,6 +70,10 @@ func (r *Runner) RunSync() error {
 					return err
 				}
 			}
+
+			// TODO the database has to be started before continuing here...
+			// The framework (really the operator itself) should handle this
+			time.Sleep(time.Second * 30)
 
 			fmt.Printf("(%s) -----> Applying SchemaHero Operator\n", test.Cluster.Name)
 			operator, err := getApplyableOperator(r.Viper.GetString("manager-image-name"))
@@ -87,7 +97,8 @@ func (r *Runner) RunSync() error {
 					return err
 				}
 
-				if err := cluster.apply(connectionManifests, false); err != nil {
+				replacedConnetionManifests := strings.Replace(string(connectionManifests), "__SCHEMAHERO_IMAGE_NAME__", r.Viper.GetString("schemahero-image-name"), -1)
+				if err := cluster.apply([]byte(replacedConnetionManifests), false); err != nil {
 					return err
 				}
 			}
@@ -98,6 +109,40 @@ func (r *Runner) RunSync() error {
 			fmt.Printf("(%s) -----> Running test(s)\n", test.Cluster.Name)
 			for _, testStep := range test.Steps {
 				fmt.Printf("(%s) -----> ... %s\n", test.Cluster.Name, testStep.Name)
+
+				if testStep.Table != nil {
+					sourceManifests, err := ioutil.ReadFile(filepath.Join(root, testStep.Table.Source))
+					if err != nil {
+						return err
+					}
+
+					if err := cluster.apply(sourceManifests, true); err != nil {
+						return err
+					}
+
+					// Wait up to 5 seconds for verification to pass
+					verifyCheckCount := 0
+					maxVerifications := 10
+					for verifyCheckCount < maxVerifications {
+						ok, stdout, stderr, err := verify(cluster, testStep.Verification)
+						if err != nil {
+							return err
+						}
+
+						if ok {
+							verifyCheckCount = maxVerifications
+						} else {
+							verifyCheckCount++
+							if verifyCheckCount == maxVerifications {
+								fmt.Printf("stderr: %s\n", stderr)
+								fmt.Printf("stdout: %s\n", stdout)
+								return errors.New("verification failed")
+							} else {
+								time.Sleep(time.Second)
+							}
+						}
+					}
+				}
 			}
 		}
 	}

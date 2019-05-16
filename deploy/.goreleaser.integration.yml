@@ -29,18 +29,19 @@ builds:
     flags: -tags netgo -installsuffix netgo
     binary: manager
     hooks: {}
-archive:
-  format: tar.gz
-  name_template: '{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{.Arm }}{{ end }}-alpha'
-  files:
-    - licence*
-    - LICENCE*
-    - license*
-    - LICENSE*
-    - readme*
-    - README*
-    - changelog*
-    - CHANGELOG*
+archives:
+  - id: tar
+    format: tar.gz
+    name_template: '{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{.Arm }}{{ end }}-alpha'
+    files:
+      - licence*
+      - LICENCE*
+      - license*
+      - LICENSE*
+      - readme*
+      - README*
+      - changelog*
+      - CHANGELOG*
 dockers:
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates:

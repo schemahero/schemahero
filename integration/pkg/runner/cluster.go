@@ -80,12 +80,42 @@ func (c Cluster) delete() error {
 	return ctx.Delete()
 }
 
-func (c Cluster) apply(manifests []byte, showStdOut bool) error {
+func (c Cluster) kubectl(ctx context.Context, cmd []string) (*container.Config, *container.HostConfig, error) {
 	cli, err := client.NewEnvClient()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
+	pullReader, err := cli.ImagePull(ctx, "docker.io/bitnami/kubectl:1.14", types.ImagePullOptions{})
+	if err != nil {
+		return nil, nil, err
+	}
+	io.Copy(ioutil.Discard, pullReader)
+
+	containerConfig := &container.Config{
+		Image: "bitnami/kubectl:1.14",
+		Env: []string{
+			"KUBECONFIG=/kubeconfig",
+		},
+		Cmd: cmd,
+	}
+	hostConfig := &container.HostConfig{
+		Mounts: []mount.Mount{
+			{
+				Type:   "bind",
+				Source: c.KubeConfigFromDockerPath,
+				Target: "/kubeconfig",
+			},
+		},
+		ExtraHosts: []string{
+			"kubernetes:172.17.0.1",
+		},
+	}
+
+	return containerConfig, hostConfig, nil
+}
+
+func (c Cluster) apply(manifests []byte, showStdOut bool) error {
 	ctx := context.Background()
 
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "manifests-")
@@ -100,39 +130,26 @@ func (c Cluster) apply(manifests []byte, showStdOut bool) error {
 		return err
 	}
 
-	pullReader, err := cli.ImagePull(ctx, "docker.io/bitnami/kubectl:1.14", types.ImagePullOptions{})
+	cmd := []string{
+		"apply",
+		"-f",
+		"/manifests.yaml",
+	}
+	containerConfig, hostConfig, err := c.kubectl(ctx, cmd)
 	if err != nil {
 		return err
 	}
-	io.Copy(ioutil.Discard, pullReader)
 
-	containerConfig := &container.Config{
-		Image: "bitnami/kubectl:1.14",
-		Env: []string{
-			"KUBECONFIG=/kubeconfig",
-		},
-		Cmd: []string{
-			"apply",
-			"-f",
-			"/manifests.yaml",
-		},
-	}
-	hostConfig := &container.HostConfig{
-		Mounts: []mount.Mount{
-			{
-				Type:   "bind",
-				Source: c.KubeConfigFromDockerPath,
-				Target: "/kubeconfig",
-			},
-			{
-				Type:   "bind",
-				Source: tmpFile.Name(),
-				Target: "/manifests.yaml",
-			},
-		},
-		ExtraHosts: []string{
-			"kubernetes:172.17.0.1",
-		},
+	hostConfig.Mounts = append(hostConfig.Mounts,
+		mount.Mount{
+			Type:   "bind",
+			Source: tmpFile.Name(),
+			Target: "/manifests.yaml",
+		})
+
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		return err
 	}
 
 	resp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, "")
@@ -171,4 +188,55 @@ func (c Cluster) apply(manifests []byte, showStdOut bool) error {
 	}
 
 	return nil
+}
+
+func (c Cluster) exec(podName string, command string, args []string) (int64, []byte, []byte, error) {
+	ctx := context.Background()
+
+	cmd := []string{
+		"exec",
+		podName,
+		command,
+		"--",
+	}
+	cmd = append(cmd, args...)
+
+	containerConfig, hostConfig, err := c.kubectl(ctx, cmd)
+	if err != nil {
+		return -1, nil, nil, err
+	}
+
+	cli, err := client.NewEnvClient()
+	if err != nil {
+		return -1, nil, nil, err
+	}
+
+	resp, err := cli.ContainerCreate(ctx, containerConfig, hostConfig, nil, "")
+	if err != nil {
+		return -1, nil, nil, err
+	}
+	defer cli.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{})
+
+	startOptions := types.ContainerStartOptions{}
+	err = cli.ContainerStart(ctx, resp.ID, startOptions)
+	if err != nil {
+		return -1, nil, nil, err
+	}
+
+	exitCode, err := cli.ContainerWait(ctx, resp.ID)
+	if err != nil {
+		return -1, nil, nil, err
+	}
+
+	data, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true})
+	if err != nil {
+		return -1, nil, nil, err
+	}
+
+	stdOut := new(bytes.Buffer)
+	stdErr := new(bytes.Buffer)
+
+	stdcopy.StdCopy(stdOut, stdErr, data)
+
+	return exitCode, stdOut.Bytes(), stdErr.Bytes(), nil
 }

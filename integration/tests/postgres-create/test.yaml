@@ -1,5 +1,6 @@
 cluster:
   name: postgres-create
+  # skipCleanup: true
 
 databases:
   - postgres.yaml
@@ -10,11 +11,16 @@ connections:
 setup: []
 
 steps:
- - name: create users table
-   table:
-     source: users-table.yaml
-
-
-
-
-
+  - name: create users table
+    table:
+      source: users-table.yaml
+    verification:
+      exec:
+        pod: postgresql-0
+        command: psql
+        args:
+          - -Uschemahero
+          - -d
+          - integrationone
+          - -c
+          - 'select id, login, name from users'
