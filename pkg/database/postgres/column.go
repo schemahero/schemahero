@@ -179,10 +179,24 @@ func unaliasParameterizedColumnType(requestedType string) string {
 		return fmt.Sprintf("numeric (%s)", precisionOnlyMatchGroups[1])
 	}
 	if strings.HasPrefix(requestedType, "timetz") {
+		r := regexp.MustCompile(`timetz\s*\(\s*(?P<precision>.*)\s*\)`)
 
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "time with time zone"
+		}
+
+		return fmt.Sprintf("time (%s) with time zone", matchGroups[1])
 	}
 	if strings.HasPrefix(requestedType, "timestamptz") {
+		r := regexp.MustCompile(`timestamptz\s*\(\s*(?P<precision>.*)\s*\)`)
 
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "timestamp with time zone"
+		}
+
+		return fmt.Sprintf("timestamp (%s) with time zone", matchGroups[1])
 	}
 	return ""
 }
