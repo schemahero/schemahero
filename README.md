@@ -10,7 +10,7 @@
 
 ## What is SchemaHero?
 
-SchemaHero is a Kubernetes Operator to enable Declarative Schema Management for databases.
+SchemaHero is a Kubernetes Operator for Declarative Schema Management for various databases
 
 1. Database tables can be expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_table.yaml) that can be updated and deployed to the cluster.
 2. Database migrations can be written as SQL statements, expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_migration.yaml) that can be deployed to the cluster.
