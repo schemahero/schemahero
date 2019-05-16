@@ -152,7 +152,7 @@ func unaliasParameterizedColumnType(requestedType string) string {
 		return fmt.Sprintf("character (%s)", matchGroups[1])
 	}
 	if strings.HasPrefix(requestedType, "varchar") {
-		r := regexp.MustCompile(`varchar\s*\((?P<max>\d*)\)`)
+		r := regexp.MustCompile(`varchar\s*\(\s*(?P<max>\d*)\s*\)`)
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		if len(matchGroups) == 0 {
@@ -162,8 +162,8 @@ func unaliasParameterizedColumnType(requestedType string) string {
 		return fmt.Sprintf("character varying (%s)", matchGroups[1])
 	}
 	if strings.HasPrefix(requestedType, "decimal") {
-		precisionAndScale := regexp.MustCompile(`decimal\s*\((?P<precision>\d*),\s*(?P<scale>[0-9.]\s*)\)`)
-		precisionOnly := regexp.MustCompile(`decimal\s*\((?P<precision>\d*)\)`)
+		precisionAndScale := regexp.MustCompile(`decimal\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d)\s*\)`)
+		precisionOnly := regexp.MustCompile(`decimal\s*\(\s*(?P<precision>\d*)\s*\)`)
 
 		precisionAndScaleMatchGroups := precisionAndScale.FindStringSubmatch(requestedType)
 		precisionOnlyMatchGroups := precisionOnly.FindStringSubmatch(requestedType)

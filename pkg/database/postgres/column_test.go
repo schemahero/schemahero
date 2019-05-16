@@ -12,6 +12,8 @@ import (
 func Test_unaliasParameterizedColumnType(t *testing.T) {
 	aliasedParmeterizedTests := map[string]string{
 		"varchar(255)": "character varying (255)",
+		"varchar      (1)": "character varying (1)",
+		"varchar ( 10 )": "character varying (10)",
 		"varchar": "character varying",
 		"varchar (100)": "character varying (100)",
 		"varbit (50)": "bit varying (50)",
@@ -19,6 +21,11 @@ func Test_unaliasParameterizedColumnType(t *testing.T) {
 		"char(36)": "character (36)",
 		"decimal": "numeric",
 		"decimal (10)": "numeric (10)",
+		"decimal (10, 5)": "numeric (10, 5)",
+		"decimal (10,5)": "numeric (10, 5)",
+		"decimal(10, 5)": "numeric (10, 5)",
+		"decimal(10,5)": "numeric (10, 5)",
+		"decimal(   10,    5 )": "numeric (10, 5)",
 		// "timetz": "time with time zone",
 		// "timestamptz": "timestamp with time zone",
 
