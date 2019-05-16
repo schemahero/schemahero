@@ -10,47 +10,29 @@ import (
 )
 
 func Test_unaliasParameterizedColumnType(t *testing.T) {
-	tests := []struct {
-		name                  string
-		requestedType         string
-		expectedUnaliasedType string
-	}{
-		{
-			name:                  "varchar(255)",
-			requestedType:         "varchar(255)",
-			expectedUnaliasedType: "character varying (255)",
-		}, {
-			name:                  "varchar",
-			requestedType:         "varchar",
-			expectedUnaliasedType: "character varying",
-		}, {
-			name:                  "varchar (100)",
-			requestedType:         "varchar (100)",
-			expectedUnaliasedType: "character varying (100)",
-		}, {
-			name:                  "varbit (50)",
-			requestedType:         "varbit (50)",
-			expectedUnaliasedType: "bit varying (50)",
-		}, {
-			name:                  "char",
-			requestedType:         "char",
-			expectedUnaliasedType: "character",
-		}, {
-			name:                  "char(36)",
-			requestedType:         "char(36)",
-			expectedUnaliasedType: "character (36)",
-		},
+	aliasedParmeterizedTests := map[string]string{
+		"varchar(255)": "character varying (255)",
+		"varchar": "character varying",
+		"varchar (100)": "character varying (100)",
+		"varbit (50)": "bit varying (50)",
+		"char": "character",
+		"char(36)": "character (36)",
+		"decimal": "numeric",
+		"decimal (10)": "numeric (10)",
+		// "timetz": "time with time zone",
+		// "timestamptz": "timestamp with time zone",
+
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			unaliasedType := unaliasParameterizedColumnType(test.requestedType)
-			assert.Equal(t, test.expectedUnaliasedType, unaliasedType)
+	for aliased, expectedUnaliased := range aliasedParmeterizedTests {
+		t.Run(aliased, func(t *testing.T) {
+			unaliasedType := unaliasParameterizedColumnType(aliased)
+			assert.Equal(t, expectedUnaliased, unaliasedType)
 		})
 	}
 }
 
-func Test_unaliasSimpleColumnType(t *testing.T) {
+func Test_unaliasUnparameterizedColumnType(t *testing.T) {
 	tests := []struct {
 		name                  string
 		requestedType         string
@@ -105,7 +87,7 @@ func Test_unaliasSimpleColumnType(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			unaliasedType := unaliasSimpleColumnType(test.requestedType)
+			unaliasedType := unaliasUnparameterizedColumnType(test.requestedType)
 			assert.Equal(t, test.expectedUnaliasedType, unaliasedType)
 		})
 	}
