@@ -22,7 +22,7 @@ SchemaHero is a Kubernetes Operator for Declarative Schema Management for variou
 The recommended way to deploy SchemaHero is:
 
 ```
-kubectl apply -f https://github.com/schemahero/schemahero/tree/master/install/k8s
+kubectl apply -f https://raw.githubusercontent.com/schemahero/schemahero/master/install/schemahero/schemahero-operator.yaml
 ```
 
 If you need any customizations, use [Ship](https://github.com/replicatedhq/ship):

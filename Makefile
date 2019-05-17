@@ -1,6 +1,6 @@
 
 SHELL := /bin/bash
-VERSION ?= 0.0.1
+VERSION ?= alpha
 
 all: test bin/schemahero manager
 
@@ -72,18 +72,19 @@ bin/schemahero:
 
 .PHONY: installable-manifests
 installable-manifests:
-	cd config/default; kustomize edit set image schemahero/schemahero:${VERSION}
-	kustomize build config/default
+	cd config/default; kustomize edit set image schemahero/schemahero-manager:${VERSION}
+	kustomize build config/default > install/schemahero/schemahero-operator.yaml
 	cd config/default; git checkout .
 
-.PHONY: release
-release: installable-manifests build-release
-	# docker push schemahero/schemahero-manager:latest
-	# docker push schemahero/schemahero:latest
+.PHONY: snapshot-release
+snapshot-release: build-snapshot-release installable-manifests
+	docker push schemahero/schemahero:alpha
+	docker push schemahero/schemahero-manager:alpha
+	@echo "Manifests were updated in this repo. Push to make sure they are live."
 
-.PHONY: build-release
-build-release:
-	curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.yml
+.PHONY: build-snapshot-release
+build-snapshot-release:
+	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --snapshot --config deploy/.goreleaser.snapshot.yml
 
 .PHONY: micok8s
 microk8s: build-release

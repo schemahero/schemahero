@@ -19,3 +19,9 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+deploy:
+  provider: script
+  script: make snapshot-release
+  on:
+    branch: master

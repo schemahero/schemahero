@@ -15,9 +15,9 @@ builds:
       - CGO_ENABLED=0
     main: cmd/schemahero/main.go
     ldflags: -s -w
-      -X github.com/actionblocks/actionblocks/pkg/version.version={{.Version}}
-      -X github.com/actionblocks/actionblocks/pkg/version.gitSHA={{.Commit}}
-      -X github.com/actionblocks/actionblocks/pkg/version.buildTime={{.Date}}
+      -X github.com/schemahero/schemahero/pkg/version.version={{.Version}}
+      -X github.com/schemahero/schemahero/pkg/version.gitSHA={{.Commit}}
+      -X github.com/schemahero/schemahero/pkg/version.buildTime={{.Date}}
       -extldflags "-static"
     flags: -tags netgo -installsuffix netgo
     binary: schemahero
@@ -48,17 +48,13 @@ archives:
 dockers:
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates:
-      - "schemahero/schemahero:{{ .Version }}"
-      - "schemahero/schemahero:latest"
+      - "schemahero/schemahero-manager:alpha"
     binaries:
       - schemahero
-    skip_push: true
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates:
-      - "schemahero/schemahero-manager:{{ .Version }}"
-      - "schemahero/schemahero-manager:latest"
+      - "schemahero/schemahero-manager:alpha"
     binaries:
       - manager
-    skip_push: true
 snapshot:
   name_template: SNAPSHOT-{{ .Commit }}
