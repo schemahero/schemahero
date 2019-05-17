@@ -78,7 +78,6 @@ docker-login:
 installable-manifests:
 	cd config/default; kustomize edit set image schemahero/schemahero-manager:${VERSION}
 	kustomize build config/default > install/schemahero/schemahero-operator.yaml
-	cd config/default; git checkout .
 
 .PHONY: snapshot-release
 snapshot-release: build-snapshot-release installable-manifests
