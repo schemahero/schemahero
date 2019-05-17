@@ -72,7 +72,7 @@ bin/schemahero:
 
 .PHONY: docker-login
 docker-login:
-	echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
+	echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
 .PHONY: installable-manifests
 installable-manifests:
