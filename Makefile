@@ -70,7 +70,7 @@ bin/schemahero:
 		./cmd/schemahero
 	@echo "built bin/schemahero"
 
-.PHONY: docker-login:
+.PHONY: docker-login
 docker-login:
 	echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
 
