@@ -70,6 +70,10 @@ bin/schemahero:
 		./cmd/schemahero
 	@echo "built bin/schemahero"
 
+.PHONY: docker-login:
+docker-login:
+	echo "$(DOCKER_PASSWORD)" | docker login -u "$(DOCKER_USERNAME)" --password-stdin
+
 .PHONY: installable-manifests
 installable-manifests:
 	cd config/default; kustomize edit set image schemahero/schemahero-manager:${VERSION}
