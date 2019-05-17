@@ -26,7 +26,7 @@ func getApplyableManager(managerImageName string) ([]byte, error) {
 		return nil, err
 	}
 
-	updatedCrd := strings.Replace(string(crd), "IMAGE_URL", managerImageName, -1)
+	updatedCrd := strings.Replace(string(crd), "schemahero/schemahero-manager:latest", managerImageName, -1)
 	return []byte(updatedCrd), nil
 }
 

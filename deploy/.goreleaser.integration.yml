@@ -12,9 +12,9 @@ builds:
       - CGO_ENABLED=0
     main: cmd/schemahero/main.go
     ldflags: -s -w
-      -X github.com/actionblocks/actionblocks/pkg/version.version={{.Version}}
-      -X github.com/actionblocks/actionblocks/pkg/version.gitSHA={{.Commit}}
-      -X github.com/actionblocks/actionblocks/pkg/version.buildTime={{.Date}}
+      -X github.com/schemahero/schemahero/pkg/version.version={{.Version}}
+      -X github.com/schemahero/schemahero/pkg/version.gitSHA={{.Commit}}
+      -X github.com/schemahero/schemahero/pkg/version.buildTime={{.Date}}
       -extldflags "-static"
     flags: -tags netgo -installsuffix netgo
     binary: schemahero

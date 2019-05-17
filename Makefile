@@ -1,6 +1,6 @@
 
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+SHELL := /bin/bash
+VERSION ?= alpha
 
 all: test bin/schemahero manager
 
@@ -33,27 +33,17 @@ manifests:
 fmt:
 	go fmt ./pkg/... ./cmd/...
 
-# Run go vet against code
+.PHONY: vet
 vet:
 	go vet ./pkg/... ./cmd/...
 
-# Generate code
+.PHONY: generate
 generate:
 ifndef GOPATH
 	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
 endif
 	go generate ./pkg/... ./cmd/...
 	rm -r ./pkg/client/schemaheroclientset/fake
-
-# Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
-	@echo "updating kustomize image patch file for manager resource"
-	sed -i'' -e 's@image: .*@image: '"${IMG}"'@' ./config/default/manager_image_patch.yaml
-
-# Push the docker image
-docker-push:
-	docker push ${IMG}
 
 .PHONY: integration/postgres
 integration/postgres: bin/schemahero
@@ -80,12 +70,21 @@ bin/schemahero:
 		./cmd/schemahero
 	@echo "built bin/schemahero"
 
-release: build-release
-	docker push schemahero/schemahero-manager:latest
-	docker push schemahero/schemahero:latest
+.PHONY: installable-manifests
+installable-manifests:
+	cd config/default; kustomize edit set image schemahero/schemahero-manager:${VERSION}
+	kustomize build config/default > install/schemahero/schemahero-operator.yaml
+	cd config/default; git checkout .
 
-build-release:
-	curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.yml
+.PHONY: snapshot-release
+snapshot-release: build-snapshot-release installable-manifests
+	docker push schemahero/schemahero:alpha
+	docker push schemahero/schemahero-manager:alpha
+	@echo "Manifests were updated in this repo. Push to make sure they are live."
+
+.PHONY: build-snapshot-release
+build-snapshot-release:
+	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --snapshot --config deploy/.goreleaser.snapshot.yml
 
 .PHONY: micok8s
 microk8s: build-release

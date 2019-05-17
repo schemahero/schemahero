@@ -1,5 +1,3 @@
-### GENERATED WITH kustomize build ../config/default
-
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -301,7 +299,7 @@ spec:
               fieldPath: metadata.namespace
         - name: SECRET_NAME
           value: schemahero-webhook-server-secret
-        image: schemahero/schemahero-manager:latest
+        image: schemahero/schemahero-manager:alpha
         imagePullPolicy: Always
         name: manager
         ports:
