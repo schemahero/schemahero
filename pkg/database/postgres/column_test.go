@@ -42,6 +42,23 @@ func Test_unaliasParameterizedColumnType(t *testing.T) {
 	}
 }
 
+func Test_maybeParseParameterizedColumnType(t *testing.T) {
+	parameterizedTests := map[string]string{
+		"fake":                        "",
+		"timestamp":                   "timestamp",
+		"timestamp without time zone": "timestamp without time zone",
+		// "timestamp (01:02)":                   "timestamp (01:02)",
+		// "timestamp (01:02) without time zone": "timestamp (01:02) without time zone",
+	}
+
+	for input, expectedOutput := range parameterizedTests {
+		t.Run(input, func(t *testing.T) {
+			output, _, _ := maybeParseParameterizedColumnType(input)
+			assert.Equal(t, expectedOutput, output)
+		})
+	}
+}
+
 func Test_unaliasUnparameterizedColumnType(t *testing.T) {
 	tests := []struct {
 		name                  string
@@ -124,6 +141,14 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 				Type: "text",
 			},
 			expectedStatement: `"t" text`,
+		},
+		{
+			name: "timestamp without time zone",
+			column: &schemasv1alpha1.PostgresTableColumn{
+				Name: "t",
+				Type: "timestamp without time zone",
+			},
+			expectedStatement: `"t" timestamp without time zone`,
 		},
 	}
 

@@ -57,9 +57,9 @@ type Column struct {
 	Constraints   *ColumnConstraints
 }
 
-func maybeParseParameterizedColumnType(requestedType string) (string, int64, error) {
+func maybeParseParameterizedColumnType(requestedType string) (string, *int64, error) {
 	columnType := ""
-	maxLength := int64(0)
+	var maxLength *int64
 
 	// if strings.HasPrefix(requestedType, "bit varying" {
 	// 	columnType = "bit varying"
@@ -78,9 +78,32 @@ func maybeParseParameterizedColumnType(requestedType string) (string, int64, err
 		maxStr := matchGroups[1]
 		max, err := strconv.Atoi(maxStr)
 		if err != nil {
-			return "", int64(0), err
+			return "", maxLength, err
 		}
-		maxLength = int64(max)
+		max64 := int64(max)
+		maxLength = &max64
+	} else if strings.HasPrefix(requestedType, "timestamp") {
+		columnType = "timestamp"
+
+		withPrecisionWithoutTimeZone := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)without time zone`)
+		withPrecision := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)`)
+		withoutPrecisionWithoutTimeZone := regexp.MustCompile(`timestamp\s*without time zone`)
+		withoutPrecision := regexp.MustCompile(`timestamp\s*`)
+
+		withPrecisionMatchGroups := withPrecision.FindStringSubmatch(requestedType)
+		withPrecisionWithoutTimeZoneMatchGroups := withPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+		withoutPrecisionMatchGroups := withoutPrecision.FindStringSubmatch(requestedType)
+		withoutPrecisionWithoutTimeZoneMatchGroups := withoutPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+
+		if len(withPrecisionWithoutTimeZoneMatchGroups) == 2 {
+			columnType = fmt.Sprintf("timestamp (%s) without time zone", withPrecisionWithoutTimeZoneMatchGroups[1])
+		} else if len(withoutPrecisionWithoutTimeZoneMatchGroups) == 1 {
+			columnType = "timestamp without time zone"
+		} else if len(withPrecisionMatchGroups) == 2 {
+			columnType = fmt.Sprintf("timestamp (%s)", withPrecisionMatchGroups[1])
+		} else if len(withoutPrecisionMatchGroups) == 1 {
+			columnType = "timestamp"
+		}
 	}
 
 	return columnType, maxLength, nil
@@ -232,7 +255,7 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 
 	if columnType != "" {
 		column.DataType = columnType
-		column.CharMaxLength = &maxLength
+		column.CharMaxLength = maxLength
 
 		return column, nil
 	}
@@ -257,8 +280,6 @@ func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string
 	if postgresColumn.CharMaxLength != nil {
 		formatted = fmt.Sprintf("%s(%d)", formatted, *postgresColumn.CharMaxLength)
 	}
-
-	fmt.Printf("%#v\n", postgresColumn)
 
 	if postgresColumn.Constraints != nil {
 		if postgresColumn.Constraints.NotNull {
