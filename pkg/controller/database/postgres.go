@@ -13,7 +13,7 @@ import (
 )
 
 func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha1.Database) error {
-	imageName := "schemahero/schemahero"
+	imageName := "schemahero/schemahero:alpha"
 	if instance.SchemaHero != nil {
 		if instance.SchemaHero.Image != "" {
 			imageName = instance.SchemaHero.Image
