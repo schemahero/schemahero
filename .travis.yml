@@ -22,6 +22,6 @@ after_success:
 
 deploy:
   provider: script
-  script: make docker-login snapshot-release
+  script: make docker-login
   on:
     branch: master
