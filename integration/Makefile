@@ -12,8 +12,8 @@ integration-test-image:
 	cd .. && curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config deploy/.goreleaser.integration.yml
 	docker tag schemahero/schemahero:integration-test replreg.is/$(SCHEMAHERO_IMAGE_NAME):1h
 	docker tag schemahero/schemahero-manager:integration-test replreg.is/$(MANAGER_IMAGE_NAME):1h
-	docker push replreg.is/$(SCHEMAHERO_IMAGE_NAME):1h
-	docker push replreg.is/$(MANAGER_IMAGE_NAME):1h
+	docker push replreg.is/$(SCHEMAHERO_IMAGE_NAME):1h || true
+	docker push replreg.is/$(MANAGER_IMAGE_NAME):1h || true
 
 .PHONY: build
 build: GO111MODULE = "on"

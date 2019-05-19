@@ -7,5 +7,5 @@ spec:
   template:
     spec:
       containers:
-      - image: schemahero/schemahero:latest
+      - image: schemahero/schemahero-manager:latest
         name: manager
