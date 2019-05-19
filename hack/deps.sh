@@ -9,3 +9,9 @@ mv kubebuilder_${version}_linux_${arch} kubebuilder && sudo mv kubebuilder /usr/
 
 # Install kind
 GO111MODULE="on" go get -u sigs.k8s.io/kind@65abdce
+
+# Install kustomize
+opsys=linux  # or darwin, or windows
+curl -L -O  "https://github.com/kubernetes-sigs/kustomize/releases/download/v2.0.3/kustomize_2.0.3_linux_amd64"
+sudo mv kustomize_2.0.3_linux_amd64 /usr/local/bin/kustomize
+sudo chmod u+x /usr/local/bin/kustomize

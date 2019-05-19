@@ -48,7 +48,7 @@ archives:
 dockers:
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates:
-      - "schemahero/schemahero-manager:alpha"
+      - "schemahero/schemahero:alpha"
     binaries:
       - schemahero
   - dockerfile: ./deploy/Dockerfile.manager
