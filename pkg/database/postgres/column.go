@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	goerrors "errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -238,7 +237,7 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 		return column, nil
 	}
 
-	return nil, goerrors.New("unknown column type")
+	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
 func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string, error) {

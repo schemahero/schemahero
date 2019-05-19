@@ -117,14 +117,14 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 			},
 			expectedStatement: `"c" integer`,
 		},
-		// {
-		// 	name: "needs_escape",
-		// 	column: &schemasv1alpha1.PostgresTableColumn{
-		// 		Name: "year",
-		// 		Type: "fake",
-		// 	},
-		// 	expectedStatement: `"year" "fake"`,
-		// },
+		{
+			name: "text",
+			column: &schemasv1alpha1.PostgresTableColumn{
+				Name: "t",
+				Type: "text",
+			},
+			expectedStatement: `"t" text`,
+		},
 	}
 
 	for _, test := range tests {
@@ -191,7 +191,14 @@ func Test_InsertColumnStatement(t *testing.T) {
 	}
 }
 
-// func Test_columnTypeToPostgresColumn(t *testing.T) {
-// 	// translated := translatePostgresColumnType("integer")
-// 	// assert.Equal(t, "bigint", translated, "integer should translate to bigint")
-// }
+func Test_schemaColumnToPostgresColumn(t *testing.T) {
+	schemaColumn := &schemasv1alpha1.PostgresTableColumn{
+		Name: "t",
+		Type: "text",
+	}
+
+	column, err := schemaColumnToPostgresColumn(schemaColumn)
+	req := require.New(t)
+	req.NoError(err)
+	assert.Equal(t, "text", column.DataType, "text should be text")
+}
