@@ -18,11 +18,11 @@ func Generate() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("driver", "d", "", "name of the database driver to use")
-	cmd.Flags().StringP("uri", "u", "", "connection string uri")
-	cmd.Flags().StringP("namespace", "n", "default", "namespace to put the custom resources into")
-	cmd.Flags().StringP("dbname", "", "", "schemahero database name to write in the yaml")
-	cmd.Flags().StringP("output-dir", "o", "", "directory to write schema files to")
+	cmd.Flags().String("driver", "", "name of the database driver to use")
+	cmd.Flags().String("uri", "", "connection string uri")
+	cmd.Flags().String("namespace", "default", "namespace to put the custom resources into")
+	cmd.Flags().String("dbname", "", "schemahero database name to write in the yaml")
+	cmd.Flags().String("output-dir", "", "directory to write schema files to")
 
 	cmd.MarkFlagRequired("driver")
 	cmd.MarkFlagRequired("uri")
