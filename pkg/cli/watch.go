@@ -18,7 +18,7 @@ func Watch() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("driver", "d", "", "name of the database to connect to")
+	cmd.Flags().StringP("driver", "d", "", "name of the database driver to use")
 	cmd.Flags().StringP("uri", "u", "", "connection string uri")
 	cmd.Flags().StringP("namespace", "n", "", "namespace of the spwaning object")
 	cmd.Flags().StringP("instance", "i", "", "instance name of the spawning object")

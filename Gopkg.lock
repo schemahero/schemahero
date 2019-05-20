@@ -10,6 +10,14 @@
   version = "v0.37.4"
 
 [[projects]]
+  digest = "1:ef2f0eff765cd6c60594654adc602ac5ba460462ac395c6f3c144e5bea24babe"
+  name = "github.com/Microsoft/go-winio"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "1a8911d1ed007260465c3bfbbc785ac6915a0bb8"
+  version = "v0.4.12"
+
+[[projects]]
   digest = "1:bd3632deea7c224314b504dc51fbd244a59163e89c0cb730877d51bb13f5f74a"
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
@@ -48,6 +56,63 @@
   pruneopts = "T"
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:d4f83648c3259dd3d07b0f98d505d3e2d2fd0c9388671a76d0e54041b8006338"
+  name = "github.com/docker/distribution"
+  packages = [
+    "digestset",
+    "reference",
+  ]
+  pruneopts = "T"
+  revision = "2461543d988979529609e8cb6fca9ca190dc48da"
+  version = "v2.7.1"
+
+[[projects]]
+  digest = "1:737600611200b7066942318948256cde82f62c2cafa0045c483f1c7c5fc0ad2b"
+  name = "github.com/docker/docker"
+  packages = [
+    "api/types",
+    "api/types/blkiodev",
+    "api/types/container",
+    "api/types/events",
+    "api/types/filters",
+    "api/types/mount",
+    "api/types/network",
+    "api/types/reference",
+    "api/types/registry",
+    "api/types/strslice",
+    "api/types/swarm",
+    "api/types/time",
+    "api/types/versions",
+    "api/types/volume",
+    "client",
+    "pkg/stdcopy",
+    "pkg/tlsconfig",
+  ]
+  pruneopts = "T"
+  revision = "092cba3727bb9b4a2f0e922cd6c0f93ea270e363"
+  version = "v1.13.1"
+
+[[projects]]
+  digest = "1:b64eea95d41af3792092af9c951efcd2d8d8bfd2335c851f7afaf54d6be12c66"
+  name = "github.com/docker/go-connections"
+  packages = [
+    "nat",
+    "sockets",
+    "tlsconfig",
+  ]
+  pruneopts = "T"
+  revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
+  version = "v0.4.0"
+
+[[projects]]
+  digest = "1:e95ef557dc3120984bb66b385ae01b4bb8ff56bcde28e7b0d1beed0cccc4d69f"
+  name = "github.com/docker/go-units"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "519db1ee28dcc9fd2474ae59fca29a810482bfb1"
+  version = "v0.4.0"
 
 [[projects]]
   digest = "1:628563098b6c90c4658950c43396b28cd0cb6adcdbfe557bd0f425e0b06f1e61"
@@ -427,6 +492,14 @@
   version = "v1.5.0"
 
 [[projects]]
+  digest = "1:ee4d4af67d93cc7644157882329023ce9a7bcfce956a079069a9405521c7cc8d"
+  name = "github.com/opencontainers/go-digest"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "279bed98673dd5bef374d3b6e4b09e2af76183bf"
+  version = "v1.0.0-rc1"
+
+[[projects]]
   digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
   name = "github.com/pborman/uuid"
   packages = ["."]
@@ -597,6 +670,14 @@
   version = "v1.3.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:16b723983614bf211a962e571181905189b418642318cd68de1829089ab7a800"
+  name = "github.com/xo/dburl"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "98997a05b24fc069c79fa13b05ccf376c22a326c"
+
+[[projects]]
   digest = "1:365b8ecb35a5faf5aa0ee8d798548fc9cd4200cb95d77a5b0b285ac881bae499"
   name = "go.uber.org/atomic"
   packages = ["."]
@@ -649,6 +730,8 @@
     "http2",
     "http2/hpack",
     "idna",
+    "internal/socks",
+    "proxy",
   ]
   pruneopts = "T"
   revision = "4829fb13d2c62012c17688fa7f629f371014946d"
@@ -1200,6 +1283,11 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/docker/docker/api/types",
+    "github.com/docker/docker/api/types/container",
+    "github.com/docker/docker/api/types/mount",
+    "github.com/docker/docker/client",
+    "github.com/docker/docker/pkg/stdcopy",
     "github.com/emicklei/go-restful",
     "github.com/lib/pq",
     "github.com/onsi/ginkgo",
@@ -1208,6 +1296,7 @@
     "github.com/spf13/viper",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/require",
+    "github.com/xo/dburl",
     "golang.org/x/net/context",
     "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",

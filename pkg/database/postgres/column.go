@@ -223,6 +223,24 @@ func unaliasParameterizedColumnType(requestedType string) string {
 	return ""
 }
 
+func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.PostgresTableColumn, error) {
+	constraints := &schemasv1alpha1.PostgresTableColumnConstraints{
+		NotNull: column.Constraints.NotNull,
+	}
+
+	schemaColumn := &schemasv1alpha1.PostgresTableColumn{
+		Name:        column.Name,
+		Type:        column.DataType,
+		Constraints: constraints,
+	}
+
+	if column.ColumnDefault != nil {
+		schemaColumn.Default = *column.ColumnDefault
+	}
+
+	return schemaColumn, nil
+}
+
 func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableColumn) (*Column, error) {
 	column := &Column{}
 
