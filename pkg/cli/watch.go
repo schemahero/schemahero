@@ -12,6 +12,13 @@ func Watch() *cobra.Command {
 		Use:   "watch",
 		Short: "watch a database for any changes",
 		Long:  `...`,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			// workaround for https://github.com/spf13/viper/issues/233
+			viper.BindPFlag("driver", cmd.Flags().Lookup("driver"))
+			viper.BindPFlag("uri", cmd.Flags().Lookup("uri"))
+			viper.BindPFlag("namespace", cmd.Flags().Lookup("namespace"))
+			viper.BindPFlag("instance", cmd.Flags().Lookup("instance"))
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			w := watcher.NewWatcher()
 			return w.RunSync()
