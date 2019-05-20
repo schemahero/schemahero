@@ -69,7 +69,7 @@ func (g *Generator) RunSync() error {
 
 		schemaHeroResource := schemasv1alpha1.TableSpec{
 			Database: g.Viper.GetString("dbname"),
-			Name:     sanitizeName(table),
+			Name:     table,
 			Requires: []string{},
 			Schema: &schemasv1alpha1.TableSchema{
 				Postgres: &postgresTableSchema,
