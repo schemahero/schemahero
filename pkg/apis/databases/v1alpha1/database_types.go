@@ -47,7 +47,8 @@ type Database struct {
 
 	SchemaHero *SchemaHero        `json:"schemahero,omitempty"`
 	Connection DatabaseConnection `json:"connection,omitempty"`
-	Status     DatabaseStatus     `json:"status,omitempty"`
+
+	Status DatabaseStatus `json:"status,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 type PostgresConnection struct {
-	URI                   ValueOrValueFrom `json:"uri,omitempty"`
-	DisableDriftDetection bool             `json:"disableDriftDetection,omitempty"`
+	URI                         ValueOrValueFrom `json:"uri,omitempty"`
+	DisableDriftDetection       bool             `json:"disableDriftDetection,omitempty"`
+	AllowOrphanedTablesOnDelete bool             `json:"allowOrphanedTablesOnDelete,omitempty"`
 }

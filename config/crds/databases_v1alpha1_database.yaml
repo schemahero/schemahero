@@ -25,6 +25,8 @@ spec:
           properties:
             postgres:
               properties:
+                allowOrphanedTablesOnDelete:
+                  type: boolean
                 disableDriftDetection:
                   type: boolean
                 uri:

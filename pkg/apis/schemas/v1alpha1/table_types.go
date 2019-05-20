@@ -21,7 +21,7 @@ import (
 )
 
 type PostgresTableColumnConstraints struct {
-	NotNull bool `json:"notNull"`
+	NotNull bool `json:"notNull" yaml:"notNull"`
 }
 
 type PostgresTableColumn struct {
@@ -32,7 +32,7 @@ type PostgresTableColumn struct {
 }
 
 type PostgresTableSchema struct {
-	PrimaryKey []string               `json:"primaryKey"`
+	PrimaryKey []string               `json:"primaryKey" yaml:"primaryKey"`
 	Columns    []*PostgresTableColumn `json:"columns"`
 }
 
