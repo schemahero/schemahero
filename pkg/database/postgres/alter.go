@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/lib/pq"
 
@@ -44,21 +45,36 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.Po
 				return "", nil
 			}
 
-			columnStatement = fmt.Sprintf(`alter table %s alter column %s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name))
-
+			changes := []string{}
 			if existingColumn.DataType != column.DataType {
-				columnStatement = fmt.Sprintf("%s type %s", columnStatement, column.DataType)
+				changes = append(changes, fmt.Sprintf("%s type %s", columnStatement, column.DataType))
 			}
 
-			if column.Constraints != nil {
-				if existingColumn.Constraints != nil {
-					if column.Constraints.NotNull && !existingColumn.Constraints.NotNull {
-						columnStatement = fmt.Sprintf("%s set not null", columnStatement)
-					} else if !column.Constraints.NotNull && existingColumn.Constraints.NotNull {
-						columnStatement = fmt.Sprintf("%s drop not null", columnStatement)
+			// too much complexity below!
+			if column.Constraints != nil || existingColumn.Constraints != nil {
+
+				// Add not null
+				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
+					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == false {
+						changes = append(changes, fmt.Sprintf("%s set not null", columnStatement))
+					}
+				}
+
+				// Drop not null
+				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == false {
+					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
+						changes = append(changes, fmt.Sprintf("%s drop not null", columnStatement))
 					}
 				}
 			}
+
+			if len(changes) == 0 {
+				// no changes
+				return "", nil
+			}
+
+			columnStatement = fmt.Sprintf(`alter table %s alter column %s%s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name), strings.Join(changes, " "))
+
 		}
 	}
 	if columnStatement == "" {

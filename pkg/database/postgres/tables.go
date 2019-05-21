@@ -6,6 +6,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var (
+	trueValue  = true
+	falseValue = false
+)
+
 func (pg *Postgres) ListTables() ([]string, error) {
 	query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
 
@@ -74,16 +79,22 @@ func (pg *Postgres) GetTableSchema(tableName string) ([]*Column, error) {
 			return nil, err
 		}
 
+		if isNullable == "NO" {
+			column.Constraints = &ColumnConstraints{
+				NotNull: &trueValue,
+			}
+		} else {
+			column.Constraints = &ColumnConstraints{
+				NotNull: &falseValue,
+			}
+		}
+
 		if maxLength.Valid {
-			column.CharMaxLength = &maxLength.Int64
+			column.Constraints.MaxLength = &maxLength.Int64
 		}
 
 		if columnDefault.Valid {
 			column.ColumnDefault = &columnDefault.String
-		}
-
-		column.Constraints = &ColumnConstraints{
-			NotNull: isNullable == "NO",
 		}
 
 		columns = append(columns, &column)

@@ -55,7 +55,7 @@ func Test_CreateTableStatement(t *testing.T) {
 				},
 			},
 			tableName:         "composite_primary_key",
-			expectedStatement: `create table "composite_primary_key" ("one" integer, "two" integer, "three" character varying(255), primary key ("one", "two"))`,
+			expectedStatement: `create table "composite_primary_key" ("one" integer, "two" integer, "three" character varying (255), primary key ("one", "two"))`,
 		},
 	}
 

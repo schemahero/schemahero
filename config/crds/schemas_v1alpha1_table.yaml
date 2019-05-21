@@ -45,10 +45,13 @@ spec:
                         properties:
                           constraints:
                             properties:
+                              maxLength:
+                                format: int64
+                                type: integer
                               notNull:
                                 type: boolean
                             required:
-                            - notNull
+                            - maxLength
                             type: object
                           default:
                             type: string

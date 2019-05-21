@@ -48,8 +48,3 @@ SchemaHero will calculate a Directed Acylic Graph (DAG) to determine the optimal
 Currently, you can write these types of schema as a container, and include that in the schema.
 
 
-### Migration To SchemaHero
-
-If you are using another tool (Goose, db-migrate, Flyaway, etc), and want to convert to the cloud-native, Kubernetes-first, SchemaHero, it's recommended that you "rebase" your current migrations by starting with a clean tree.
-
-To do this, create an export of your schema, and install it as the first 1-n migrations.
