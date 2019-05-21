@@ -17,7 +17,7 @@ var unparameterizedColumnTypes = []string{
 	"boolean",
 	"box",
 	"bytea",
-	"cide",
+	"cidr",
 	"circle",
 	"date",
 	"double precision",

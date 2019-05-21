@@ -9,6 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	ten = int64(10)
+)
+
 func Test_unaliasParameterizedColumnType(t *testing.T) {
 	aliasedParmeterizedTests := map[string]string{
 		"varchar(255)":                       "character varying (255)",
@@ -109,6 +113,11 @@ func Test_unaliasUnparameterizedColumnType(t *testing.T) {
 			name:                  "serial4",
 			requestedType:         "serial4",
 			expectedUnaliasedType: "serial",
+		},
+		{
+			name:                  "cidr",
+			requestedType:         "cidr",
+			expectedUnaliasedType: "cidr",
 		},
 	}
 
@@ -217,13 +226,59 @@ func Test_InsertColumnStatement(t *testing.T) {
 }
 
 func Test_schemaColumnToPostgresColumn(t *testing.T) {
-	schemaColumn := &schemasv1alpha1.PostgresTableColumn{
-		Name: "t",
-		Type: "text",
+	tests := []struct {
+		name           string
+		schemaColumn   *schemasv1alpha1.PostgresTableColumn
+		expectedColumn *Column
+	}{
+		{
+			name: "text",
+			schemaColumn: &schemasv1alpha1.PostgresTableColumn{
+				Name: "t",
+				Type: "text",
+			},
+			expectedColumn: &Column{
+				DataType:      "text",
+				ColumnDefault: nil,
+				Constraints:   nil,
+			},
+		},
+		{
+			name: "character varying (10)",
+			schemaColumn: &schemasv1alpha1.PostgresTableColumn{
+				Name: "c",
+				Type: "character varying (10)",
+			},
+			expectedColumn: &Column{
+				DataType:      "character varying",
+				ColumnDefault: nil,
+				Constraints: &ColumnConstraints{
+					MaxLength: &ten,
+				},
+			},
+		},
+		{
+			name: "cidr",
+			schemaColumn: &schemasv1alpha1.PostgresTableColumn{
+				Name: "ip",
+				Type: "cidr",
+			},
+			expectedColumn: &Column{
+				DataType:      "cidr",
+				ColumnDefault: nil,
+				Constraints:   nil,
+			},
+		},
 	}
 
-	column, err := schemaColumnToPostgresColumn(schemaColumn)
-	req := require.New(t)
-	req.NoError(err)
-	assert.Equal(t, "text", column.DataType, "text should be text")
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := require.New(t)
+
+			column, err := schemaColumnToPostgresColumn(test.schemaColumn)
+			req.NoError(err)
+			assert.Equal(t, test.expectedColumn, column)
+		})
+	}
+
 }
