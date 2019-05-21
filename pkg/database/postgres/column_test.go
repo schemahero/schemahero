@@ -240,7 +240,7 @@ func Test_InsertColumnStatement(t *testing.T) {
 				Name: "a",
 				Type: "integer",
 				Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
-					NotNull: true,
+					NotNull: &trueValue,
 				},
 			},
 			expectedStatement: `alter table "t" add column "a" integer not null`,
@@ -252,7 +252,7 @@ func Test_InsertColumnStatement(t *testing.T) {
 				Name: "a",
 				Type: "integer",
 				Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
-					NotNull: false,
+					NotNull: &falseValue,
 				},
 			},
 			expectedStatement: `alter table "t" add column "a" integer null`,

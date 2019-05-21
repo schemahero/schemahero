@@ -51,7 +51,6 @@ spec:
                               notNull:
                                 type: boolean
                             required:
-                            - notNull
                             - maxLength
                             type: object
                           default:

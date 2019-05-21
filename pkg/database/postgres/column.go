@@ -46,13 +46,13 @@ var unparameterizedColumnTypes = []string{
 }
 
 type ColumnConstraints struct {
-	NotNull bool
+	NotNull   *bool
+	MaxLength *int64
 }
 
 type Column struct {
 	Name          string
 	DataType      string
-	CharMaxLength *int64
 	ColumnDefault *string
 	Constraints   *ColumnConstraints
 }
@@ -227,7 +227,8 @@ func unaliasParameterizedColumnType(requestedType string) string {
 
 func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.PostgresTableColumn, error) {
 	constraints := &schemasv1alpha1.PostgresTableColumnConstraints{
-		NotNull: column.Constraints.NotNull,
+		NotNull:   column.Constraints.NotNull,
+		MaxLength: column.Constraints.MaxLength,
 	}
 
 	schemaColumn := &schemasv1alpha1.PostgresTableColumn{
@@ -273,10 +274,14 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 		return nil, err
 	}
 
+	if maxLength != nil {
+		column.Constraints = &ColumnConstraints{
+			MaxLength: maxLength,
+		}
+	}
+
 	if columnType != "" {
 		column.DataType = columnType
-		column.CharMaxLength = maxLength
-
 		return column, nil
 	}
 
@@ -297,12 +302,12 @@ func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string
 
 	formatted := fmt.Sprintf("%s %s", pq.QuoteIdentifier(column.Name), postgresColumn.DataType)
 
-	if postgresColumn.CharMaxLength != nil {
-		formatted = fmt.Sprintf("%s (%d)", formatted, *postgresColumn.CharMaxLength)
+	if postgresColumn.Constraints != nil && postgresColumn.Constraints.MaxLength != nil {
+		formatted = fmt.Sprintf("%s (%d)", formatted, *postgresColumn.Constraints.MaxLength)
 	}
 
-	if postgresColumn.Constraints != nil {
-		if postgresColumn.Constraints.NotNull {
+	if postgresColumn.Constraints != nil && postgresColumn.Constraints.NotNull != nil {
+		if *postgresColumn.Constraints.NotNull == true {
 			formatted = fmt.Sprintf("%s not null", formatted)
 		} else {
 			formatted = fmt.Sprintf("%s null", formatted)

@@ -10,6 +10,11 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 )
 
+var (
+	trueValue  = true
+	falseValue = false
+)
+
 func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha1.PostgresTableSchema) error {
 	db, err := sql.Open("postgres", connection.URI.Value)
 	if err != nil {
@@ -68,17 +73,22 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 		foundColumnNames = append(foundColumnNames, columnName)
 
 		existingColumn := postgres.Column{
-			Name:     columnName,
-			DataType: dataType,
-			Constraints: &postgres.ColumnConstraints{
-				NotNull: isNullable == "NO",
-			},
+			Name:        columnName,
+			DataType:    dataType,
+			Constraints: &postgres.ColumnConstraints{},
 		}
+
+		if isNullable == "NO" {
+			existingColumn.Constraints.NotNull = &trueValue
+		} else {
+			existingColumn.Constraints.NotNull = &falseValue
+		}
+
 		if columnDefault.Valid {
 			existingColumn.ColumnDefault = &columnDefault.String
 		}
 		if charMaxLength.Valid {
-			existingColumn.CharMaxLength = &charMaxLength.Int64
+			existingColumn.Constraints.MaxLength = &charMaxLength.Int64
 		}
 
 		columnStatement, err := postgres.AlterColumnStatement(tableName, postgresTableSchema.Columns, &existingColumn)

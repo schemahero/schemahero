@@ -81,7 +81,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
-						NotNull: true,
+						NotNull: &trueValue,
 					},
 				},
 			},
@@ -90,7 +90,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType:      "integer",
 				ColumnDefault: nil,
 				Constraints: &ColumnConstraints{
-					NotNull: false,
+					NotNull: &falseValue,
 				},
 			},
 			expectedStatement: `alter table "t" alter column "a" set not null`,
@@ -103,7 +103,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
-						NotNull: false,
+						NotNull: &falseValue,
 					},
 				},
 			},
@@ -112,7 +112,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType:      "integer",
 				ColumnDefault: nil,
 				Constraints: &ColumnConstraints{
-					NotNull: true,
+					NotNull: &trueValue,
 				},
 			},
 			expectedStatement: `alter table "t" alter column "a" drop not null`,

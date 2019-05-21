@@ -51,10 +51,10 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.Po
 			}
 
 			if column.Constraints != nil {
-				if existingColumn.Constraints != nil {
-					if column.Constraints.NotNull && !existingColumn.Constraints.NotNull {
+				if existingColumn.Constraints != nil && column.Constraints.NotNull != nil {
+					if *column.Constraints.NotNull == true && *existingColumn.Constraints.NotNull == false {
 						columnStatement = fmt.Sprintf("%s set not null", columnStatement)
-					} else if !column.Constraints.NotNull && existingColumn.Constraints.NotNull {
+					} else if *column.Constraints.NotNull == false && *existingColumn.Constraints.NotNull == true {
 						columnStatement = fmt.Sprintf("%s drop not null", columnStatement)
 					}
 				}
