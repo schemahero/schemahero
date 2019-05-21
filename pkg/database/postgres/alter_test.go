@@ -117,6 +117,25 @@ func Test_AlterColumnStatment(t *testing.T) {
 			},
 			expectedStatement: `alter table "t" alter column "a" drop not null`,
 		},
+		{
+			name:      "no change to not null constraint",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
+				&schemasv1alpha1.PostgresTableColumn{
+					Name: "t",
+					Type: "text",
+				},
+			},
+			existingColumn: &Column{
+				Name:          "t",
+				DataType:      "text",
+				ColumnDefault: nil,
+				Constraints: &ColumnConstraints{
+					NotNull: &falseValue,
+				},
+			},
+			expectedStatement: "",
+		},
 	}
 
 	for _, test := range tests {
