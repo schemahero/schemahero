@@ -45,13 +45,8 @@ spec:
                         properties:
                           constraints:
                             properties:
-                              maxLength:
-                                format: int64
-                                type: integer
                               notNull:
                                 type: boolean
-                            required:
-                            - maxLength
                             type: object
                           default:
                             type: string

@@ -105,6 +105,20 @@ func maybeParseParameterizedColumnType(requestedType string) (string, *int64, er
 		} else if len(withoutPrecisionMatchGroups) == 1 {
 			columnType = "timestamp"
 		}
+	} else if strings.HasPrefix(requestedType, "numeric") {
+		columnType = "numeric"
+
+		precisionAndScale := regexp.MustCompile(`numeric\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d)\s*\)`)
+		precisionOnly := regexp.MustCompile(`numeric\s*\(\s*(?P<precision>\d*)\s*\)`)
+
+		precisionAndScaleMatchGroups := precisionAndScale.FindStringSubmatch(requestedType)
+		precisionOnlyMatchGroups := precisionOnly.FindStringSubmatch(requestedType)
+
+		if len(precisionAndScaleMatchGroups) == 3 {
+			columnType = fmt.Sprintf("numeric (%s, %s)", precisionAndScaleMatchGroups[1], precisionAndScaleMatchGroups[2])
+		} else if len(precisionOnlyMatchGroups) == 2 {
+			columnType = fmt.Sprintf("numeric (%s)", precisionOnlyMatchGroups[1])
+		}
 	}
 
 	return columnType, maxLength, nil
@@ -227,8 +241,7 @@ func unaliasParameterizedColumnType(requestedType string) string {
 
 func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.PostgresTableColumn, error) {
 	constraints := &schemasv1alpha1.PostgresTableColumnConstraints{
-		NotNull:   column.Constraints.NotNull,
-		MaxLength: column.Constraints.MaxLength,
+		NotNull: column.Constraints.NotNull,
 	}
 
 	schemaColumn := &schemasv1alpha1.PostgresTableColumn{

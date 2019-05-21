@@ -145,11 +145,6 @@ func (in *PostgresTableColumnConstraints) DeepCopyInto(out *PostgresTableColumnC
 		*out = new(bool)
 		**out = **in
 	}
-	if in.MaxLength != nil {
-		in, out := &in.MaxLength, &out.MaxLength
-		*out = new(int64)
-		**out = **in
-	}
 	return
 }
 

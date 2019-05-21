@@ -91,6 +91,24 @@ func Test_maybeParseParameterizedColumnType(t *testing.T) {
 			expectedColumnType: "character varying",
 			expectedMaxLength:  int64(10),
 		},
+		{
+			name:               "numeric",
+			requestedType:      "numeric",
+			expectedColumnType: "numeric",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "numeric(10)",
+			requestedType:      "numeric(10)",
+			expectedColumnType: "numeric (10)",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "numeric  (5,3)",
+			requestedType:      "numeric  (5,3)",
+			expectedColumnType: "numeric (5, 3)",
+			expectedMaxLength:  none,
+		},
 	}
 
 	for _, test := range tests {
