@@ -21,7 +21,8 @@ import (
 )
 
 type PostgresTableColumnConstraints struct {
-	NotNull bool `json:"notNull" yaml:"notNull"`
+	NotNull   bool   `json:"notNull" yaml:"notNull"`
+	MaxLength *int64 `json:"maxLength" yaml:"maxLength"`
 }
 
 type PostgresTableColumn struct {

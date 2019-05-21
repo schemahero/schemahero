@@ -43,18 +43,64 @@ func Test_unaliasParameterizedColumnType(t *testing.T) {
 }
 
 func Test_maybeParseParameterizedColumnType(t *testing.T) {
-	parameterizedTests := map[string]string{
-		"fake":                        "",
-		"timestamp":                   "timestamp",
-		"timestamp without time zone": "timestamp without time zone",
-		// "timestamp (01:02)":                   "timestamp (01:02)",
-		// "timestamp (01:02) without time zone": "timestamp (01:02) without time zone",
+	none := int64(-1)
+
+	tests := []struct {
+		name               string
+		requestedType      string
+		expectedColumnType string
+		expectedMaxLength  int64
+	}{
+		{
+			name:               "fake",
+			requestedType:      "fake",
+			expectedColumnType: "",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "timestamp",
+			requestedType:      "timestamp",
+			expectedColumnType: "timestamp",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "timestamp without time zone",
+			requestedType:      "timestamp without time zone",
+			expectedColumnType: "timestamp without time zone",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "timestamp (01:02)",
+			requestedType:      "timestamp (01:02)",
+			expectedColumnType: "timestamp (01:02)",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "timestamp (01:02) without time zone",
+			requestedType:      "timestamp (01:02) without time zone",
+			expectedColumnType: "timestamp (01:02) without time zone",
+			expectedMaxLength:  none,
+		},
+		{
+			name:               "character varying (10)",
+			requestedType:      "character varying (10)",
+			expectedColumnType: "character varying",
+			expectedMaxLength:  int64(10),
+		},
 	}
 
-	for input, expectedOutput := range parameterizedTests {
-		t.Run(input, func(t *testing.T) {
-			output, _, _ := maybeParseParameterizedColumnType(input)
-			assert.Equal(t, expectedOutput, output)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			columnType, maxLength, err := maybeParseParameterizedColumnType(test.requestedType)
+			req := require.New(t)
+			req.NoError(err)
+			assert.Equal(t, test.expectedColumnType, columnType)
+
+			if test.expectedMaxLength == none {
+				assert.Nil(t, maxLength)
+			} else {
+				assert.Equal(t, test.expectedMaxLength, *maxLength)
+			}
 		})
 	}
 }
@@ -149,6 +195,14 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 				Type: "timestamp without time zone",
 			},
 			expectedStatement: `"t" timestamp without time zone`,
+		},
+		{
+			name: "character varying (4)",
+			column: &schemasv1alpha1.PostgresTableColumn{
+				Name: "c",
+				Type: "character varying (4)",
+			},
+			expectedStatement: `"c" character varying (4)`,
 		},
 	}
 
