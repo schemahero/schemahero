@@ -19,12 +19,13 @@ $ schemahero generate \
 or
 
 ```
-$ docker run schemahero/schemahero -v `pwd`/imported:/out \
+$ docker run -v `pwd`/imported:/out \
+    schemahero/schemahero:alpha \
     generate \
     --driver postgres \
-    --uri postgres://user:pass@host:5432/dbname \
-    --dbname destired-schemahero-databasename \
-    --output-dir ./imported
+    --uri postgres://user:password@host:5432/db?sslmode=disable \
+    --dbname desired-schemahero-name \
+    --output-dir /out
 ```
 
 This will create .yaml files (1 per table) that you can deploy to a cluster to recreate the schema
