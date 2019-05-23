@@ -17,7 +17,7 @@ run: generate fmt vet bin/schemahero
 	go run ./cmd/manager/main.go
 
 # Install CRDs into a cluster
-install: manifests
+install: manifests microk8s
 	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
@@ -89,7 +89,8 @@ snapshot-release: build-snapshot-release installable-manifests
 build-snapshot-release:
 	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --snapshot --config deploy/.goreleaser.snapshot.yml
 
-.PHONY: micok8s
-microk8s: build-release
+.PHONY: microk8s
+microk8s:
+	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest

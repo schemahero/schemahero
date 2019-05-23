@@ -2,48 +2,11 @@ package postgres
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
 
 	"github.com/lib/pq"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
 )
-
-var unparameterizedColumnTypes = []string{
-	"bigint",
-	"bigserial",
-	"boolean",
-	"box",
-	"bytea",
-	"cidr",
-	"circle",
-	"date",
-	"double precision",
-	"inet",
-	"integer",
-	"json",
-	"jsonb",
-	"line",
-	"lseg",
-	"macaddr",
-	"money",
-	"path",
-	"pg_lsn",
-	"point",
-	"polygon",
-	"real",
-	"smallint",
-	"smallserial",
-	"serial",
-	"text",
-	"tsquery",
-	"tsvector",
-	"txid_snapshot",
-	"uuid",
-	"xml",
-}
 
 type ColumnConstraints struct {
 	NotNull   *bool
@@ -57,194 +20,12 @@ type Column struct {
 	Constraints   *ColumnConstraints
 }
 
-func maybeParseParameterizedColumnType(requestedType string) (string, *int64, error) {
-	columnType := ""
-	var maxLength *int64
-
-	// if strings.HasPrefix(requestedType, "bit varying" {
-	// 	columnType = "bit varying"
-
-	// 	r := regexp.MustCompile((`bit varying\s*\((?P<max>\d*)\)`))
-
-	// 	matchGroups := r.FindStringSubmatch(requestedType)
-	// 	masStr
-	// }
-
-	if strings.HasPrefix(requestedType, "character varying") {
-		columnType = "character varying"
-
-		r := regexp.MustCompile(`character varying\s*\((?P<max>\d*)\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		maxStr := matchGroups[1]
-		max, err := strconv.Atoi(maxStr)
-		if err != nil {
-			return "", maxLength, err
-		}
-		max64 := int64(max)
-		maxLength = &max64
-	} else if strings.HasPrefix(requestedType, "timestamp") {
-		columnType = "timestamp"
-
-		withPrecisionWithoutTimeZone := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)\s*without time zone`)
-		withPrecision := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)`)
-		withoutPrecisionWithoutTimeZone := regexp.MustCompile(`timestamp\s*without time zone`)
-		withoutPrecision := regexp.MustCompile(`timestamp\s*`)
-
-		withPrecisionMatchGroups := withPrecision.FindStringSubmatch(requestedType)
-		withPrecisionWithoutTimeZoneMatchGroups := withPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
-		withoutPrecisionMatchGroups := withoutPrecision.FindStringSubmatch(requestedType)
-		withoutPrecisionWithoutTimeZoneMatchGroups := withoutPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
-
-		if len(withPrecisionWithoutTimeZoneMatchGroups) == 2 {
-			columnType = fmt.Sprintf("timestamp (%s) without time zone", withPrecisionWithoutTimeZoneMatchGroups[1])
-		} else if len(withoutPrecisionWithoutTimeZoneMatchGroups) == 1 {
-			columnType = "timestamp without time zone"
-		} else if len(withPrecisionMatchGroups) == 2 {
-			columnType = fmt.Sprintf("timestamp (%s)", withPrecisionMatchGroups[1])
-		} else if len(withoutPrecisionMatchGroups) == 1 {
-			columnType = "timestamp"
-		}
-	} else if strings.HasPrefix(requestedType, "numeric") {
-		columnType = "numeric"
-
-		precisionAndScale := regexp.MustCompile(`numeric\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d)\s*\)`)
-		precisionOnly := regexp.MustCompile(`numeric\s*\(\s*(?P<precision>\d*)\s*\)`)
-
-		precisionAndScaleMatchGroups := precisionAndScale.FindStringSubmatch(requestedType)
-		precisionOnlyMatchGroups := precisionOnly.FindStringSubmatch(requestedType)
-
-		if len(precisionAndScaleMatchGroups) == 3 {
-			columnType = fmt.Sprintf("numeric (%s, %s)", precisionAndScaleMatchGroups[1], precisionAndScaleMatchGroups[2])
-		} else if len(precisionOnlyMatchGroups) == 2 {
-			columnType = fmt.Sprintf("numeric (%s)", precisionOnlyMatchGroups[1])
-		}
-	}
-
-	return columnType, maxLength, nil
-}
-
-func isParameterizedColumnType(requestedType string) bool {
-	for _, unparameterizedColumnType := range unparameterizedColumnTypes {
-		if unparameterizedColumnType == requestedType {
-			return false
-		}
-	}
-
-	return true
-}
-
-func unaliasUnparameterizedColumnType(requestedType string) string {
-	switch requestedType {
-	case "int8":
-		return "bigint"
-	case "serial8":
-		return "bigserial"
-	case "bool":
-		return "boolean"
-	case "float8":
-		return "double precision"
-	case "int":
-		return "integer"
-	case "int4":
-		return "integer"
-	case "float4":
-		return "real"
-	case "int2":
-		return "smallint"
-	case "serial2":
-		return "smallserial"
-	case "serial4":
-		return "serial"
-	}
-
-	for _, unparameterizedColumnType := range unparameterizedColumnTypes {
-		if unparameterizedColumnType == requestedType {
-			return requestedType
-		}
-	}
-
-	return ""
-}
-
-func unaliasParameterizedColumnType(requestedType string) string {
-	if strings.HasPrefix(requestedType, "varbit") {
-		r := regexp.MustCompile(`varbit\s*\((?P<max>\d*)\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			return "bit varying"
-		}
-
-		return fmt.Sprintf("bit varying (%s)", matchGroups[1])
-	}
-	if strings.HasPrefix(requestedType, "char ") || strings.HasPrefix(requestedType, "char(") ||
-		requestedType == "character" || requestedType == "char" {
-		r := regexp.MustCompile(`char\s*\((?P<len>\d*)\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			return "character"
-		}
-
-		return fmt.Sprintf("character (%s)", matchGroups[1])
-	}
-	if strings.HasPrefix(requestedType, "varchar") {
-		r := regexp.MustCompile(`varchar\s*\(\s*(?P<max>\d*)\s*\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			return "character varying"
-		}
-
-		return fmt.Sprintf("character varying (%s)", matchGroups[1])
-	}
-	if strings.HasPrefix(requestedType, "decimal") {
-		precisionAndScale := regexp.MustCompile(`decimal\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d)\s*\)`)
-		precisionOnly := regexp.MustCompile(`decimal\s*\(\s*(?P<precision>\d*)\s*\)`)
-
-		precisionAndScaleMatchGroups := precisionAndScale.FindStringSubmatch(requestedType)
-		precisionOnlyMatchGroups := precisionOnly.FindStringSubmatch(requestedType)
-
-		if len(precisionAndScaleMatchGroups) == 0 && len(precisionOnlyMatchGroups) == 0 {
-			return "numeric"
-		}
-
-		if len(precisionAndScaleMatchGroups) > 0 {
-			return fmt.Sprintf("numeric (%s, %s)", precisionAndScaleMatchGroups[1], precisionAndScaleMatchGroups[2])
-		}
-
-		return fmt.Sprintf("numeric (%s)", precisionOnlyMatchGroups[1])
-	}
-	if strings.HasPrefix(requestedType, "timetz") {
-		r := regexp.MustCompile(`timetz\s*\(\s*(?P<precision>.*)\s*\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			return "time with time zone"
-		}
-
-		return fmt.Sprintf("time (%s) with time zone", matchGroups[1])
-	}
-	if strings.HasPrefix(requestedType, "timestamptz") {
-		r := regexp.MustCompile(`timestamptz\s*\(\s*(?P<precision>.*)\s*\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			return "timestamp with time zone"
-		}
-
-		return fmt.Sprintf("timestamp (%s) with time zone", matchGroups[1])
-	}
-	return ""
-}
-
-func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.PostgresTableColumn, error) {
-	constraints := &schemasv1alpha1.PostgresTableColumnConstraints{
+func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.SQLTableColumn, error) {
+	constraints := &schemasv1alpha1.SQLTableColumnConstraints{
 		NotNull: column.Constraints.NotNull,
 	}
 
-	schemaColumn := &schemasv1alpha1.PostgresTableColumn{
+	schemaColumn := &schemasv1alpha1.SQLTableColumn{
 		Name:        column.Name,
 		Type:        column.DataType,
 		Constraints: constraints,
@@ -257,7 +38,7 @@ func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.PostgresTabl
 	return schemaColumn, nil
 }
 
-func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableColumn) (*Column, error) {
+func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*Column, error) {
 	column := &Column{}
 
 	if schemaColumn.Constraints != nil {
@@ -288,8 +69,12 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 	}
 
 	if maxLength != nil {
-		column.Constraints = &ColumnConstraints{
-			MaxLength: maxLength,
+		if column.Constraints == nil {
+			column.Constraints = &ColumnConstraints{
+				MaxLength: maxLength,
+			}
+		} else {
+			column.Constraints.MaxLength = maxLength
 		}
 	}
 
@@ -301,7 +86,7 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.PostgresTableCol
 	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
-func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string, error) {
+func postgresColumnAsInsert(column *schemasv1alpha1.SQLTableColumn) (string, error) {
 	// Note, we don't always quote the column type becuase of how pg handles these two statement very differently:
 
 	// 1. create table "users" ("id" "bigint","login" "varchar(255)","name" "varchar(255)")
@@ -330,7 +115,7 @@ func postgresColumnAsInsert(column *schemasv1alpha1.PostgresTableColumn) (string
 	return formatted, nil
 }
 
-func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha1.PostgresTableColumn) (string, error) {
+func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha1.SQLTableColumn) (string, error) {
 	columnFields, err := postgresColumnAsInsert(desiredColumn)
 	if err != nil {
 		return "", err

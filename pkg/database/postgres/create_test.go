@@ -12,18 +12,18 @@ import (
 func Test_CreateTableStatement(t *testing.T) {
 	tests := []struct {
 		name              string
-		tableSchema       *schemasv1alpha1.PostgresTableSchema
+		tableSchema       *schemasv1alpha1.SQLTableSchema
 		tableName         string
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			tableSchema: &schemasv1alpha1.PostgresTableSchema{
+			tableSchema: &schemasv1alpha1.SQLTableSchema{
 				PrimaryKey: []string{
 					"id",
 				},
-				Columns: []*schemasv1alpha1.PostgresTableColumn{
-					&schemasv1alpha1.PostgresTableColumn{
+				Columns: []*schemasv1alpha1.SQLTableColumn{
+					&schemasv1alpha1.SQLTableColumn{
 						Name: "id",
 						Type: "integer",
 					},
@@ -34,21 +34,21 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "composite primary key",
-			tableSchema: &schemasv1alpha1.PostgresTableSchema{
+			tableSchema: &schemasv1alpha1.SQLTableSchema{
 				PrimaryKey: []string{
 					"one",
 					"two",
 				},
-				Columns: []*schemasv1alpha1.PostgresTableColumn{
-					&schemasv1alpha1.PostgresTableColumn{
+				Columns: []*schemasv1alpha1.SQLTableColumn{
+					&schemasv1alpha1.SQLTableColumn{
 						Name: "one",
 						Type: "integer",
 					},
-					&schemasv1alpha1.PostgresTableColumn{
+					&schemasv1alpha1.SQLTableColumn{
 						Name: "two",
 						Type: "integer",
 					},
-					&schemasv1alpha1.PostgresTableColumn{
+					&schemasv1alpha1.SQLTableColumn{
 						Name: "three",
 						Type: "varchar(255)",
 					},

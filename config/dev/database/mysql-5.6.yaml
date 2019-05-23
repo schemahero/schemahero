@@ -1,0 +1,90 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+spec:
+  type: ClusterIP
+  ports:
+  - name: mysql
+    port: 3306
+    targetPort: mysql
+  selector:
+    app: mysql
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      initContainers:
+        - name: "remove-lost-found"
+          image: "busybox:1.25.0"
+          imagePullPolicy: IfNotPresent
+          command:  ["rm", "-fr", "/var/lib/mysql/lost+found"]
+          volumeMounts:
+            - name: schemahero-testdb-mysql
+              mountPath: /var/lib/mysql
+      containers:
+        - name: mysql
+          image: mysql:5.6
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+            - name: MYSQL_ROOT_HOST
+              value: '%'
+            - name: MYSQL_DATABASE
+              value: testdb
+            - name: MYSQL_USER
+              value: testuser
+            - name: MYSQL_PASSWORD
+              value: password
+
+          ports:
+            - name: mysql
+              containerPort: 3306
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD}
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+          volumeMounts:
+            - name: schemahero-testdb-mysql
+              mountPath: /var/lib/mysql
+
+      volumes:
+        - name: schemahero-testdb-mysql
+          persistentVolumeClaim:
+            claimName: schemahero-testdb-mysql
+
+  volumeClaimTemplates:
+    - metadata:
+        name: schemahero-testdb-mysql
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: 1Gi

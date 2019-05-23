@@ -10,7 +10,7 @@
 
 ## What is SchemaHero?
 
-SchemaHero is a Kubernetes Operator for Declarative Schema Management for various databases
+SchemaHero is a Kubernetes Operator for Declarative Schema Management for various databases. SchemaHero has the following goals:
 
 1. Database tables can be expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_table.yaml) that can be updated and deployed to the cluster.
 2. Database migrations can be written as SQL statements, expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_migration.yaml) that can be deployed to the cluster.
@@ -25,26 +25,5 @@ The recommended way to deploy SchemaHero is:
 kubectl apply -f https://raw.githubusercontent.com/schemahero/schemahero/master/install/schemahero/schemahero-operator.yaml
 ```
 
-If you need any customizations, use [Ship](https://github.com/replicatedhq/ship):
-
-```
-brew install ship
-ship init github.com/schemahero/schemahero/tree/masterinstall/k8s
-```
-
-### Questions
-
-*What about rollbacks?*
-You can include the "delete" script. And that will be executed on `kubectl delete`.
-
-*How can I control the order?*
-The order that migrations run in is important. Each migration supports a "requires" field. This is the name (or names) of other migrations that must be applied before this one.
-
-This will allow your developers to submit migrations in any order, but each developer can choose their "base".
-
-SchemaHero will calculate a Directed Acylic Graph (DAG) to determine the optimal order to apply migrations, and will always honor the `requires` field. But it's possible to run multiple migrations simultaneously, which improves performance when bootstrapping new databases.
-
-*How about non-sql migrations? I need to write some go code?*
-Currently, you can write these types of schema as a container, and include that in the schema.
-
+To get started, read our [tutorial](https://github.com/schemahero/schemahero/blob/master/docs/tutorial) and the [how to use guide](https://github.com/schemahero/schemahero/blob/master/docs/how-to-use)
 

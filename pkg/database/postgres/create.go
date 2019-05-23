@@ -9,7 +9,7 @@ import (
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
 )
 
-func CreateTableStatement(tableName string, tableSchema *schemasv1alpha1.PostgresTableSchema) (string, error) {
+func CreateTableStatement(tableName string, tableSchema *schemasv1alpha1.SQLTableSchema) (string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := postgresColumnAsInsert(desiredColumn)
