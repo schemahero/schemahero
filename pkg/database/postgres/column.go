@@ -9,8 +9,7 @@ import (
 )
 
 type ColumnConstraints struct {
-	NotNull   *bool
-	MaxLength *int64
+	NotNull *bool
 }
 
 type Column struct {
@@ -63,19 +62,9 @@ func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) 
 		return column, nil
 	}
 
-	columnType, maxLength, err := maybeParseParameterizedColumnType(requestedType)
+	columnType, err := maybeParseParameterizedColumnType(requestedType)
 	if err != nil {
 		return nil, err
-	}
-
-	if maxLength != nil {
-		if column.Constraints == nil {
-			column.Constraints = &ColumnConstraints{
-				MaxLength: maxLength,
-			}
-		} else {
-			column.Constraints.MaxLength = maxLength
-		}
 	}
 
 	if columnType != "" {
@@ -99,10 +88,6 @@ func postgresColumnAsInsert(column *schemasv1alpha1.SQLTableColumn) (string, err
 	}
 
 	formatted := fmt.Sprintf("%s %s", pq.QuoteIdentifier(column.Name), postgresColumn.DataType)
-
-	if postgresColumn.Constraints != nil && postgresColumn.Constraints.MaxLength != nil {
-		formatted = fmt.Sprintf("%s (%d)", formatted, *postgresColumn.Constraints.MaxLength)
-	}
 
 	if postgresColumn.Constraints != nil && postgresColumn.Constraints.NotNull != nil {
 		if *postgresColumn.Constraints.NotNull == true {

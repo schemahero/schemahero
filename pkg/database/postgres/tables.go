@@ -89,10 +89,6 @@ func (p *PostgresConnection) GetTableSchema(tableName string) ([]*Column, error)
 			}
 		}
 
-		if maxLength.Valid {
-			column.Constraints.MaxLength = &maxLength.Int64
-		}
-
 		if columnDefault.Valid {
 			column.ColumnDefault = &columnDefault.String
 		}
