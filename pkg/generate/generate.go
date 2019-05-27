@@ -50,7 +50,7 @@ func (g *Generator) RunSync() error {
 			return err
 		}
 
-		postgresTableColumns := make([]*schemasv1alpha1.PostgresTableColumn, 0, 0)
+		postgresTableColumns := make([]*schemasv1alpha1.SQLTableColumn, 0, 0)
 
 		for _, column := range columns {
 			postgresTableColumn, err := postgres.PostgresColumnToSchemaColumn(column)
@@ -62,7 +62,7 @@ func (g *Generator) RunSync() error {
 			postgresTableColumns = append(postgresTableColumns, postgresTableColumn)
 		}
 
-		postgresTableSchema := schemasv1alpha1.PostgresTableSchema{
+		postgresTableSchema := schemasv1alpha1.SQLTableSchema{
 			PrimaryKey: primaryKey,
 			Columns:    postgresTableColumns,
 		}
@@ -92,8 +92,6 @@ func (g *Generator) RunSync() error {
 		tableDoc := fmt.Sprintf(`apiVersion: schemas.schemahero.io/v1alpha1
 kind: Table
 metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
   name: %s
 %s`, sanitizeName(table), b)
 

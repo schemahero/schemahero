@@ -47,3 +47,7 @@ version="v1.4.7"
 [[constraint]]
   branch = "master"
   name = "github.com/xo/dburl"
+
+[[constraint]]
+  name = "github.com/go-sql-driver/mysql"
+  version = "1.4.1"

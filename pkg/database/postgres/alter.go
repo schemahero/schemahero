@@ -31,7 +31,7 @@ func columnsMatch(col1 *Column, col2 *Column) bool {
 	return true
 }
 
-func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.PostgresTableColumn, existingColumn *Column) (string, error) {
+func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQLTableColumn, existingColumn *Column) (string, error) {
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
@@ -47,23 +47,27 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.Po
 
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
+				fmt.Printf("%s, %s\n", existingColumn.DataType, column.DataType)
 				changes = append(changes, fmt.Sprintf("%s type %s", columnStatement, column.DataType))
 			}
 
 			// too much complexity below!
 			if column.Constraints != nil || existingColumn.Constraints != nil {
-
 				// Add not null
 				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
-					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == false {
-						changes = append(changes, fmt.Sprintf("%s set not null", columnStatement))
+					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
+						if *existingColumn.Constraints.NotNull == false {
+							changes = append(changes, fmt.Sprintf("%s set not null", columnStatement))
+						}
 					}
 				}
 
 				// Drop not null
 				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == false {
-					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
-						changes = append(changes, fmt.Sprintf("%s drop not null", columnStatement))
+					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
+						if *existingColumn.Constraints.NotNull == true {
+							changes = append(changes, fmt.Sprintf("%s drop not null", columnStatement))
+						}
 					}
 				}
 			}

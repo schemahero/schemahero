@@ -20,24 +20,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type PostgresTableColumnConstraints struct {
-	NotNull *bool `json:"notNull,omitempty" yaml:"notNull,omitempty"`
-}
-
-type PostgresTableColumn struct {
-	Name        string                          `json:"name"`
-	Type        string                          `json:"type"`
-	Constraints *PostgresTableColumnConstraints `json:"constraints,omitempty"`
-	Default     string                          `json:"default,omitempty"`
-}
-
-type PostgresTableSchema struct {
-	PrimaryKey []string               `json:"primaryKey" yaml:"primaryKey"`
-	Columns    []*PostgresTableColumn `json:"columns"`
-}
-
 type TableSchema struct {
-	Postgres *PostgresTableSchema `json:"postgres"`
+	Postgres *SQLTableSchema `json:"postgres,omitempty"`
+	Mysql    *SQLTableSchema `json:"mysql,omitempty"`
 }
 
 // TableSpec defines the desired state of Table

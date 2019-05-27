@@ -10,12 +10,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 )
 
-var (
-	trueValue  = true
-	falseValue = false
-)
-
-func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha1.PostgresTableSchema) error {
+func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha1.SQLTableSchema) error {
 	db, err := sql.Open("postgres", connection.URI.Value)
 	if err != nil {
 		return err
@@ -31,8 +26,8 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 		return err
 	}
 
-	// table needs created?
 	if tableExists == 0 {
+		// shortcut to just create it
 		query, err := postgres.CreateTableStatement(tableName, postgresTableSchema)
 		if err != nil {
 			return err

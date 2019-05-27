@@ -38,6 +38,36 @@ spec:
               type: array
             schema:
               properties:
+                mysql:
+                  properties:
+                    columns:
+                      items:
+                        properties:
+                          constraints:
+                            properties:
+                              notNull:
+                                type: boolean
+                            type: object
+                          default:
+                            type: string
+                          name:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - name
+                        - type
+                        type: object
+                      type: array
+                    isDeleted:
+                      type: boolean
+                    primaryKey:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - primaryKey
+                  type: object
                 postgres:
                   properties:
                     columns:
@@ -59,16 +89,15 @@ spec:
                         - type
                         type: object
                       type: array
+                    isDeleted:
+                      type: boolean
                     primaryKey:
                       items:
                         type: string
                       type: array
                   required:
                   - primaryKey
-                  - columns
                   type: object
-              required:
-              - postgres
               type: object
           required:
           - database

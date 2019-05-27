@@ -31,7 +31,7 @@ func TestStorageTable(t *testing.T) {
 		Namespace: "default",
 	}
 
-	column := PostgresTableColumn{
+	column := SQLTableColumn{
 		Name: "c",
 		Type: "t",
 	}
@@ -46,9 +46,9 @@ func TestStorageTable(t *testing.T) {
 			Name:     "n",
 			Requires: []string{},
 			Schema: &TableSchema{
-				Postgres: &PostgresTableSchema{
+				Postgres: &SQLTableSchema{
 					PrimaryKey: []string{"pk"},
-					Columns: []*PostgresTableColumn{
+					Columns: []*SQLTableColumn{
 						&column,
 					},
 				},

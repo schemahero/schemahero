@@ -23,6 +23,7 @@ import (
 // DatabaseConnection defines connection parameters for the database driver
 type DatabaseConnection struct {
 	Postgres *PostgresConnection `json:"postgres,omitempty"`
+	Mysql    *MysqlConnection    `json:"mysql,omitempty"`
 }
 
 type SchemaHero struct {

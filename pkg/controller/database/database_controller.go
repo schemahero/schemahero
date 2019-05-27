@@ -115,6 +115,10 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 		if err = r.ensurePostgresWatch(instance); err != nil {
 			return reconcile.Result{}, err
 		}
+	} else if instance.Connection.Mysql != nil {
+		if err := r.ensureMysqlWatch(instance); err != nil {
+			return reconcile.Result{}, err
+		}
 	}
 
 	return reconcile.Result{}, nil

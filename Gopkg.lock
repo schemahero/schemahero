@@ -198,6 +198,14 @@
   version = "v0.19.0"
 
 [[projects]]
+  digest = "1:92d9d8d25bbab74ef8a3c546c121e24542ac984ccdc4f99678e06042a45e71f8"
+  name = "github.com/go-sql-driver/mysql"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "72cd26f257d44c1114970e19afddcd812016007e"
+  version = "v1.4.1"
+
+[[projects]]
   digest = "1:92755a73daaa2397bbd4fd7b14d920decd24c0669b1d58db7e4ef986b1934e5f"
   name = "github.com/gobuffalo/envy"
   packages = ["."]
@@ -832,6 +840,7 @@
   name = "google.golang.org/appengine"
   packages = [
     ".",
+    "cloudsql",
     "internal",
     "internal/app_identity",
     "internal/base",
@@ -1289,6 +1298,7 @@
     "github.com/docker/docker/client",
     "github.com/docker/docker/pkg/stdcopy",
     "github.com/emicklei/go-restful",
+    "github.com/go-sql-driver/mysql",
     "github.com/lib/pq",
     "github.com/onsi/ginkgo",
     "github.com/onsi/gomega",

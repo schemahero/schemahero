@@ -1,0 +1,132 @@
+package mysql
+
+import (
+	"testing"
+
+	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func Test_mysqlColumnAsInsert(t *testing.T) {
+	tests := []struct {
+		name              string
+		column            *schemasv1alpha1.SQLTableColumn
+		expectedStatement string
+	}{
+		{
+			name: "simple",
+			column: &schemasv1alpha1.SQLTableColumn{
+				Name: "c",
+				Type: "integer",
+			},
+			expectedStatement: "`c` int (11)",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := require.New(t)
+
+			generatedStatement, err := mysqlColumnAsInsert(test.column)
+			req.NoError(err)
+			assert.Equal(t, test.expectedStatement, generatedStatement)
+		})
+	}
+}
+
+func Test_InsertColumnStatement(t *testing.T) {
+	tests := []struct {
+		name              string
+		tableName         string
+		desiredColumn     *schemasv1alpha1.SQLTableColumn
+		expectedStatement string
+	}{
+		{
+			name:      "add column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+				Name: "a",
+				Type: "integer",
+			},
+			expectedStatement: "alter table `t` add column `a` int (11)",
+		},
+		{
+			name:      "add not null column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+				Name: "a",
+				Type: "integer",
+				Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatement: "alter table `t` add column `a` int (11) not null",
+		},
+		{
+			name:      "add null column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+				Name: "a",
+				Type: "integer",
+				Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+					NotNull: &falseValue,
+				},
+			},
+			expectedStatement: "alter table `t` add column `a` int (11) null",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := require.New(t)
+
+			generatedStatement, err := InsertColumnStatement(test.tableName, test.desiredColumn)
+			req.NoError(err)
+			assert.Equal(t, test.expectedStatement, generatedStatement)
+		})
+	}
+}
+
+func Test_schemaColumnToMysqlColumn(t *testing.T) {
+	tests := []struct {
+		name           string
+		schemaColumn   *schemasv1alpha1.SQLTableColumn
+		expectedColumn *Column
+	}{
+		{
+			name: "varchar (10)",
+			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+				Name: "vc",
+				Type: "varchar (10)",
+			},
+			expectedColumn: &Column{
+				DataType:      "varchar (10)",
+				ColumnDefault: nil,
+			},
+		},
+		{
+			name: "bool",
+			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+				Name: "b",
+				Type: "bool",
+			},
+			expectedColumn: &Column{
+				DataType:      "tinyint (1)",
+				ColumnDefault: nil,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			req := require.New(t)
+
+			column, err := schemaColumnToMysqlColumn(test.schemaColumn)
+			req.NoError(err)
+			assert.Equal(t, test.expectedColumn, column)
+		})
+	}
+
+}

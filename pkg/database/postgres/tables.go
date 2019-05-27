@@ -11,10 +11,10 @@ var (
 	falseValue = false
 )
 
-func (pg *Postgres) ListTables() ([]string, error) {
+func (p *PostgresConnection) ListTables() ([]string, error) {
 	query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
 
-	rows, err := pg.db.Query(query, pg.databaseName, "public")
+	rows, err := p.db.Query(query, p.databaseName, "public")
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (pg *Postgres) ListTables() ([]string, error) {
 	return tableNames, nil
 }
 
-func (pg *Postgres) GetTablePrimaryKey(tableName string) ([]string, error) {
+func (p *PostgresConnection) GetTablePrimaryKey(tableName string) ([]string, error) {
 	query := `select c.column_name
 from information_schema.table_constraints tc
 join information_schema.constraint_column_usage as ccu using (constraint_schema, constraint_name)
@@ -40,7 +40,7 @@ join information_schema.columns as c on c.table_schema = tc.constraint_schema
   and tc.table_name = c.table_name and ccu.column_name = c.column_name
 where constraint_type = 'PRIMARY KEY' and tc.table_name = $1`
 
-	rows, err := pg.db.Query(query, tableName)
+	rows, err := p.db.Query(query, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +59,10 @@ where constraint_type = 'PRIMARY KEY' and tc.table_name = $1`
 	return columns, nil
 }
 
-func (pg *Postgres) GetTableSchema(tableName string) ([]*Column, error) {
+func (p *PostgresConnection) GetTableSchema(tableName string) ([]*Column, error) {
 	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1"
 
-	rows, err := pg.db.Query(query, tableName)
+	rows, err := p.db.Query(query, tableName)
 	if err != nil {
 		return nil, err
 	}

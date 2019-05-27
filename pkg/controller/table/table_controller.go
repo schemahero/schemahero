@@ -151,6 +151,8 @@ func (r *ReconcileTable) getDatabaseConnection(namespace string, name string) (*
 func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.DatabaseConnection, tableSchema *schemasv1alpha1.TableSchema) bool {
 	if connection.Postgres != nil {
 		return tableSchema.Postgres != nil
+	} else if connection.Mysql != nil {
+		return tableSchema.Mysql != nil
 	}
 
 	return false
@@ -159,6 +161,8 @@ func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.
 func (r *ReconcileTable) deploy(connection *databasesv1alpha1.DatabaseConnection, instanceSpec schemasv1alpha1.TableSpec) error {
 	if connection.Postgres != nil {
 		return r.deployPostgres(connection.Postgres, instanceSpec.Name, instanceSpec.Schema.Postgres)
+	} else if connection.Mysql != nil {
+		return r.deployMysql(connection.Mysql, instanceSpec.Name, instanceSpec.Schema.Mysql)
 	}
 
 	return goerrors.New("unknown database type")

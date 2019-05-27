@@ -23,12 +23,27 @@ spec:
           type: string
         connection:
           properties:
+            mysql:
+              properties:
+                uri:
+                  properties:
+                    valueFrom:
+                      properties:
+                        secretKeyRef:
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              type: string
+                          required:
+                          - name
+                          - key
+                          type: object
+                      type: object
+                  type: object
+              type: object
             postgres:
               properties:
-                allowOrphanedTablesOnDelete:
-                  type: boolean
-                disableDriftDetection:
-                  type: boolean
                 uri:
                   properties:
                     valueFrom:

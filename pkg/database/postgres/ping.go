@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func (pg *Postgres) CheckAlive(namespace string, instanceName string) (bool, error) {
+func (p *PostgresConnection) CheckAlive(namespace string, instanceName string) (bool, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return false, err
@@ -23,7 +23,7 @@ func (pg *Postgres) CheckAlive(namespace string, instanceName string) (bool, err
 		return false, err
 	}
 
-	err = pg.db.Ping()
+	err = p.db.Ping()
 	isConnected := err == nil
 	if err != nil {
 		instance.Status.IsConnected = false

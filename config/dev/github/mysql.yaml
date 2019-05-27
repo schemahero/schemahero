@@ -1,0 +1,12 @@
+apiVersion: databases.schemahero.io/v1alpha1
+kind: Database
+metadata:
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: testdb
+schemahero:
+  image: "localhost:32000/schemahero/schemahero"
+connection:
+  mysql:
+    uri:
+      value: testuser:password@tcp(mysql:3306)/testdb?tls=false

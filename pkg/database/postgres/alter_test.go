@@ -13,19 +13,19 @@ func Test_AlterColumnStatment(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
-		desiredColumns    []*schemasv1alpha1.PostgresTableColumn
+		desiredColumns    []*schemasv1alpha1.SQLTableColumn
 		existingColumn    *Column
 		expectedStatement string
 	}{
 		{
 			name:      "no change",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
-				&schemasv1alpha1.PostgresTableColumn{
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha1.PostgresTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "b",
 					Type: "integer",
 				},
@@ -40,12 +40,12 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "change data type",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
-				&schemasv1alpha1.PostgresTableColumn{
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha1.PostgresTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "b",
 					Type: "integer",
 				},
@@ -60,8 +60,8 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "drop column",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
-				&schemasv1alpha1.PostgresTableColumn{
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "a",
 					Type: "integer",
 				},
@@ -76,11 +76,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "add not null constraint",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
-				&schemasv1alpha1.PostgresTableColumn{
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "a",
 					Type: "integer",
-					Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
+					Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
 						NotNull: &trueValue,
 					},
 				},
@@ -98,11 +98,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "drop not null constraint",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
-				&schemasv1alpha1.PostgresTableColumn{
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "a",
 					Type: "integer",
-					Constraints: &schemasv1alpha1.PostgresTableColumnConstraints{
+					Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
 						NotNull: &falseValue,
 					},
 				},
@@ -120,8 +120,8 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "no change to not null constraint",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha1.PostgresTableColumn{
-				&schemasv1alpha1.PostgresTableColumn{
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
 					Name: "t",
 					Type: "text",
 				},
@@ -132,6 +132,50 @@ func Test_AlterColumnStatment(t *testing.T) {
 				ColumnDefault: nil,
 				Constraints: &ColumnConstraints{
 					NotNull: &falseValue,
+				},
+			},
+			expectedStatement: "",
+		},
+		{
+			name:      "no change to not nullable timestamp using short column type",
+			tableName: "ts",
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
+					Name: "ts",
+					Type: "timestamp",
+					Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &Column{
+				Name:          "ts",
+				DataType:      "timestamp",
+				ColumnDefault: nil,
+				Constraints: &ColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatement: "",
+		},
+		{
+			name:      "no change to not nullable timestamp",
+			tableName: "ts",
+			desiredColumns: []*schemasv1alpha1.SQLTableColumn{
+				&schemasv1alpha1.SQLTableColumn{
+					Name: "ts",
+					Type: "timestamp with time zone",
+					Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &Column{
+				Name:          "ts",
+				DataType:      "timestamp",
+				ColumnDefault: nil,
+				Constraints: &ColumnConstraints{
+					NotNull: &trueValue,
 				},
 			},
 			expectedStatement: "",
