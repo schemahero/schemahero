@@ -41,9 +41,8 @@ var unparameterizedColumnTypes = []string{
 	"xml",
 }
 
-func maybeParseParameterizedColumnType(requestedType string) (string, *int64, error) {
+func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 	columnType := ""
-	var maxLength *int64
 
 	if strings.HasPrefix(requestedType, "bit varying") {
 		columnType = "bit varying"
@@ -52,16 +51,14 @@ func maybeParseParameterizedColumnType(requestedType string) (string, *int64, er
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		if len(matchGroups) == 0 {
-			max64 := int64(1)
-			maxLength = &max64
+			columnType = "bit varying (1)"
 		} else {
 			maxStr := matchGroups[1]
 			max, err := strconv.Atoi(maxStr)
 			if err != nil {
-				return "", maxLength, err
+				return "", err
 			}
-			max64 := int64(max)
-			maxLength = &max64
+			columnType = fmt.Sprintf("bit varying (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "bit") {
 		columnType = "bit"
@@ -70,16 +67,14 @@ func maybeParseParameterizedColumnType(requestedType string) (string, *int64, er
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		if len(matchGroups) == 0 {
-			max64 := int64(1)
-			maxLength = &max64
+			columnType = "bit (1)"
 		} else {
 			maxStr := matchGroups[1]
 			max, err := strconv.Atoi(maxStr)
 			if err != nil {
-				return "", maxLength, err
+				return "", err
 			}
-			max64 := int64(max)
-			maxLength = &max64
+			columnType = fmt.Sprintf("bit (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "character varying") {
 		columnType = "character varying"
@@ -88,16 +83,14 @@ func maybeParseParameterizedColumnType(requestedType string) (string, *int64, er
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		if len(matchGroups) == 0 {
-			max64 := int64(1)
-			maxLength = &max64
+			columnType = "character varying (1)"
 		} else {
 			maxStr := matchGroups[1]
 			max, err := strconv.Atoi(maxStr)
 			if err != nil {
-				return "", maxLength, err
+				return "", err
 			}
-			max64 := int64(max)
-			maxLength = &max64
+			columnType = fmt.Sprintf("character varying (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "character") {
 		columnType = "character"
@@ -106,16 +99,14 @@ func maybeParseParameterizedColumnType(requestedType string) (string, *int64, er
 
 		matchGroups := r.FindStringSubmatch(requestedType)
 		if len(matchGroups) == 0 {
-			max64 := int64(1)
-			maxLength = &max64
+			columnType = "character (1)"
 		} else {
 			maxStr := matchGroups[1]
 			max, err := strconv.Atoi(maxStr)
 			if err != nil {
-				return "", maxLength, err
+				return "", err
 			}
-			max64 := int64(max)
-			maxLength = &max64
+			columnType = fmt.Sprintf("character (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "timestamp") {
 		columnType = "timestamp"
@@ -155,7 +146,7 @@ func maybeParseParameterizedColumnType(requestedType string) (string, *int64, er
 		}
 	}
 
-	return columnType, maxLength, nil
+	return columnType, nil
 }
 
 func isParameterizedColumnType(requestedType string) bool {

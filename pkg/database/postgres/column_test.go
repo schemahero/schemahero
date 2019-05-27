@@ -9,10 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	ten = int64(10)
-)
-
 func Test_postgresColumnAsInsert(t *testing.T) {
 	tests := []struct {
 		name              string
@@ -142,11 +138,8 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Type: "character varying (10)",
 			},
 			expectedColumn: &Column{
-				DataType:      "character varying",
+				DataType:      "character varying (10)",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
-					MaxLength: &ten,
-				},
 			},
 		},
 		{
@@ -156,11 +149,8 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Type: "varchar (10)",
 			},
 			expectedColumn: &Column{
-				DataType:      "character varying",
+				DataType:      "character varying (10)",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
-					MaxLength: &ten,
-				},
 			},
 		},
 		{

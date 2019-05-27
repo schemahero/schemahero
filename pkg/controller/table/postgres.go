@@ -83,7 +83,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 			existingColumn.ColumnDefault = &columnDefault.String
 		}
 		if charMaxLength.Valid {
-			existingColumn.Constraints.MaxLength = &charMaxLength.Int64
+			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
 		}
 
 		columnStatement, err := postgres.AlterColumnStatement(tableName, postgresTableSchema.Columns, &existingColumn)
