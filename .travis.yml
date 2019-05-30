@@ -21,7 +21,12 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 deploy:
-  provider: script
+- provider: script
   script: make docker-login snapshot-release
   on:
     branch: master
+
+- provider: script
+  script: make docker-login tag-release
+  on:
+    tags: true
