@@ -18,16 +18,19 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
-	"github.com/schemahero/schemahero/pkg/apis"
-	"github.com/schemahero/schemahero/pkg/controller"
-	"github.com/schemahero/schemahero/pkg/webhook"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+
+	"github.com/schemahero/schemahero/pkg/apis"
+	"github.com/schemahero/schemahero/pkg/controller"
+	"github.com/schemahero/schemahero/pkg/version"
+	"github.com/schemahero/schemahero/pkg/webhook"
 )
 
 func main() {
@@ -36,6 +39,8 @@ func main() {
 	flag.Parse()
 	logf.SetLogger(logf.ZapLogger(false))
 	log := logf.Log.WithName("entrypoint")
+
+	log.Info(fmt.Sprintf("%+v", version.GetBuild()))
 
 	// Get a config to talk to the apiserver
 	log.Info("setting up client for manager")
