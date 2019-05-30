@@ -18,11 +18,15 @@ package database
 
 import (
 	"context"
+	goerrors "errors"
 
 	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -122,4 +126,34 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha1.ValueOrValueFrom) (string, error) {
+	if valueOrValueFrom.Value != "" {
+		return valueOrValueFrom.Value, nil
+	}
+
+	if valueOrValueFrom.ValueFrom == nil {
+		return "", goerrors.New("value and valueFrom cannot both be nil/empty")
+	}
+
+	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
+		secret := &corev1.Secret{}
+		secretNamespacedName := types.NamespacedName{
+			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
+			Namespace: namespace,
+		}
+
+		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
+			if kuberneteserrors.IsNotFound(err) {
+				return "", goerrors.New("secret not found")
+			} else {
+				return "", err
+			}
+		}
+
+		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
+	}
+
+	return "", goerrors.New("unable to find supported valueFrom")
 }

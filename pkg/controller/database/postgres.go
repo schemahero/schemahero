@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	goerrors "errors"
 
 	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -21,18 +20,10 @@ func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha1.Data
 		}
 	}
 
-	driver := ""
-	connectionURI := ""
-	if instance.Connection.Postgres != nil {
-		driver = "postgres"
-		connectionURI = instance.Connection.Postgres.URI.Value
-	} else if instance.Connection.Mysql != nil {
-		driver = "mysql"
-		connectionURI = instance.Connection.Mysql.URI.Value
-	}
-
-	if driver == "" {
-		return goerrors.New("unknown database driver")
+	driver := "postgres"
+	connectionURI, err := r.readConnectionURI(instance.Namespace, instance.Connection.Postgres.URI)
+	if err != nil {
+		return err
 	}
 
 	deploy := &appsv1.Deployment{
@@ -75,7 +66,7 @@ func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha1.Data
 	}
 
 	found := &appsv1.Deployment{}
-	err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		log.Info("Creating watch deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 		err = r.Create(context.TODO(), deploy)
