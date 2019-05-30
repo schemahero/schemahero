@@ -108,12 +108,12 @@ docker-login:
 installable-manifests-snapshot:
 	cd config/default; kustomize edit set image schemahero/schemahero-manager:alpha
 	kustomize build config/default > install/schemahero/schemahero-operator.yaml
+	@echo "Manifests were updated in this repo. Push to make sure they are live."
 
 .PHONY: snapshot-release
 snapshot-release: build-snapshot-release installable-manifests-snapshot
 	docker push schemahero/schemahero:alpha
 	docker push schemahero/schemahero-manager:alpha
-	@echo "Manifests were updated in this repo. Push to make sure they are live."
 
 .PHONY: build-snapshot-release
 build-snapshot-release:
@@ -124,3 +124,7 @@ microk8s:
 	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest
+
+.PHONY: tag-release
+tag-release:
+	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --config deploy/.goreleaser.yml
