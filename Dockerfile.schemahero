@@ -14,4 +14,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o schemahero github.com/s
 FROM ubuntu:latest
 WORKDIR /
 COPY --from=builder /go/src/github.com/schemahero/schemahero/schemahero .
+
+RUN groupadd --gid 999 schemahero \
+  && useradd --uid 999 --gid schemahero --shell /bin/bash --create-home schemahero
+USER schemahero
+
 ENTRYPOINT ["/schemahero"]
