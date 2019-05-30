@@ -27,6 +27,8 @@ spec:
               properties:
                 uri:
                   properties:
+                    value:
+                      type: string
                     valueFrom:
                       properties:
                         secretKeyRef:
@@ -46,6 +48,8 @@ spec:
               properties:
                 uri:
                   properties:
+                    value:
+                      type: string
                     valueFrom:
                       properties:
                         secretKeyRef:

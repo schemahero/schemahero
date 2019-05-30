@@ -11,7 +11,12 @@ import (
 )
 
 func (r *ReconcileTable) deployMysql(connection *databasesv1alpha1.MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha1.SQLTableSchema) error {
-	db, err := sql.Open("mysql", connection.URI.Value)
+	uri, err := r.readConnectionURI("default", connection.URI)
+	if err != nil {
+		return err
+	}
+
+	db, err := sql.Open("mysql", uri)
 	if err != nil {
 		return err
 	}

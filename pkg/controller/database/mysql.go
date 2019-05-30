@@ -20,6 +20,12 @@ func (r *ReconcileDatabase) ensureMysqlWatch(instance *databasesv1alpha1.Databas
 		}
 	}
 
+	driver := "mysql"
+	connectionURI, err := r.readConnectionURI(instance.Namespace, instance.Connection.Mysql.URI)
+	if err != nil {
+		return err
+	}
+
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name + "-watch",
@@ -40,9 +46,9 @@ func (r *ReconcileDatabase) ensureMysqlWatch(instance *databasesv1alpha1.Databas
 							Args: []string{
 								"watch",
 								"--driver",
-								"mysql",
+								driver,
 								"--uri",
-								instance.Connection.Mysql.URI.Value,
+								connectionURI,
 								"--namespace",
 								instance.Namespace,
 								"--instance",
@@ -60,7 +66,7 @@ func (r *ReconcileDatabase) ensureMysqlWatch(instance *databasesv1alpha1.Databas
 	}
 
 	found := &appsv1.Deployment{}
-	err := r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
+	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		log.Info("Creating watch deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 		err = r.Create(context.TODO(), deploy)
