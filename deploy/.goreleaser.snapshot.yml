@@ -51,6 +51,8 @@ dockers:
       - "schemahero/schemahero:alpha"
     binaries:
       - schemahero
+    extra_files:
+      - ./deploy/entrypoint.sh
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates:
       - "schemahero/schemahero-manager:alpha"
