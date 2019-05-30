@@ -26,6 +26,11 @@ builds:
     env:
       - CGO_ENABLED=0
     main: cmd/manager/main.go
+    ldflags: -s -w
+      -X github.com/schemahero/schemahero/pkg/version.version={{.Version}}
+      -X github.com/schemahero/schemahero/pkg/version.gitSHA={{.Commit}}
+      -X github.com/schemahero/schemahero/pkg/version.buildTime={{.Date}}
+      -extldflags "-static"
     flags: -tags netgo -installsuffix netgo
     binary: manager
     hooks: {}

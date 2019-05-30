@@ -1,6 +1,34 @@
 
 SHELL := /bin/bash
-VERSION ?= alpha
+VERSION ?=`git describe --tags`
+FULLSRC = $(shell find pkg vendor -name "*.go")
+DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
+VERSION_PACKAGE = github.com/schemahero/schemahero/pkg/version
+
+GIT_TREE = $(shell git rev-parse --is-inside-work-tree 2>/dev/null)
+ifneq "$(GIT_TREE)" ""
+define GIT_UPDATE_INDEX_CMD
+git update-index --assume-unchanged
+endef
+define GIT_SHA
+`git rev-parse HEAD`
+endef
+else
+define GIT_UPDATE_INDEX_CMD
+echo "Not a git repo, skipping git update-index"
+endef
+define GIT_SHA
+""
+endef
+endif
+
+define LDFLAGS
+-ldflags "\
+	-X ${VERSION_PACKAGE}.version=${VERSION} \
+	-X ${VERSION_PACKAGE}.gitSHA=${GIT_SHA} \
+	-X ${VERSION_PACKAGE}.buildTime=${DATE} \
+"
+endef
 
 all: test bin/schemahero manager
 
@@ -9,8 +37,14 @@ test: generate fmt vet manifests
 	go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 # Build manager binary
-manager: generate fmt vet
-	go build -o bin/manager github.com/schemahero/schemahero/cmd/manager
+manager: generate fmt vet bin/manager
+
+bin/manager: $(FULLSRC) cmd/manager/main.go
+	go build \
+		${LDFLAGS} \
+		-i \
+		-o bin/manager \
+		./cmd/manager
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: generate fmt vet bin/schemahero
@@ -58,14 +92,10 @@ integration/postgres: bin/schemahero
 	./bin/schemahero watch --driver postgres --uri postgres://schemahero:password@localhost:15432/schemahero?sslmode=disable
 	docker rm -f schemahero-postgres
 
-.PHONY: bin/schemahero
-bin/schemahero:
-	rm -rf bin/schemahero
+bin/schemahero: $(FULLSRC) cmd/schemahero/main.go
 	go build \
-		-ldflags "\
-			-X ${VERSION_PACKAGE}.version=${VERSION} \
-			-X ${VERSION_PACKAGE}.gitSHA=${GIT_SHA} \
-			-X ${VERSION_PACKAGE}.buildTime=${DATE}" \
+		${LDFLAGS} \
+		-i \
 		-o bin/schemahero \
 		./cmd/schemahero
 	@echo "built bin/schemahero"
@@ -74,13 +104,13 @@ bin/schemahero:
 docker-login:
 	echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
-.PHONY: installable-manifests
-installable-manifests:
-	cd config/default; kustomize edit set image schemahero/schemahero-manager:${VERSION}
+.PHONY: installable-manifests-snapshot
+installable-manifests-snapshot:
+	cd config/default; kustomize edit set image schemahero/schemahero-manager:alpha
 	kustomize build config/default > install/schemahero/schemahero-operator.yaml
 
 .PHONY: snapshot-release
-snapshot-release: build-snapshot-release installable-manifests
+snapshot-release: build-snapshot-release installable-manifests-snapshot
 	docker push schemahero/schemahero:alpha
 	docker push schemahero/schemahero-manager:alpha
 	@echo "Manifests were updated in this repo. Push to make sure they are live."
