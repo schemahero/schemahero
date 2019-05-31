@@ -3,3 +3,8 @@ ignore:
   - "pkg/client/schemaheroclientset/**/*.go" # Ignore generated code
 
 comment: off
+
+coverage:
+  status:
+    project: off
+    patch: off

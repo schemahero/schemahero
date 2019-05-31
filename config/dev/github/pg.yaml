@@ -9,4 +9,7 @@ schemahero:
 connection:
   postgres:
     uri:
-      value: postgres://testuser:password@postgresql:5432/testdb?sslmode=disable
+      valueFrom:
+        secretKeyRef:
+          name: postgresql-secret
+          key: uri
