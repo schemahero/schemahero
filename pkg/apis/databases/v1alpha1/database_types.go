@@ -27,7 +27,8 @@ type DatabaseConnection struct {
 }
 
 type SchemaHero struct {
-	Image string `json:"image,omitempty"`
+	Image        string            `json:"image,omitempty"`
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 // DatabaseStatus defines the observed state of Database

@@ -138,13 +138,13 @@ func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom
 	}
 
 	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
-		secret := &corev1.Secret{}
+		secret := corev1.Secret{}
 		secretNamespacedName := types.NamespacedName{
 			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
 			Namespace: namespace,
 		}
 
-		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
+		if err := r.Get(context.TODO(), secretNamespacedName, &secret); err != nil {
 			if kuberneteserrors.IsNotFound(err) {
 				return "", goerrors.New("secret not found")
 			} else {

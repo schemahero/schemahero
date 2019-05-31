@@ -77,6 +77,8 @@ spec:
           properties:
             image:
               type: string
+            nodeSelector:
+              type: object
           type: object
         status:
           properties:

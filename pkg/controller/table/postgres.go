@@ -11,7 +11,12 @@ import (
 )
 
 func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha1.SQLTableSchema) error {
-	db, err := sql.Open("postgres", connection.URI.Value)
+	uri, err := r.readConnectionURI("default", connection.URI)
+	if err != nil {
+		return err
+	}
+
+	db, err := sql.Open("postgres", uri)
 	if err != nil {
 		return err
 	}

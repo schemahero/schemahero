@@ -51,3 +51,6 @@ vars:
     apiVersion: v1
     kind: Secret
     name: webhook-server-secret
+images:
+- name: schemahero/schemahero-manager
+  newTag: alpha

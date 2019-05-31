@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
   password: cGFzc3dvcmQ=
-  uri: cG9zdGdyZXM6Ly9zY2hlbWFoZXJvOnBhc3N3b3JkQHBvc3RncmVzcWw6NTQzMi9naXRodWI=
+  uri: cG9zdGdyZXM6Ly90ZXN0dXNlcjpwYXNzd29yZEBwb3N0Z3Jlc3FsOjU0MzIvdGVzdGRiP3NzbG1vZGU9ZGlzYWJsZQ==
 kind: Secret
 metadata:
   name: postgresql-secret
@@ -25,8 +25,6 @@ spec:
 apiVersion: apps/v1beta2
 kind: StatefulSet
 metadata:
-  labels:
-    app: postgresql
   name: postgresql
 spec:
   replicas: 1
@@ -36,7 +34,8 @@ spec:
   serviceName: postgresql
   template:
     metadata:
-      name: postgresql
+      labels:
+        app: postgresql
     spec:
       containers:
       - env:
