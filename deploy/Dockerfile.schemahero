@@ -1,14 +1,14 @@
-FROM debian:jessie
+FROM debian:stretch
 WORKDIR /
 COPY schemahero /schemahero
 
-RUN apt-get update \
- && apt-get -y install \
+RUN apt-get -qq update \
+ && apt-get -qq -y install \
     ca-certificates
 
 RUN set -eux; \
-	apt-get update; \
-	apt-get install -y gosu; \
+	apt-get -qq update; \
+	apt-get -qq install -y gosu; \
 	rm -rf /var/lib/apt/lists/*; \
 # verify that the binary works
 	gosu nobody true

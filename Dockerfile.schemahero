@@ -11,7 +11,7 @@ COPY vendor/ vendor/
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o schemahero github.com/schemahero/schemahero/cmd/schemahero
 
 # Copy schemahero into a thin image
-FROM debian:jessie
+FROM debian:stretch
 WORKDIR /
 COPY --from=builder /go/src/github.com/schemahero/schemahero/schemahero .
 
