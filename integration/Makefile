@@ -1,18 +1,18 @@
 export GO_BUILD=env GO111MODULE=on go build
-MANAGER_IMAGE_NAME := $(shell uuidgen)
-SCHEMAHERO_IMAGE_NAME := $(shell uuidgen)
+
+TAG ?= $(shell uuidgen)
 
 .PHONY: run
-run: build integration-test-image
+run: build
 	bin/schemahero-integration-tests run \
-		--manager-image-name "ttl.sh/$(MANAGER_IMAGE_NAME):1h" \
-		--schemahero-image-name "ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h"
+		--manager-image-name "ttl.sh/sh/manager-$(TAG):1h" \
+		--schemahero-image-name "ttl.sh/sh/$(TAG):1h"
 
 integration-test-image:
-	docker build -t ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h -f ../Dockerfile.schemahero ..
-	docker build -t ttl.sh/$(MANAGER_IMAGE_NAME):1h -f ../Dockerfile.manager ..
-	docker push ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h
-	docker push ttl.sh/$(MANAGER_IMAGE_NAME):1h
+	docker build -t ttl.sh/sh/$(TAG):1h -f ../Dockerfile.schemahero ..
+	docker build -t ttl.sh/sh/manager-$(TAG):1h -f ../Dockerfile.manager ..
+	docker push ttl.sh/sh/$(TAG):1h
+	docker push ttl.sh/sh/manager-$(TAG):1h
 
 .PHONY: build
 build: GO111MODULE = "on"

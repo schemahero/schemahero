@@ -1,0 +1,51 @@
+# Note, changes to this file requires manual intervention
+# from a maintainer due to security constraints.
+
+steps:
+  - label: build
+    commands:
+      - make
+    plugins:
+      - docker#v3.2.0:
+          image: replicated/gitops-builder:buildkite-go12-node10
+          always-pull: true
+          mount-checkout: true
+          workdir: /go/src/github.com/schemahero/schemahero
+
+  - wait
+
+  - commands:
+      - make -C integration integration-test-image TAG="${BUILDKITE_COMMIT:0:7}"
+
+  - wait
+
+  # - commands:
+  #     docker run -it --rm \
+  #       --volume /var/lib/buildkite-agent/builds/buildkite-wdxz-1/replicated/schemahero:/go/src/github.com/schemahero/schemahero \
+  #       --volume /var/run/docker.sock:/var/run/docker.sock \
+  #       --workdir /go/src/github.com/schemahero/schemahero \
+  #       --env BUILDKITE_JOB_ID \
+  #       --env BUILDKITE_BUILD_ID \
+  #       --env BUILDKITE_AGENT_ACCESS_TOKEN \
+  #       --userns=host \
+  #       --volume /usr/bin/buildkite-agent:/usr/bin/buildkite-agent \
+  #       replicated/gitops-builder:buildkite-go12-node10 \
+  #       /bin/sh -e -c \
+  #       make -C integration run
+
+  # - wait
+
+  - commands:
+      - bash <(curl -s https://codecov.io/bash)
+
+  - commands:
+      - make snapshot-release
+    plugins:
+      - docker#v3.2.0:
+          image: replicated/gitops-builder:buildkite-go12-node10
+          always-pull: true
+          mount-checkout: true
+          workdir: /go/src/github.com/schemahero/schemahero
+          volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+            - "/var/lib/buildkite-agent/.docker/config.json:/home/builder/.docker/config.json"
