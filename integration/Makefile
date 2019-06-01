@@ -9,9 +9,8 @@ run: build integration-test-image
 		--schemahero-image-name "ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h"
 
 integration-test-image:
-	cd .. && curl -sL https://git.io/goreleaser | bash -s -- --snapshot --rm-dist --config ./deploy/.goreleaser.integration.yml
-	docker tag schemahero/schemahero:integration-test ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h
-	docker tag schemahero/schemahero-manager:integration-test ttl.sh/$(MANAGER_IMAGE_NAME):1h
+	docker build -t ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h -f ../Dockerfile.schemahero ..
+	docker build -t ttl.sh/$(MANAGER_IMAGE_NAME):1h -f ../Dockerfile.manager ..
 	docker push ttl.sh/$(SCHEMAHERO_IMAGE_NAME):1h
 	docker push ttl.sh/$(MANAGER_IMAGE_NAME):1h
 
