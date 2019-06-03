@@ -19,22 +19,25 @@ package table
 import (
 	"context"
 	goerrors "errors"
+	"fmt"
 	"time"
 
 	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
-	databasesclientv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
-
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
-	appsv1 "k8s.io/api/apps/v1"
+	databasesclientv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	kubeinformers "k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -74,15 +77,33 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create
-	// Uncomment watch a Deployment created by Table - change this for objects you create
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &schemasv1alpha1.Table{},
-	})
+	// Add an informer on pods, which are created to deploy schemas. the informer will
+	// update the status of the table custom resource and do a little garbage collection
+	generatedClient := kubernetes.NewForConfigOrDie(mgr.GetConfig())
+	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Second)
+	err = mgr.Add(manager.RunnableFunc(func(s <-chan struct{}) error {
+		generatedInformers.Start(s)
+		<-s
+		return nil
+	}))
 	if err != nil {
 		return err
 	}
+
+	err = c.Watch(&source.Informer{
+		Informer: generatedInformers.Core().V1().Pods().Informer(),
+	}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	// err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
+	// 	IsController: true,
+	// 	OwnerType:    &schemasv1alpha1.Table{},
+	// })
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -107,41 +128,87 @@ type ReconcileTable struct {
 func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Table instance
 	instance := &schemasv1alpha1.Table{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
+	instanceErr := r.Get(context.TODO(), request.NamespacedName, instance)
+
+	pod := &corev1.Pod{}
+	podErr := r.Get(context.TODO(), request.NamespacedName, pod)
+
+	// operator reconciler (table object)
+	if instanceErr == nil {
+		database, err := r.getDatabaseSpec(instance.Namespace, instance.Spec.Database)
+		if err != nil {
+			return reconcile.Result{}, err
+		}
+		if database == nil {
+			return reconcile.Result{
+				Requeue:      true,
+				RequeueAfter: time.Second * 10,
+			}, nil
+		}
+
+		matchingType := r.checkDatabaseTypeMatches(&database.Connection, instance.Spec.Schema)
+		if !matchingType {
+			return reconcile.Result{}, goerrors.New("unable to deploy table to connection of different type")
+		}
+
+		if err := r.deploy(database, instance); err != nil {
+			return reconcile.Result{}, err
+		}
+
+		return reconcile.Result{}, nil
+	}
+
+	// pod informer
+	if podErr == nil {
+		podLabels := pod.GetObjectMeta().GetLabels()
+		role, ok := podLabels["schemahero-role"]
+		if !ok {
 			return reconcile.Result{}, nil
 		}
-		// Error reading the object - requeue the request.
-		return reconcile.Result{}, err
+
+		if role != "table" {
+			return reconcile.Result{}, nil
+		}
+		if pod.Status.Phase == corev1.PodSucceeded {
+			// TODO: Update the status on the table object
+
+			// Delete the pod and config map
+			if err := r.Delete(context.TODO(), pod); err != nil {
+				return reconcile.Result{}, err
+			}
+
+			// read the name of the config map
+			configMapName := ""
+			for _, volume := range pod.Spec.Volumes {
+				if volume.Name == "specs" && volume.ConfigMap != nil {
+					configMapName = volume.ConfigMap.Name
+				}
+			}
+
+			configMap := corev1.ConfigMap{}
+			err := r.Get(context.TODO(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
+			if err != nil {
+				return reconcile.Result{}, err
+			}
+
+			if err := r.Delete(context.TODO(), &configMap); err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+
+		return reconcile.Result{}, nil
 	}
 
-	connection, err := r.getDatabaseConnection(instance.Namespace, instance.Spec.Database)
-	if err != nil {
-		return reconcile.Result{}, err
+	if errors.IsNotFound(instanceErr) {
+		// Object not found, return.  Created objects are automatically garbage collected.
+		// For additional cleanup logic use finalizers.
+		return reconcile.Result{}, nil
 	}
-	if connection == nil {
-		return reconcile.Result{
-			Requeue:      true,
-			RequeueAfter: time.Second * 10,
-		}, nil
-	}
-
-	matchingType := r.checkDatabaseTypeMatches(connection, instance.Spec.Schema)
-	if !matchingType {
-		return reconcile.Result{}, goerrors.New("unable to deploy table to connection of different type")
-	}
-
-	if err := r.deploy(connection, instance.Spec); err != nil {
-		return reconcile.Result{}, err
-	}
-
-	return reconcile.Result{}, nil
+	// Error reading the object - requeue the request.
+	return reconcile.Result{}, instanceErr
 }
 
-func (r *ReconcileTable) getDatabaseConnection(namespace string, name string) (*databasesv1alpha1.DatabaseConnection, error) {
+func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha1.Database, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, err
@@ -160,7 +227,7 @@ func (r *ReconcileTable) getDatabaseConnection(namespace string, name string) (*
 		return nil, err
 	}
 
-	return &database.Connection, nil
+	return database, nil
 }
 
 func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.DatabaseConnection, tableSchema *schemasv1alpha1.TableSchema) bool {
@@ -173,14 +240,145 @@ func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.
 	return false
 }
 
-func (r *ReconcileTable) deploy(connection *databasesv1alpha1.DatabaseConnection, instanceSpec schemasv1alpha1.TableSpec) error {
-	if connection.Postgres != nil {
-		return r.deployPostgres(connection.Postgres, instanceSpec.Name, instanceSpec.Schema.Postgres)
-	} else if connection.Mysql != nil {
-		return r.deployMysql(connection.Mysql, instanceSpec.Name, instanceSpec.Schema.Mysql)
+func (r *ReconcileTable) deploy(database *databasesv1alpha1.Database, table *schemasv1alpha1.Table) error {
+	if err := r.ensureTableConfigMap(database, table); err != nil {
+		return err
 	}
 
-	return goerrors.New("unknown database type")
+	if err := r.ensureTablePod(database, table); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha1.Database, table *schemasv1alpha1.Table) error {
+	b, err := yaml.Marshal(table.Spec)
+	if err != nil {
+		return err
+	}
+
+	tableData := make(map[string]string)
+	tableData["table.yaml"] = string(b)
+
+	configMap := corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      table.Name,
+			Namespace: database.Namespace,
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
+		},
+		Data: tableData,
+	}
+	if err := controllerutil.SetControllerReference(table, &configMap, r.scheme); err != nil {
+		return err
+	}
+	err = r.Create(context.TODO(), &configMap)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha1.Database, table *schemasv1alpha1.Table) error {
+	imageName := "schemahero/schemahero:alpha"
+	nodeSelector := make(map[string]string)
+	driver := ""
+	connectionURI := ""
+
+	if database.SchemaHero != nil {
+		if database.SchemaHero.Image != "" {
+			imageName = database.SchemaHero.Image
+		}
+
+		nodeSelector = database.SchemaHero.NodeSelector
+	}
+
+	if database.Connection.Postgres != nil {
+		driver = "postgres"
+		uri, err := r.readConnectionURI(database.Namespace, database.Connection.Postgres.URI)
+		if err != nil {
+			return err
+		}
+		connectionURI = uri
+	} else if database.Connection.Mysql != nil {
+		driver = "mysql"
+		uri, err := r.readConnectionURI(database.Namespace, database.Connection.Mysql.URI)
+		if err != nil {
+			return err
+		}
+		connectionURI = uri
+	}
+
+	if driver == "" {
+		return goerrors.New("unknown database driver")
+	}
+
+	labels := make(map[string]string)
+	labels["schemahero-role"] = "table"
+
+	pod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("%s-apply", table.Name),
+			Namespace: database.Namespace,
+			Labels:    labels,
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Pod",
+		},
+		Spec: corev1.PodSpec{
+			NodeSelector:       nodeSelector,
+			ServiceAccountName: database.Name,
+			RestartPolicy:      corev1.RestartPolicyOnFailure,
+			Containers: []corev1.Container{
+				{
+					Image:           imageName,
+					ImagePullPolicy: corev1.PullAlways,
+					Name:            table.Name,
+					Args: []string{
+						"apply",
+						"--driver",
+						driver,
+						"--uri",
+						connectionURI,
+						"--spec-file",
+						"/specs/table.yaml",
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      "specs",
+							MountPath: "/specs",
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "specs",
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: table.Name,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	if err := controllerutil.SetControllerReference(table, &pod, r.scheme); err != nil {
+		return err
+	}
+	err := r.Create(context.TODO(), &pod)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha1.ValueOrValueFrom) (string, error) {
