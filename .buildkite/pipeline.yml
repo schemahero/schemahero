@@ -37,9 +37,11 @@ steps:
 
   - commands:
       - bash <(curl -s https://codecov.io/bash)
+    branches: "master"
 
   - commands:
       - make snapshot-release
+    branches: "master"
     plugins:
       - docker#v3.2.0:
           image: replicated/gitops-builder:buildkite-go12-node10
