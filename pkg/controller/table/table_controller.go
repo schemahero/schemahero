@@ -19,6 +19,7 @@ package table
 import (
 	"context"
 	goerrors "errors"
+	"time"
 
 	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	databasesclientv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
@@ -121,6 +122,12 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 	if err != nil {
 		return reconcile.Result{}, err
 	}
+	if connection == nil {
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Second * 10,
+		}, nil
+	}
 
 	matchingType := r.checkDatabaseTypeMatches(connection, instance.Spec.Schema)
 	if !matchingType {
@@ -145,6 +152,11 @@ func (r *ReconcileTable) getDatabaseConnection(namespace string, name string) (*
 	}
 	database, err := databasesClient.Databases(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
+		// tables might be deployed before a database... if this is the case
+		// we don't want to crash, we want to re-reconcile later
+		if kuberneteserrors.IsNotFound(err) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
