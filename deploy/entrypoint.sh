@@ -8,4 +8,4 @@ useradd --shell /bin/bash -u $CURRENT_UID -o -c "" -m docker
 export HOME=/home/docker
 
 # Execute process
-exec /usr/local/bin/gosu docker /schemahero "$@"
+exec /usr/sbin/gosu docker /schemahero "$@"
