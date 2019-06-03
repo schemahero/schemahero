@@ -1,31 +1,29 @@
-package table
+package mysql
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 
-	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
-	"github.com/schemahero/schemahero/pkg/database/postgres"
 )
 
-func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha1.SQLTableSchema) error {
-	uri, err := r.readConnectionURI("default", connection.URI)
-	if err != nil {
-		return err
-	}
-
-	db, err := sql.Open("postgres", uri)
+func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha1.SQLTableSchema) error {
+	db, err := sql.Open("mysql", uri)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
+	databaseName, err := DatabaseNameFromURI(uri)
+	if err != nil {
+		return err
+	}
+
 	// determine if the table exists
-	query := `select count(1) from information_schema.tables where table_name = $1`
+	query := `select count(1) from information_schema.TABLES where TABLE_NAME = ? and TABLE_SCHEMA = ?`
 	fmt.Printf("Executing query %q\n", query)
-	row := db.QueryRow(query, tableName)
+	row := db.QueryRow(query, tableName, databaseName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
 		return err
@@ -33,7 +31,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 
 	if tableExists == 0 {
 		// shortcut to just create it
-		query, err := postgres.CreateTableStatement(tableName, postgresTableSchema)
+		query, err := CreateTableStatement(tableName, mysqlTableSchema)
 		if err != nil {
 			return err
 		}
@@ -49,10 +47,9 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 
 	// table needs to be altered?
 	query = `select
-		column_name, column_default, is_nullable, data_type,
-		character_maximum_length
-		from information_schema.columns
-		where table_name = $1`
+		COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+		from information_schema.COLUMNS
+		where TABLE_NAME = ?`
 	fmt.Printf("Executing query %q\n", query)
 	rows, err := db.Query(query, tableName)
 	if err != nil {
@@ -72,10 +69,10 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 
 		foundColumnNames = append(foundColumnNames, columnName)
 
-		existingColumn := postgres.Column{
+		existingColumn := Column{
 			Name:        columnName,
 			DataType:    dataType,
-			Constraints: &postgres.ColumnConstraints{},
+			Constraints: &ColumnConstraints{},
 		}
 
 		if isNullable == "NO" {
@@ -91,7 +88,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
 		}
 
-		columnStatement, err := postgres.AlterColumnStatement(tableName, postgresTableSchema.Columns, &existingColumn)
+		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.Columns, &existingColumn)
 		if err != nil {
 			return err
 		}
@@ -99,7 +96,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 		alterAndDropStatements = append(alterAndDropStatements, columnStatement)
 	}
 
-	for _, desiredColumn := range postgresTableSchema.Columns {
+	for _, desiredColumn := range mysqlTableSchema.Columns {
 		isColumnPresent := false
 		for _, foundColumn := range foundColumnNames {
 			if foundColumn == desiredColumn.Name {
@@ -108,7 +105,7 @@ func (r *ReconcileTable) deployPostgres(connection *databasesv1alpha1.PostgresCo
 		}
 
 		if !isColumnPresent {
-			statement, err := postgres.InsertColumnStatement(tableName, desiredColumn)
+			statement, err := InsertColumnStatement(tableName, desiredColumn)
 			if err != nil {
 				return err
 			}

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/schemahero/schemahero/pkg/fixtures"
+	"github.com/schemahero/schemahero/pkg/database"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -20,8 +20,8 @@ func Fixtures() *cobra.Command {
 			viper.BindPFlag("output-dir", cmd.Flags().Lookup("output-dir"))
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f := fixtures.NewFixturator()
-			return f.RunSync()
+			db := database.NewDatabase()
+			return db.CreateFixturesSync()
 		},
 	}
 
