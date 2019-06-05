@@ -140,6 +140,8 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 			return reconcile.Result{}, err
 		}
 		if database == nil {
+			// TODO get a real logger, this isn't a warning, it's expected, probably debug level
+			fmt.Printf("requeuing table deployment for %q, database is not available\n", instance.Spec.Name)
 			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second * 10,
@@ -227,6 +229,21 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 		return nil, err
 	}
 
+	// try to parse the secret too, the database may be deployed, but that doesn't mean it's ready
+	// TODO this would be better as a status field on the database object, instead of this leaky
+	// interface
+	if database.Connection.Postgres != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Connection.Postgres.URI)
+		if err != nil {
+			return nil, nil
+		}
+	} else if database.Connection.Mysql != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Connection.Mysql.URI)
+		if err != nil {
+			return nil, nil
+		}
+	}
+
 	return database, nil
 }
 
@@ -261,22 +278,29 @@ func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha1.Databa
 	tableData := make(map[string]string)
 	tableData["table.yaml"] = string(b)
 
-	configMap := corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      table.Name,
-			Namespace: database.Namespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ConfigMap",
-		},
-		Data: tableData,
-	}
-	if err := controllerutil.SetControllerReference(table, &configMap, r.scheme); err != nil {
-		return err
-	}
-	err = r.Create(context.TODO(), &configMap)
-	if err != nil {
+	existingConfigMap := corev1.ConfigMap{}
+	if err := r.Get(context.TODO(), types.NamespacedName{Name: table.Name, Namespace: database.Namespace}, &existingConfigMap); err != nil {
+		if kuberneteserrors.IsNotFound(err) {
+			configMap := corev1.ConfigMap{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      table.Name,
+					Namespace: database.Namespace,
+				},
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "ConfigMap",
+				},
+				Data: tableData,
+			}
+			if err := controllerutil.SetControllerReference(table, &configMap, r.scheme); err != nil {
+				return err
+			}
+			err = r.Create(context.TODO(), &configMap)
+			if err != nil {
+				return err
+			}
+		}
+
 		return err
 	}
 
@@ -320,61 +344,70 @@ func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha1.Database, ta
 	labels := make(map[string]string)
 	labels["schemahero-role"] = "table"
 
-	pod := corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-apply", table.Name),
-			Namespace: database.Namespace,
-			Labels:    labels,
-		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "Pod",
-		},
-		Spec: corev1.PodSpec{
-			NodeSelector:       nodeSelector,
-			ServiceAccountName: database.Name,
-			RestartPolicy:      corev1.RestartPolicyOnFailure,
-			Containers: []corev1.Container{
-				{
-					Image:           imageName,
-					ImagePullPolicy: corev1.PullAlways,
-					Name:            table.Name,
-					Args: []string{
-						"apply",
-						"--driver",
-						driver,
-						"--uri",
-						connectionURI,
-						"--spec-file",
-						"/specs/table.yaml",
-					},
-					VolumeMounts: []corev1.VolumeMount{
+	existingPod := corev1.Pod{}
+	if err := r.Get(context.TODO(), types.NamespacedName{Name: fmt.Sprintf("%s-apply", table.Name), Namespace: database.Namespace}, &existingPod); err != nil {
+		if kuberneteserrors.IsNotFound(err) {
+			pod := corev1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      fmt.Sprintf("%s-apply", table.Name),
+					Namespace: database.Namespace,
+					Labels:    labels,
+				},
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "v1",
+					Kind:       "Pod",
+				},
+				Spec: corev1.PodSpec{
+					NodeSelector:       nodeSelector,
+					ServiceAccountName: database.Name,
+					RestartPolicy:      corev1.RestartPolicyOnFailure,
+					Containers: []corev1.Container{
 						{
-							Name:      "specs",
-							MountPath: "/specs",
+							Image:           imageName,
+							ImagePullPolicy: corev1.PullAlways,
+							Name:            table.Name,
+							Args: []string{
+								"apply",
+								"--driver",
+								driver,
+								"--uri",
+								connectionURI,
+								"--spec-file",
+								"/specs/table.yaml",
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "specs",
+									MountPath: "/specs",
+								},
+							},
 						},
 					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: "specs",
-					VolumeSource: corev1.VolumeSource{
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: table.Name,
+					Volumes: []corev1.Volume{
+						{
+							Name: "specs",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: table.Name,
+									},
+								},
 							},
 						},
 					},
 				},
-			},
-		},
-	}
-	if err := controllerutil.SetControllerReference(table, &pod, r.scheme); err != nil {
-		return err
-	}
-	err := r.Create(context.TODO(), &pod)
-	if err != nil {
+			}
+			if err := controllerutil.SetControllerReference(table, &pod, r.scheme); err != nil {
+				return err
+			}
+			err := r.Create(context.TODO(), &pod)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		}
+
 		return err
 	}
 
@@ -399,7 +432,7 @@ func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom da
 
 		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
 			if kuberneteserrors.IsNotFound(err) {
-				return "", goerrors.New("secret not found")
+				return "", goerrors.New("table secret not found")
 			} else {
 				return "", err
 			}

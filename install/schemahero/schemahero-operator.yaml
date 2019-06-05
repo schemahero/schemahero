@@ -1,3 +1,260 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: databases.databases.schemahero.io
+spec:
+  group: databases.schemahero.io
+  names:
+    kind: Database
+    plural: databases
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        connection:
+          properties:
+            mysql:
+              properties:
+                uri:
+                  properties:
+                    value:
+                      type: string
+                    valueFrom:
+                      properties:
+                        secretKeyRef:
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              type: string
+                          required:
+                          - name
+                          - key
+                          type: object
+                      type: object
+                  type: object
+              type: object
+            postgres:
+              properties:
+                uri:
+                  properties:
+                    value:
+                      type: string
+                    valueFrom:
+                      properties:
+                        secretKeyRef:
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              type: string
+                          required:
+                          - name
+                          - key
+                          type: object
+                      type: object
+                  type: object
+              type: object
+          type: object
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        schemahero:
+          properties:
+            image:
+              type: string
+            nodeSelector:
+              type: object
+          type: object
+        status:
+          properties:
+            isConnected:
+              type: boolean
+            lastPing:
+              type: string
+          required:
+          - isConnected
+          - lastPing
+          type: object
+  version: v1alpha1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: migrations.schemas.schemahero.io
+spec:
+  group: schemas.schemahero.io
+  names:
+    kind: Migration
+    plural: migrations
+  scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+        status:
+          type: object
+  version: v1alpha1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  creationTimestamp: null
+  labels:
+    controller-tools.k8s.io: "1.0"
+  name: tables.schemas.schemahero.io
+spec:
+  group: schemas.schemahero.io
+  names:
+    kind: Table
+    plural: tables
+  scope: Namespaced
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            database:
+              type: string
+            name:
+              type: string
+            requires:
+              items:
+                type: string
+              type: array
+            schema:
+              properties:
+                mysql:
+                  properties:
+                    columns:
+                      items:
+                        properties:
+                          constraints:
+                            properties:
+                              notNull:
+                                type: boolean
+                            type: object
+                          default:
+                            type: string
+                          name:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - name
+                        - type
+                        type: object
+                      type: array
+                    isDeleted:
+                      type: boolean
+                    primaryKey:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - primaryKey
+                  type: object
+                postgres:
+                  properties:
+                    columns:
+                      items:
+                        properties:
+                          constraints:
+                            properties:
+                              notNull:
+                                type: boolean
+                            type: object
+                          default:
+                            type: string
+                          name:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - name
+                        - type
+                        type: object
+                      type: array
+                    isDeleted:
+                      type: boolean
+                    primaryKey:
+                      items:
+                        type: string
+                      type: array
+                  required:
+                  - primaryKey
+                  type: object
+              type: object
+          required:
+          - database
+          - name
+          - requires
+          - schema
+          type: object
+        status:
+          type: object
+  version: v1alpha1
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -169,43 +426,24 @@ rules:
   - update
   - patch
   - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: schemahero-proxy-role
+rules:
 - apiGroups:
-  - "rbac.authorization.k8s.io"
+  - authentication.k8s.io
   resources:
-  - roles
+  - tokenreviews
   verbs:
-  - get
-  - list
-  - watch
   - create
-  - update
-  - patch
-  - delete
 - apiGroups:
-  - "rbac.authorization.k8s.io"
+  - authorization.k8s.io
   resources:
-  - rolebindings
+  - subjectaccessreviews
   verbs:
-  - get
-  - list
-  - watch
   - create
-  - update
-  - patch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - serviceaccounts
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - update
-  - patch
-  - delete
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -221,11 +459,45 @@ subjects:
   name: default
   namespace: schemahero-system
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: schemahero-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: schemahero-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: schemahero-system
+---
 apiVersion: v1
 kind: Secret
 metadata:
   name: schemahero-webhook-server-secret
   namespace: schemahero-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/port: "8443"
+    prometheus.io/scheme: https
+    prometheus.io/scrape: "true"
+  labels:
+    control-plane: controller-manager
+    controller-tools.k8s.io: "1.0"
+  name: schemahero-controller-manager-metrics-service
+  namespace: schemahero-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+    controller-tools.k8s.io: "1.0"
 ---
 apiVersion: v1
 kind: Service
@@ -263,7 +535,19 @@ spec:
         controller-tools.k8s.io: "1.0"
     spec:
       containers:
-      - command:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8088/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --metrics-addr=127.0.0.1:8088
+        command:
         - /manager
         env:
         - name: POD_NAMESPACE
@@ -281,11 +565,11 @@ spec:
           protocol: TCP
         resources:
           limits:
-            cpu: 200m
-            memory: 100Mi
+            cpu: 100m
+            memory: 30Mi
           requests:
             cpu: 100m
-            memory: 60Mi
+            memory: 20Mi
         volumeMounts:
         - mountPath: /tmp/cert
           name: cert
@@ -296,210 +580,3 @@ spec:
         secret:
           defaultMode: 420
           secretName: schemahero-webhook-server-secret
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  creationTimestamp: null
-  labels:
-    controller-tools.k8s.io: "1.0"
-  name: databases.databases.schemahero.io
-spec:
-  group: databases.schemahero.io
-  names:
-    kind: Database
-    plural: databases
-  scope: Namespaced
-  subresources:
-    status: {}
-  validation:
-    openAPIV3Schema:
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
-          type: string
-        connection:
-          properties:
-            postgres:
-              properties:
-                disableDriftDetection:
-                  type: boolean
-                uri:
-                  properties:
-                    valueFrom:
-                      properties:
-                        secretKeyRef:
-                          properties:
-                            key:
-                              type: string
-                            name:
-                              type: string
-                          required:
-                          - name
-                          - key
-                          type: object
-                      type: object
-                  type: object
-              type: object
-          type: object
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        schemahero:
-          properties:
-            image:
-              type: string
-          type: object
-        status:
-          properties:
-            isConnected:
-              type: boolean
-            lastPing:
-              type: string
-          required:
-          - isConnected
-          - lastPing
-          type: object
-  version: v1alpha1
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  creationTimestamp: null
-  labels:
-    controller-tools.k8s.io: "1.0"
-  name: migrations.schemas.schemahero.io
-spec:
-  group: schemas.schemahero.io
-  names:
-    kind: Migration
-    plural: migrations
-  scope: Namespaced
-  validation:
-    openAPIV3Schema:
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          type: object
-        status:
-          type: object
-  version: v1alpha1
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
----
-apiVersion: apiextensions.k8s.io/v1beta1
-kind: CustomResourceDefinition
-metadata:
-  creationTimestamp: null
-  labels:
-    controller-tools.k8s.io: "1.0"
-  name: tables.schemas.schemahero.io
-spec:
-  group: schemas.schemahero.io
-  names:
-    kind: Table
-    plural: tables
-  scope: Namespaced
-  validation:
-    openAPIV3Schema:
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          properties:
-            database:
-              type: string
-            name:
-              type: string
-            requires:
-              items:
-                type: string
-              type: array
-            schema:
-              properties:
-                postgres:
-                  properties:
-                    columns:
-                      items:
-                        properties:
-                          constraints:
-                            properties:
-                              notNull:
-                                type: boolean
-                            required:
-                            - notNull
-                            type: object
-                          default:
-                            type: string
-                          name:
-                            type: string
-                          type:
-                            type: string
-                        required:
-                        - name
-                        - type
-                        type: object
-                      type: array
-                    primaryKey:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - primaryKey
-                  - columns
-                  type: object
-              required:
-              - postgres
-              type: object
-          required:
-          - database
-          - name
-          - requires
-          - schema
-          type: object
-        status:
-          type: object
-  version: v1alpha1
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
