@@ -104,14 +104,8 @@ bin/schemahero: $(FULLSRC) cmd/schemahero/main.go
 docker-login:
 	echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
 
-.PHONY: installable-manifests-snapshot
-installable-manifests-snapshot:
-	cd config/default; kustomize edit set image schemahero/schemahero-manager:alpha
-	kustomize build config/default > install/schemahero/schemahero-operator.yaml
-	@echo "Manifests were updated in this repo. Push to make sure they are live."
-
 .PHONY: snapshot-release
-snapshot-release: build-snapshot-release installable-manifests-snapshot
+snapshot-release: build-snapshot-release
 	docker push schemahero/schemahero:alpha
 	docker push schemahero/schemahero-manager:alpha
 

@@ -140,6 +140,8 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 			return reconcile.Result{}, err
 		}
 		if database == nil {
+			// TODO get a real logger, this isn't a warning, it's expected, probably debug level
+			fmt.Printf("requeuing table deployment for %q, database is not available\n", instance.Spec.Name)
 			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second * 10,
@@ -225,6 +227,21 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 			return nil, nil
 		}
 		return nil, err
+	}
+
+	// try to parse the secret too, the database may be deployed, but that doesn't mean it's ready
+	// TODO this would be better as a status field on the database object, instead of this leaky
+	// interface
+	if database.Connection.Postgres != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Connection.Postgres.URI)
+		if err != nil {
+			return nil, nil
+		}
+	} else if database.Connection.Mysql != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Connection.Mysql.URI)
+		if err != nil {
+			return nil, nil
+		}
 	}
 
 	return database, nil
@@ -415,7 +432,7 @@ func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom da
 
 		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
 			if kuberneteserrors.IsNotFound(err) {
-				return "", goerrors.New("secret not found")
+				return "", goerrors.New("table secret not found")
 			} else {
 				return "", err
 			}

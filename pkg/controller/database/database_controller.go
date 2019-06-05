@@ -19,6 +19,7 @@ package database
 import (
 	"context"
 	goerrors "errors"
+	"fmt"
 
 	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -146,7 +147,7 @@ func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom
 
 		if err := r.Get(context.TODO(), secretNamespacedName, &secret); err != nil {
 			if kuberneteserrors.IsNotFound(err) {
-				return "", goerrors.New("secret not found")
+				return "", fmt.Errorf("database secret (%s/%s) not found", secretNamespacedName.Namespace, secretNamespacedName.Name)
 			} else {
 				return "", err
 			}
