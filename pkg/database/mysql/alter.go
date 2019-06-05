@@ -5,9 +5,10 @@ import (
 	"strings"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func columnsMatch(col1 *Column, col2 *Column) bool {
+func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	if col1.DataType != col2.DataType {
 		return false
 	}
@@ -29,12 +30,12 @@ func columnsMatch(col1 *Column, col2 *Column) bool {
 	return true
 }
 
-func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQLTableColumn, existingColumn *Column) (string, error) {
+func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
-			column, err := schemaColumnToMysqlColumn(desiredColumn)
+			column, err := schemaColumnToColumn(desiredColumn)
 			if err != nil {
 				return "", err
 			}
@@ -45,7 +46,7 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQ
 
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
-				changes = append(changes, fmt.Sprintf("%s type %s", columnStatement, column.DataType))
+				changes = append(changes, fmt.Sprintf("%s %s", columnStatement, column.DataType))
 			}
 
 			// too much complexity below!
@@ -54,7 +55,7 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQ
 				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
 					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
 						if *existingColumn.Constraints.NotNull == false {
-							changes = append(changes, fmt.Sprintf("%s set not null", columnStatement))
+							changes = append(changes, fmt.Sprintf("%s not null", columnStatement))
 						}
 					}
 				}
@@ -63,7 +64,7 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQ
 				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == false {
 					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
 						if *existingColumn.Constraints.NotNull == true {
-							changes = append(changes, fmt.Sprintf("%s drop not null", columnStatement))
+							changes = append(changes, fmt.Sprintf("%s null", columnStatement))
 						}
 					}
 				}
@@ -74,7 +75,7 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQ
 				return "", nil
 			}
 
-			columnStatement = fmt.Sprintf("alter table `%s` alter column `%s`%s", tableName, existingColumn.Name, strings.Join(changes, " "))
+			columnStatement = fmt.Sprintf("alter table `%s` modify column `%s`%s", tableName, existingColumn.Name, strings.Join(changes, " "))
 
 		}
 	}

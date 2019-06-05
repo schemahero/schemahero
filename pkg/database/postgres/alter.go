@@ -7,9 +7,10 @@ import (
 	"github.com/lib/pq"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func columnsMatch(col1 *Column, col2 *Column) bool {
+func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	if col1.DataType != col2.DataType {
 		return false
 	}
@@ -31,12 +32,12 @@ func columnsMatch(col1 *Column, col2 *Column) bool {
 	return true
 }
 
-func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQLTableColumn, existingColumn *Column) (string, error) {
+func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
-			column, err := schemaColumnToPostgresColumn(desiredColumn)
+			column, err := schemaColumnToColumn(desiredColumn)
 			if err != nil {
 				return "", err
 			}

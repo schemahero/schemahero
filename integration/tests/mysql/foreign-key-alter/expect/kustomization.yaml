@@ -1,0 +1,4 @@
+resources:
+- ./issues.yaml
+- ./projects.yaml
+- ./users.yaml

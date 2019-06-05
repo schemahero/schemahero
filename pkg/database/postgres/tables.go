@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/lib/pq"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 var (
@@ -32,7 +34,76 @@ func (p *PostgresConnection) ListTables() ([]string, error) {
 	return tableNames, nil
 }
 
+func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
+	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
+	// TODO SchemaHero implementation needs to include a schema (database) here
+	// this is pg specific because composite fks need to be handled and this might be the only way?
+	query := `select
+	att2.attname as "child_column",
+	cl.relname as "parent_table",
+	att.attname as "parent_column",
+	conname
+    from
+       (select
+	    unnest(con1.conkey) as "parent",
+	    unnest(con1.confkey) as "child",
+	    con1.confrelid,
+	    con1.conrelid,
+	    con1.conname
+	from
+	    pg_class cl
+	    join pg_namespace ns on cl.relnamespace = ns.oid
+	    join pg_constraint con1 on con1.conrelid = cl.oid
+	where
+	    cl.relname = $1
+	    and con1.contype = 'f'
+       ) con
+       join pg_attribute att on
+	   att.attrelid = con.confrelid and att.attnum = con.child
+       join pg_class cl on
+	   cl.oid = con.confrelid
+       join pg_attribute att2 on
+	   att2.attrelid = con.conrelid and att2.attnum = con.parent`
+
+	rows, err := p.db.Query(query, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	foreignKeys := make([]*types.ForeignKey, 0, 0)
+	for rows.Next() {
+		var childColumn, parentColumn, parentTable, name string
+
+		if err := rows.Scan(&childColumn, &parentTable, &parentColumn, &name); err != nil {
+			return nil, err
+		}
+
+		foreignKey := types.ForeignKey{
+			Name:          name,
+			ParentTable:   parentTable,
+			ChildColumns:  []string{childColumn},
+			ParentColumns: []string{parentColumn},
+		}
+
+		for _, foundFk := range foreignKeys {
+			if foundFk.Name == name {
+				foundFk.ChildColumns = append(foreignKey.ChildColumns, childColumn)
+				foundFk.ParentColumns = append(foreignKey.ParentColumns, parentColumn)
+
+				goto Appended
+			}
+		}
+
+		foreignKeys = append(foreignKeys, &foreignKey)
+
+	Appended:
+	}
+
+	return foreignKeys, nil
+}
+
 func (p *PostgresConnection) GetTablePrimaryKey(tableName string) ([]string, error) {
+	// TODO we should be adding a database name on this select
 	query := `select c.column_name
 from information_schema.table_constraints tc
 join information_schema.constraint_column_usage as ccu using (constraint_schema, constraint_name)
@@ -59,7 +130,7 @@ where constraint_type = 'PRIMARY KEY' and tc.table_name = $1`
 	return columns, nil
 }
 
-func (p *PostgresConnection) GetTableSchema(tableName string) ([]*Column, error) {
+func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
 	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1"
 
 	rows, err := p.db.Query(query, tableName)
@@ -67,9 +138,9 @@ func (p *PostgresConnection) GetTableSchema(tableName string) ([]*Column, error)
 		return nil, err
 	}
 
-	columns := make([]*Column, 0, 0)
+	columns := make([]*types.Column, 0, 0)
 	for rows.Next() {
-		column := Column{}
+		column := types.Column{}
 
 		var maxLength sql.NullInt64
 		var isNullable string
@@ -80,17 +151,21 @@ func (p *PostgresConnection) GetTableSchema(tableName string) ([]*Column, error)
 		}
 
 		if isNullable == "NO" {
-			column.Constraints = &ColumnConstraints{
+			column.Constraints = &types.ColumnConstraints{
 				NotNull: &trueValue,
 			}
 		} else {
-			column.Constraints = &ColumnConstraints{
+			column.Constraints = &types.ColumnConstraints{
 				NotNull: &falseValue,
 			}
 		}
 
 		if columnDefault.Valid {
 			column.ColumnDefault = &columnDefault.String
+		}
+
+		if maxLength.Valid {
+			column.DataType = fmt.Sprintf("%s (%d)", column.DataType, maxLength.Int64)
 		}
 
 		columns = append(columns, &column)

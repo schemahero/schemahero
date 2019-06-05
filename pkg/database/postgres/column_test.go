@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -117,7 +118,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 	tests := []struct {
 		name           string
 		schemaColumn   *schemasv1alpha1.SQLTableColumn
-		expectedColumn *Column
+		expectedColumn *types.Column
 	}{
 		{
 			name: "text",
@@ -125,7 +126,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Name: "t",
 				Type: "text",
 			},
-			expectedColumn: &Column{
+			expectedColumn: &types.Column{
 				DataType:      "text",
 				ColumnDefault: nil,
 				Constraints:   nil,
@@ -137,7 +138,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Name: "c",
 				Type: "character varying (10)",
 			},
-			expectedColumn: &Column{
+			expectedColumn: &types.Column{
 				DataType:      "character varying (10)",
 				ColumnDefault: nil,
 			},
@@ -148,7 +149,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Name: "vc",
 				Type: "varchar (10)",
 			},
-			expectedColumn: &Column{
+			expectedColumn: &types.Column{
 				DataType:      "character varying (10)",
 				ColumnDefault: nil,
 			},
@@ -159,7 +160,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Name: "ip",
 				Type: "cidr",
 			},
-			expectedColumn: &Column{
+			expectedColumn: &types.Column{
 				DataType:      "cidr",
 				ColumnDefault: nil,
 				Constraints:   nil,
@@ -171,7 +172,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			column, err := schemaColumnToPostgresColumn(test.schemaColumn)
+			column, err := schemaColumnToColumn(test.schemaColumn)
 			req.NoError(err)
 			assert.Equal(t, test.expectedColumn, column)
 		})

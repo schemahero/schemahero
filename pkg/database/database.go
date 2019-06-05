@@ -65,7 +65,19 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, statement)
+		} else if d.Viper.GetString("driver") == "mysql" {
+			if parsed.Spec.Schema.Mysql == nil {
+				fmt.Printf("skipping file %s because there is no mysql spec\n", info.Name())
+			}
+
+			statement, err := mysql.CreateTableStatement(parsed.Spec.Name, parsed.Spec.Schema.Mysql)
+			if err != nil {
+				return err
+			}
+
+			statements = append(statements, statement)
 		}
+
 		return nil
 	}
 

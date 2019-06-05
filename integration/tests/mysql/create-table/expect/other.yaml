@@ -1,0 +1,20 @@
+apiVersion: schemas.schemahero.io/v1alpha1
+kind: Table
+metadata:
+  name: other
+spec:
+  database: schemahero
+  name: other
+  schema:
+    mysql:
+      primaryKey:
+      - id
+      columns:
+      - name: id
+        type: int
+        constraints:
+          notNull: true
+      - name: something
+        type: varchar (255)
+        constraints:
+          notNull: true

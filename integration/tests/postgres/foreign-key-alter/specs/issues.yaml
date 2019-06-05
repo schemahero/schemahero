@@ -1,0 +1,18 @@
+database: schemahero
+name: issues
+schema:
+  postgres:
+    primaryKey: [id]
+    foreignKeys:
+      - columns:
+          - project_id
+        references:
+          table: projects
+          columns:
+            - id
+        name: renamed_fkey
+    columns:
+      - name: id
+        type: integer
+      - name: project_id
+        type: integer

@@ -21,16 +21,16 @@ import (
 )
 
 type TableSchema struct {
-	Postgres *SQLTableSchema `json:"postgres,omitempty"`
-	Mysql    *SQLTableSchema `json:"mysql,omitempty"`
+	Postgres *SQLTableSchema `json:"postgres,omitempty" yaml:"postgres,omitempty"`
+	Mysql    *SQLTableSchema `json:"mysql,omitempty" yaml:"mysql,omitempty"`
 }
 
 // TableSpec defines the desired state of Table
 type TableSpec struct {
-	Database string       `json:"database"`
-	Name     string       `json:"name"`
-	Requires []string     `json:"requires"`
-	Schema   *TableSchema `json:"schema"`
+	Database string       `json:"database" yaml:"database"`
+	Name     string       `json:"name" yaml:"name"`
+	Requires []string     `json:"requires,omitempty" yaml:"requires,omitempty"`
+	Schema   *TableSchema `json:"schema" yaml:"schema"`
 }
 
 // TableStatus defines the observed state of Table

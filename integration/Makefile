@@ -1,28 +1,26 @@
-export GO_BUILD=env GO111MODULE=on go build
 
-TAG ?= $(shell uuidgen)
+SHELL := /bin/bash
+IMAGE := "ttl.sh/$(shell uuidgen):1h"
+export IMAGE
 
 .PHONY: run
-run: build
-	bin/schemahero-integration-tests run \
-		--manager-image-name "ttl.sh/sh/manager-$(TAG):1h" \
-		--schemahero-image-name "ttl.sh/sh/$(TAG):1h"
+run: build postgres mysql
 
-integration-test-image:
-	docker build -t ttl.sh/sh/$(TAG):1h -f ../Dockerfile.schemahero ..
-	docker build -t ttl.sh/sh/manager-$(TAG):1h -f ../Dockerfile.manager ..
-	docker push ttl.sh/sh/$(TAG):1h
-	docker push ttl.sh/sh/manager-$(TAG):1h
+.PHONY: postgres
+postgres: build
+	make -C tests/postgres/create-table run
+	make -C tests/postgres/foreign-key-create run
+	make -C tests/postgres/foreign-key-drop run
+	make -C tests/postgres/foreign-key-alter run
+
+.PHONY: mysql
+mysql: build
+	make -C tests/mysql/create-table run
+	make -C tests/mysql/foreign-key-create run
+	make -C tests/mysql/foreign-key-drop run
+	make -C tests/mysql/foreign-key-alter run
 
 .PHONY: build
-build: GO111MODULE = "on"
 build:
-	rm -rf bin/schemahero-integration-tests
-	$(GO_BUILD) \
-		-ldflags "\
-			-X ${VERSION_PACKAGE}.version=${VERSION} \
-			-X ${VERSION_PACKAGE}.gitSHA=${GIT_SHA} \
-			-X ${VERSION_PACKAGE}.buildTime=${DATE}" \
-		-o bin/schemahero-integration-tests \
-		./cmd/integration
-	@echo "built bin/schemahero-integration-tests"
+	docker build -t $(IMAGE) -f ../Dockerfile.schemahero ..
+	docker push $(IMAGE)

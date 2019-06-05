@@ -17,10 +17,11 @@ spec:
   ports:
   - name: postgresql
     port: 5432
+    nodePort: 30432
     targetPort: postgresql
   selector:
     app: postgresql
-  type: ClusterIP
+  type: NodePort
 ---
 apiVersion: apps/v1beta2
 kind: StatefulSet

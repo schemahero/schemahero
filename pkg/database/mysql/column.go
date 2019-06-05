@@ -4,42 +4,14 @@ import (
 	"fmt"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-type ColumnConstraints struct {
-	NotNull *bool
-}
-
-type Column struct {
-	Name          string
-	DataType      string
-	ColumnDefault *string
-	Constraints   *ColumnConstraints
-}
-
-func MysqlColumnToSchemaColumn(column *Column) (*schemasv1alpha1.SQLTableColumn, error) {
-	constraints := &schemasv1alpha1.SQLTableColumnConstraints{
-		NotNull: column.Constraints.NotNull,
-	}
-
-	schemaColumn := &schemasv1alpha1.SQLTableColumn{
-		Name:        column.Name,
-		Type:        column.DataType,
-		Constraints: constraints,
-	}
-
-	if column.ColumnDefault != nil {
-		schemaColumn.Default = *column.ColumnDefault
-	}
-
-	return schemaColumn, nil
-}
-
-func schemaColumnToMysqlColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*Column, error) {
-	column := &Column{}
+func schemaColumnToColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*types.Column, error) {
+	column := &types.Column{}
 
 	if schemaColumn.Constraints != nil {
-		column.Constraints = &ColumnConstraints{
+		column.Constraints = &types.ColumnConstraints{
 			NotNull: schemaColumn.Constraints.NotNull,
 		}
 	}
@@ -74,7 +46,7 @@ func schemaColumnToMysqlColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*C
 }
 
 func mysqlColumnAsInsert(column *schemasv1alpha1.SQLTableColumn) (string, error) {
-	mysqlColumn, err := schemaColumnToMysqlColumn(column)
+	mysqlColumn, err := schemaColumnToColumn(column)
 	if err != nil {
 		return "", err
 	}

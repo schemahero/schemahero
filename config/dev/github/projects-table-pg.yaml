@@ -1,0 +1,23 @@
+apiVersion: schemas.schemahero.io/v1alpha1
+kind: Table
+metadata:
+  name: projects
+spec:
+  database: testdb
+  name: projects
+  requires: []
+  schema:
+    postgres:
+      primaryKey: [id]
+      foreignKeys:
+        - columns:
+            - id
+          references:
+            table: users
+            columns:
+              - id
+      columns:
+        - name: id
+          type: integer
+        - name: user_id
+          type: integer

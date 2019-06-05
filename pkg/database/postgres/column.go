@@ -6,42 +6,14 @@ import (
 	"github.com/lib/pq"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-type ColumnConstraints struct {
-	NotNull *bool
-}
-
-type Column struct {
-	Name          string
-	DataType      string
-	ColumnDefault *string
-	Constraints   *ColumnConstraints
-}
-
-func PostgresColumnToSchemaColumn(column *Column) (*schemasv1alpha1.SQLTableColumn, error) {
-	constraints := &schemasv1alpha1.SQLTableColumnConstraints{
-		NotNull: column.Constraints.NotNull,
-	}
-
-	schemaColumn := &schemasv1alpha1.SQLTableColumn{
-		Name:        column.Name,
-		Type:        column.DataType,
-		Constraints: constraints,
-	}
-
-	if column.ColumnDefault != nil {
-		schemaColumn.Default = *column.ColumnDefault
-	}
-
-	return schemaColumn, nil
-}
-
-func schemaColumnToPostgresColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*Column, error) {
-	column := &Column{}
+func schemaColumnToColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*types.Column, error) {
+	column := &types.Column{}
 
 	if schemaColumn.Constraints != nil {
-		column.Constraints = &ColumnConstraints{
+		column.Constraints = &types.ColumnConstraints{
 			NotNull: schemaColumn.Constraints.NotNull,
 		}
 	}
@@ -82,7 +54,7 @@ func postgresColumnAsInsert(column *schemasv1alpha1.SQLTableColumn) (string, err
 	// 2. create table "users" ("id" bigint,"login" varchar(255),"name" varchar(255))
 
 	// if the column type is a known (safe) type, pass it unquoted, else pass whatever we received as quoted
-	postgresColumn, err := schemaColumnToPostgresColumn(column)
+	postgresColumn, err := schemaColumnToColumn(column)
 	if err != nil {
 		return "", err
 	}
