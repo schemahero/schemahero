@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"time"
 
-	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
-	databasesclientv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
+	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	databasesclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha2"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,7 +72,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Table
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha1.Table{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &schemasv1alpha2.Table{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
 	// 	IsController: true,
-	// 	OwnerType:    &schemasv1alpha1.Table{},
+	// 	OwnerType:    &schemasv1alpha2.Table{},
 	// })
 	// if err != nil {
 	// 	return err
@@ -127,7 +127,7 @@ type ReconcileTable struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables/status,verbs=get;update;patch
 func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Table instance
-	instance := &schemasv1alpha1.Table{}
+	instance := &schemasv1alpha2.Table{}
 	instanceErr := r.Get(context.TODO(), request.NamespacedName, instance)
 
 	pod := &corev1.Pod{}
@@ -210,12 +210,12 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 	return reconcile.Result{}, instanceErr
 }
 
-func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha1.Database, error) {
+func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha2.Database, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, err
 	}
-	databasesClient, err := databasesclientv1alpha1.NewForConfig(cfg)
+	databasesClient, err := databasesclientv1alpha2.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +247,7 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 	return database, nil
 }
 
-func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.DatabaseConnection, tableSchema *schemasv1alpha1.TableSchema) bool {
+func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha2.DatabaseConnection, tableSchema *schemasv1alpha2.TableSchema) bool {
 	if connection.Postgres != nil {
 		return tableSchema.Postgres != nil
 	} else if connection.Mysql != nil {
@@ -257,7 +257,7 @@ func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha1.
 	return false
 }
 
-func (r *ReconcileTable) deploy(database *databasesv1alpha1.Database, table *schemasv1alpha1.Table) error {
+func (r *ReconcileTable) deploy(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table) error {
 	if err := r.ensureTableConfigMap(database, table); err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func (r *ReconcileTable) deploy(database *databasesv1alpha1.Database, table *sch
 	return nil
 }
 
-func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha1.Database, table *schemasv1alpha1.Table) error {
+func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table) error {
 	b, err := yaml.Marshal(table.Spec)
 	if err != nil {
 		return err
@@ -307,7 +307,7 @@ func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha1.Databa
 	return nil
 }
 
-func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha1.Database, table *schemasv1alpha1.Table) error {
+func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table) error {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 	driver := ""
@@ -414,7 +414,7 @@ func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha1.Database, ta
 	return nil
 }
 
-func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha1.ValueOrValueFrom) (string, error) {
+func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha2.ValueOrValueFrom) (string, error) {
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}

@@ -16,7 +16,7 @@ limitations under the License.
 
 // Generate deepcopy for apis
 //go:generate go run ../../vendor/k8s.io/code-generator/cmd/deepcopy-gen/main.go -O zz_generated.deepcopy -i ./... -h ../../hack/boilerplate.go.txt
-//go:generate go run ../../vendor/k8s.io/code-generator/cmd/client-gen/main.go --output-package=github.com/schemahero/schemahero/pkg/client --clientset-name schemaheroclientset --input-base github.com/schemahero/schemahero/pkg/apis --input databases/v1alpha1 --input schemas/v1alpha1 -h ../../hack/boilerplate.go.txt
+//go:generate go run ../../vendor/k8s.io/code-generator/cmd/client-gen/main.go --output-package=github.com/schemahero/schemahero/pkg/client --clientset-name schemaheroclientset --input-base github.com/schemahero/schemahero/pkg/apis --input databases/v1alpha2 --input schemas/v1alpha2 -h ../../hack/boilerplate.go.txt
 
 // Package apis contains Kubernetes API groups.
 package apis

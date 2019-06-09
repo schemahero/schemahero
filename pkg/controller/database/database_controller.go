@@ -21,7 +21,7 @@ import (
 	goerrors "errors"
 	"fmt"
 
-	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha1"
+	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -64,7 +64,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Database
-	err = c.Watch(&source.Kind{Type: &databasesv1alpha1.Database{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &databasesv1alpha2.Database{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Uncomment watch a Deployment created by Database - change this for objects you create
 	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &databasesv1alpha1.Database{},
+		OwnerType:    &databasesv1alpha2.Database{},
 	})
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ type ReconcileDatabase struct {
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases/status,verbs=get;update;patch
 func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Database instance
-	instance := &databasesv1alpha1.Database{}
+	instance := &databasesv1alpha2.Database{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -129,7 +129,7 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha1.ValueOrValueFrom) (string, error) {
+func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha2.ValueOrValueFrom) (string, error) {
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}

@@ -18,8 +18,8 @@ limitations under the License.
 package schemaheroclientset
 
 import (
-	databasesv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha1"
+	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha2"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -27,42 +27,42 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	DatabasesV1alpha1() databasesv1alpha1.DatabasesV1alpha1Interface
+	DatabasesV1alpha2() databasesv1alpha2.DatabasesV1alpha2Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Databases() databasesv1alpha1.DatabasesV1alpha1Interface
-	SchemasV1alpha1() schemasv1alpha1.SchemasV1alpha1Interface
+	Databases() databasesv1alpha2.DatabasesV1alpha2Interface
+	SchemasV1alpha2() schemasv1alpha2.SchemasV1alpha2Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Schemas() schemasv1alpha1.SchemasV1alpha1Interface
+	Schemas() schemasv1alpha2.SchemasV1alpha2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	databasesV1alpha1 *databasesv1alpha1.DatabasesV1alpha1Client
-	schemasV1alpha1   *schemasv1alpha1.SchemasV1alpha1Client
+	databasesV1alpha2 *databasesv1alpha2.DatabasesV1alpha2Client
+	schemasV1alpha2   *schemasv1alpha2.SchemasV1alpha2Client
 }
 
-// DatabasesV1alpha1 retrieves the DatabasesV1alpha1Client
-func (c *Clientset) DatabasesV1alpha1() databasesv1alpha1.DatabasesV1alpha1Interface {
-	return c.databasesV1alpha1
+// DatabasesV1alpha2 retrieves the DatabasesV1alpha2Client
+func (c *Clientset) DatabasesV1alpha2() databasesv1alpha2.DatabasesV1alpha2Interface {
+	return c.databasesV1alpha2
 }
 
 // Deprecated: Databases retrieves the default version of DatabasesClient.
 // Please explicitly pick a version.
-func (c *Clientset) Databases() databasesv1alpha1.DatabasesV1alpha1Interface {
-	return c.databasesV1alpha1
+func (c *Clientset) Databases() databasesv1alpha2.DatabasesV1alpha2Interface {
+	return c.databasesV1alpha2
 }
 
-// SchemasV1alpha1 retrieves the SchemasV1alpha1Client
-func (c *Clientset) SchemasV1alpha1() schemasv1alpha1.SchemasV1alpha1Interface {
-	return c.schemasV1alpha1
+// SchemasV1alpha2 retrieves the SchemasV1alpha2Client
+func (c *Clientset) SchemasV1alpha2() schemasv1alpha2.SchemasV1alpha2Interface {
+	return c.schemasV1alpha2
 }
 
 // Deprecated: Schemas retrieves the default version of SchemasClient.
 // Please explicitly pick a version.
-func (c *Clientset) Schemas() schemasv1alpha1.SchemasV1alpha1Interface {
-	return c.schemasV1alpha1
+func (c *Clientset) Schemas() schemasv1alpha2.SchemasV1alpha2Interface {
+	return c.schemasV1alpha2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -81,11 +81,11 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.databasesV1alpha1, err = databasesv1alpha1.NewForConfig(&configShallowCopy)
+	cs.databasesV1alpha2, err = databasesv1alpha2.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.schemasV1alpha1, err = schemasv1alpha1.NewForConfig(&configShallowCopy)
+	cs.schemasV1alpha2, err = schemasv1alpha2.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -101,8 +101,8 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.databasesV1alpha1 = databasesv1alpha1.NewForConfigOrDie(c)
-	cs.schemasV1alpha1 = schemasv1alpha1.NewForConfigOrDie(c)
+	cs.databasesV1alpha2 = databasesv1alpha2.NewForConfigOrDie(c)
+	cs.schemasV1alpha2 = schemasv1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -111,8 +111,8 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.databasesV1alpha1 = databasesv1alpha1.New(c)
-	cs.schemasV1alpha1 = schemasv1alpha1.New(c)
+	cs.databasesV1alpha2 = databasesv1alpha2.New(c)
+	cs.schemasV1alpha2 = schemasv1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

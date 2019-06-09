@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/spf13/viper"
@@ -43,7 +43,7 @@ func (d *Database) CreateFixturesSync() error {
 			return err
 		}
 
-		parsed := schemasv1alpha1.Table{}
+		parsed := schemasv1alpha2.Table{}
 		if err := yaml.Unmarshal(fileData, &parsed); err != nil {
 			fmt.Printf("%s\n", err)
 			return err
@@ -109,7 +109,7 @@ func (d *Database) ApplySync() error {
 		return err
 	}
 
-	var tableSpec schemasv1alpha1.TableSpec
+	var tableSpec schemasv1alpha2.TableSpec
 	if err := yaml.Unmarshal(specContents, &tableSpec); err != nil {
 		return err
 	}

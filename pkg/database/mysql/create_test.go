@@ -3,7 +3,7 @@ package mysql
 import (
 	"testing"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12,18 +12,18 @@ import (
 func Test_CreateTableStatement(t *testing.T) {
 	tests := []struct {
 		name              string
-		tableSchema       *schemasv1alpha1.SQLTableSchema
+		tableSchema       *schemasv1alpha2.SQLTableSchema
 		tableName         string
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			tableSchema: &schemasv1alpha1.SQLTableSchema{
+			tableSchema: &schemasv1alpha2.SQLTableSchema{
 				PrimaryKey: []string{
 					"id",
 				},
-				Columns: []*schemasv1alpha1.SQLTableColumn{
-					&schemasv1alpha1.SQLTableColumn{
+				Columns: []*schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha2.SQLTableColumn{
 						Name: "id",
 						Type: "integer",
 					},
@@ -34,21 +34,21 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "composite primary key",
-			tableSchema: &schemasv1alpha1.SQLTableSchema{
+			tableSchema: &schemasv1alpha2.SQLTableSchema{
 				PrimaryKey: []string{
 					"one",
 					"two",
 				},
-				Columns: []*schemasv1alpha1.SQLTableColumn{
-					&schemasv1alpha1.SQLTableColumn{
+				Columns: []*schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha2.SQLTableColumn{
 						Name: "one",
 						Type: "integer",
 					},
-					&schemasv1alpha1.SQLTableColumn{
+					&schemasv1alpha2.SQLTableColumn{
 						Name: "two",
 						Type: "integer",
 					},
-					&schemasv1alpha1.SQLTableColumn{
+					&schemasv1alpha2.SQLTableColumn{
 						Name: "three",
 						Type: "varchar(255)",
 					},

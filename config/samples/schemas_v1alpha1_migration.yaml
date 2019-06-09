@@ -1,4 +1,4 @@
-apiVersion: schemas.schemahero.io/v1alpha1
+apiVersion: schemas.schemahero.io/v1alpha2
 kind: Migration
 metadata:
   labels:
@@ -12,4 +12,4 @@ spec:
       `created` datetime NOT NULL,
       PRIMARY KEY (`id`),
       UNIQUE KEY `email` (`email`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;    
+    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

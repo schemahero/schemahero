@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
@@ -13,12 +13,12 @@ import (
 func Test_postgresColumnAsInsert(t *testing.T) {
 	tests := []struct {
 		name              string
-		column            *schemasv1alpha1.SQLTableColumn
+		column            *schemasv1alpha2.SQLTableColumn
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			column: &schemasv1alpha1.SQLTableColumn{
+			column: &schemasv1alpha2.SQLTableColumn{
 				Name: "c",
 				Type: "integer",
 			},
@@ -26,7 +26,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "text",
-			column: &schemasv1alpha1.SQLTableColumn{
+			column: &schemasv1alpha2.SQLTableColumn{
 				Name: "t",
 				Type: "text",
 			},
@@ -34,7 +34,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "timestamp without time zone",
-			column: &schemasv1alpha1.SQLTableColumn{
+			column: &schemasv1alpha2.SQLTableColumn{
 				Name: "t",
 				Type: "timestamp without time zone",
 			},
@@ -42,7 +42,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "character varying (4)",
-			column: &schemasv1alpha1.SQLTableColumn{
+			column: &schemasv1alpha2.SQLTableColumn{
 				Name: "c",
 				Type: "character varying (4)",
 			},
@@ -65,13 +65,13 @@ func Test_InsertColumnStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
-		desiredColumn     *schemasv1alpha1.SQLTableColumn
+		desiredColumn     *schemasv1alpha2.SQLTableColumn
 		expectedStatement string
 	}{
 		{
 			name:      "add column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+			desiredColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "a",
 				Type: "integer",
 			},
@@ -80,10 +80,10 @@ func Test_InsertColumnStatement(t *testing.T) {
 		{
 			name:      "add not null column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+			desiredColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "a",
 				Type: "integer",
-				Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},
@@ -92,10 +92,10 @@ func Test_InsertColumnStatement(t *testing.T) {
 		{
 			name:      "add null column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+			desiredColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "a",
 				Type: "integer",
-				Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
 					NotNull: &falseValue,
 				},
 			},
@@ -117,12 +117,12 @@ func Test_InsertColumnStatement(t *testing.T) {
 func Test_schemaColumnToPostgresColumn(t *testing.T) {
 	tests := []struct {
 		name           string
-		schemaColumn   *schemasv1alpha1.SQLTableColumn
+		schemaColumn   *schemasv1alpha2.SQLTableColumn
 		expectedColumn *types.Column
 	}{
 		{
 			name: "text",
-			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+			schemaColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "t",
 				Type: "text",
 			},
@@ -134,7 +134,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		},
 		{
 			name: "character varying (10)",
-			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+			schemaColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "c",
 				Type: "character varying (10)",
 			},
@@ -145,7 +145,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		},
 		{
 			name: "varchar (10)",
-			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+			schemaColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "vc",
 				Type: "varchar (10)",
 			},
@@ -156,7 +156,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		},
 		{
 			name: "cidr",
-			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+			schemaColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "ip",
 				Type: "cidr",
 			},

@@ -3,7 +3,7 @@ package mysql
 import (
 	"testing"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
@@ -13,12 +13,12 @@ import (
 func Test_mysqlColumnAsInsert(t *testing.T) {
 	tests := []struct {
 		name              string
-		column            *schemasv1alpha1.SQLTableColumn
+		column            *schemasv1alpha2.SQLTableColumn
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			column: &schemasv1alpha1.SQLTableColumn{
+			column: &schemasv1alpha2.SQLTableColumn{
 				Name: "c",
 				Type: "integer",
 			},
@@ -41,13 +41,13 @@ func Test_InsertColumnStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
-		desiredColumn     *schemasv1alpha1.SQLTableColumn
+		desiredColumn     *schemasv1alpha2.SQLTableColumn
 		expectedStatement string
 	}{
 		{
 			name:      "add column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+			desiredColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "a",
 				Type: "integer",
 			},
@@ -56,10 +56,10 @@ func Test_InsertColumnStatement(t *testing.T) {
 		{
 			name:      "add not null column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+			desiredColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "a",
 				Type: "integer",
-				Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},
@@ -68,10 +68,10 @@ func Test_InsertColumnStatement(t *testing.T) {
 		{
 			name:      "add null column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha1.SQLTableColumn{
+			desiredColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "a",
 				Type: "integer",
-				Constraints: &schemasv1alpha1.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
 					NotNull: &falseValue,
 				},
 			},
@@ -93,12 +93,12 @@ func Test_InsertColumnStatement(t *testing.T) {
 func Test_schemaColumnToMysqlColumn(t *testing.T) {
 	tests := []struct {
 		name           string
-		schemaColumn   *schemasv1alpha1.SQLTableColumn
+		schemaColumn   *schemasv1alpha2.SQLTableColumn
 		expectedColumn *types.Column
 	}{
 		{
 			name: "varchar (10)",
-			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+			schemaColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "vc",
 				Type: "varchar (10)",
 			},
@@ -109,7 +109,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 		},
 		{
 			name: "bool",
-			schemaColumn: &schemasv1alpha1.SQLTableColumn{
+			schemaColumn: &schemasv1alpha2.SQLTableColumn{
 				Name: "b",
 				Type: "bool",
 			},

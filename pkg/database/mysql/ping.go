@@ -4,7 +4,7 @@ import (
 	"time"
 
 	//	_ "github.com/lib/mysql"
-	databasesclientv1alpha1 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha1"
+	databasesclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -14,7 +14,7 @@ func (m *MysqlConnection) CheckAlive(namespace string, instanceName string) (boo
 	if err != nil {
 		return false, err
 	}
-	databasesClient, err := databasesclientv1alpha1.NewForConfig(cfg)
+	databasesClient, err := databasesclientv1alpha2.NewForConfig(cfg)
 	if err != nil {
 		return false, err
 	}
