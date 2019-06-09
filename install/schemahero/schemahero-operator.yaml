@@ -199,6 +199,32 @@ spec:
                         - type
                         type: object
                       type: array
+                    foreignKeys:
+                      items:
+                        properties:
+                          columns:
+                            items:
+                              type: string
+                            type: array
+                          name:
+                            type: string
+                          references:
+                            properties:
+                              columns:
+                                items:
+                                  type: string
+                                type: array
+                              table:
+                                type: string
+                            required:
+                            - table
+                            - columns
+                            type: object
+                        required:
+                        - columns
+                        - references
+                        type: object
+                      type: array
                     isDeleted:
                       type: boolean
                     primaryKey:
@@ -229,6 +255,32 @@ spec:
                         - type
                         type: object
                       type: array
+                    foreignKeys:
+                      items:
+                        properties:
+                          columns:
+                            items:
+                              type: string
+                            type: array
+                          name:
+                            type: string
+                          references:
+                            properties:
+                              columns:
+                                items:
+                                  type: string
+                                type: array
+                              table:
+                                type: string
+                            required:
+                            - table
+                            - columns
+                            type: object
+                        required:
+                        - columns
+                        - references
+                        type: object
+                      type: array
                     isDeleted:
                       type: boolean
                     primaryKey:
@@ -242,7 +294,6 @@ spec:
           required:
           - database
           - name
-          - requires
           - schema
           type: object
         status:
