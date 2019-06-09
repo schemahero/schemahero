@@ -1,0 +1,47 @@
+apiVersion: schemas.schemahero.io/v1alpha1
+kind: Table
+metadata:
+  name: user-project
+spec:
+  database: schemahero
+  name: user_project
+  schema:
+    mysql:
+      primaryKey:
+      - project_id
+      - user_id
+      foreignKeys:
+      - columns:
+        - user_id
+        references:
+          table: users
+          columns:
+          - id
+        name: user_project_ibfk_1
+      - columns:
+        - project_id
+        references:
+          table: projects
+          columns:
+          - id
+        name: user_project_ibfk_2
+      - columns:
+        - misc_id
+        references:
+          table: misc
+          columns:
+          - pk
+        name: user_project_ibfk_3
+      columns:
+      - name: user_id
+        type: int
+        constraints:
+          notNull: true
+      - name: project_id
+        type: int
+        constraints:
+          notNull: true
+      - name: misc_id
+        type: varchar (255)
+        constraints:
+          notNull: true

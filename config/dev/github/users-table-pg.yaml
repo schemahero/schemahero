@@ -1,8 +1,6 @@
 apiVersion: schemas.schemahero.io/v1alpha1
 kind: Table
 metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
   name: users
 spec:
   database: testdb

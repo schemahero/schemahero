@@ -6,16 +6,13 @@
 [![Godoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/schemahero/schemahero)
 [![LICENSE](https://img.shields.io/github/license/schemahero/schemahero.svg?style=flat-square)](https://github.com/schemahero/schemahero/blob/master/LICENSE)
 
-**Note**: This is a work-in-progress that is not yet functional. SchemaHero is a an experiment right now, and does not have enough implementation to be used in any environment. Work is in progress.
-
 ## What is SchemaHero?
 
-SchemaHero is a Kubernetes Operator for Declarative Schema Management for various databases. SchemaHero has the following goals:
+SchemaHero is a Kubernetes Operator for [Declarative Schema Management](https://schemahero.io/background/declarative-schema-management/) for [various databases](https://schemahero.io/databases/). SchemaHero has the following goals:
 
-1. Database tables can be expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_table.yaml) that can be updated and deployed to the cluster.
-2. Database migrations can be written as SQL statements, expressed as [Kubernetes resources](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_migration.yaml) that can be deployed to the cluster.
-3. Database schemas can be [monitored for drift](https://github.com/schemahero/schemahero/blob/master/config/samples/databases_v1alpha1_database.yaml) and brought back to the desired state automatically.
-4. Schemas and migations can [require other schemas or migrations](https://github.com/schemahero/schemahero/blob/master/config/samples/schemas_v1alpha1_table.yaml#L30) instead of ordering with timestamps and/or sequences.
+1. Database table schemas can be expressed as [Kubernetes resources](https://schemahero.io/how-to-use/deploying-tables/creating-tables/) that can be deployed to a cluster.
+2. Database schemas can be edited and deployed to the cluster. SchemaHero will calculate the required change (`ALTER TABLE` statement) and apply it.
+3. SchemaHero can manage databases that are deployed to the cluster, or external to the cluster (RDS, Google CloudSQL, etc).
 
 ## Getting Started
 

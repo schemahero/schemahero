@@ -1,0 +1,3 @@
+resources:
+- ./other.yaml
+- ./users.yaml

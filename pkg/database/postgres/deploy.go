@@ -6,19 +6,20 @@ import (
 	"fmt"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func DeployPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha1.SQLTableSchema) error {
-	db, err := sql.Open("postgres", uri)
+	p, err := Connect(uri)
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer p.db.Close()
 
 	// determine if the table exists
 	query := `select count(1) from information_schema.tables where table_name = $1`
 	fmt.Printf("Executing query %q\n", query)
-	row := db.QueryRow(query, tableName)
+	row := p.db.QueryRow(query, tableName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
 		return err
@@ -32,7 +33,7 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		}
 
 		fmt.Printf("Executing query %q\n", query)
-		_, err = db.Exec(query)
+		_, err = p.db.Exec(query)
 		if err != nil {
 			return err
 		}
@@ -42,12 +43,11 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 
 	// table needs to be altered?
 	query = `select
-		column_name, column_default, is_nullable, data_type,
-		character_maximum_length
+		column_name, column_default, is_nullable, data_type, character_maximum_length
 		from information_schema.columns
 		where table_name = $1`
 	fmt.Printf("Executing query %q\n", query)
-	rows, err := db.Query(query, tableName)
+	rows, err := p.db.Query(query, tableName)
 	if err != nil {
 		return err
 	}
@@ -58,17 +58,16 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		var columnDefault sql.NullString
 		var charMaxLength sql.NullInt64
 
-		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType,
-			&charMaxLength); err != nil {
+		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
 			return err
 		}
 
 		foundColumnNames = append(foundColumnNames, columnName)
 
-		existingColumn := Column{
+		existingColumn := types.Column{
 			Name:        columnName,
 			DataType:    dataType,
-			Constraints: &ColumnConstraints{},
+			Constraints: &types.ColumnConstraints{},
 		}
 
 		if isNullable == "NO" {
@@ -110,9 +109,73 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		}
 	}
 
+	// foreign key changes
+	droppedKeys := []string{}
+	currentForeignKeys, err := p.ListTableForeignKeys("", tableName)
+	if err != nil {
+		return err
+	}
+	for _, foreignKey := range postgresTableSchema.ForeignKeys {
+		var statement string
+		var err error
+
+		var matchedForeignKey *types.ForeignKey
+		for _, currentForeignKey := range currentForeignKeys {
+			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
+				goto Next
+			}
+
+			matchedForeignKey = currentForeignKey
+		}
+
+		// drop and readd?  is this always ok
+		// TODO can we alter
+		if matchedForeignKey != nil {
+			statement, err = RemoveForeignKeyStatement(tableName, matchedForeignKey)
+			if err != nil {
+				return err
+			}
+			droppedKeys = append(droppedKeys, matchedForeignKey.Name)
+			alterAndDropStatements = append(alterAndDropStatements, statement)
+		}
+
+		statement, err = AddForeignKeyStatement(tableName, foreignKey)
+		if err != nil {
+			return err
+		}
+		alterAndDropStatements = append(alterAndDropStatements, statement)
+
+	Next:
+	}
+
+	for _, currentForeignKey := range currentForeignKeys {
+		var statement string
+		var err error
+
+		for _, foreignKey := range postgresTableSchema.ForeignKeys {
+			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
+				goto NextCurrentFK
+			}
+		}
+
+		for _, droppedKey := range droppedKeys {
+			if droppedKey == currentForeignKey.Name {
+				goto NextCurrentFK
+			}
+		}
+
+		statement, err = RemoveForeignKeyStatement(tableName, currentForeignKey)
+		if err != nil {
+			return err
+		}
+		alterAndDropStatements = append(alterAndDropStatements, statement)
+
+	NextCurrentFK:
+	}
+
 	for _, alterOrDropStatement := range alterAndDropStatements {
 		fmt.Printf("Executing query %q\n", alterOrDropStatement)
-		if _, err = db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
+		if _, err = p.db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
 			return err
 		}
 	}

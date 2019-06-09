@@ -16,19 +16,31 @@ limitations under the License.
 
 package v1alpha1
 
+type SQLTableForeignKeyReferences struct {
+	Table   string   `json:"table"`
+	Columns []string `json:"columns"`
+}
+
+type SQLTableForeignKey struct {
+	Columns    []string                     `json:"columns" yaml:"columns"`
+	References SQLTableForeignKeyReferences `json:"references" yaml:"references"`
+	Name       string                       `json:"name,omitempty" yaml:"name,omitempty"`
+}
+
 type SQLTableColumnConstraints struct {
 	NotNull *bool `json:"notNull,omitempty" yaml:"notNull,omitempty"`
 }
 
 type SQLTableColumn struct {
-	Name        string                     `json:"name"`
-	Type        string                     `json:"type"`
-	Constraints *SQLTableColumnConstraints `json:"constraints,omitempty"`
-	Default     string                     `json:"default,omitempty"`
+	Name        string                     `json:"name" yaml:"name"`
+	Type        string                     `json:"type" yaml:"type"`
+	Constraints *SQLTableColumnConstraints `json:"constraints,omitempty" yaml:"constraints,omitempty"`
+	Default     string                     `json:"default,omitempty" yaml:"defualt,omitempty"`
 }
 
 type SQLTableSchema struct {
-	PrimaryKey []string          `json:"primaryKey" yaml:"primaryKey"`
-	Columns    []*SQLTableColumn `json:"columns,omitempty"`
-	IsDeleted  bool              `json:"isDeleted,omitempty"`
+	PrimaryKey  []string              `json:"primaryKey" yaml:"primaryKey"`
+	ForeignKeys []*SQLTableForeignKey `json:"foreignKeys,omitempty" yaml:"foreignKeys,omitempty"`
+	Columns     []*SQLTableColumn     `json:"columns,omitempty" yaml:"columns"`
+	IsDeleted   bool                  `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 }

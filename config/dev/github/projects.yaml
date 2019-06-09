@@ -1,0 +1,20 @@
+database: testdb
+name: projects
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    foreignKeys:
+      - columns:
+          - id
+        references:
+          table: users
+          columns:
+            - id
+    columns:
+      - name: id
+        type: integer
+      - name: name
+        type: varchar(255)
+      - name: user_id
+        type: integer

@@ -1,0 +1,5 @@
+resources:
+- ./users.yaml
+- ./projects.yaml
+- ./misc.yaml
+- ./user-project.yaml

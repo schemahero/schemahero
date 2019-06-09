@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -14,7 +15,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		name              string
 		tableName         string
 		desiredColumns    []*schemasv1alpha1.SQLTableColumn
-		existingColumn    *Column
+		existingColumn    *types.Column
 		expectedStatement string
 	}{
 		{
@@ -30,7 +31,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					Type: "integer",
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "b",
 				DataType:      "integer",
 				ColumnDefault: nil,
@@ -50,7 +51,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					Type: "integer",
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "b",
 				DataType:      "varchar(255)",
 				ColumnDefault: nil,
@@ -66,7 +67,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					Type: "integer",
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "b",
 				DataType:      "varchar(255)",
 				ColumnDefault: nil,
@@ -85,11 +86,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 					},
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "a",
 				DataType:      "integer",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
+				Constraints: &types.ColumnConstraints{
 					NotNull: &falseValue,
 				},
 			},
@@ -107,11 +108,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 					},
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "a",
 				DataType:      "integer",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
+				Constraints: &types.ColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},
@@ -126,11 +127,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 					Type: "text",
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "t",
 				DataType:      "text",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
+				Constraints: &types.ColumnConstraints{
 					NotNull: &falseValue,
 				},
 			},
@@ -148,11 +149,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 					},
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "ts",
 				DataType:      "timestamp",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
+				Constraints: &types.ColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},
@@ -170,11 +171,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 					},
 				},
 			},
-			existingColumn: &Column{
+			existingColumn: &types.Column{
 				Name:          "ts",
 				DataType:      "timestamp",
 				ColumnDefault: nil,
-				Constraints: &ColumnConstraints{
+				Constraints: &types.ColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},

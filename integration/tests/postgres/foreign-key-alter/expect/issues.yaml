@@ -1,0 +1,28 @@
+apiVersion: schemas.schemahero.io/v1alpha1
+kind: Table
+metadata:
+  name: issues
+spec:
+  database: schemahero
+  name: issues
+  schema:
+    postgres:
+      primaryKey:
+      - id
+      foreignKeys:
+      - columns:
+        - project_id
+        references:
+          table: projects
+          columns:
+          - id
+        name: renamed_fkey
+      columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: project_id
+        type: integer
+        constraints:
+          notNull: false

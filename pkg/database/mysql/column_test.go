@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -93,7 +94,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 	tests := []struct {
 		name           string
 		schemaColumn   *schemasv1alpha1.SQLTableColumn
-		expectedColumn *Column
+		expectedColumn *types.Column
 	}{
 		{
 			name: "varchar (10)",
@@ -101,7 +102,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 				Name: "vc",
 				Type: "varchar (10)",
 			},
-			expectedColumn: &Column{
+			expectedColumn: &types.Column{
 				DataType:      "varchar (10)",
 				ColumnDefault: nil,
 			},
@@ -112,7 +113,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 				Name: "b",
 				Type: "bool",
 			},
-			expectedColumn: &Column{
+			expectedColumn: &types.Column{
 				DataType:      "tinyint (1)",
 				ColumnDefault: nil,
 			},
@@ -123,7 +124,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			column, err := schemaColumnToMysqlColumn(test.schemaColumn)
+			column, err := schemaColumnToColumn(test.schemaColumn)
 			req.NoError(err)
 			assert.Equal(t, test.expectedColumn, column)
 		})

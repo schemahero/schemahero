@@ -1,0 +1,15 @@
+database: testdb
+name: users
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: login
+        type: varchar(255)
+      - name: name
+        type: varchar(255)
+
+

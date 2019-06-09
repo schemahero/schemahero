@@ -44,7 +44,6 @@ func TestStorageTable(t *testing.T) {
 		Spec: TableSpec{
 			Database: "d",
 			Name:     "n",
-			Requires: []string{},
 			Schema: &TableSchema{
 				Postgres: &SQLTableSchema{
 					PrimaryKey: []string{"pk"},
