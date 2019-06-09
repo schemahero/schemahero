@@ -45,7 +45,7 @@ func Test_writeTableFile(t *testing.T) {
 					DataType: "integer",
 				},
 			},
-			expectedYAML: `apiVersion: schemas.schemahero.io/v1alpha1
+			expectedYAML: `apiVersion: schemas.schemahero.io/v1alpha2
 kind: Table
 metadata:
   name: simple
@@ -85,7 +85,7 @@ spec:
 					DataType: "integer",
 				},
 			},
-			expectedYAML: `apiVersion: schemas.schemahero.io/v1alpha1
+			expectedYAML: `apiVersion: schemas.schemahero.io/v1alpha2
 kind: Table
 metadata:
   name: withfk

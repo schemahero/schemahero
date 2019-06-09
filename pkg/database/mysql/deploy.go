@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha1.SQLTableSchema) error {
+func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) error {
 	m, err := Connect(uri)
 	if err != nil {
 		return err

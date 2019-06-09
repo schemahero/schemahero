@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func DeployPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha1.SQLTableSchema) error {
+func DeployPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) error {
 	p, err := Connect(uri)
 	if err != nil {
 		return err

@@ -6,7 +6,7 @@ import (
 
 	"github.com/lib/pq"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
@@ -32,7 +32,7 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	return true
 }
 
-func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha1.SQLTableColumn, existingColumn *types.Column) (string, error) {
+func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {

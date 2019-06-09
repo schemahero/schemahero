@@ -1,5 +1,5 @@
 # Postgres, simple, uri
-apiVersion: databases.schemahero.io/v1alpha1
+apiVersion: databases.schemahero.io/v1alpha2
 kind: Database
 metadata:
   labels:
@@ -12,7 +12,7 @@ connection:
 ---
 
 # Postgres URI from a secret
-apiVersion: databases.schemahero.io/v1alpha1
+apiVersion: databases.schemahero.io/v1alpha2
 kind: Database
 metadata:
   labels:
@@ -35,7 +35,7 @@ data:
 ---
 
 # Postgres connection fields, separately
-apiVersion: databases.schemahero.io/v1alpha1
+apiVersion: databases.schemahero.io/v1alpha2
 kind: Database
 metadata:
   labels:
@@ -56,7 +56,7 @@ connection:
 ---
 
 # Postgres connection fields, separately, using a secret
-apiVersion: databases.schemahero.io/v1alpha1
+apiVersion: databases.schemahero.io/v1alpha2
 kind: Database
 metadata:
   labels:

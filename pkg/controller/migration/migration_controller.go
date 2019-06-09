@@ -19,7 +19,7 @@ package migration
 import (
 	"context"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -59,7 +59,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Migration
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha1.Migration{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &schemasv1alpha2.Migration{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Uncomment watch a Deployment created by Migration - change this for objects you create
 	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
 		IsController: true,
-		OwnerType:    &schemasv1alpha1.Migration{},
+		OwnerType:    &schemasv1alpha2.Migration{},
 	})
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ type ReconcileMigration struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=migrations/status,verbs=get;update;patch
 func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Migration instance
-	instance := &schemasv1alpha1.Migration{}
+	instance := &schemasv1alpha2.Migration{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {

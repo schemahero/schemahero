@@ -5,11 +5,11 @@ import (
 
 	"github.com/lib/pq"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func schemaColumnToColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*types.Column, error) {
+func schemaColumnToColumn(schemaColumn *schemasv1alpha2.SQLTableColumn) (*types.Column, error) {
 	column := &types.Column{}
 
 	if schemaColumn.Constraints != nil {
@@ -47,7 +47,7 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha1.SQLTableColumn) (*types.
 	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
-func postgresColumnAsInsert(column *schemasv1alpha1.SQLTableColumn) (string, error) {
+func postgresColumnAsInsert(column *schemasv1alpha2.SQLTableColumn) (string, error) {
 	// Note, we don't always quote the column type becuase of how pg handles these two statement very differently:
 
 	// 1. create table "users" ("id" "bigint","login" "varchar(255)","name" "varchar(255)")
@@ -72,7 +72,7 @@ func postgresColumnAsInsert(column *schemasv1alpha1.SQLTableColumn) (string, err
 	return formatted, nil
 }
 
-func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha1.SQLTableColumn) (string, error) {
+func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha2.SQLTableColumn) (string, error) {
 	columnFields, err := postgresColumnAsInsert(desiredColumn)
 	if err != nil {
 		return "", err

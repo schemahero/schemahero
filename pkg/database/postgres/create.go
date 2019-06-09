@@ -6,11 +6,11 @@ import (
 
 	"github.com/lib/pq"
 
-	schemasv1alpha1 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha1"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func CreateTableStatement(tableName string, tableSchema *schemasv1alpha1.SQLTableSchema) (string, error) {
+func CreateTableStatement(tableName string, tableSchema *schemasv1alpha2.SQLTableSchema) (string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := postgresColumnAsInsert(desiredColumn)
