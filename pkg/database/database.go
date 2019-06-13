@@ -43,34 +43,46 @@ func (d *Database) CreateFixturesSync() error {
 			return err
 		}
 
-		parsed := schemasv1alpha2.Table{}
-		if err := yaml.Unmarshal(fileData, &parsed); err != nil {
-			fmt.Printf("%s\n", err)
-			return err
+		var spec *schemasv1alpha2.TableSpec
+
+		parsedK8sObject := schemasv1alpha2.Table{}
+		if err := yaml.Unmarshal(fileData, &parsedK8sObject); err == nil {
+			if parsedK8sObject.Spec.Schema != nil {
+				spec = &parsedK8sObject.Spec
+			}
 		}
 
-		if parsed.Spec.Schema == nil {
+		if spec == nil {
+			plainSpec := schemasv1alpha2.TableSpec{}
+			if err := yaml.Unmarshal(fileData, &plainSpec); err != nil {
+				return err
+			}
+
+			spec = &plainSpec
+		}
+
+		if spec.Schema == nil {
 			fmt.Printf("skipping file %s because there is no schema\n", info.Name())
 			return nil
 		}
 
 		if d.Viper.GetString("driver") == "postgres" {
-			if parsed.Spec.Schema.Postgres == nil {
+			if spec.Schema.Postgres == nil {
 				fmt.Printf("skipping file %s because there is no postgres spec\n", info.Name())
 			}
 
-			statement, err := postgres.CreateTableStatement(parsed.Spec.Name, parsed.Spec.Schema.Postgres)
+			statement, err := postgres.CreateTableStatement(spec.Name, spec.Schema.Postgres)
 			if err != nil {
 				return err
 			}
 
 			statements = append(statements, statement)
 		} else if d.Viper.GetString("driver") == "mysql" {
-			if parsed.Spec.Schema.Mysql == nil {
+			if spec.Schema.Mysql == nil {
 				fmt.Printf("skipping file %s because there is no mysql spec\n", info.Name())
 			}
 
-			statement, err := mysql.CreateTableStatement(parsed.Spec.Name, parsed.Spec.Schema.Mysql)
+			statement, err := mysql.CreateTableStatement(spec.Name, spec.Schema.Mysql)
 			if err != nil {
 				return err
 			}
