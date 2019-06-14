@@ -18,7 +18,6 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 
 	// determine if the table exists
 	query := `select count(1) from information_schema.TABLES where TABLE_NAME = ? and TABLE_SCHEMA = ?`
-	fmt.Printf("Executing query %q\n", query)
 	row := m.db.QueryRow(query, tableName, m.databaseName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
@@ -46,7 +45,6 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
 		from information_schema.COLUMNS
 		where TABLE_NAME = ?`
-	fmt.Printf("Executing query %q\n", query)
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
 		return err

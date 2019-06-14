@@ -18,7 +18,6 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 
 	// determine if the table exists
 	query := `select count(1) from information_schema.tables where table_name = $1`
-	fmt.Printf("Executing query %q\n", query)
 	row := p.db.QueryRow(query, tableName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
@@ -46,7 +45,6 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		column_name, column_default, is_nullable, data_type, character_maximum_length
 		from information_schema.columns
 		where table_name = $1`
-	fmt.Printf("Executing query %q\n", query)
 	rows, err := p.db.Query(query, tableName)
 	if err != nil {
 		return err
