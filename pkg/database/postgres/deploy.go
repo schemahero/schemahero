@@ -174,6 +174,9 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	}
 
 	for _, alterOrDropStatement := range alterAndDropStatements {
+		if alterOrDropStatement == "" {
+			continue
+		}
 		fmt.Printf("Executing query %q\n", alterOrDropStatement)
 		if _, err = p.db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
 			return err

@@ -166,6 +166,9 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	}
 
 	for _, alterOrDropStatement := range alterAndDropStatements {
+		if alterOrDropStatement == "" {
+			continue
+		}
 		fmt.Printf("Executing query %q\n", alterOrDropStatement)
 		if _, err = m.db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
 			return err

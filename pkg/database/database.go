@@ -121,15 +121,32 @@ func (d *Database) ApplySync() error {
 		return err
 	}
 
-	var tableSpec schemasv1alpha2.TableSpec
-	if err := yaml.Unmarshal(specContents, &tableSpec); err != nil {
-		return err
+	var spec *schemasv1alpha2.TableSpec
+	parsedK8sObject := schemasv1alpha2.Table{}
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Schema != nil {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha2.TableSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return err
+		}
+
+		spec = &plainSpec
+	}
+
+	if spec.Schema == nil {
+		fmt.Printf("skipping file %s because there is no schema\n", d.Viper.GetString("spec-file"))
+		return nil
 	}
 
 	if d.Viper.GetString("driver") == "postgres" {
-		return postgres.DeployPostgresTable(d.Viper.GetString("uri"), tableSpec.Name, tableSpec.Schema.Postgres)
+		return postgres.DeployPostgresTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Postgres)
 	} else if d.Viper.GetString("driver") == "mysql" {
-		return mysql.DeployMysqlTable(d.Viper.GetString("uri"), tableSpec.Name, tableSpec.Schema.Mysql)
+		return mysql.DeployMysqlTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Mysql)
 	}
 
 	return errors.New("unknown database driver")
