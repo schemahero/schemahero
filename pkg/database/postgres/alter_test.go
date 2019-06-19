@@ -187,7 +187,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			generatedStatement, err := AlterColumnStatement(test.tableName, test.desiredColumns, test.existingColumn)
+			generatedStatement, err := AlterColumnStatement(test.tableName, []string{}, test.desiredColumns, test.existingColumn)
 			req.NoError(err)
 			assert.Equal(t, test.expectedStatement, generatedStatement)
 		})

@@ -94,7 +94,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					NotNull: &falseValue,
 				},
 			},
-			expectedStatement: "alter table `t` modify column `a` not null",
+			expectedStatement: "alter table `t` modify column `a` int (11) not null",
 		},
 		{
 			name:      "drop not null constraint",
@@ -116,7 +116,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 					NotNull: &trueValue,
 				},
 			},
-			expectedStatement: "alter table `t` modify column `a` null",
+			expectedStatement: "alter table `t` modify column `a` int (11) null",
 		},
 		{
 			name:      "no change to not null constraint",
@@ -187,7 +187,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			generatedStatement, err := AlterColumnStatement(test.tableName, test.desiredColumns, test.existingColumn)
+			generatedStatement, err := AlterColumnStatement(test.tableName, []string{}, test.desiredColumns, test.existingColumn)
 			req.NoError(err)
 			assert.Equal(t, test.expectedStatement, generatedStatement)
 		})

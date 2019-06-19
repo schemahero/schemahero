@@ -81,7 +81,7 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
 		}
 
-		columnStatement, err := AlterColumnStatement(tableName, postgresTableSchema.Columns, &existingColumn)
+		columnStatement, err := AlterColumnStatement(tableName, postgresTableSchema.PrimaryKey, postgresTableSchema.Columns, &existingColumn)
 		if err != nil {
 			return err
 		}

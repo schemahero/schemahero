@@ -30,7 +30,7 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	return true
 }
 
-func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
+func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
@@ -44,9 +44,12 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha2.SQ
 				return "", nil
 			}
 
+			hasDataType := false
+
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
 				changes = append(changes, fmt.Sprintf("%s %s", columnStatement, column.DataType))
+				hasDataType = true
 			}
 
 			// too much complexity below!
@@ -55,16 +58,30 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha2.SQ
 				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
 					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
 						if *existingColumn.Constraints.NotNull == false {
-							changes = append(changes, fmt.Sprintf("%s not null", columnStatement))
+							if hasDataType {
+								changes = append(changes, fmt.Sprintf("%s not null", columnStatement))
+							} else {
+								changes = append(changes, fmt.Sprintf("%s %s not null", columnStatement, column.DataType))
+							}
 						}
 					}
 				}
 
-				// Drop not null
-				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == false {
-					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
-						if *existingColumn.Constraints.NotNull == true {
-							changes = append(changes, fmt.Sprintf("%s null", columnStatement))
+				isPrimaryKey := false
+				for _, primaryKey := range primaryKeys {
+					if column.Name == primaryKey {
+						isPrimaryKey = true
+					}
+				}
+
+				if !isPrimaryKey {
+					if existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
+						if column.Constraints == nil || column.Constraints.NotNull == nil || *column.Constraints.NotNull == false {
+							if hasDataType {
+								changes = append(changes, fmt.Sprintf("%s null", columnStatement))
+							} else {
+								changes = append(changes, fmt.Sprintf("%s %s null", columnStatement, column.DataType))
+							}
 						}
 					}
 				}

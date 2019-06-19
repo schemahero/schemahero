@@ -81,7 +81,7 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
 		}
 
-		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.Columns, &existingColumn)
+		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
 		if err != nil {
 			return err
 		}
