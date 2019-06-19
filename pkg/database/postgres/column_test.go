@@ -127,6 +127,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Type: "text",
 			},
 			expectedColumn: &types.Column{
+				Name:          "t",
 				DataType:      "text",
 				ColumnDefault: nil,
 				Constraints:   nil,
@@ -139,6 +140,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Type: "character varying (10)",
 			},
 			expectedColumn: &types.Column{
+				Name:          "c",
 				DataType:      "character varying (10)",
 				ColumnDefault: nil,
 			},
@@ -150,6 +152,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Type: "varchar (10)",
 			},
 			expectedColumn: &types.Column{
+				Name:          "vc",
 				DataType:      "character varying (10)",
 				ColumnDefault: nil,
 			},
@@ -161,6 +164,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 				Type: "cidr",
 			},
 			expectedColumn: &types.Column{
+				Name:          "ip",
 				DataType:      "cidr",
 				ColumnDefault: nil,
 				Constraints:   nil,

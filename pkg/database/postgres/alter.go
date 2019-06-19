@@ -32,7 +32,7 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	return true
 }
 
-func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
+func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
@@ -63,10 +63,16 @@ func AlterColumnStatement(tableName string, desiredColumns []*schemasv1alpha2.SQ
 					}
 				}
 
-				// Drop not null
-				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == false {
-					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
-						if *existingColumn.Constraints.NotNull == true {
+				isPrimaryKey := false
+				for _, primaryKey := range primaryKeys {
+					if column.Name == primaryKey {
+						isPrimaryKey = true
+					}
+				}
+
+				if !isPrimaryKey {
+					if existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
+						if column.Constraints == nil || column.Constraints.NotNull == nil || *column.Constraints.NotNull == false {
 							changes = append(changes, fmt.Sprintf("%s drop not null", columnStatement))
 						}
 					}

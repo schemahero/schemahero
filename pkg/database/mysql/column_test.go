@@ -103,6 +103,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 				Type: "varchar (10)",
 			},
 			expectedColumn: &types.Column{
+				Name:          "vc",
 				DataType:      "varchar (10)",
 				ColumnDefault: nil,
 			},
@@ -114,6 +115,7 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 				Type: "bool",
 			},
 			expectedColumn: &types.Column{
+				Name:          "b",
 				DataType:      "tinyint (1)",
 				ColumnDefault: nil,
 			},
