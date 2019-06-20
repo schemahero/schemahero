@@ -1,3 +1,0 @@
-{{ with resources.Get "css/inline.css" | resources.Minify }}
-<style>{{ .Content | safeCSS }}</style>
-{{ end }}

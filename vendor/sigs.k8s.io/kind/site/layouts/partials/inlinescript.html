@@ -1,3 +1,0 @@
-{{ with resources.Get "js/inline.js" | resources.Minify }}
-<script>{{ .Content | safeJS }}</script>
-{{ end }}

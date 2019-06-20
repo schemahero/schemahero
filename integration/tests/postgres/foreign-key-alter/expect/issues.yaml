@@ -16,6 +16,7 @@ spec:
           table: projects
           columns:
           - id
+        onDelete: NO ACTION
         name: renamed_fkey
       columns:
       - name: id

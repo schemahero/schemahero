@@ -17,6 +17,7 @@ spec:
           table: users
           columns:
           - id
+        onDelete: NO ACTION
         name: user_project_user_id_fkey
       - columns:
         - project_id
@@ -24,6 +25,7 @@ spec:
           table: projects
           columns:
           - id
+        onDelete: NO ACTION
         name: user_project_project_id_fkey
       - columns:
         - misc_id
@@ -31,6 +33,7 @@ spec:
           table: misc
           columns:
           - pk
+        onDelete: NO ACTION
         name: misc_named_fk
       columns:
       - name: user_id

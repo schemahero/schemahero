@@ -2,6 +2,7 @@
 SHELL := /bin/bash
 IMAGE := "ttl.sh/$(shell uuidgen):1h"
 export IMAGE
+export GO111MODULE=on
 
 .PHONY: run
 run: build postgres mysql
