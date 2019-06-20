@@ -28,7 +28,7 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha2.SQLTabl
 
 	if tableSchema.ForeignKeys != nil {
 		for _, foreignKey := range tableSchema.ForeignKeys {
-			columns = append(columns, fmt.Sprintf("foreign key (%s) references %s (%s)", strings.Join(foreignKey.Columns, ", "), foreignKey.References.Table, strings.Join(foreignKey.References.Columns, ", ")))
+			columns = append(columns, foreignKeyConstraintClause(tableName, foreignKey))
 		}
 
 	}

@@ -30,10 +30,12 @@ func (m *MysqlConnection) ListTables() ([]string, error) {
 
 func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
 	query := `select
-	kcu.COLUMN_NAME, kcu.CONSTRAINT_NAME, kcu.REFERENCED_TABLE_NAME, kcu.REFERENCED_COLUMN_NAME
+	kcu.COLUMN_NAME, kcu.CONSTRAINT_NAME, kcu.REFERENCED_TABLE_NAME, kcu.REFERENCED_COLUMN_NAME, rc.DELETE_RULE
 	from information_schema.KEY_COLUMN_USAGE kcu
 	inner join information_schema.TABLE_CONSTRAINTS tc
-	on tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+  	  on tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+	inner join information_schema.REFERENTIAL_CONSTRAINTS rc
+	  on rc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
 	where tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
 	and kcu.TABLE_NAME = ?
 	and kcu.CONSTRAINT_SCHEMA = ?`
@@ -45,15 +47,16 @@ func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName st
 
 	foreignKeys := make([]*types.ForeignKey, 0, 0)
 	for rows.Next() {
-		var childColumn, parentColumn, parentTable, name string
+		var childColumn, parentColumn, parentTable, name, deleteRule string
 
-		if err := rows.Scan(&childColumn, &name, &parentTable, &parentColumn); err != nil {
+		if err := rows.Scan(&childColumn, &name, &parentTable, &parentColumn, &deleteRule); err != nil {
 			return nil, err
 		}
 
 		foreignKey := types.ForeignKey{
 			Name:          name,
 			ParentTable:   parentTable,
+			OnDelete:      deleteRule,
 			ChildColumns:  []string{childColumn},
 			ParentColumns: []string{parentColumn},
 		}

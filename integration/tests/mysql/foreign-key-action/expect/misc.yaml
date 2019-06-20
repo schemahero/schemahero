@@ -1,0 +1,16 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: misc
+spec:
+  database: schemahero
+  name: misc
+  schema:
+    mysql:
+      primaryKey:
+      - pk
+      columns:
+      - name: pk
+        type: varchar (255)
+        constraints:
+          notNull: true

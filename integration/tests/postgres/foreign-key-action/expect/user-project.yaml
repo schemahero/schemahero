@@ -1,0 +1,50 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: user-project
+spec:
+  database: schemahero
+  name: user_project
+  schema:
+    postgres:
+      primaryKey:
+      - user_id
+      - project_id
+      foreignKeys:
+      - columns:
+        - user_id
+        references:
+          table: users
+          columns:
+          - id
+        onDelete: NO ACTION
+        name: user_project_user_id_fkey
+      - columns:
+        - project_id
+        references:
+          table: projects
+          columns:
+          - id
+        onDelete: NO ACTION
+        name: user_project_project_id_fkey
+      - columns:
+        - misc_id
+        references:
+          table: misc
+          columns:
+          - pk
+        onDelete: CASCADE
+        name: misc_named_fk
+      columns:
+      - name: user_id
+        type: integer
+        constraints:
+          notNull: true
+      - name: project_id
+        type: integer
+        constraints:
+          notNull: true
+      - name: misc_id
+        type: character varying (255)
+        constraints:
+          notNull: true

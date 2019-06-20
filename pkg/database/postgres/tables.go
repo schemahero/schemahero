@@ -42,6 +42,7 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	att2.attname as "child_column",
 	cl.relname as "parent_table",
 	att.attname as "parent_column",
+  	rc.delete_rule,
 	conname
     from
        (select
@@ -63,7 +64,9 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
        join pg_class cl on
 	   cl.oid = con.confrelid
        join pg_attribute att2 on
-	   att2.attrelid = con.conrelid and att2.attnum = con.parent`
+	   att2.attrelid = con.conrelid and att2.attnum = con.parent
+       join information_schema.referential_constraints rc on
+       rc.constraint_name = conname`
 
 	rows, err := p.db.Query(query, tableName)
 	if err != nil {
@@ -72,15 +75,16 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 
 	foreignKeys := make([]*types.ForeignKey, 0, 0)
 	for rows.Next() {
-		var childColumn, parentColumn, parentTable, name string
+		var childColumn, parentColumn, parentTable, name, deleteRule string
 
-		if err := rows.Scan(&childColumn, &parentTable, &parentColumn, &name); err != nil {
+		if err := rows.Scan(&childColumn, &parentTable, &parentColumn, &deleteRule, &name); err != nil {
 			return nil, err
 		}
 
 		foreignKey := types.ForeignKey{
 			Name:          name,
 			ParentTable:   parentTable,
+			OnDelete:      deleteRule,
 			ChildColumns:  []string{childColumn},
 			ParentColumns: []string{parentColumn},
 		}

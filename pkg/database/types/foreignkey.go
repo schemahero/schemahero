@@ -12,6 +12,7 @@ type ForeignKey struct {
 	ParentTable   string
 	ParentColumns []string
 	Name          string
+	OnDelete      string
 }
 
 func (fk *ForeignKey) Equals(other *ForeignKey) bool {
@@ -27,7 +28,8 @@ func ForeignKeyToSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha2.SQLTa
 			Table:   foreignKey.ParentTable,
 			Columns: foreignKey.ParentColumns,
 		},
-		Name: foreignKey.Name,
+		Name:     foreignKey.Name,
+		OnDelete: foreignKey.OnDelete,
 	}
 
 	return &schemaForeignKey
@@ -38,6 +40,8 @@ func SchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha2.SQLTableFore
 		ChildColumns:  schemaForeignKey.Columns,
 		ParentTable:   schemaForeignKey.References.Table,
 		ParentColumns: schemaForeignKey.References.Columns,
+		Name:          schemaForeignKey.Name,
+		OnDelete:      schemaForeignKey.OnDelete,
 	}
 
 	return &foreignKey
