@@ -1,7 +1,7 @@
 SHELL := /bin/bash
-TEST_NAME := mysql-foreign-key-create
+TEST_NAME := postgres-foreign-key-action
 DATABASE_IMAGE_NAME := schemahero/database
-DATABASE_CONTAINER_NAME := database
+DATABASE_CONTAINER_NAME := schemahero-database
 
 .PHONY: run
 run:
@@ -13,11 +13,11 @@ run:
 	docker network create $(TEST_NAME)
 
 	# Fixtures
-	docker pull mysql:8.0
+	docker pull postgres:10.7
 	docker build -t $(DATABASE_IMAGE_NAME) .
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run --network $(TEST_NAME) --rm -d --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)
-	while ! docker exec -it $(DATABASE_CONTAINER_NAME) mysqladmin ping -hlocalhost --silent; do sleep 15; done
+	@-sleep 5
 
 	# Test
 	docker tag $(IMAGE) schemahero/schemahero:test
@@ -27,8 +27,8 @@ run:
 		--rm \
 		schemahero/schemahero:test \
 			apply \
-			--driver mysql \
-			--uri "schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false" \
+			--driver postgres \
+			--uri postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero?sslmode=disable \
 			--spec-file /specs/user-project.yaml
 
 	# Verify
@@ -41,9 +41,9 @@ run:
 			generate \
 			--dbname schemahero \
 			--namespace default \
-			--driver mysql \
+			--driver postgres \
 			--output-dir /out \
-			--uri "schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false"
+			--uri postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero?sslmode=disable
 	@echo Verifying results for $(TEST_NAME)
 	diff --color expect out
 

@@ -7,7 +7,6 @@ import (
 	"github.com/lib/pq"
 
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
-	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func CreateTableStatement(tableName string, tableSchema *schemasv1alpha2.SQLTableSchema) (string, error) {
@@ -31,11 +30,7 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha2.SQLTabl
 
 	if tableSchema.ForeignKeys != nil {
 		for _, foreignKey := range tableSchema.ForeignKeys {
-			columns = append(columns, fmt.Sprintf("constraint %q foreign key (%s) references %s (%s)",
-				types.GenerateFKName(tableName, foreignKey),
-				strings.Join(foreignKey.Columns, ", "),
-				foreignKey.References.Table,
-				strings.Join(foreignKey.References.Columns, ", ")))
+			columns = append(columns, foreignKeyConstraintClause(tableName, foreignKey))
 		}
 	}
 

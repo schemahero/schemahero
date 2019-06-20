@@ -114,8 +114,6 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	}
 	for _, foreignKey := range mysqlTableSchema.ForeignKeys {
 		var statement string
-		var err error
-
 		var matchedForeignKey *types.ForeignKey
 		for _, currentForeignKey := range currentForeignKeys {
 			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
@@ -128,17 +126,11 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		// drop and readd?  is this always ok
 		// TODO can we alter
 		if matchedForeignKey != nil {
-			statement, err = RemoveForeignKeyStatement(tableName, matchedForeignKey)
-			if err != nil {
-				return err
-			}
+			statement = RemoveForeignKeyStatement(tableName, matchedForeignKey)
 			alterAndDropStatements = append(alterAndDropStatements, statement)
 		}
 
-		statement, err = AddForeignKeyStatement(tableName, foreignKey)
-		if err != nil {
-			return err
-		}
+		statement = AddForeignKeyStatement(tableName, foreignKey)
 		alterAndDropStatements = append(alterAndDropStatements, statement)
 
 	Next:
@@ -146,18 +138,13 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 
 	for _, currentForeignKey := range currentForeignKeys {
 		var statement string
-		var err error
-
 		for _, foreignKey := range mysqlTableSchema.ForeignKeys {
 			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
 				goto NextCurrentFK
 			}
 		}
 
-		statement, err = RemoveForeignKeyStatement(tableName, currentForeignKey)
-		if err != nil {
-			return err
-		}
+		statement = RemoveForeignKeyStatement(tableName, currentForeignKey)
 		alterAndDropStatements = append(alterAndDropStatements, statement)
 
 	NextCurrentFK:

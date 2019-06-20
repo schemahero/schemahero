@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-TEST_NAME := mysql-foreign-key-create
+TEST_NAME := mysql-foreign-key-action
 DATABASE_IMAGE_NAME := schemahero/database
 DATABASE_CONTAINER_NAME := database
 
