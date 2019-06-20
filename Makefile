@@ -1,10 +1,8 @@
 
 SHELL := /bin/bash
 VERSION ?=`git describe --tags`
-FULLSRC = $(shell find pkg vendor -name "*.go")
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 VERSION_PACKAGE = github.com/schemahero/schemahero/pkg/version
-
 GIT_TREE = $(shell git rev-parse --is-inside-work-tree 2>/dev/null)
 ifneq "$(GIT_TREE)" ""
 define GIT_UPDATE_INDEX_CMD
@@ -30,6 +28,8 @@ define LDFLAGS
 "
 endef
 
+export GO111MODULE=on
+
 all: test bin/schemahero manager
 
 # Run tests
@@ -39,7 +39,7 @@ test: generate fmt vet manifests
 # Build manager binary
 manager: generate fmt vet bin/manager
 
-bin/manager: $(FULLSRC) cmd/manager/main.go
+bin/manager:
 	go build \
 		${LDFLAGS} \
 		-i \
@@ -59,9 +59,9 @@ deploy: manifests
 	kubectl apply -f config/crds
 	kustomize build config/default | kubectl apply -f -
 
-# Generate manifests e.g. CRD, RBAC etc.
-manifests:
-	go run vendor/sigs.k8s.io/controller-tools/cmd/controller-gen/main.go all
+.PHONY: manifests
+manifests: controller-gen
+        $(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
 fmt:
@@ -72,12 +72,8 @@ vet:
 	go vet ./pkg/... ./cmd/...
 
 .PHONY: generate
-generate:
-ifndef GOPATH
-	$(error GOPATH not defined, please define GOPATH. Run "go help gopath" to learn more about GOPATH)
-endif
-	go generate ./pkg/... ./cmd/...
-	rm -r ./pkg/client/schemaheroclientset/fake
+generate: controller-gen
+	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./api/...
 
 .PHONY: integration/postgres
 integration/postgres: bin/schemahero
@@ -92,7 +88,7 @@ integration/postgres: bin/schemahero
 	./bin/schemahero watch --driver postgres --uri postgres://schemahero:password@localhost:15432/schemahero?sslmode=disable
 	docker rm -f schemahero-postgres
 
-bin/schemahero: $(FULLSRC) cmd/schemahero/main.go
+bin/schemahero:
 	go build \
 		${LDFLAGS} \
 		-i \
@@ -122,3 +118,13 @@ microk8s:
 .PHONY: tag-release
 tag-release:
 	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --config deploy/.goreleaser.yml
+
+# find or download controller-gen
+# download controller-gen if necessary
+controller-gen:
+ifeq (, $(shell which controller-gen))
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.0-beta.2
+CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
+else
+CONTROLLER_GEN=$(shell which controller-gen)
+endif

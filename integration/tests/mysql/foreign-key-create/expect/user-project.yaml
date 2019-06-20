@@ -12,26 +12,29 @@ spec:
       - user_id
       foreignKeys:
       - columns:
-        - user_id
+        - misc_id
         references:
-          table: users
+          table: misc
           columns:
-          - id
-        name: user_project_ibfk_1
+          - pk
+        onDelete: NO ACTION
+        name: misc_named_fk
       - columns:
         - project_id
         references:
           table: projects
           columns:
           - id
-        name: user_project_ibfk_2
+        onDelete: NO ACTION
+        name: user_project_project_id_fkey
       - columns:
-        - misc_id
+        - user_id
         references:
-          table: misc
+          table: users
           columns:
-          - pk
-        name: user_project_ibfk_3
+          - id
+        onDelete: NO ACTION
+        name: user_project_user_id_fkey
       columns:
       - name: user_id
         type: int
