@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -28,8 +29,39 @@ func (m *MysqlConnection) ListTables() ([]string, error) {
 	return tableNames, nil
 }
 
-func (p *MysqlConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
-	return nil, nil
+func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
+	query := `select
+	index_name,
+	non_unique,
+	group_concat(column_name order by seq_in_index)
+ 	from information_schema.statistics
+	 where table_name = ?
+	 and index_name != 'PRIMARY'
+	group by 1, 2`
+	rows, err := m.db.Query(query, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	indexes := make([]*types.Index, 0, 0)
+	for rows.Next() {
+		var index types.Index
+		var columns string
+		var nonUnique bool
+		if err := rows.Scan(&index.Name, &nonUnique, &columns); err != nil {
+			return nil, err
+		}
+
+		index.IsUnique = !nonUnique
+
+		// columns are selected as col1,col2
+		columnNames := strings.Split(columns, ",")
+		index.Columns = columnNames
+
+		indexes = append(indexes, &index)
+	}
+
+	return indexes, nil
 }
 
 func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
