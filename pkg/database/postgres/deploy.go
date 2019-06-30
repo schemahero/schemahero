@@ -37,18 +37,65 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 			return err
 		}
 
+		if postgresTableSchema.Indexes != nil {
+			for _, index := range postgresTableSchema.Indexes {
+				createIndex := AddIndexStatement(tableName, index)
+
+				fmt.Printf("Executing query: %q\n", createIndex)
+				_, err := p.db.Exec(query)
+				if err != nil {
+					return err
+				}
+			}
+		}
 		return nil
 	}
 
 	// table needs to be altered?
-	query = `select
+	columnStatements, err := buildColumnStatements(p, tableName, postgresTableSchema)
+	if err != nil {
+		return err
+	}
+	for _, columnStatement := range columnStatements {
+		if columnStatement == "" {
+			continue
+		}
+		fmt.Printf("Executing query %q\n", columnStatement)
+		if _, err = p.db.ExecContext(context.Background(), columnStatement); err != nil {
+			return err
+		}
+	}
+
+	// foreign key changes
+	foreignKeyStatements, err := buildForeignKeyStatements(p, tableName, postgresTableSchema)
+	if err != nil {
+		return err
+	}
+	for _, foreignKeyStatement := range foreignKeyStatements {
+		if foreignKeyStatement == "" {
+			continue
+		}
+		fmt.Printf("Executing query %q\n", foreignKeyStatement)
+		if _, err = p.db.ExecContext(context.Background(), foreignKeyStatement); err != nil {
+			return err
+		}
+	}
+
+	// index changes
+
+	return nil
+}
+
+func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	query := `select
 		column_name, column_default, is_nullable, data_type, character_maximum_length
 		from information_schema.columns
 		where table_name = $1`
 	rows, err := p.db.Query(query, tableName)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
 	for rows.Next() {
@@ -57,7 +104,7 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		var charMaxLength sql.NullInt64
 
 		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
-			return err
+			return nil, err
 		}
 
 		foundColumnNames = append(foundColumnNames, columnName)
@@ -83,7 +130,7 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 
 		columnStatement, err := AlterColumnStatement(tableName, postgresTableSchema.PrimaryKey, postgresTableSchema.Columns, &existingColumn)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		alterAndDropStatements = append(alterAndDropStatements, columnStatement)
@@ -100,18 +147,22 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		if !isColumnPresent {
 			statement, err := InsertColumnStatement(tableName, desiredColumn)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			alterAndDropStatements = append(alterAndDropStatements, statement)
 		}
 	}
 
-	// foreign key changes
+	return alterAndDropStatements, nil
+}
+
+func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	foreignKeyStatements := []string{}
 	droppedKeys := []string{}
 	currentForeignKeys, err := p.ListTableForeignKeys("", tableName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, foreignKey := range postgresTableSchema.ForeignKeys {
 		var statement string
@@ -129,11 +180,11 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		if matchedForeignKey != nil {
 			statement = RemoveForeignKeyStatement(tableName, matchedForeignKey)
 			droppedKeys = append(droppedKeys, matchedForeignKey.Name)
-			alterAndDropStatements = append(alterAndDropStatements, statement)
+			foreignKeyStatements = append(foreignKeyStatements, statement)
 		}
 
 		statement = AddForeignKeyStatement(tableName, foreignKey)
-		alterAndDropStatements = append(alterAndDropStatements, statement)
+		foreignKeyStatements = append(foreignKeyStatements, statement)
 
 	Next:
 	}
@@ -153,20 +204,10 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		}
 
 		statement = RemoveForeignKeyStatement(tableName, currentForeignKey)
-		alterAndDropStatements = append(alterAndDropStatements, statement)
+		foreignKeyStatements = append(foreignKeyStatements, statement)
 
 	NextCurrentFK:
 	}
 
-	for _, alterOrDropStatement := range alterAndDropStatements {
-		if alterOrDropStatement == "" {
-			continue
-		}
-		fmt.Printf("Executing query %q\n", alterOrDropStatement)
-		if _, err = p.db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return foreignKeyStatements, nil
 }

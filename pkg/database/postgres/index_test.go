@@ -25,6 +25,39 @@ func Test_AddIndexStatement(t *testing.T) {
 			},
 			expectedStatement: `create index idx_t2_c1 on t2 (c1)`,
 		},
+		{
+			name:      "specified name, one column, not specified unique",
+			tableName: "t2",
+			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+				Columns: []string{
+					"c1",
+				},
+				Name: "idx_name",
+			},
+			expectedStatement: `create index idx_name on t2 (c1)`,
+		},
+		{
+			name:      "no name, two columns, not specified unique",
+			tableName: "t2",
+			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+				Columns: []string{
+					"c1",
+					"c2",
+				},
+			},
+			expectedStatement: `create index idx_t2_c1_c2 on t2 (c1, c2)`,
+		},
+		{
+			name:      "np name, one column, unique",
+			tableName: "t2",
+			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+				Columns: []string{
+					"c1",
+				},
+				IsUnique: true,
+			},
+			expectedStatement: `create unique index idx_t2_c1 on t2 (c1)`,
+		},
 	}
 
 	for _, test := range tests {
