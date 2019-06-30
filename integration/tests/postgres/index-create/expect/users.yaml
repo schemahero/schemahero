@@ -10,10 +10,10 @@ spec:
       primaryKey:
       - id
       indexes:
-        - name: idx_users_email
-          isUnique: true
-          columns:
-            - email
+      - columns:
+        - email
+        name: idx_users_email
+        isUnique: true
       columns:
       - name: id
         type: integer

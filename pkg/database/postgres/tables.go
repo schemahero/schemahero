@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	_ "github.com/lib/pq"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -36,19 +37,20 @@ func (p *PostgresConnection) ListTables() ([]string, error) {
 
 func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
 	// started with this: https://stackoverflow.com/questions/6777456/list-all-index-names-column-names-and-its-table-name-of-a-postgresql-database
-	query := `select i.relname as indname,
+	query := `select
+	i.relname as indname,
 	am.amname as indam,
+	idx.indisunique,
 	array(
 	  select pg_get_indexdef(idx.indexrelid, k + 1, true)
 	  from generate_subscripts(idx.indkey, 1) as k
 	  order by k
 	) as indkey_names
 	from pg_index as idx
-	join pg_class as i
-	on i.oid = idx.indexrelid
-	join pg_am as am
-	on i.relam = am.oid
-	where idx.indrelid = $1::regclass`
+	join pg_class as i on i.oid = idx.indexrelid
+	join pg_am as am on i.relam = am.oid
+	where idx.indrelid = $1::regclass
+	and idx.indisprimary = false`
 	rows, err := p.db.Query(query, tableName)
 	if err != nil {
 		return nil, err
@@ -56,12 +58,19 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 
 	indexes := make([]*types.Index, 0, 0)
 	for rows.Next() {
-		var name, columns, method string
-		if err := rows.Scan(&name, &method, &columns); err != nil {
+		var index types.Index
+		var method string
+		var columns []byte
+		if err := rows.Scan(&index.Name, &method, &index.IsUnique, &columns); err != nil {
 			return nil, err
 		}
 
-		fmt.Printf("name %s columns = %s, method = %s\n", name, columns, method)
+		// columns are selected as {col1,col2}
+		cleanedColumns := strings.Trim(string(columns), "{}")
+		columnNames := strings.Split(cleanedColumns, ",")
+		index.Columns = columnNames
+
+		indexes = append(indexes, &index)
 	}
 
 	return indexes, nil
