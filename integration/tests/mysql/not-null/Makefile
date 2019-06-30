@@ -17,7 +17,7 @@ run:
 	docker build -t $(DATABASE_IMAGE_NAME) .
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run --network $(TEST_NAME) --rm -d --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)
-	while ! docker exec -it $(DATABASE_CONTAINER_NAME) mysqladmin ping -hlocalhost --silent; do sleep 15; done
+	while ! docker exec -it $(DATABASE_CONTAINER_NAME) mysqladmin ping -hlocalhost --silent; do sleep 30; done
 
 	# Test
 	docker tag $(IMAGE) schemahero/schemahero:test

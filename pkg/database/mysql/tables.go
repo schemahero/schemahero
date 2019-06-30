@@ -37,8 +37,18 @@ func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string
  	from information_schema.statistics
 	 where table_name = ?
 	 and index_name != 'PRIMARY'
+	 and index_name not in (
+	  select kcu.CONSTRAINT_NAME
+	  from information_schema.KEY_COLUMN_USAGE kcu
+	  inner join information_schema.TABLE_CONSTRAINTS tc
+	    on tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+	  inner join information_schema.REFERENTIAL_CONSTRAINTS rc
+	    on rc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+	  where tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
+	  and kcu.TABLE_NAME = ?
+        )
 	group by 1, 2`
-	rows, err := m.db.Query(query, tableName)
+	rows, err := m.db.Query(query, tableName, tableName)
 	if err != nil {
 		return nil, err
 	}
