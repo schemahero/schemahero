@@ -41,7 +41,7 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	array(
 	  select pg_get_indexdef(idx.indexrelid, k + 1, true)
 	  from generate_subscripts(idx.indkey, 1) as k
-	  order byk
+	  order by k
 	) as indkey_names
 	from pg_index as idx
 	join pg_class as i
@@ -57,7 +57,7 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	indexes := make([]*types.Index, 0, 0)
 	for rows.Next() {
 		var name, columns, method string
-		if err := rows.Scan(&name, method, columns); err != nil {
+		if err := rows.Scan(&name, &method, &columns); err != nil {
 			return nil, err
 		}
 
