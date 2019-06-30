@@ -34,6 +34,39 @@ func (p *PostgresConnection) ListTables() ([]string, error) {
 	return tableNames, nil
 }
 
+func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
+	// started with this: https://stackoverflow.com/questions/6777456/list-all-index-names-column-names-and-its-table-name-of-a-postgresql-database
+	query := `select i.relname as indname,
+	am.amname as indam,
+	array(
+	  select pg_get_indexdef(idx.indexrelid, k + 1, true)
+	  from generate_subscripts(idx.indkey, 1) as k
+	  order byk
+	) as indkey_names
+	from pg_index as idx
+	join pg_class as i
+	on i.oid = idx.indexrelid
+	join pg_am as am
+	on i.relam = am.oid
+	where idx.indrelid = $1::regclass`
+	rows, err := p.db.Query(query, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	indexes := make([]*types.Index, 0, 0)
+	for rows.Next() {
+		var name, columns, method string
+		if err := rows.Scan(&name, method, columns); err != nil {
+			return nil, err
+		}
+
+		fmt.Printf("name %s columns = %s, method = %s\n", name, columns, method)
+	}
+
+	return indexes, nil
+}
+
 func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
 	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
 	// TODO SchemaHero implementation needs to include a schema (database) here

@@ -8,6 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	trueValue = true
+	falseValue = false
+)
+
 func Test_sanitizeName(t *testing.T) {
 	sanitizeNameTests := map[string]string{
 		"two_words": "two-words",
@@ -29,6 +34,7 @@ func Test_writeTableFile(t *testing.T) {
 		tableName    string
 		primaryKey   []string
 		foreignKeys  []*types.ForeignKey
+		indexes      []*types.Index
 		columns      []*types.Column
 		expectedYAML string
 	}{
@@ -39,6 +45,7 @@ func Test_writeTableFile(t *testing.T) {
 			tableName:   "simple",
 			primaryKey:  []string{"one"},
 			foreignKeys: []*types.ForeignKey{},
+			indexes:     []*types.Index{},
 			columns: []*types.Column{
 				&types.Column{
 					Name:     "id",
@@ -75,6 +82,7 @@ spec:
 					Name:          "fk_pc_cc",
 				},
 			},
+			indexes: []*types.Index{},
 			columns: []*types.Column{
 				&types.Column{
 					Name:     "pk",
@@ -111,13 +119,65 @@ spec:
         type: integer
 `,
 		},
+		{
+			name:        "generating with index",
+			driver:      "postgres",
+			dbName:      "db",
+			tableName:   "simple",
+			primaryKey:  []string{"one"},
+			foreignKeys: []*types.ForeignKey{},
+			indexes:     []*types.Index{
+				&types.Index{
+					Columns: []string{"other"},
+					Name: "idx_simple_other",
+					IsUnique: true,
+				},
+			},
+			columns: []*types.Column{
+				&types.Column{
+					Name:     "id",
+					DataType: "integer",
+				},
+				&types.Column{
+					Name: "other",
+					DataType: "varchar (255)",
+					Constraints: &types.ColumnConstraints{
+					  NotNull: &trueValue,
+					},
+				},
+			},
+			expectedYAML: `apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: simple
+spec:
+  database: db
+  name: simple
+  schema:
+    postgres:
+      primaryKey:
+      - one
+      indexes:
+      - columns:
+        - other
+        name: idx_simple_other
+        isUnique: true
+      columns:
+      - name: id
+        type: integer
+      - name: other
+        type: varchar (255)
+        constraints:
+          notNull: true
+`,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			y, err := generateTableYAML(test.driver, test.dbName, test.tableName, test.primaryKey, test.foreignKeys, test.columns)
+			y, err := generateTableYAML(test.driver, test.dbName, test.tableName, test.primaryKey, test.foreignKeys, test.indexes, test.columns)
 			req.NoError(err)
 			assert.Equal(t, test.expectedYAML, y)
 		})

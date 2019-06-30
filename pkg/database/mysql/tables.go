@@ -28,6 +28,10 @@ func (m *MysqlConnection) ListTables() ([]string, error) {
 	return tableNames, nil
 }
 
+func (p *MysqlConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
+	return nil, nil
+}
+
 func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
 	query := `select
 	kcu.COLUMN_NAME, kcu.CONSTRAINT_NAME, kcu.REFERENCED_TABLE_NAME, kcu.REFERENCED_COLUMN_NAME, rc.DELETE_RULE

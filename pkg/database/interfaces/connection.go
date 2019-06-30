@@ -17,6 +17,7 @@ type SchemaHeroDatabaseConnection interface {
 
 	ListTables() ([]string, error)
 	ListTableForeignKeys(string, string) ([]*types.ForeignKey, error)
+	ListTableIndexes(string, string) ([]*types.Index, error)
 
 	GetTablePrimaryKey(string) ([]string, error)
 	GetTableSchema(string) ([]*types.Column, error)
