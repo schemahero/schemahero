@@ -160,6 +160,7 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	if err != nil {
 		return nil, err
 	}
+
 	for _, foreignKey := range mysqlTableSchema.ForeignKeys {
 		var statement string
 		var matchedForeignKey *types.ForeignKey
@@ -202,5 +203,48 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 }
 
 func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
-	return []string{}, nil
+	indexStatements := []string{}
+	currentIndexes, err := m.ListTableIndexes(m.databaseName, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, index := range mysqlTableSchema.Indexes {
+		var statement string
+		var matchedIndex *types.Index
+		for _, currentIndex := range currentIndexes {
+			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
+				goto Next
+			}
+
+			matchedIndex = currentIndex
+		}
+
+		// drop and readd?  mysql supports renaming indexes
+		if matchedIndex != nil {
+			statement = RemoveIndexStatement(tableName, matchedIndex)
+			indexStatements = append(indexStatements, statement)
+		}
+
+		statement = AddIndexStatement(tableName, index)
+		indexStatements = append(indexStatements, statement)
+
+	Next:
+	}
+
+	for _, currentIndex := range currentIndexes {
+		var statement string
+		for _, index := range mysqlTableSchema.Indexes {
+			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
+				goto NextCurrentIdx
+			}
+		}
+
+		statement = RemoveIndexStatement(tableName, currentIndex)
+		indexStatements = append(indexStatements, statement)
+
+	NextCurrentIdx:
+	}
+
+	return indexStatements, nil
 }

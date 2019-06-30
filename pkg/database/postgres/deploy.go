@@ -173,6 +173,7 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	if err != nil {
 		return nil, err
 	}
+
 	for _, foreignKey := range postgresTableSchema.ForeignKeys {
 		var statement string
 		var matchedForeignKey *types.ForeignKey
@@ -222,5 +223,56 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 }
 
 func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
-	return []string{}, nil
+	indexStatements := []string{}
+	droppedIndexes := []string{}
+	currentIndexes, err := p.ListTableIndexes("", tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, index := range postgresTableSchema.Indexes {
+		var statement string
+		var matchedIndex *types.Index
+		for _, currentIndex := range currentIndexes {
+			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
+				goto Next
+			}
+
+			matchedIndex = currentIndex
+		}
+
+		// drop and readd? pg supports a little bit of alter index we should support (rename)
+		if matchedIndex != nil {
+			statement = RemoveIndexStatement(tableName, matchedIndex)
+			droppedIndexes = append(droppedIndexes, matchedIndex.Name)
+			indexStatements = append(indexStatements, statement)
+		}
+
+		statement = AddIndexStatement(tableName, index)
+		indexStatements = append(indexStatements, statement)
+
+	Next:
+	}
+
+	for _, currentIndex := range currentIndexes {
+		var statement string
+		for _, index := range postgresTableSchema.Indexes {
+			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
+				goto NextCurrentIdx
+			}
+		}
+
+		for _, droppedIndex := range droppedIndexes {
+			if droppedIndex == currentIndex.Name {
+				goto NextCurrentIdx
+			}
+		}
+
+		statement = RemoveIndexStatement(tableName, currentIndex)
+		indexStatements = append(indexStatements, statement)
+
+	NextCurrentIdx:
+	}
+
+	return indexStatements, nil
 }

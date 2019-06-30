@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	trueValue = true
+	trueValue  = true
 	falseValue = false
 )
 
@@ -126,10 +126,10 @@ spec:
 			tableName:   "simple",
 			primaryKey:  []string{"one"},
 			foreignKeys: []*types.ForeignKey{},
-			indexes:     []*types.Index{
+			indexes: []*types.Index{
 				&types.Index{
-					Columns: []string{"other"},
-					Name: "idx_simple_other",
+					Columns:  []string{"other"},
+					Name:     "idx_simple_other",
 					IsUnique: true,
 				},
 			},
@@ -139,10 +139,10 @@ spec:
 					DataType: "integer",
 				},
 				&types.Column{
-					Name: "other",
+					Name:     "other",
 					DataType: "varchar (255)",
 					Constraints: &types.ColumnConstraints{
-					  NotNull: &trueValue,
+						NotNull: &trueValue,
 					},
 				},
 			},

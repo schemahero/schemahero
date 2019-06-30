@@ -13,6 +13,12 @@ type Index struct {
 	IsUnique bool
 }
 
+func (idx *Index) Equals(other *Index) bool {
+	// TODO
+
+	return false
+}
+
 func IndexToSchemaIndex(index *Index) *schemasv1alpha2.SQLTableIndex {
 	schemaIndex := schemasv1alpha2.SQLTableIndex{
 		Columns:  index.Columns,
@@ -21,6 +27,16 @@ func IndexToSchemaIndex(index *Index) *schemasv1alpha2.SQLTableIndex {
 	}
 
 	return &schemaIndex
+}
+
+func SchemaIndexToIndex(schemaIndex *schemasv1alpha2.SQLTableIndex) *Index {
+	index := Index{
+		Columns:  schemaIndex.Columns,
+		Name:     schemaIndex.Name,
+		IsUnique: schemaIndex.IsUnique,
+	}
+
+	return &index
 }
 
 func GenerateIndexName(tableName string, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
