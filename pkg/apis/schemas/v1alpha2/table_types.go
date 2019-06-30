@@ -28,7 +28,7 @@ type TableSchema struct {
 // TableSpec defines the desired state of Table
 type TableSpec struct {
 	Database string       `json:"database" yaml:"database"`
-	Name     string       `json:"name" yaml:"name"`
+	Name string       `json:"name" yaml:"name"`
 	Requires []string     `json:"requires,omitempty" yaml:"requires,omitempty"`
 	Schema   *TableSchema `json:"schema" yaml:"schema"`
 }

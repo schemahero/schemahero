@@ -1,0 +1,29 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: users
+spec:
+  database: schemahero
+  name: users
+  schema:
+    mysql:
+      primaryKey:
+      - id
+      indexes:
+        - name: idx_users_email
+          isUnique: true
+          columns:
+            - email
+      columns:
+      - name: id
+        type: int
+        constraints:
+          notNull: true
+      - name: email
+        type: varchar (255)
+        constraints:
+          notNull: true
+      - name: phone
+        type: varchar (10)
+        constraints:
+          notNull: true
