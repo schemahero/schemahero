@@ -41,13 +41,57 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	}
 
 	// table needs to be altered?
-	query = `select
+	columnStatements, err := buildColumnStatements(m, tableName, mysqlTableSchema)
+	if err != nil {
+		return err
+	}
+	if err := executeStatements(m, columnStatements); err != nil {
+		return err
+	}
+
+	// foreign key changes
+	foreignKeyStatements, err := buildForeignKeyStatements(m, tableName, mysqlTableSchema)
+	if err != nil {
+		return err
+	}
+	if err := executeStatements(m, foreignKeyStatements); err != nil {
+		return err
+	}
+
+	// index changes
+	indexStatements, err := buildIndexStatements(m, tableName, mysqlTableSchema)
+	if err != nil {
+		return err
+	}
+	if err := executeStatements(m, indexStatements); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func executeStatements(m *MysqlConnection, statements []string) error {
+	for _, statement := range statements {
+		if statement == "" {
+			continue
+		}
+		fmt.Printf("Executing query %q\n", statement)
+		if _, err := m.db.ExecContext(context.Background(), statement); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	query := `select
 		COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
 		from information_schema.COLUMNS
 		where TABLE_NAME = ?`
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
@@ -57,7 +101,7 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		var charMaxLength sql.NullInt64
 
 		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
-			return err
+			return nil, err
 		}
 
 		foundColumnNames = append(foundColumnNames, columnName)
@@ -83,7 +127,7 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 
 		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		alterAndDropStatements = append(alterAndDropStatements, columnStatement)
@@ -100,17 +144,21 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		if !isColumnPresent {
 			statement, err := InsertColumnStatement(tableName, desiredColumn)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			alterAndDropStatements = append(alterAndDropStatements, statement)
 		}
 	}
 
-	// foreign key changes
+	return alterAndDropStatements, nil
+}
+
+func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	foreignKeyStatements := []string{}
 	currentForeignKeys, err := m.ListTableForeignKeys(m.databaseName, tableName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, foreignKey := range mysqlTableSchema.ForeignKeys {
 		var statement string
@@ -127,11 +175,11 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		// TODO can we alter
 		if matchedForeignKey != nil {
 			statement = RemoveForeignKeyStatement(tableName, matchedForeignKey)
-			alterAndDropStatements = append(alterAndDropStatements, statement)
+			foreignKeyStatements = append(foreignKeyStatements, statement)
 		}
 
 		statement = AddForeignKeyStatement(tableName, foreignKey)
-		alterAndDropStatements = append(alterAndDropStatements, statement)
+		foreignKeyStatements = append(foreignKeyStatements, statement)
 
 	Next:
 	}
@@ -145,20 +193,14 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		}
 
 		statement = RemoveForeignKeyStatement(tableName, currentForeignKey)
-		alterAndDropStatements = append(alterAndDropStatements, statement)
+		foreignKeyStatements = append(foreignKeyStatements, statement)
 
 	NextCurrentFK:
 	}
 
-	for _, alterOrDropStatement := range alterAndDropStatements {
-		if alterOrDropStatement == "" {
-			continue
-		}
-		fmt.Printf("Executing query %q\n", alterOrDropStatement)
-		if _, err = m.db.ExecContext(context.Background(), alterOrDropStatement); err != nil {
-			return err
-		}
-	}
+	return foreignKeyStatements, nil
+}
 
-	return nil
+func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	return []string{}, nil
 }

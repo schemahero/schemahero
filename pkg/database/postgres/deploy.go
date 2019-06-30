@@ -56,14 +56,8 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	if err != nil {
 		return err
 	}
-	for _, columnStatement := range columnStatements {
-		if columnStatement == "" {
-			continue
-		}
-		fmt.Printf("Executing query %q\n", columnStatement)
-		if _, err = p.db.ExecContext(context.Background(), columnStatement); err != nil {
-			return err
-		}
+	if err := executeStatements(p, columnStatements); err != nil {
+		return err
 	}
 
 	// foreign key changes
@@ -71,17 +65,32 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	if err != nil {
 		return err
 	}
-	for _, foreignKeyStatement := range foreignKeyStatements {
-		if foreignKeyStatement == "" {
-			continue
-		}
-		fmt.Printf("Executing query %q\n", foreignKeyStatement)
-		if _, err = p.db.ExecContext(context.Background(), foreignKeyStatement); err != nil {
-			return err
-		}
+	if err := executeStatements(p, foreignKeyStatements); err != nil {
+		return err
 	}
 
 	// index changes
+	indexStatements, err := buildIndexStatements(p, tableName, postgresTableSchema)
+	if err != nil {
+		return err
+	}
+	if err := executeStatements(p, indexStatements); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func executeStatements(p *PostgresConnection, statements []string) error {
+	for _, statement := range statements {
+		if statement == "" {
+			continue
+		}
+		fmt.Printf("Executing query %q\n", statement)
+		if _, err := p.db.ExecContext(context.Background(), statement); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -210,4 +219,8 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	}
 
 	return foreignKeyStatements, nil
+}
+
+func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	return []string{}, nil
 }
