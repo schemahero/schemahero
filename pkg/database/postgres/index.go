@@ -9,7 +9,7 @@ import (
 )
 
 func RemoveIndexStatement(tableName string, index *types.Index) string {
-	return fmt.Sprintf("drop index %s", index.Name)
+	return fmt.Sprintf("drop index `%s`", index.Name)
 }
 
 func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
