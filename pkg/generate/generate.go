@@ -63,13 +63,19 @@ func (g *Generator) RunSync() error {
 			return err
 		}
 
+		indexes, err := db.ListTableIndexes(g.Viper.GetString("dbname"), tableName)
+		if err != nil {
+			fmt.Printf("%#v\n", err)
+			return err
+		}
+
 		columns, err := db.GetTableSchema(tableName)
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 			return err
 		}
 
-		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKey, foreignKeys, columns)
+		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKey, foreignKeys, indexes, columns)
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 			return err
@@ -109,11 +115,17 @@ func (g *Generator) RunSync() error {
 	return nil
 }
 
-func generateTableYAML(driver string, dbName string, tableName string, primaryKey []string, foreignKeys []*types.ForeignKey, columns []*types.Column) (string, error) {
+func generateTableYAML(driver string, dbName string, tableName string, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
 	schemaForeignKeys := make([]*schemasv1alpha2.SQLTableForeignKey, 0, 0)
 	for _, foreignKey := range foreignKeys {
 		schemaForeignKey := types.ForeignKeyToSchemaForeignKey(foreignKey)
 		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
+	}
+
+	schemaIndexes := make([]*schemasv1alpha2.SQLTableIndex, 0, 0)
+	for _, index := range indexes {
+		schemaIndex := types.IndexToSchemaIndex(index)
+		schemaIndexes = append(schemaIndexes, schemaIndex)
 	}
 
 	schemaTableColumns := make([]*schemasv1alpha2.SQLTableColumn, 0, 0)
@@ -131,6 +143,7 @@ func generateTableYAML(driver string, dbName string, tableName string, primaryKe
 		PrimaryKey:  primaryKey,
 		Columns:     schemaTableColumns,
 		ForeignKeys: schemaForeignKeys,
+		Indexes:     schemaIndexes,
 	}
 
 	schema := &schemasv1alpha2.TableSchema{}

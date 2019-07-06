@@ -15,7 +15,7 @@ ENV GO111MODULE=on
 RUN make bin/schemahero
 
 # Copy schemahero into a thin image
-FROM debian:stretch
+FROM debian:buster
 WORKDIR /
 COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/schemahero .
 

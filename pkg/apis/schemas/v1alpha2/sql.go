@@ -28,6 +28,13 @@ type SQLTableForeignKey struct {
 	Name       string                       `json:"name,omitempty" yaml:"name,omitempty"`
 }
 
+type SQLTableIndex struct {
+	Columns  []string `json:"columns" yaml:"columns"`
+	Name     string   `json:"name,omitempty" yaml:"name,omitempty"`
+	IsUnique bool     `json:"isUnique,omitempty" yaml:"isUnique,omitempty"`
+	Type     string   `json:"type,omitempty" yaml:"type,omitempty"`
+}
+
 type SQLTableColumnConstraints struct {
 	NotNull *bool `json:"notNull,omitempty" yaml:"notNull,omitempty"`
 }
@@ -42,6 +49,7 @@ type SQLTableColumn struct {
 type SQLTableSchema struct {
 	PrimaryKey  []string              `json:"primaryKey" yaml:"primaryKey"`
 	ForeignKeys []*SQLTableForeignKey `json:"foreignKeys,omitempty" yaml:"foreignKeys,omitempty"`
+	Indexes     []*SQLTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
 	Columns     []*SQLTableColumn     `json:"columns,omitempty" yaml:"columns"`
 	IsDeleted   bool                  `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 }

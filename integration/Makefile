@@ -15,6 +15,7 @@ postgres: build
 	make -C tests/postgres/foreign-key-drop run
 	make -C tests/postgres/foreign-key-alter run
 	make -C tests/postgres/not-null run
+	make -C tests/postgres/index-create run
 
 .PHONY: mysql
 mysql: build
@@ -24,6 +25,7 @@ mysql: build
 	make -C tests/mysql/foreign-key-drop run
 	make -C tests/mysql/foreign-key-alter run
 	make -C tests/mysql/not-null run
+	make -C tests/mysql/index-create run
 
 .PHONY: build
 build:

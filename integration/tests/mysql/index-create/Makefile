@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-TEST_NAME := mysql-foreign-key-action
+TEST_NAME := mysql-index-create
 DATABASE_IMAGE_NAME := schemahero/database
 DATABASE_CONTAINER_NAME := database
 
@@ -29,7 +29,7 @@ run:
 			apply \
 			--driver mysql \
 			--uri "schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false" \
-			--spec-file /specs/user-project.yaml
+			--spec-file /specs/users.yaml
 
 	# Verify
 	docker run \

@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -26,6 +27,51 @@ func (m *MysqlConnection) ListTables() ([]string, error) {
 	}
 
 	return tableNames, nil
+}
+
+func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
+	query := `select
+	index_name,
+	non_unique,
+	group_concat(column_name order by seq_in_index)
+ 	from information_schema.statistics
+	 where table_name = ?
+	 and index_name != 'PRIMARY'
+	 and index_name not in (
+	  select kcu.CONSTRAINT_NAME
+	  from information_schema.KEY_COLUMN_USAGE kcu
+	  inner join information_schema.TABLE_CONSTRAINTS tc
+	    on tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+	  inner join information_schema.REFERENTIAL_CONSTRAINTS rc
+	    on rc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+	  where tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
+	  and kcu.TABLE_NAME = ?
+        )
+	group by 1, 2`
+	rows, err := m.db.Query(query, tableName, tableName)
+	if err != nil {
+		return nil, err
+	}
+
+	indexes := make([]*types.Index, 0, 0)
+	for rows.Next() {
+		var index types.Index
+		var columns string
+		var nonUnique bool
+		if err := rows.Scan(&index.Name, &nonUnique, &columns); err != nil {
+			return nil, err
+		}
+
+		index.IsUnique = !nonUnique
+
+		// columns are selected as col1,col2
+		columnNames := strings.Split(columns, ",")
+		index.Columns = columnNames
+
+		indexes = append(indexes, &index)
+	}
+
+	return indexes, nil
 }
 
 func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
