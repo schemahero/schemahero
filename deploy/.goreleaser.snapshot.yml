@@ -4,7 +4,8 @@ release:
     owner: schemahero
     name: schemahero
 builds:
-  - goos:
+  - id: schemahero
+    goos:
       - linux
       - windows
       - darwin
@@ -22,7 +23,8 @@ builds:
     flags: -tags netgo -installsuffix netgo
     binary: schemahero
     hooks: {}
-  - goos:
+  - id: manager
+    goos:
       - linux
     goarch:
       - amd64
