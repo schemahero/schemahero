@@ -32,13 +32,14 @@ export GO111MODULE=on
 
 all: test bin/schemahero manager
 
-# Run tests
+.PHONY: test
 test: generate fmt vet manifests
 	go test ./pkg/... ./cmd/... -coverprofile cover.out
 
-# Build manager binary
+.PHONY: manager
 manager: generate fmt vet bin/manager
 
+.PHONY: bin/manager
 bin/manager:
 	go build \
 		${LDFLAGS} \
@@ -46,24 +47,24 @@ bin/manager:
 		-o bin/manager \
 		./cmd/manager
 
-# Run against the configured Kubernetes cluster in ~/.kube/config
+.PHONY: run
 run: generate fmt vet bin/schemahero
 	go run ./cmd/manager/main.go
 
-# Install CRDs into a cluster
+.PHONY: install
 install: manifests microk8s
-	kubectl apply -f config/crd
+	kubectl apply -f config/crds
 
-# Deploy controller in the configured Kubernetes cluster in ~/.kube/config
+.PHONY: deploy
 deploy: manifests
-	kubectl apply -f config/crd
+	kubectl apply -f config/crds
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: manifests
 manifests: controller-gen
-        $(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd output:crd:artifacts:config=config/crds paths="./..."
 
-# Run go fmt against code
+.PHONY: fmt
 fmt:
 	go fmt ./pkg/... ./cmd/...
 
@@ -73,7 +74,7 @@ vet:
 
 .PHONY: generate
 generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./api/...
+	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/api/...
 
 .PHONY: integration/postgres
 integration/postgres: bin/schemahero
@@ -88,6 +89,7 @@ integration/postgres: bin/schemahero
 	./bin/schemahero watch --driver postgres --uri postgres://schemahero:password@localhost:15432/schemahero?sslmode=disable
 	docker rm -f schemahero-postgres
 
+.PHONY: bin/schemahero
 bin/schemahero:
 	go build \
 		${LDFLAGS} \
@@ -115,12 +117,11 @@ microk8s:
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest
 
-.PHONY: tag-release
-tag-release:
+.PHONY: release
+release:
 	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --config deploy/.goreleaser.yml
 
-# find or download controller-gen
-# download controller-gen if necessary
+.PHONY: contoller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))
 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.0-beta.2

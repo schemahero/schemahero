@@ -35,3 +35,16 @@ steps:
           volumes:
             - "/var/run/docker.sock:/var/run/docker.sock"
             - "/var/lib/buildkite-agent/.docker/config.json:/home/builder/.docker/config.json"
+
+  - label: release
+    commands:
+      - if [ -z "$BUILDKITE_TAG" ]; then echo "Not a tag, not releasing"; else git tag -f "$BUILDKITE_TAG" && make release; fi
+    plugins:
+      - docker#v3.2.0:
+          always-pull: true
+          image: replicated/gitops-builder:buildkite-go12-node10
+          workdir: /go/src/github.com/schemahero/schemahero
+          volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+          environment:
+            - "GITHUB_TOKEN"
