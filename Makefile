@@ -61,7 +61,7 @@ deploy: manifests
 
 .PHONY: manifests
 manifests: controller-gen
-	$(CONTROLLER_GEN) paths=./pkg/apis/... output:dir=./config/crds
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd output:crd:artifacts:config=config/crds paths="./..."
 
 # Run go fmt against code
 fmt:
