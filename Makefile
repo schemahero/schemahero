@@ -52,16 +52,16 @@ run: generate fmt vet bin/schemahero
 
 # Install CRDs into a cluster
 install: manifests microk8s
-	kubectl apply -f config/crds
+	kubectl apply -f config/crd
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
-	kubectl apply -f config/crds
+	kubectl apply -f config/crd
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: manifests
 manifests: controller-gen
-        $(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+        $(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd
 
 # Run go fmt against code
 fmt:
