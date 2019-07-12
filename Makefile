@@ -52,16 +52,16 @@ run: generate fmt vet bin/schemahero
 
 # Install CRDs into a cluster
 install: manifests microk8s
-	kubectl apply -f config/crd
+	kubectl apply -f config/crds
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
-	kubectl apply -f config/crd
+	kubectl apply -f config/crds
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: manifests
 manifests: controller-gen
-        $(CONTROLLER_GEN) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd
+	$(CONTROLLER_GEN) paths=./pkg/apis/... output:dir=./config/crds
 
 # Run go fmt against code
 fmt:
@@ -73,7 +73,7 @@ vet:
 
 .PHONY: generate
 generate: controller-gen
-	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./api/...
+	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/api/...
 
 .PHONY: integration/postgres
 integration/postgres: bin/schemahero
