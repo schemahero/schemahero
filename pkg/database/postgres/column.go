@@ -50,7 +50,7 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha2.SQLTableColumn) (*types.
 }
 
 func postgresColumnAsInsert(column *schemasv1alpha2.SQLTableColumn) (string, error) {
-	// Note, we don't always quote the column type becuase of how pg handles these two statement very differently:
+	// Note, we don't always quote the column type because of how pg handles these two statement very differently:
 
 	// 1. create table "users" ("id" "bigint","login" "varchar(255)","name" "varchar(255)")
 	// 2. create table "users" ("id" bigint,"login" varchar(255),"name" varchar(255))
