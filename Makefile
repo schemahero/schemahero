@@ -119,6 +119,7 @@ microk8s:
 
 .PHONY: release
 release:
+	export GITHUB_TOKEN=$$GITHUB_TOKEN_SCHEMAHERO
 	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --config deploy/.goreleaser.yml
 
 .PHONY: contoller-gen
