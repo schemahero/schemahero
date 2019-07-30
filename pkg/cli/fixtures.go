@@ -13,11 +13,7 @@ func Fixtures() *cobra.Command {
 		Short: "fixtures creates sql statements from a schemahero definition",
 		Long:  `...`,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			// workaround for https://github.com/spf13/viper/issues/233
-			viper.BindPFlag("driver", cmd.Flags().Lookup("driver"))
-			viper.BindPFlag("dbname", cmd.Flags().Lookup("dbname"))
-			viper.BindPFlag("input-dir", cmd.Flags().Lookup("input-dir"))
-			viper.BindPFlag("output-dir", cmd.Flags().Lookup("output-dir"))
+			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.NewDatabase()
@@ -34,8 +30,6 @@ func Fixtures() *cobra.Command {
 	cmd.MarkFlagRequired("dbname")
 	cmd.MarkFlagRequired("input-dir")
 	cmd.MarkFlagRequired("output-dir")
-
-	viper.BindPFlags(cmd.Flags())
 
 	return cmd
 }
