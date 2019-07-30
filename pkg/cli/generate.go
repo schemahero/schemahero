@@ -13,12 +13,7 @@ func Generate() *cobra.Command {
 		Short: "generate schemahero custom resources from a running database instance",
 		Long:  `...`,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			// workaround for https://github.com/spf13/viper/issues/233
-			viper.BindPFlag("driver", cmd.Flags().Lookup("driver"))
-			viper.BindPFlag("uri", cmd.Flags().Lookup("uri"))
-			viper.BindPFlag("namespace", cmd.Flags().Lookup("namespace"))
-			viper.BindPFlag("dbname", cmd.Flags().Lookup("dbname"))
-			viper.BindPFlag("output-dir", cmd.Flags().Lookup("output-dir"))
+			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			g := generate.NewGenerator()
@@ -35,8 +30,6 @@ func Generate() *cobra.Command {
 	cmd.MarkFlagRequired("driver")
 	cmd.MarkFlagRequired("uri")
 	cmd.MarkFlagRequired("dbname")
-
-	viper.BindPFlags(cmd.Flags())
 
 	return cmd
 }

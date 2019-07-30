@@ -13,10 +13,7 @@ func Apply() *cobra.Command {
 		Short: "apply a spec to a database",
 		Long:  `...`,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			// workaround for https://github.com/spf13/viper/issues/233
-			viper.BindPFlag("driver", cmd.Flags().Lookup("driver"))
-			viper.BindPFlag("uri", cmd.Flags().Lookup("uri"))
-			viper.BindPFlag("spec-file", cmd.Flags().Lookup("spec-file"))
+			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			db := database.NewDatabase()
@@ -31,8 +28,6 @@ func Apply() *cobra.Command {
 	cmd.MarkFlagRequired("driver")
 	cmd.MarkFlagRequired("uri")
 	cmd.MarkFlagRequired("spec-file")
-
-	viper.BindPFlags(cmd.Flags())
 
 	return cmd
 }
