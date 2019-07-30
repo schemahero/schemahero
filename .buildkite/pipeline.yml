@@ -14,16 +14,6 @@ steps:
 
   - wait
 
-  - label: tests
-    commands:
-      - make deps test
-    plugins:
-      - docker#v3.2.0:
-          image: replicated/gitops-builder:buildkite-go12-node10
-          always-pull: true
-          mount-checkout: true
-          workdir: /go/src/github.com/schemahero/schemahero
-
   - label: integration-tests
     commands:
       - make -C integration run
