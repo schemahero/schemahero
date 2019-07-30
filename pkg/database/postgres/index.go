@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lib/pq"
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func RemoveIndexStatement(tableName string, index *types.Index) string {
-	return fmt.Sprintf("drop index `%s`", index.Name)
+	return fmt.Sprintf(
+		"drop index %s",
+		pq.QuoteIdentifier(index.Name))
 }
 
 func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
@@ -31,5 +34,8 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIn
 }
 
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
-	return fmt.Sprintf("alter index %s rename to %s", index.Name, schemaIndex.Name)
+	return fmt.Sprintf(
+		"alter index %s rename to %s",
+		pq.QuoteIdentifier(index.Name),
+		pq.QuoteIdentifier(schemaIndex.Name))
 }

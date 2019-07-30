@@ -44,7 +44,7 @@ run:
 			--output-dir /out \
 			--uri "schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false"
 	@echo Verifying results for $(TEST_NAME)
-	diff --color expect out
+	diff expect out
 
 	# Cleanup
 	@-sleep 5

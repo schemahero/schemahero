@@ -45,7 +45,7 @@ run:
 			--output-dir /out \
 			--uri postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero?sslmode=disable
 	@echo Verifying results for $(TEST_NAME)
-	diff --color expect out
+	diff expect out
 
 	# Cleanup
 	@-sleep 5
