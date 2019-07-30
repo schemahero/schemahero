@@ -16,7 +16,7 @@ steps:
 
   - label: tests
     commands:
-      - make -C deps test
+      - make deps test
     plugins:
       - docker#v3.2.0:
           image: replicated/gitops-builder:buildkite-go12-node10
