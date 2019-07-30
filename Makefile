@@ -32,6 +32,9 @@ export GO111MODULE=on
 
 all: test bin/schemahero manager
 
+.PHONY: deps
+deps: ./hack/deps.sh
+
 .PHONY: test
 test: generate fmt vet manifests
 	go test ./pkg/... ./cmd/... -coverprofile cover.out
@@ -75,19 +78,6 @@ vet:
 .PHONY: generate
 generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/api/...
-
-.PHONY: integration/postgres
-integration/postgres: bin/schemahero
-	@-docker rm -f schemahero-postgres > /dev/null 2>&1 ||:
-	docker pull postgres:10
-	docker run --rm -d --name schemahero-postgres -p 15432:5432 \
-		-e POSTGRES_PASSWORD=password \
-		-e POSTGRES_USER=schemahero \
-		-e POSTGRES_DB=schemahero \
-		postgres:10
-	@-sleep 5
-	./bin/schemahero watch --driver postgres --uri postgres://schemahero:password@localhost:15432/schemahero?sslmode=disable
-	docker rm -f schemahero-postgres
 
 .PHONY: bin/schemahero
 bin/schemahero:
