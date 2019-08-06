@@ -2,6 +2,9 @@ SHELL := /bin/bash
 TEST_NAME := mysql-foreign-key-drop
 DATABASE_IMAGE_NAME := schemahero/database
 DATABASE_CONTAINER_NAME := database
+DRIVER := mysql
+URI := schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false
+SPEC_FILE := /specs/org.yaml
 
 .PHONY: run
 run:
@@ -17,7 +20,7 @@ run:
 	docker build -t $(DATABASE_IMAGE_NAME) .
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run --network $(TEST_NAME) --rm -d --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)
-	while ! docker exec -it $(DATABASE_CONTAINER_NAME) mysqladmin ping -hlocalhost --silent; do sleep 30; done
+	while ! docker exec -it $(DATABASE_CONTAINER_NAME) mysqladmin ping -h$(DATABASE_CONTAINER_NAME) --silent; do sleep 1; done
 
 	# Test
 	docker tag $(IMAGE) schemahero/schemahero:test
@@ -27,9 +30,9 @@ run:
 		--rm \
 		schemahero/schemahero:test \
 			apply \
-			--driver mysql \
-			--uri "schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false" \
-			--spec-file /specs/org.yaml
+			--driver $(DRIVER) \
+			--uri "$(URI)" \
+			--spec-file $(SPEC_FILE)
 
 	# Verify
 	docker run \
@@ -41,9 +44,9 @@ run:
 			generate \
 			--dbname schemahero \
 			--namespace default \
-			--driver mysql \
+			--driver $(DRIVER) \
 			--output-dir /out \
-			--uri "schemahero:password@tcp($(DATABASE_CONTAINER_NAME):3306)/schemahero?tls=false"
+			--uri "$(URI)"
 	@echo Verifying results for $(TEST_NAME)
 	diff expect out
 
@@ -52,4 +55,3 @@ run:
 	rm -rf ./out
 	@-docker rm -f $(DATABASE_CONTAINER_NAME)
 	@-docker network rm $(TEST_NAME)
-

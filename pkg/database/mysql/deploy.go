@@ -49,6 +49,15 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 		return err
 	}
 
+	// primary key changes
+	primaryKeyStatements, err := buildPrimaryKeyStatements(m, tableName, mysqlTableSchema)
+	if err != nil {
+		return err
+	}
+	if err := executeStatements(m, primaryKeyStatements); err != nil {
+		return err
+	}
+
 	// foreign key changes
 	foreignKeyStatements, err := buildForeignKeyStatements(m, tableName, mysqlTableSchema)
 	if err != nil {
@@ -104,6 +113,13 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 			return nil, err
 		}
 
+		if isParameterizedColumnType(dataType) {
+			dataType, err = maybeParseParameterizedColumnType(dataType)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		foundColumnNames = append(foundColumnNames, columnName)
 
 		existingColumn := types.Column{
@@ -152,6 +168,41 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 	}
 
 	return alterAndDropStatements, nil
+}
+
+func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	currentPrimaryKey, err := m.GetTablePrimaryKey(tableName)
+	if err != nil {
+		return nil, err
+	}
+	var mysqlTableSchemaPrimaryKey *types.KeyConstraint
+	if len(mysqlTableSchema.PrimaryKey) > 0 {
+		mysqlTableSchemaPrimaryKey = &types.KeyConstraint{
+			IsPrimary: true,
+			Columns:   mysqlTableSchema.PrimaryKey,
+		}
+	}
+
+	if mysqlTableSchemaPrimaryKey.Equals(currentPrimaryKey) {
+		return nil, nil
+	}
+
+	var statements []string
+	if currentPrimaryKey != nil {
+		statements = append(statements, AlterRemoveConstrantStatement{
+			TableName:  tableName,
+			Constraint: *currentPrimaryKey,
+		}.String())
+	}
+
+	if mysqlTableSchemaPrimaryKey != nil {
+		statements = append(statements, AlterAddConstrantStatement{
+			TableName:  tableName,
+			Constraint: *mysqlTableSchemaPrimaryKey,
+		}.String())
+	}
+
+	return statements, nil
 }
 
 func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {

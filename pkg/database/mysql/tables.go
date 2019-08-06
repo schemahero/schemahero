@@ -124,33 +124,44 @@ func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName st
 	return foreignKeys, nil
 }
 
-func (m *MysqlConnection) GetTablePrimaryKey(tableName string) ([]string, error) {
-	query := `select distinct(c.COLUMN_NAME)
+func (m *MysqlConnection) GetTablePrimaryKey(tableName string) (*types.KeyConstraint, error) {
+	query := `select distinct tc.CONSTRAINT_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION
 from information_schema.TABLE_CONSTRAINTS tc
 join information_schema.KEY_COLUMN_USAGE as kcu using (CONSTRAINT_SCHEMA, CONSTRAINT_NAME)
 join information_schema.COLUMNS as c on c.TABLE_SCHEMA = tc.CONSTRAINT_SCHEMA
   and tc.TABLE_NAME = c.TABLE_NAME
   and kcu.TABLE_NAME = c.TABLE_NAME
   and kcu.COLUMN_NAME = c.COLUMN_NAME
-where tc.CONSTRAINT_TYPE = 'PRIMARY KEY' and tc.TABLE_NAME = ?`
+where tc.CONSTRAINT_TYPE = 'PRIMARY KEY' and tc.TABLE_NAME = ?
+order by c.ORDINAL_POSITION`
 
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
 		return nil, err
 	}
 
-	columns := make([]string, 0, 0)
-	for rows.Next() {
-		var columnName string
+	var hasKey bool
 
-		if err := rows.Scan(&columnName); err != nil {
+	key := types.KeyConstraint{
+		IsPrimary: true,
+	}
+	for rows.Next() {
+		hasKey = true
+
+		var constraintName, columnName, tmp string
+
+		if err := rows.Scan(&constraintName, &columnName, &tmp); err != nil {
 			return nil, err
 		}
 
-		columns = append(columns, columnName)
+		key.Name = constraintName
+		key.Columns = append(key.Columns, columnName)
+	}
+	if !hasKey {
+		return nil, nil
 	}
 
-	return columns, nil
+	return &key, nil
 }
 
 func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
