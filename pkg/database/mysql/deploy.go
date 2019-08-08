@@ -113,6 +113,10 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 			return nil, err
 		}
 
+		if charMaxLength.Valid {
+			dataType = fmt.Sprintf("%s (%d)", dataType, charMaxLength.Int64)
+		}
+
 		if isParameterizedColumnType(dataType) {
 			dataType, err = maybeParseParameterizedColumnType(dataType)
 			if err != nil {
@@ -136,9 +140,6 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 
 		if columnDefault.Valid {
 			existingColumn.ColumnDefault = &columnDefault.String
-		}
-		if charMaxLength.Valid {
-			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
 		}
 
 		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)

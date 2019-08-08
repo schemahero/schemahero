@@ -9,7 +9,8 @@ import (
 
 func schemaColumnToColumn(schemaColumn *schemasv1alpha2.SQLTableColumn) (*types.Column, error) {
 	column := &types.Column{
-		Name: schemaColumn.Name,
+		Name:          schemaColumn.Name,
+		ColumnDefault: schemaColumn.Default,
 	}
 
 	if schemaColumn.Constraints != nil {

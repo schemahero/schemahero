@@ -34,9 +34,7 @@ func ColumnToSchemaColumn(column *Column) (*schemasv1alpha2.SQLTableColumn, erro
 		}
 	}
 
-	if column.ColumnDefault != nil {
-		schemaColumn.Default = *column.ColumnDefault
-	}
+	schemaColumn.Default = column.ColumnDefault
 
 	return schemaColumn, nil
 }

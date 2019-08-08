@@ -9,11 +9,6 @@ spec:
     mysql:
       primaryKey:
       - id
-      indexes:
-      - columns:
-        - email
-        name: idx_users_email
-        isUnique: true
       columns:
       - name: id
         type: int
@@ -23,8 +18,13 @@ spec:
         type: varchar (255)
         constraints:
           notNull: true
-      - name: phone
+      - name: account_type
         type: varchar (10)
         constraints:
           notNull: true
-        default: ""
+        default: trial
+      - name: num_seats
+        type: int
+        constraints:
+          notNull: true
+        default: "5"

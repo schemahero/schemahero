@@ -27,3 +27,4 @@ spec:
         type: character varying (10)
         constraints:
           notNull: true
+        default: '''''::character varying'

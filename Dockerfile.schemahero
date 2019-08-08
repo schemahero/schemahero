@@ -12,8 +12,8 @@ ENV GO111MODULE=on
 RUN go mod vendor
 
 # Build
-COPY pkg/ pkg/
 COPY cmd/ cmd/
+COPY pkg/ pkg/
 RUN make bin/schemahero
 
 

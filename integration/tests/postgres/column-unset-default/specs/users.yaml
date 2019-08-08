@@ -2,11 +2,8 @@ database: schemahero
 name: users
 requires: []
 schema:
-  mysql:
+  postgres:
     primaryKey: [id]
-    indexes:
-      - columns: [email]
-        isUnique: true
     columns:
       - name: id
         type: integer
@@ -14,8 +11,7 @@ schema:
         type: varchar(255)
         constraints:
           notNull: true
-      - name: phone
+      - name: account_type
         type: varchar(10)
-        constraints:
-          notNull: true
-        default: ""
+      - name: num_seats
+        type: integer

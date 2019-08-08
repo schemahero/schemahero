@@ -18,3 +18,4 @@ schema:
         type: varchar(10)
         constraints:
           notNull: true
+        default: ""

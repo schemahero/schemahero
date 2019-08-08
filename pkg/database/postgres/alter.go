@@ -10,35 +10,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
-	if col1.DataType != col2.DataType {
-		return false
-	}
-
-	if col1.Constraints == nil && col2.Constraints != nil {
-		return false
-	}
-
-	if col1.Constraints != nil && col2.Constraints == nil {
-		return false
-	}
-
-	if col1.Constraints != nil && col2.Constraints != nil {
-		if col1.Constraints.NotNull != col2.Constraints.NotNull {
-			return false
-		}
-	}
-
-	// TODO: default
-
-	return true
-}
-
 func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
-	// TODO: default
+	alterStatement := fmt.Sprintf("alter column %s", pq.QuoteIdentifier(existingColumn.Name))
 
 	// this could be an alter or a drop column command
-	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
 			column, err := schemaColumnToColumn(desiredColumn)
@@ -52,8 +27,15 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
-				fmt.Printf("%s, %s\n", existingColumn.DataType, column.DataType)
-				changes = append(changes, fmt.Sprintf("%s type %s", columnStatement, column.DataType))
+				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
+			}
+
+			if column.ColumnDefault != nil {
+				if existingColumn.ColumnDefault == nil || *column.ColumnDefault != *existingColumn.ColumnDefault {
+					changes = append(changes, fmt.Sprintf("%s set default '%s'", alterStatement, *column.ColumnDefault))
+				}
+			} else if existingColumn.ColumnDefault != nil {
+				changes = append(changes, fmt.Sprintf("%s drop default", alterStatement))
 			}
 
 			// too much complexity below!
@@ -62,7 +44,7 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
 					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
 						if *existingColumn.Constraints.NotNull == false {
-							changes = append(changes, fmt.Sprintf("%s set not null", columnStatement))
+							changes = append(changes, fmt.Sprintf("%s set not null", alterStatement))
 						}
 					}
 				}
@@ -77,7 +59,7 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 				if !isPrimaryKey {
 					if existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
 						if column.Constraints == nil || column.Constraints.NotNull == nil || *column.Constraints.NotNull == false {
-							changes = append(changes, fmt.Sprintf("%s drop not null", columnStatement))
+							changes = append(changes, fmt.Sprintf("%s drop not null", alterStatement))
 						}
 					}
 				}
@@ -88,14 +70,33 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 				return "", nil
 			}
 
-			columnStatement = fmt.Sprintf(`alter table %s alter column %s%s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name), strings.Join(changes, " "))
-
+			return fmt.Sprintf(`alter table %s %s`, pq.QuoteIdentifier(tableName), strings.Join(changes, ", ")), nil
 		}
 	}
-	if columnStatement == "" {
-		// wasn't found as a desired column, so drop
-		columnStatement = fmt.Sprintf(`alter table %s drop column %s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name))
+
+	return fmt.Sprintf(`alter table %s drop column %s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name)), nil
+}
+
+func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
+	if col1.DataType != col2.DataType {
+		return false
 	}
 
-	return columnStatement, nil
+	if col1.ColumnDefault != nil && col2.ColumnDefault == nil {
+		return false
+	} else if col1.ColumnDefault == nil && col2.ColumnDefault != nil {
+		return false
+	} else if col1.ColumnDefault != nil && col2.ColumnDefault != nil && *col1.ColumnDefault != *col2.ColumnDefault {
+		return false
+	}
+
+	col1Constraints, col2Constraints := col1.Constraints, col2.Constraints
+	if col1Constraints == nil {
+		col1Constraints = &types.ColumnConstraints{}
+	}
+	if col2Constraints == nil {
+		col2Constraints = &types.ColumnConstraints{}
+	}
+
+	return types.NotNullConstraintEquals(col1Constraints.NotNull, col2Constraints.NotNull)
 }
