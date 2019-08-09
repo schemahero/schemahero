@@ -11,6 +11,9 @@ import (
 )
 
 func Test_AlterColumnStatment(t *testing.T) {
+	defaultEleven := "11"
+	defaultEmpty := ""
+
 	tests := []struct {
 		name              string
 		tableName         string
@@ -35,6 +38,21 @@ func Test_AlterColumnStatment(t *testing.T) {
 				Name:          "b",
 				DataType:      "integer",
 				ColumnDefault: nil,
+			},
+			expectedStatement: "",
+		},
+		{
+			name:      "no change varchar",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name: "a",
+					Type: "varchar(32)",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "character varying (32)",
 			},
 			expectedStatement: "",
 		},
@@ -180,6 +198,54 @@ func Test_AlterColumnStatment(t *testing.T) {
 				},
 			},
 			expectedStatement: "",
+		},
+		{
+			name:      "default set",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name:    "a",
+					Type:    "integer",
+					Default: &defaultEleven,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "integer",
+			},
+			expectedStatement: `alter table "t" alter column "a" set default '11'`,
+		},
+		{
+			name:      "default unset",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name: "a",
+					Type: "integer",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:          "a",
+				DataType:      "integer",
+				ColumnDefault: &defaultEleven,
+			},
+			expectedStatement: `alter table "t" alter column "a" drop default`,
+		},
+		{
+			name:      "default empty string",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name:    "a",
+					Type:    "varchar (32)",
+					Default: &defaultEmpty,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "character varying (32)",
+			},
+			expectedStatement: `alter table "t" alter column "a" set default ''`,
 		},
 	}
 

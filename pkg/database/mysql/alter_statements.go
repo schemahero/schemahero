@@ -8,29 +8,34 @@ import (
 )
 
 type AlterModifyColumnStatement struct {
-	TableName  string
-	ColumnName string
-	DataType   string
-	Default    *string
-	NotNull    *bool
+	TableName string
+	Column    types.Column
 }
 
 func (s AlterModifyColumnStatement) String() string {
 	stmts := []string{
-		fmt.Sprintf("alter table `%s` modify column `%s` %s", s.TableName, s.ColumnName, s.DataType),
+		fmt.Sprintf("alter table `%s` modify column `%s` %s", s.TableName, s.Column.Name, s.Column.DataType),
 	}
-	if s.NotNull != nil {
-		if *s.NotNull {
+	if s.Column.Constraints != nil && s.Column.Constraints.NotNull != nil {
+		if *s.Column.Constraints.NotNull {
 			stmts = append(stmts, "not null")
 		} else {
 			stmts = append(stmts, "null")
 		}
 	}
-	// TODO
-	// if s.Default != nil {
-	// 	stmts = append(stmts, fmt.Sprintf("default %s", *s.Default))
-	// }
+	if s.Column.ColumnDefault != nil {
+		stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
+	}
 	return strings.Join(stmts, " ")
+}
+
+type AlterDropColumnStatement struct {
+	TableName string
+	Column    types.Column
+}
+
+func (s AlterDropColumnStatement) String() string {
+	return fmt.Sprintf("alter table `%s` drop column `%s`", s.TableName, s.Column.Name)
 }
 
 type AlterRemoveConstrantStatement struct {

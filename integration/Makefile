@@ -9,7 +9,7 @@ export GO111MODULE=on
 run: build postgres mysql
 
 .PHONY: postgres
-postgres: build
+postgres:
 	make -C tests/postgres/create-table run
 	make -C tests/postgres/foreign-key-create run
 	make -C tests/postgres/foreign-key-action run
@@ -21,7 +21,7 @@ postgres: build
 	make -C tests/postgres/primary-key-drop run
 
 .PHONY: mysql
-mysql: build
+mysql:
 	make -C tests/mysql/create-table run
 	make -C tests/mysql/foreign-key-create run
 	make -C tests/mysql/foreign-key-action run

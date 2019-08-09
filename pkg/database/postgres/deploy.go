@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"regexp"
 
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -140,7 +141,8 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 		}
 
 		if columnDefault.Valid {
-			existingColumn.ColumnDefault = &columnDefault.String
+			value := stripOIDClass(columnDefault.String)
+			existingColumn.ColumnDefault = &value
 		}
 		if charMaxLength.Valid {
 			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
@@ -313,4 +315,14 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 	}
 
 	return indexStatements, nil
+}
+
+var oidClassRegexp = regexp.MustCompile(`'(.+)'::.+`)
+
+func stripOIDClass(value string) string {
+	matches := oidClassRegexp.FindStringSubmatch(value)
+	if len(matches) == 2 {
+		return matches[1]
+	}
+	return value
 }

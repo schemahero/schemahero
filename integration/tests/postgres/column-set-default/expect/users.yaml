@@ -6,25 +6,25 @@ spec:
   database: schemahero
   name: users
   schema:
-    mysql:
+    postgres:
       primaryKey:
       - id
-      indexes:
-      - columns:
-        - email
-        name: idx_users_email
-        isUnique: true
       columns:
       - name: id
-        type: int
+        type: integer
         constraints:
           notNull: true
       - name: email
-        type: varchar (255)
+        type: character varying (255)
         constraints:
           notNull: true
-      - name: phone
-        type: varchar (10)
+      - name: account_type
+        type: character varying (10)
         constraints:
           notNull: true
-        default: ""
+        default: '''trial''::character varying'
+      - name: num_seats
+        type: integer
+        constraints:
+          notNull: true
+        default: "5"

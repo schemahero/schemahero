@@ -43,7 +43,7 @@ type SQLTableColumn struct {
 	Name        string                     `json:"name" yaml:"name"`
 	Type        string                     `json:"type" yaml:"type"`
 	Constraints *SQLTableColumnConstraints `json:"constraints,omitempty" yaml:"constraints,omitempty"`
-	Default     string                     `json:"default,omitempty" yaml:"default,omitempty"`
+	Default     *string                    `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
 type SQLTableSchema struct {

@@ -8,5 +8,3 @@ create table projects (
   name varchar(255) not null,
   icon_uri varchar(255) not null
 );
-
-

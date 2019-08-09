@@ -11,6 +11,9 @@ import (
 )
 
 func Test_AlterColumnStatment(t *testing.T) {
+	defaultEleven := "11"
+	defaultEmpty := ""
+
 	tests := []struct {
 		name              string
 		tableName         string
@@ -158,6 +161,54 @@ func Test_AlterColumnStatment(t *testing.T) {
 				},
 			},
 			expectedStatement: "alter table `t` modify column `a` int (11) not null",
+		},
+		{
+			name:      "default set",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name:    "a",
+					Type:    "integer",
+					Default: &defaultEleven,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "integer",
+			},
+			expectedStatement: "alter table `t` modify column `a` int (11) default \"11\"",
+		},
+		{
+			name:      "default unset",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name: "a",
+					Type: "integer",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:          "a",
+				DataType:      "integer",
+				ColumnDefault: &defaultEleven,
+			},
+			expectedStatement: "alter table `t` modify column `a` int (11)",
+		},
+		{
+			name:      "default empty string",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name:    "a",
+					Type:    "varchar (32)",
+					Default: &defaultEmpty,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "varchar (32)",
+			},
+			expectedStatement: "alter table `t` modify column `a` varchar (32) default \"\"",
 		},
 		// {
 		// 	name:      "no change to not nullable timestamp using short column type",
