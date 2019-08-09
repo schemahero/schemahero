@@ -60,6 +60,15 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 		return err
 	}
 
+	// primary key changes
+	primaryKeyStatements, err := buildPrimaryKeyStatements(p, tableName, postgresTableSchema)
+	if err != nil {
+		return err
+	}
+	if err := executeStatements(p, primaryKeyStatements); err != nil {
+		return err
+	}
+
 	// foreign key changes
 	foreignKeyStatements, err := buildForeignKeyStatements(p, tableName, postgresTableSchema)
 	if err != nil {
@@ -164,6 +173,35 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 	}
 
 	return alterAndDropStatements, nil
+}
+
+func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+	currentPrimaryKey, err := p.GetTablePrimaryKey(tableName)
+	if err != nil {
+		return nil, err
+	}
+	var postgresTableSchemaPrimaryKey *types.KeyConstraint
+	if len(postgresTableSchema.PrimaryKey) > 0 {
+		postgresTableSchemaPrimaryKey = &types.KeyConstraint{
+			IsPrimary: true,
+			Columns:   postgresTableSchema.PrimaryKey,
+		}
+	}
+
+	if postgresTableSchemaPrimaryKey.Equals(currentPrimaryKey) {
+		return nil, nil
+	}
+
+	var statements []string
+	if currentPrimaryKey != nil {
+		statements = append(statements, RemoveConstrantStatement(tableName, currentPrimaryKey))
+	}
+
+	if postgresTableSchemaPrimaryKey != nil {
+		statements = append(statements, AddConstrantStatement(tableName, postgresTableSchemaPrimaryKey))
+	}
+
+	return statements, nil
 }
 
 func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {

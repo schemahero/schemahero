@@ -8,6 +8,13 @@ type ColumnConstraints struct {
 	NotNull *bool
 }
 
+func NotNullConstraintEquals(a, b *bool) bool {
+	if a == nil || bool(*a) == false {
+		return b == nil || bool(*b) == false
+	}
+	return b != nil && bool(*b) == true
+}
+
 type Column struct {
 	Name          string
 	DataType      string

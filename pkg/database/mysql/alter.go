@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"fmt"
-	"strings"
 
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -13,26 +12,21 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 		return false
 	}
 
-	if col1.Constraints == nil && col2.Constraints != nil {
-		return false
+	col1Constraints, col2Constraints := col1.Constraints, col2.Constraints
+	if col1Constraints == nil {
+		col1Constraints = &types.ColumnConstraints{}
+	}
+	if col2Constraints == nil {
+		col2Constraints = &types.ColumnConstraints{}
 	}
 
-	if col1.Constraints != nil && col2.Constraints == nil {
-		return false
-	}
+	// TODO: default
 
-	if col1.Constraints != nil && col2.Constraints != nil {
-		if col1.Constraints.NotNull != col2.Constraints.NotNull {
-			return false
-		}
-	}
-
-	return true
+	return types.NotNullConstraintEquals(col1Constraints.NotNull, col2Constraints.NotNull)
 }
 
 func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	// this could be an alter or a drop column command
-	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
 			column, err := schemaColumnToColumn(desiredColumn)
@@ -44,62 +38,30 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 				return "", nil
 			}
 
-			hasDataType := false
-
-			changes := []string{}
-			if existingColumn.DataType != column.DataType {
-				changes = append(changes, fmt.Sprintf("%s %s", columnStatement, column.DataType))
-				hasDataType = true
+			stmt := AlterModifyColumnStatement{
+				TableName:  tableName,
+				ColumnName: column.Name,
+				DataType:   column.DataType,
+				Default:    column.ColumnDefault,
 			}
 
-			// too much complexity below!
-			if column.Constraints != nil || existingColumn.Constraints != nil {
-				// Add not null
-				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
-					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
-						if *existingColumn.Constraints.NotNull == false {
-							if hasDataType {
-								changes = append(changes, fmt.Sprintf("%s not null", columnStatement))
-							} else {
-								changes = append(changes, fmt.Sprintf("%s %s not null", columnStatement, column.DataType))
-							}
-						}
-					}
-				}
-
-				isPrimaryKey := false
-				for _, primaryKey := range primaryKeys {
-					if column.Name == primaryKey {
-						isPrimaryKey = true
-					}
-				}
-
-				if !isPrimaryKey {
-					if existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
-						if column.Constraints == nil || column.Constraints.NotNull == nil || *column.Constraints.NotNull == false {
-							if hasDataType {
-								changes = append(changes, fmt.Sprintf("%s null", columnStatement))
-							} else {
-								changes = append(changes, fmt.Sprintf("%s %s null", columnStatement, column.DataType))
-							}
-						}
-					}
+			isPrimaryKey := false
+			for _, primaryKey := range primaryKeys {
+				if column.Name == primaryKey {
+					isPrimaryKey = true
 				}
 			}
 
-			if len(changes) == 0 {
-				// no changes
-				return "", nil
+			if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull {
+				stmt.NotNull = column.Constraints.NotNull
+			} else if !isPrimaryKey && existingColumn.Constraints != nil && existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull {
+				stmt.NotNull = new(bool)
 			}
 
-			columnStatement = fmt.Sprintf("alter table `%s` modify column `%s`%s", tableName, existingColumn.Name, strings.Join(changes, " "))
-
+			return stmt.String(), nil
 		}
 	}
-	if columnStatement == "" {
-		// wasn't found as a desired column, so drop
-		columnStatement = fmt.Sprintf("alter table `%s` drop column `%s`", tableName, existingColumn.Name)
-	}
 
-	return columnStatement, nil
+	// wasn't found as a desired column, so drop
+	return fmt.Sprintf("alter table `%s` drop column `%s`", tableName, existingColumn.Name), nil
 }

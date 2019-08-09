@@ -2,6 +2,9 @@ SHELL := /bin/bash
 TEST_NAME := postgres-foreign-key-action
 DATABASE_IMAGE_NAME := schemahero/database
 DATABASE_CONTAINER_NAME := schemahero-database
+DRIVER := postgres
+URI := postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero?sslmode=disable
+SPEC_FILE := /specs/user-project.yaml
 
 .PHONY: run
 run:
@@ -17,7 +20,7 @@ run:
 	docker build -t $(DATABASE_IMAGE_NAME) .
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run --network $(TEST_NAME) --rm -d --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)
-	@-sleep 5
+	while ! docker exec -it $(DATABASE_CONTAINER_NAME) pg_isready -h$(DATABASE_CONTAINER_NAME) --quiet; do sleep 1; done
 
 	# Test
 	docker tag $(IMAGE) schemahero/schemahero:test
@@ -27,9 +30,9 @@ run:
 		--rm \
 		schemahero/schemahero:test \
 			apply \
-			--driver postgres \
-			--uri postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero?sslmode=disable \
-			--spec-file /specs/user-project.yaml
+			--driver $(DRIVER) \
+			--uri "$(URI)" \
+			--spec-file $(SPEC_FILE)
 
 	# Verify
 	docker run \
@@ -41,9 +44,9 @@ run:
 			generate \
 			--dbname schemahero \
 			--namespace default \
-			--driver postgres \
+			--driver $(DRIVER) \
 			--output-dir /out \
-			--uri postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero?sslmode=disable
+			--uri "$(URI)"
 	@echo Verifying results for $(TEST_NAME)
 	diff expect out
 
@@ -52,4 +55,3 @@ run:
 	rm -rf ./out
 	@-docker rm -f $(DATABASE_CONTAINER_NAME)
 	@-docker network rm $(TEST_NAME)
-

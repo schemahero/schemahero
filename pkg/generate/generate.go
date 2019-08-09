@@ -75,7 +75,11 @@ func (g *Generator) RunSync() error {
 			return err
 		}
 
-		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKey, foreignKeys, indexes, columns)
+		var primaryKeyColumns []string
+		if primaryKey != nil {
+			primaryKeyColumns = primaryKey.Columns
+		}
+		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKeyColumns, foreignKeys, indexes, columns)
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 			return err

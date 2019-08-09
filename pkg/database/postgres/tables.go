@@ -148,32 +148,43 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	return foreignKeys, nil
 }
 
-func (p *PostgresConnection) GetTablePrimaryKey(tableName string) ([]string, error) {
+func (p *PostgresConnection) GetTablePrimaryKey(tableName string) (*types.KeyConstraint, error) {
 	// TODO we should be adding a database name on this select
-	query := `select c.column_name
+	query := `select tc.constraint_name, c.column_name
 from information_schema.table_constraints tc
 join information_schema.constraint_column_usage as ccu using (constraint_schema, constraint_name)
 join information_schema.columns as c on c.table_schema = tc.constraint_schema
   and tc.table_name = c.table_name and ccu.column_name = c.column_name
-where constraint_type = 'PRIMARY KEY' and tc.table_name = $1`
+where constraint_type = 'PRIMARY KEY' and tc.table_name = $1
+order by c.ordinal_position`
 
 	rows, err := p.db.Query(query, tableName)
 	if err != nil {
 		return nil, err
 	}
 
-	columns := make([]string, 0, 0)
-	for rows.Next() {
-		var columnName string
+	var hasKey bool
 
-		if err := rows.Scan(&columnName); err != nil {
+	key := types.KeyConstraint{
+		IsPrimary: true,
+	}
+	for rows.Next() {
+		hasKey = true
+
+		var constraintName, columnName string
+
+		if err := rows.Scan(&constraintName, &columnName); err != nil {
 			return nil, err
 		}
 
-		columns = append(columns, columnName)
+		key.Name = constraintName
+		key.Columns = append(key.Columns, columnName)
+	}
+	if !hasKey {
+		return nil, nil
 	}
 
-	return columns, nil
+	return &key, nil
 }
 
 func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, error) {

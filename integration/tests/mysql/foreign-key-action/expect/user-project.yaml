@@ -8,8 +8,8 @@ spec:
   schema:
     mysql:
       primaryKey:
-      - project_id
       - user_id
+      - project_id
       foreignKeys:
       - columns:
         - misc_id

@@ -3,22 +3,23 @@ FROM golang:1.12 as builder
 
 # Copy in the go src
 WORKDIR /go/src/github.com/schemahero/schemahero
-COPY pkg/    pkg/
-COPY cmd/    cmd/
 COPY go.mod  ./
 COPY go.sum ./
 COPY Makefile ./
 
+# Download vendored deps
 ENV GO111MODULE=on
+RUN go mod vendor
 
 # Build
+COPY pkg/ pkg/
+COPY cmd/ cmd/
 RUN make bin/schemahero
+
 
 # Copy schemahero into a thin image
 FROM debian:buster
 WORKDIR /
-COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/schemahero .
-
 
 RUN apt-get update \
  && apt-get -y install \
@@ -31,8 +32,9 @@ RUN set -eux; \
 # verify that the binary works
 	gosu nobody true
 
+COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/schemahero .
+
 COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-

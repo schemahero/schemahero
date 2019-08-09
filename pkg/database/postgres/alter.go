@@ -29,10 +29,14 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 		}
 	}
 
+	// TODO: default
+
 	return true
 }
 
 func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
+	// TODO: default
+
 	// this could be an alter or a drop column command
 	columnStatement := ""
 	for _, desiredColumn := range desiredColumns {

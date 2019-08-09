@@ -137,6 +137,28 @@ func Test_AlterColumnStatment(t *testing.T) {
 			},
 			expectedStatement: "",
 		},
+		{
+			name:      "type change, constraint no change",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha2.SQLTableColumn{
+				&schemasv1alpha2.SQLTableColumn{
+					Name: "a",
+					Type: "integer",
+					Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:          "a",
+				DataType:      "varchar(255)",
+				ColumnDefault: nil,
+				Constraints: &types.ColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatement: "alter table `t` modify column `a` int (11) not null",
+		},
 		// {
 		// 	name:      "no change to not nullable timestamp using short column type",
 		// 	tableName: "ts",
