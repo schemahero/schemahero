@@ -218,7 +218,8 @@ func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, 
 		}
 
 		if columnDefault.Valid {
-			column.ColumnDefault = &columnDefault.String
+			value := stripOIDClass(columnDefault.String)
+			column.ColumnDefault = &value
 		}
 
 		if maxLength.Valid {

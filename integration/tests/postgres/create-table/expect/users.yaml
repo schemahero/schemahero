@@ -21,4 +21,5 @@ spec:
       - name: name
         type: character varying (255)
         constraints:
-          notNull: false
+          notNull: true
+        default: ethan

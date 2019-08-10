@@ -11,6 +11,7 @@ import (
 )
 
 func Test_mysqlColumnAsInsert(t *testing.T) {
+	default11 := "11"
 	tests := []struct {
 		name              string
 		column            *schemasv1alpha2.SQLTableColumn
@@ -21,8 +22,12 @@ func Test_mysqlColumnAsInsert(t *testing.T) {
 			column: &schemasv1alpha2.SQLTableColumn{
 				Name: "c",
 				Type: "integer",
+				Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+				Default: &default11,
 			},
-			expectedStatement: "`c` int (11)",
+			expectedStatement: "`c` int (11) not null default '11'",
 		},
 	}
 

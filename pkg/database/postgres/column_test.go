@@ -11,6 +11,7 @@ import (
 )
 
 func Test_postgresColumnAsInsert(t *testing.T) {
+	default11 := "11"
 	tests := []struct {
 		name              string
 		column            *schemasv1alpha2.SQLTableColumn
@@ -47,6 +48,26 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 				Type: "character varying (4)",
 			},
 			expectedStatement: `"c" character varying (4)`,
+		},
+		{
+			name: "constraint not null",
+			column: &schemasv1alpha2.SQLTableColumn{
+				Name: "c",
+				Type: "integer",
+				Constraints: &schemasv1alpha2.SQLTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatement: `"c" integer not null`,
+		},
+		{
+			name: "default",
+			column: &schemasv1alpha2.SQLTableColumn{
+				Name:    "c",
+				Type:    "integer",
+				Default: &default11,
+			},
+			expectedStatement: `"c" integer default '11'`,
 		},
 	}
 
