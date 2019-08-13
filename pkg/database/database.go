@@ -115,19 +115,8 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) ApplySync() error {
-	specFiles := d.Viper.GetStringSlice("spec-file")
-	for _, specFile := range specFiles {
-		if err := d.applyFileSync(specFile); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (d *Database) applyFileSync(specFile string) error {
-	specContents, err := ioutil.ReadFile(specFile)
+func (d *Database) ApplySync(filename string) error {
+	specContents, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
@@ -150,7 +139,7 @@ func (d *Database) applyFileSync(specFile string) error {
 	}
 
 	if spec.Schema == nil {
-		fmt.Printf("skipping file %s because there is no schema\n", d.Viper.GetString("spec-file"))
+		fmt.Printf("skipping file %s because there is no schema\n", filename)
 		return nil
 	}
 
