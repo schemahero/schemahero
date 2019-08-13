@@ -116,7 +116,18 @@ func (d *Database) CreateFixturesSync() error {
 }
 
 func (d *Database) ApplySync() error {
-	specContents, err := ioutil.ReadFile(d.Viper.GetString("spec-file"))
+	specFiles := d.Viper.GetStringSlice("spec-file")
+	for _, specFile := range specFiles {
+		if err := d.applyFileSync(specFile); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (d *Database) applyFileSync(specFile string) error {
+	specContents, err := ioutil.ReadFile(specFile)
 	if err != nil {
 		return err
 	}

@@ -23,7 +23,7 @@ func Apply() *cobra.Command {
 
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
-	cmd.Flags().String("spec-file", "", "filename containing the spec to apply")
+	cmd.Flags().StringArray("spec-file", []string{}, "filename(s) containing the spec to apply")
 
 	cmd.MarkFlagRequired("driver")
 	cmd.MarkFlagRequired("uri")
