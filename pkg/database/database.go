@@ -115,8 +115,8 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) ApplySync() error {
-	specContents, err := ioutil.ReadFile(d.Viper.GetString("spec-file"))
+func (d *Database) ApplySync(filename string) error {
+	specContents, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (d *Database) ApplySync() error {
 	}
 
 	if spec.Schema == nil {
-		fmt.Printf("skipping file %s because there is no schema\n", d.Viper.GetString("spec-file"))
+		fmt.Printf("skipping file %s because there is no schema\n", filename)
 		return nil
 	}
 

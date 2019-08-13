@@ -14,6 +14,9 @@ func RootCmd() *cobra.Command {
 		Use:   "schemahero",
 		Short: "SchemaHero is a cloud-native database schema management tool",
 		Long:  `...`,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			viper.BindPFlags(cmd.Flags())
+		},
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 			os.Exit(1)
