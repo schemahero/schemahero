@@ -57,6 +57,36 @@ func Test_CreateTableStatement(t *testing.T) {
 			tableName:         "composite_primary_key",
 			expectedStatement: `create table "composite_primary_key" ("one" integer, "two" integer, "three" character varying (255), primary key ("one", "two"))`,
 		},
+		{
+			name: "composite unique index",
+			tableSchema: &schemasv1alpha2.SQLTableSchema{
+				PrimaryKey: []string{
+					"one",
+				},
+				Indexes: []*schemasv1alpha2.SQLTableIndex{
+					&schemasv1alpha2.SQLTableIndex{
+						Columns:  []string{"two", "three"},
+						IsUnique: true,
+					},
+				},
+				Columns: []*schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha2.SQLTableColumn{
+						Name: "one",
+						Type: "integer",
+					},
+					&schemasv1alpha2.SQLTableColumn{
+						Name: "two",
+						Type: "integer",
+					},
+					&schemasv1alpha2.SQLTableColumn{
+						Name: "three",
+						Type: "varchar(255)",
+					},
+				},
+			},
+			tableName:         "composite_unique_index",
+			expectedStatement: `create table "composite_unique_index" ("one" integer, "two" integer, "three" character varying (255), primary key ("one"), constraint "idx_composite_unique_index_two_three" unique ("two", "three"))`,
+		},
 	}
 
 	for _, test := range tests {

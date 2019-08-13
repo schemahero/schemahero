@@ -7,6 +7,7 @@ import (
 	"github.com/lib/pq"
 
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func CreateTableStatement(tableName string, tableSchema *schemasv1alpha2.SQLTableSchema) (string, error) {
@@ -26,6 +27,20 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha2.SQLTabl
 		}
 
 		columns = append(columns, fmt.Sprintf("primary key (%s)", strings.Join(primaryKeyColumns, ", ")))
+	}
+
+	if len(tableSchema.Indexes) > 0 {
+		for _, index := range tableSchema.Indexes {
+			if index.IsUnique {
+				uniqueColumns := []string{}
+				for _, indexColumn := range index.Columns {
+					uniqueColumns = append(uniqueColumns, pq.QuoteIdentifier(indexColumn))
+				}
+				columns = append(columns, fmt.Sprintf("constraint %q unique (%s)", types.GenerateIndexName(tableName, index), strings.Join(uniqueColumns, ", ")))
+			} else {
+				// non unique indexes are not supported in fixtures
+			}
+		}
 	}
 
 	if tableSchema.ForeignKeys != nil {
