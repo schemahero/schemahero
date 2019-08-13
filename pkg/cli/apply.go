@@ -49,8 +49,10 @@ func Apply() *cobra.Command {
 			db := database.NewDatabase()
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
-					if err := db.ApplySync(path); err != nil {
-						return err
+					if !info.IsDir() {
+						if err := db.ApplySync(path); err != nil {
+							return err
+						}
 					}
 
 					return nil
