@@ -23,11 +23,7 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIn
 		name = types.GenerateIndexName(tableName, schemaIndex)
 	}
 
-	return fmt.Sprintf("create %sindex %s on %s (%s)",
-		unique,
-		name,
-		tableName,
-		strings.Join(schemaIndex.Columns, ", "))
+	return fmt.Sprintf("create %sindex %s on %s (%s)", unique, name, tableName, strings.Join(schemaIndex.Columns, ", "))
 }
 
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha2.SQLTableIndex) string {

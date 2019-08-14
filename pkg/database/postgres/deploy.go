@@ -38,17 +38,6 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 			return err
 		}
 
-		if postgresTableSchema.Indexes != nil {
-			for _, index := range postgresTableSchema.Indexes {
-				createIndex := AddIndexStatement(tableName, index)
-
-				fmt.Printf("Executing query: %q\n", createIndex)
-				_, err := p.db.Exec(query)
-				if err != nil {
-					return err
-				}
-			}
-		}
 		return nil
 	}
 
@@ -271,6 +260,10 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 	}
 
 	for _, index := range postgresTableSchema.Indexes {
+		if index.Name == "" {
+			index.Name = types.GenerateIndexName(tableName, index)
+		}
+
 		var statement string
 		var matchedIndex *types.Index
 		for _, currentIndex := range currentIndexes {
