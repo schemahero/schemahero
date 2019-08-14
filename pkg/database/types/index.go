@@ -14,9 +14,30 @@ type Index struct {
 }
 
 func (idx *Index) Equals(other *Index) bool {
-	// TODO
+	if idx.Name != other.Name {
+		return false
+	}
 
-	return false
+	if idx.IsUnique != other.IsUnique {
+		return false
+	}
+
+	if len(idx.Columns) != len(other.Columns) {
+		return false
+	}
+
+	for _, otherColumn := range other.Columns {
+		for _, col := range idx.Columns {
+			if col == otherColumn {
+				goto NextColumn
+			}
+		}
+
+		return false
+
+	NextColumn:
+	}
+	return true
 }
 
 func IndexToSchemaIndex(index *Index) *schemasv1alpha2.SQLTableIndex {

@@ -10,9 +10,7 @@ import (
 )
 
 func RemoveIndexStatement(tableName string, index *types.Index) string {
-	return fmt.Sprintf(
-		"drop index %s",
-		pq.QuoteIdentifier(index.Name))
+	return fmt.Sprintf("drop index %s", pq.QuoteIdentifier(index.Name))
 }
 
 func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
@@ -34,8 +32,5 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIn
 }
 
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
-	return fmt.Sprintf(
-		"alter index %s rename to %s",
-		pq.QuoteIdentifier(index.Name),
-		pq.QuoteIdentifier(schemaIndex.Name))
+	return fmt.Sprintf("alter index %s rename to %s", pq.QuoteIdentifier(index.Name), pq.QuoteIdentifier(schemaIndex.Name))
 }
