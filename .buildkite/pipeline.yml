@@ -46,5 +46,6 @@ steps:
           workdir: /go/src/github.com/schemahero/schemahero
           volumes:
             - "/var/run/docker.sock:/var/run/docker.sock"
+            - "/var/lib/buildkite-agent/.docker/config.json:/home/builder/.docker/config.json"
           environment:
             - GITHUB_TOKEN_REPLICATEDBOT
