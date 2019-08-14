@@ -47,4 +47,4 @@ steps:
           volumes:
             - "/var/run/docker.sock:/var/run/docker.sock"
           environment:
-            - "GITHUB_TOKEN_SCHEMAHERO"
+            - GITHUB_TOKEN_REPLICATEDBOT
