@@ -108,7 +108,7 @@ microk8s:
 	docker push localhost:32000/schemahero/schemahero:latest
 
 .PHONY: release
-release: export GITHUB_TOKEN=$$GITHUB_TOKEN_SCHEMAHERO
+release: export GITHUB_TOKEN = $(shell echo ${GITHUB_TOKEN_REPLICATEDBOT})
 release:
 	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --config deploy/.goreleaser.yml
 
