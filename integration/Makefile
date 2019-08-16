@@ -10,6 +10,8 @@ run: build postgres mysql
 
 .PHONY: postgres
 postgres:
+	make -C tests/postgres/column-set-default run
+	make -C tests/postgres/column-unset-default run
 	make -C tests/postgres/create-table run
 	make -C tests/postgres/foreign-key-create run
 	make -C tests/postgres/foreign-key-action run
@@ -22,6 +24,8 @@ postgres:
 
 .PHONY: mysql
 mysql:
+	make -C tests/mysql/column-set-default run
+	make -C tests/mysql/column-unset-default run
 	make -C tests/mysql/create-table run
 	make -C tests/mysql/foreign-key-create run
 	make -C tests/mysql/foreign-key-action run

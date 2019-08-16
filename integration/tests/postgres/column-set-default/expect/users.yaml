@@ -22,7 +22,7 @@ spec:
         type: character varying (10)
         constraints:
           notNull: true
-        default: '''trial''::character varying'
+        default: trial
       - name: num_seats
         type: integer
         constraints:

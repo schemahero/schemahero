@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"regexp"
 
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -308,14 +307,4 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 	}
 
 	return indexStatements, nil
-}
-
-var oidClassRegexp = regexp.MustCompile(`'(.+)'::.+`)
-
-func stripOIDClass(value string) string {
-	matches := oidClassRegexp.FindStringSubmatch(value)
-	if len(matches) == 2 {
-		return matches[1]
-	}
-	return value
 }

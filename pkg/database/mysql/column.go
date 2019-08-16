@@ -64,6 +64,10 @@ func mysqlColumnAsInsert(column *schemasv1alpha2.SQLTableColumn) (string, error)
 		}
 	}
 
+	if mysqlColumn.ColumnDefault != nil {
+		formatted = fmt.Sprintf("%s default '%s'", formatted, *mysqlColumn.ColumnDefault)
+	}
+
 	return formatted, nil
 }
 

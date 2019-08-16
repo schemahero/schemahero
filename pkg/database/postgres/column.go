@@ -72,6 +72,11 @@ func postgresColumnAsInsert(column *schemasv1alpha2.SQLTableColumn) (string, err
 		}
 	}
 
+	if postgresColumn.ColumnDefault != nil {
+		value := stripOIDClass(*postgresColumn.ColumnDefault)
+		formatted = fmt.Sprintf("%s default '%s'", formatted, value)
+	}
+
 	return formatted, nil
 }
 
