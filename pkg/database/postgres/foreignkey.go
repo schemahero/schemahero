@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lib/pq"
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func RemoveForeignKeyStatement(tableName string, foreignKey *types.ForeignKey) string {
-	return fmt.Sprintf("alter table %s drop constraint %s", tableName, foreignKey.Name)
+	return fmt.Sprintf("alter table %s drop constraint %s", tableName, pq.QuoteIdentifier(foreignKey.Name))
 }
 
 func AddForeignKeyStatement(tableName string, schemaForeignKey *schemasv1alpha2.SQLTableForeignKey) string {
