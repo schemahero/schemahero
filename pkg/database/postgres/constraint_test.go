@@ -63,7 +63,7 @@ func TestRemoveConstrantStatement(t *testing.T) {
 				Name:    "my_table_id_sequence_key",
 				Columns: []string{"id", "sequence"},
 			},
-			want: "alter table my_table drop constraint my_table_id_sequence_key",
+			want: `alter table my_table drop constraint "my_table_id_sequence_key"`,
 		},
 	}
 	for _, tt := range tests {
