@@ -1,6 +1,7 @@
 
 SHELL := /bin/bash
-IMAGE := "ttl.sh/$(shell uuidgen | tr '[:upper:]' '[:lower:]'):1h"
+CONSTIMAGE := "ttl.sh/$(shell uuidgen | tr '[:upper:]' '[:lower:]'):1h"
+IMAGE ?= $(CONSTIMAGE)
 
 export IMAGE
 export GO111MODULE=on
