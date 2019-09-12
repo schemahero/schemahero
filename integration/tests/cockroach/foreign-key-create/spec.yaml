@@ -1,0 +1,34 @@
+database: schemahero
+name: user_project
+schema:
+  postgres:
+    primaryKey: [user_id, project_id]
+    foreignKeys:
+      - columns:
+          - user_id
+        references:
+          table: users
+          columns:
+            - id
+      - columns:
+          - project_id
+        references:
+          table: projects
+          columns:
+            - id
+      - columns:
+          - misc_id
+        references:
+          table: misc
+          columns:
+            - pk
+        name: misc_named_fk
+    columns:
+      - name: user_id
+        type: integer
+      - name: project_id
+        type: integer
+      - name: misc_id
+        type: varchar(255)
+        constraints:
+          notNull: true

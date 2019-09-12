@@ -1,0 +1,20 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: org
+spec:
+  database: schemahero
+  name: org
+  schema:
+    postgres:
+      primaryKey:
+      - id
+      columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: project_id
+        type: integer
+        constraints:
+          notNull: true

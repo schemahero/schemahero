@@ -58,7 +58,7 @@ func Connect(uri string) (*PostgresConnection, error) {
 	}
 	engineVersion, err := parsePostgresVersion(reportedVersion)
 	if err != nil {
-		return nil, err
+		log.Info(err.Error()) // NOTE: this doesnt work with cockroachdb
 	}
 
 	postgresConnection := PostgresConnection{
@@ -85,7 +85,7 @@ func parsePostgresVersion(reportedVersion string) (string, error) {
 	matchGroups := r.FindStringSubmatch(reportedVersion)
 
 	if len(matchGroups) == 0 {
-		return "", goerrors.New(`parse postgres version`)
+		return "", goerrors.New(`faled to parse postgres version`)
 	}
 
 	major := matchGroups[1]

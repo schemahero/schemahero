@@ -1,0 +1,29 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: other
+spec:
+  database: schemahero
+  name: other
+  schema:
+    postgres:
+      primaryKey:
+      - id
+      foreignKeys:
+      - columns:
+        - project_id
+        references:
+          table: users
+          columns:
+          - id
+        onDelete: CASCADE
+        name: other_project_id_fkey
+      columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: project_id
+        type: integer
+        constraints:
+          notNull: false

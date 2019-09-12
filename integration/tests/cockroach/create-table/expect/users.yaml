@@ -1,0 +1,25 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: users
+spec:
+  database: schemahero
+  name: users
+  schema:
+    postgres:
+      primaryKey:
+      - id
+      columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: login
+        type: character varying (255)
+        constraints:
+          notNull: false
+      - name: name
+        type: character varying (255)
+        constraints:
+          notNull: true
+        default: ethan

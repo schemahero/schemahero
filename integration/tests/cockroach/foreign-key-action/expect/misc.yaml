@@ -1,0 +1,16 @@
+apiVersion: schemas.schemahero.io/v1alpha2
+kind: Table
+metadata:
+  name: misc
+spec:
+  database: schemahero
+  name: misc
+  schema:
+    postgres:
+      primaryKey:
+      - pk
+      columns:
+      - name: pk
+        type: character varying (255)
+        constraints:
+          notNull: true
