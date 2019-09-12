@@ -6,6 +6,8 @@ metadata:
   name: testdb
 schemahero:
   image: "localhost:32000/schemahero/schemahero"
+gitops:
+  url: git@github.com:marccampbell/schemahero-gitops.git
 connection:
   postgres:
     uri:

@@ -113,6 +113,16 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, err
 	}
 
+	// If a gitops configuration is set on the database object, then
+	// make sure that is creates and initialized
+
+	if instance.GitOps != nil {
+		if err := r.ensureGitOps(instance); err != nil {
+			gitopsLoop = nil
+			return reconcile.Result{}, err
+		}
+	}
+
 	// A "database" object is realized in the cluster as a deployment object,
 	// in the namespace specified in the custom resource,
 

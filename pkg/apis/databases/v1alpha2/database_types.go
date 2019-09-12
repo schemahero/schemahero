@@ -31,10 +31,18 @@ type SchemaHero struct {
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
+type GitOps struct {
+	URL          string   `json:"url"`
+	PollInterval string   `json:"pollInterval,omitempty"`
+	Branch       string   `json:"branch,omitempty"`
+	Paths        []string `json:"paths,omitempty"`
+}
+
 // DatabaseStatus defines the observed state of Database
 type DatabaseStatus struct {
-	IsConnected bool   `json:"isConnected"`
-	LastPing    string `json:"lastPing"`
+	IsConnected   bool   `json:"isConnected"`
+	LastPing      string `json:"lastPing"`
+	GitRepoStatus string `json:"gitRepoStatus,omitempty"`
 }
 
 // +genclient
@@ -49,6 +57,7 @@ type Database struct {
 
 	SchemaHero *SchemaHero        `json:"schemahero,omitempty"`
 	Connection DatabaseConnection `json:"connection,omitempty"`
+	GitOps     *GitOps            `json:"gitops,omitempty"`
 
 	Status DatabaseStatus `json:"status,omitempty"`
 }
