@@ -4,15 +4,19 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
+	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemaheroscheme "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 var (
@@ -131,18 +135,104 @@ func (r *ReconcileDatabase) ensureGitOpsPlan(instance *databasesv1alpha2.Databas
 			// look for new or updated pulls
 			for prNumber, currentHash := range pulls {
 				knownHash, ok := gitopsPlanLoop.pulls[prNumber]
-				if !ok {
-					fmt.Printf("found a new pr: %s\n", prNumber)
-				} else if currentHash != knownHash {
-					fmt.Printf("found an updated pr: %s\n", prNumber)
+				if !ok || currentHash != knownHash {
+					// check out this branch
+					w, err := repo.Worktree()
+					if err != nil {
+						return errors.Wrap(err, "failed to get working tree")
+					}
+
+					checkoutOptions := git.CheckoutOptions{
+						Hash: plumbing.NewHash(currentHash),
+					}
+					if err := w.Checkout(&checkoutOptions); err != nil {
+						return errors.Wrap(err, "failed to check out hash")
+					}
+
+					plan, err := executePlan(workingDir, instance)
+					if err != nil {
+						return errors.Wrap(err, "failed to execute plan")
+					}
+
+					fmt.Printf("plan = %s\n", plan)
 				}
 			}
 
 			gitopsPlanLoop.pulls = pulls
+
+			// Write the current state of the pulls ot the status object to
+			// allow quicker startup in the future and less thrashing
 
 			time.Sleep(time.Second * 10)
 		}
 	}
 
 	return nil
+}
+
+func executePlan(workingDir string, instance *databasesv1alpha2.Database) (string, error) {
+	plan := ""
+
+	schemaheroscheme.AddToScheme(scheme.Scheme)
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+
+	err := filepath.Walk(workingDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		content, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		obj, gvk, err := decode(content, nil, nil)
+		if err != nil {
+			return nil // ignore, this isn't a schemahero file
+		}
+
+		if gvk == nil {
+			return nil // ignore, this isn't a schemahero file
+		}
+
+		if gvk.Group != "schemas.schemahero.io" || gvk.Version != "v1alpha2" || gvk.Kind != "Table" {
+			return nil
+		}
+
+		table := obj.(*schemasv1alpha2.Table)
+
+		if table.Namespace == "" {
+			table.Namespace = "default"
+		}
+
+		// We could (maybe should) deploy this and let the table reconciler run the plan...
+		// but that async nature will create a lot more code, and these are the same codebase/project.
+		// so let's just call over to the table controller directly for now
+
+		tablePlan, err := getTablePlan(table, instance)
+		if err != nil {
+			return err
+		}
+
+		if len(plan) > 0 {
+			plan = plan + "\n"
+		}
+
+		plan = plan + tablePlan
+		return nil
+	})
+
+	if err != nil {
+		return "", errors.Wrap(err, "failed to walk file path")
+	}
+
+	return plan, nil
+}
+
+func getTablePlan(table *schemasv1alpha2.Table, instance *databasesv1alpha2.Database) (string, error) {
+	return "", nil
 }
