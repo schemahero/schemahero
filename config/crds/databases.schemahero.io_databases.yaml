@@ -67,6 +67,24 @@ spec:
                     type: object
                 type: object
             type: object
+          gitops:
+            properties:
+              branch:
+                type: string
+              isPlanEnabled:
+                type: boolean
+              paths:
+                items:
+                  type: string
+                type: array
+              pollInterval:
+                type: string
+              url:
+                type: string
+            required:
+            - url
+            - isPlanEnabled
+            type: object
           kind:
             description: 'Kind is a string value representing the REST resource this
               object represents. Servers may infer this from the endpoint the client
@@ -445,6 +463,14 @@ spec:
             type: object
           status:
             properties:
+              gitRepoStatus:
+                type: string
+              gitopsPlanPulls:
+                additionalProperties:
+                  type: string
+                type: object
+              gitopsPlanStatus:
+                type: string
               isConnected:
                 type: boolean
               lastPing:
