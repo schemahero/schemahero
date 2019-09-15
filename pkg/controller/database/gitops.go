@@ -16,7 +16,6 @@ import (
 	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	schemaheroscheme "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
-	// schemasclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha2"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
@@ -26,7 +25,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	// "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 var (
@@ -256,15 +254,6 @@ func (r *ReconcileDatabase) handleGitOpsCommit(workingDir string) error {
 
 	schemaheroscheme.AddToScheme(scheme.Scheme)
 	decode := scheme.Codecs.UniversalDeserializer().Decode
-
-	// cfg, err := config.GetConfig()
-	// if err != nil {
-	// 	return errors.Wrap(err, "failed to get client config")
-	// }
-	// schemasClient, err := schemasclientv1alpha2.NewForConfig(cfg)
-	// if err != nil {
-	// 	return errors.Wrap(err, "failewd to create clientset")
-	// }
 
 	err := filepath.Walk(workingDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {

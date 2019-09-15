@@ -32,17 +32,20 @@ type SchemaHero struct {
 }
 
 type GitOps struct {
-	URL          string   `json:"url"`
-	PollInterval string   `json:"pollInterval,omitempty"`
-	Branch       string   `json:"branch,omitempty"`
-	Paths        []string `json:"paths,omitempty"`
+	URL           string   `json:"url"`
+	PollInterval  string   `json:"pollInterval,omitempty"`
+	Branch        string   `json:"branch,omitempty"`
+	Paths         []string `json:"paths,omitempty"`
+	IsPlanEnabled bool     `json:"isPlanEnabled,omitEmpty"`
 }
 
 // DatabaseStatus defines the observed state of Database
 type DatabaseStatus struct {
-	IsConnected   bool   `json:"isConnected"`
-	LastPing      string `json:"lastPing"`
-	GitRepoStatus string `json:"gitRepoStatus,omitempty"`
+	IsConnected      bool              `json:"isConnected"`
+	LastPing         string            `json:"lastPing"`
+	GitRepoStatus    string            `json:"gitRepoStatus,omitempty"`
+	GitopsPlanStatus string            `json:"gitopsPlanStatus,omitempty"`
+	GitopsPlanPulls  map[string]string `json:"gitopsPlanPulls,omitempty"`
 }
 
 // +genclient

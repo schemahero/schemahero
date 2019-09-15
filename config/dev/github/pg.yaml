@@ -1,13 +1,14 @@
 apiVersion: databases.schemahero.io/v1alpha2
 kind: Database
 metadata:
-  labels:
+  labels:s
     controller-tools.k8s.io: "1.0"
   name: testdb
 schemahero:
   image: "localhost:32000/schemahero/schemahero"
 gitops:
   url: git@github.com:marccampbell/schemahero-gitops.git
+  isPlanEnabled: true
 connection:
   postgres:
     uri:

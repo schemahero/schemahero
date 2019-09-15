@@ -71,6 +71,8 @@ spec:
             properties:
               branch:
                 type: string
+              isPlanEnabled:
+                type: boolean
               paths:
                 items:
                   type: string
@@ -81,6 +83,7 @@ spec:
                 type: string
             required:
             - url
+            - isPlanEnabled
             type: object
           kind:
             description: 'Kind is a string value representing the REST resource this
@@ -461,6 +464,12 @@ spec:
           status:
             properties:
               gitRepoStatus:
+                type: string
+              gitopsPlanPulls:
+                additionalProperties:
+                  type: string
+                type: object
+              gitopsPlanStatus:
                 type: string
               isConnected:
                 type: boolean
