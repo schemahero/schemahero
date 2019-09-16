@@ -29,6 +29,7 @@ define LDFLAGS
 endef
 
 export GO111MODULE=on
+export GOPROXY=https://proxy.golang.org
 
 all: test bin/schemahero manager
 

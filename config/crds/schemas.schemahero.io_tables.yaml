@@ -393,6 +393,8 @@ spec:
             properties:
               database:
                 type: string
+              isPlan:
+                type: boolean
               name:
                 type: string
               requires:
@@ -560,6 +562,9 @@ spec:
             - schema
             type: object
           status:
+            properties:
+              plan:
+                type: string
             type: object
         type: object
     served: true
