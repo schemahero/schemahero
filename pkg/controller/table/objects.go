@@ -75,7 +75,11 @@ func (r *ReconcileTable) pod(database *databasesv1alpha2.Database, table *schema
 	}
 
 	labels := make(map[string]string)
-	labels["schemahero-role"] = "table"
+	if isPlan {
+		labels["schemahero-role"] = "plan"
+	} else {
+		labels["schemahero-role"] = "table"
+	}
 
 	name := fmt.Sprintf("%s-apply", table.Name)
 	configMapName := table.Name

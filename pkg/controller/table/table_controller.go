@@ -17,9 +17,10 @@ limitations under the License.
 package table
 
 import (
+	"bytes"
 	"context"
-	goerrors "errors"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/pkg/errors"
@@ -148,7 +149,7 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 
 		matchingType := r.checkDatabaseTypeMatches(&database.Connection, instance.Spec.Schema)
 		if !matchingType {
-			return reconcile.Result{}, goerrors.New("unable to deploy table to connection of different type")
+			return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
 		}
 
 		if instance.Spec.IsPlan {
@@ -172,14 +173,42 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 			return reconcile.Result{}, nil
 		}
 
-		if role != "table" {
+		if role != "table" && role != "plan" {
 			return reconcile.Result{}, nil
 		}
+
 		if pod.Status.Phase == corev1.PodSucceeded {
-			// TODO: Update the status on the table object
+			if role == "plan" {
+				// Write the plan from stdout to the object itself
+				cfg, err := config.GetConfig()
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to get config")
+				}
+				client, err := kubernetes.NewForConfig(cfg)
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to create client")
+				}
+
+				podLogOpts := corev1.PodLogOptions{}
+				req := client.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
+				podLogs, err := req.Stream()
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to open log stream")
+				}
+				defer podLogs.Close()
+
+				buf := new(bytes.Buffer)
+				_, err = io.Copy(buf, podLogs)
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to copy logs too buffer")
+				}
+
+				out := buf.String()
+				fmt.Printf("out = %s\n", out)
+			}
 
 			// Delete the pod and config map
-			if err := r.Delete(context.TODO(), pod); err != nil {
+			if err := r.Delete(context.Background(), pod); err != nil {
 				return reconcile.Result{}, err
 			}
 
@@ -192,12 +221,12 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 			}
 
 			configMap := corev1.ConfigMap{}
-			err := r.Get(context.TODO(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
+			err := r.Get(context.Background(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
 
-			if err := r.Delete(context.TODO(), &configMap); err != nil {
+			if err := r.Delete(context.Background(), &configMap); err != nil {
 				return reconcile.Result{}, err
 			}
 		}
@@ -335,7 +364,7 @@ func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom da
 	}
 
 	if valueOrValueFrom.ValueFrom == nil {
-		return "", goerrors.New("value and valueFrom cannot both be nil/empty")
+		return "", errors.New("value and valueFrom cannot both be nil/empty")
 	}
 
 	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
@@ -347,14 +376,14 @@ func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom da
 
 		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
 			if kuberneteserrors.IsNotFound(err) {
-				return "", goerrors.New("table secret not found")
+				return "", errors.New("table secret not found")
 			} else {
-				return "", err
+				return "", errors.Wrap(err, "failed to get existing connection secret")
 			}
 		}
 
 		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
 	}
 
-	return "", goerrors.New("unable to find supported valueFrom")
+	return "", errors.New("unable to find supported valueFrom")
 }
