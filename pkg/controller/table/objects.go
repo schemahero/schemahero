@@ -75,6 +75,8 @@ func (r *ReconcileTable) pod(database *databasesv1alpha2.Database, table *schema
 	}
 
 	labels := make(map[string]string)
+	labels["schemahero-name"] = table.Name
+	labels["schemahero-namespace"] = table.Namespace
 	if isPlan {
 		labels["schemahero-role"] = "plan"
 	} else {

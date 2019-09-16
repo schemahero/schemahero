@@ -27,6 +27,7 @@ import (
 	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	databasesclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha2"
+	schemasclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -204,7 +205,32 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 				}
 
 				out := buf.String()
-				fmt.Printf("out = %s\n", out)
+
+				tableName, ok := podLabels["schemahero-name"]
+				if !ok {
+					return reconcile.Result{}, nil
+				}
+				tableNamespace, ok := podLabels["schemahero-namespace"]
+				if !ok {
+					return reconcile.Result{}, nil
+				}
+
+				schemasClient, err := schemasclientv1alpha2.NewForConfig(cfg)
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to create schema client")
+				}
+
+				table, err := schemasClient.Tables(tableNamespace).Get(tableName, metav1.GetOptions{})
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
+				}
+
+				table.Status.Plan = out
+
+				_, err = schemasClient.Tables(table.Namespace).Update(table)
+				if err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to write plan to table status")
+				}
 			}
 
 			// Delete the pod and config map
