@@ -158,7 +158,7 @@ func (r *ReconcileDatabase) ensureGitOpsPlan(instance *databasesv1alpha2.Databas
 
 					plan, err := r.executePlan(workingDir, instance, currentHash)
 					if err != nil {
-						return errors.Wrap(err, "failed to execute plan")
+						return errors.Wrapf(err, "failed to execute plan for pr # %s", prNumber)
 					}
 
 					fmt.Printf("plan = %s\n", plan)
@@ -228,7 +228,7 @@ func (r *ReconcileDatabase) executePlan(workingDir string, instance *databasesv1
 
 		tablePlan, err := r.getTablePlan(table, instance)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to get table plan")
 		}
 
 		if len(plan) > 0 {
