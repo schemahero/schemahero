@@ -33,42 +33,42 @@ func (g *Generator) RunSync() error {
 	if g.Viper.GetString("driver") == "postgres" {
 		pgDb, err := postgres.Connect(g.Viper.GetString("uri"))
 		if err != nil {
-			return errors.Wrap(err, "postgres connect")
+			return errors.Wrap(err, "failed to connect to postgres")
 		}
 		db = pgDb
 	} else if g.Viper.GetString("driver") == "mysql" {
 		mysqlDb, err := mysql.Connect(g.Viper.GetString("uri"))
 		if err != nil {
-			return errors.Wrap(err, "mysql connect")
+			return errors.Wrap(err, "failed to connect to mysql")
 		}
 		db = mysqlDb
 	}
 
 	tableNames, err := db.ListTables()
 	if err != nil {
-		return errors.Wrap(err, "list tables")
+		return errors.Wrap(err, "failed to list tables")
 	}
 
 	filesWritten := make([]string, 0, 0)
 	for _, tableName := range tableNames {
 		primaryKey, err := db.GetTablePrimaryKey(tableName)
 		if err != nil {
-			return errors.Wrap(err, "get table primary key")
+			return errors.Wrap(err, "failed to get table primary key")
 		}
 
 		foreignKeys, err := db.ListTableForeignKeys(g.Viper.GetString("dbname"), tableName)
 		if err != nil {
-			return errors.Wrap(err, "list table foreign keys")
+			return errors.Wrap(err, "failed to list table foreign keys")
 		}
 
 		indexes, err := db.ListTableIndexes(g.Viper.GetString("dbname"), tableName)
 		if err != nil {
-			return errors.Wrap(err, "list table indexes")
+			return errors.Wrap(err, "failed to list table indexes")
 		}
 
 		columns, err := db.GetTableSchema(tableName)
 		if err != nil {
-			return errors.Wrap(err, "get table schema")
+			return errors.Wrap(err, "failed to get table schema")
 		}
 
 		var primaryKeyColumns []string
@@ -77,7 +77,7 @@ func (g *Generator) RunSync() error {
 		}
 		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKeyColumns, foreignKeys, indexes, columns)
 		if err != nil {
-			return errors.Wrap(err, "generate table yaml")
+			return errors.Wrap(err, "failed to generate table yaml")
 		}
 
 		// If there was a outputdir set, write it, else print it

@@ -29,14 +29,14 @@ func (w *Watcher) RunSync() error {
 	if w.Viper.GetString("driver") == "postgres" {
 		c, err := postgres.Connect(w.Viper.GetString("uri"))
 		if err != nil {
-			return errors.Wrap(err, "postgres connect")
+			return errors.Wrap(err, "failed to connect to postgres")
 		}
 
 		conn = c
 	} else if w.Viper.GetString("driver") == "mysql" {
 		c, err := mysql.Connect(w.Viper.GetString("uri"))
 		if err != nil {
-			return errors.Wrap(err, "mysql connect")
+			return errors.Wrap(err, "failed to connect to mysql")
 		}
 
 		conn = c
@@ -44,7 +44,7 @@ func (w *Watcher) RunSync() error {
 
 	for {
 		if _, err := conn.CheckAlive(w.Viper.GetString("namespace"), w.Viper.GetString("instance")); err != nil {
-			return errors.Wrap(err, "check alive")
+			return errors.Wrap(err, "failed to check if connection is alive")
 		}
 
 		time.Sleep(time.Second * 10)
