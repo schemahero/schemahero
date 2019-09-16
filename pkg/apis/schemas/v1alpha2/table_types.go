@@ -30,13 +30,13 @@ type TableSpec struct {
 	Database string       `json:"database" yaml:"database"`
 	Name     string       `json:"name" yaml:"name"`
 	Requires []string     `json:"requires,omitempty" yaml:"requires,omitempty"`
+	IsPlan   bool         `json:"isPlan,omitempty" yaml:"isPlan,omitempty"`
 	Schema   *TableSchema `json:"schema" yaml:"schema"`
 }
 
 // TableStatus defines the observed state of Table
 type TableStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Plan string `json:"plan,omitempty"`
 }
 
 // +genclient

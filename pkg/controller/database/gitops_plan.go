@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,11 +13,17 @@ import (
 	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	schemaheroscheme "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
+	schemasclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha2"
 	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/config"
+	gitconfig "gopkg.in/src-d/go-git.v4/config"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 var (
@@ -92,7 +99,7 @@ func (r *ReconcileDatabase) ensureGitOpsPlan(instance *databasesv1alpha2.Databas
 			fetchOptions := git.FetchOptions{
 				RemoteName: "origin",
 				Auth:       gitopsPlanLoop.authMethod,
-				RefSpecs: []config.RefSpec{
+				RefSpecs: []gitconfig.RefSpec{
 					"+refs/pull/*/head:refs/remotes/origin/pr/*",
 				},
 			}
@@ -149,7 +156,7 @@ func (r *ReconcileDatabase) ensureGitOpsPlan(instance *databasesv1alpha2.Databas
 						return errors.Wrap(err, "failed to check out hash")
 					}
 
-					plan, err := executePlan(workingDir, instance)
+					plan, err := r.executePlan(workingDir, instance, currentHash)
 					if err != nil {
 						return errors.Wrap(err, "failed to execute plan")
 					}
@@ -170,7 +177,7 @@ func (r *ReconcileDatabase) ensureGitOpsPlan(instance *databasesv1alpha2.Databas
 	return nil
 }
 
-func executePlan(workingDir string, instance *databasesv1alpha2.Database) (string, error) {
+func (r *ReconcileDatabase) executePlan(workingDir string, instance *databasesv1alpha2.Database, hash string) (string, error) {
 	plan := ""
 
 	schemaheroscheme.AddToScheme(scheme.Scheme)
@@ -213,7 +220,13 @@ func executePlan(workingDir string, instance *databasesv1alpha2.Database) (strin
 		// but that async nature will create a lot more code, and these are the same codebase/project.
 		// so let's just call over to the table controller directly for now
 
-		tablePlan, err := getTablePlan(table, instance)
+		table.Spec.IsPlan = true
+		table.Name = fmt.Sprintf("%s-%s", table.Name, hash[0:7])
+		if table.Namespace == "" {
+			table.Namespace = "default"
+		}
+
+		tablePlan, err := r.getTablePlan(table, instance)
 		if err != nil {
 			return err
 		}
@@ -233,6 +246,72 @@ func executePlan(workingDir string, instance *databasesv1alpha2.Database) (strin
 	return plan, nil
 }
 
-func getTablePlan(table *schemasv1alpha2.Table, instance *databasesv1alpha2.Database) (string, error) {
-	return "", nil
+func (r *ReconcileDatabase) getTablePlan(table *schemasv1alpha2.Table, instance *databasesv1alpha2.Database) (string, error) {
+
+	// we need to deploy the table plan as a CR here because we need all of the logic that
+	// the reconcile loop in the schema package manages...
+
+	// this definitely makes this process a lot more complex than it really should be
+
+	existingObj := &schemasv1alpha2.Table{}
+	err := r.Get(context.Background(), types.NamespacedName{Name: table.Name, Namespace: table.Namespace}, existingObj)
+	if err != nil && !kuberneteserrors.IsNotFound(err) {
+		return "", errors.Wrap(err, "failed to look for existing object")
+	}
+
+	if kuberneteserrors.IsNotFound(err) {
+		// create
+		err = r.Create(context.Background(), table)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to create table object")
+		}
+	} else {
+		// TODO how can we handle this?
+		// Delete and recreate?
+		// This won't happen in the "happy path" gitops flow, but certainly can happen in
+		// other use cases
+		return "", errors.New("cannot update existing table plan")
+	}
+
+	// Watch the object that we just created using an informer to get the plan
+	plan := ""
+
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return "", errors.Wrap(err, "failed to get config")
+	}
+	schemasClient, err := schemasclientv1alpha2.NewForConfig(cfg)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create schema client")
+	}
+
+	watchlist := cache.NewListWatchFromClient(schemasClient.RESTClient(), "tables", table.Namespace, fields.Everything())
+	resyncPeriod := 10 * time.Second
+	_, controller := cache.NewInformer(watchlist, &schemasv1alpha2.Table{}, resyncPeriod,
+		cache.ResourceEventHandlerFuncs{
+			UpdateFunc: func(oldObj interface{}, newObj interface{}) {
+				updatedTable := newObj.(*schemasv1alpha2.Table)
+				if updatedTable.Status.Plan != "" {
+					plan = updatedTable.Status.Plan
+				}
+			},
+		},
+	)
+
+	ctx := context.Background()
+	controller.Run(ctx.Done())
+
+	start := time.Now()
+	abort := start.Add(time.Minute * 2)
+	for plan == "" {
+		if time.Now().After(abort) {
+			return "", errors.New("timeout waiting for plan")
+		}
+
+		if plan != "" {
+			break
+		}
+	}
+
+	return plan, nil
 }
