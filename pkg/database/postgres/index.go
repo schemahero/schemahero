@@ -11,7 +11,7 @@ import (
 
 func RemoveIndexStatement(tableName string, index *types.Index) string {
 	if index.IsUnique {
-		return fmt.Sprintf("alter table %s drop constraint %s", tableName, pq.QuoteIdentifier(index.Name))
+		return fmt.Sprintf("drop index if exists %s", pq.QuoteIdentifier(index.Name))
 	}
 	return fmt.Sprintf("drop index %s", pq.QuoteIdentifier(index.Name))
 }
