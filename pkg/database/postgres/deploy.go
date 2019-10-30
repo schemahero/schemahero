@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/pkg/errors"
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -255,7 +256,11 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes("", tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to list table indexes")
+	}
+	currentConstraints, err := p.ListTableConstraints("", tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list table constraints")
 	}
 
 	for _, index := range postgresTableSchema.Indexes {
@@ -270,12 +275,25 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 				goto Next
 			}
 
-			matchedIndex = currentIndex
+			if currentIndex.Name == index.Name {
+				matchedIndex = currentIndex
+			}
 		}
 
 		// drop and readd? pg supports a little bit of alter index we should support (rename)
 		if matchedIndex != nil {
-			statement = RemoveIndexStatement(tableName, matchedIndex)
+			isConstraint := false
+			for _, currentConstraint := range currentConstraints {
+				if matchedIndex.Name == currentConstraint {
+					isConstraint = true
+				}
+			}
+
+			if isConstraint {
+				statement = RemoveConstraintStatement(tableName, matchedIndex)
+			} else {
+				statement = RemoveIndexStatement(tableName, matchedIndex)
+			}
 			droppedIndexes = append(droppedIndexes, matchedIndex.Name)
 			indexStatements = append(indexStatements, statement)
 		}
@@ -288,6 +306,8 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 
 	for _, currentIndex := range currentIndexes {
 		var statement string
+		isConstraint := false
+
 		for _, index := range postgresTableSchema.Indexes {
 			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
 				goto NextCurrentIdx
@@ -300,7 +320,18 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 			}
 		}
 
-		statement = RemoveIndexStatement(tableName, currentIndex)
+		for _, currentConstraint := range currentConstraints {
+			if currentIndex.Name == currentConstraint {
+				isConstraint = true
+			}
+		}
+
+		if isConstraint {
+			statement = RemoveConstraintStatement(tableName, currentIndex)
+		} else {
+			statement = RemoveIndexStatement(tableName, currentIndex)
+		}
+
 		indexStatements = append(indexStatements, statement)
 
 	NextCurrentIdx:

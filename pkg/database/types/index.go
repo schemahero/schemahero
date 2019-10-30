@@ -37,6 +37,7 @@ func (idx *Index) Equals(other *Index) bool {
 
 	NextColumn:
 	}
+
 	return true
 }
 
