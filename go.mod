@@ -8,11 +8,8 @@ require (
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/googleapis/gnostic v0.3.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/lib/pq v1.1.1
-	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.3
@@ -30,6 +27,7 @@ require (
 	k8s.io/klog v0.4.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf // indirect
 	sigs.k8s.io/controller-runtime v0.2.0-beta.4
+	sigs.k8s.io/controller-tools v0.2.0-beta.2 // indirect
 )
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
