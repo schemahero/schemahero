@@ -9,6 +9,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
+func RemoveConstraintStatement(tableName string, index *types.Index) string {
+	return fmt.Sprintf("alter table %s drop constraint %s", pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(index.Name))
+}
+
 func RemoveIndexStatement(tableName string, index *types.Index) string {
 	if index.IsUnique {
 		return fmt.Sprintf("drop index if exists %s", pq.QuoteIdentifier(index.Name))

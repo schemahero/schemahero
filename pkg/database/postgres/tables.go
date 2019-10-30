@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
+	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
@@ -19,20 +20,41 @@ func (p *PostgresConnection) ListTables() ([]string, error) {
 
 	rows, err := p.db.Query(query, p.databaseName, "public")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to list tables")
 	}
 
 	tableNames := make([]string, 0, 0)
 	for rows.Next() {
 		tableName := ""
 		if err := rows.Scan(&tableName); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to scan row")
 		}
 
 		tableNames = append(tableNames, tableName)
 	}
 
 	return tableNames, nil
+}
+
+func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName string) ([]string, error) {
+	query := `select constraint_name from information_schema.table_constraints
+		where table_catalog = $1 and table_name = $2`
+	rows, err := p.db.Query(query, databaseName, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list constraints")
+	}
+
+	constraints := []string{}
+	for rows.Next() {
+		var constraint string
+		if err := rows.Scan(&constraint); err != nil {
+			return nil, errors.Wrap(err, "failed to scan constraint")
+		}
+
+		constraints = append(constraints, constraint)
+	}
+
+	return constraints, nil
 }
 
 func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
