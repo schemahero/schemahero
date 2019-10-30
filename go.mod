@@ -34,4 +34,4 @@ require (
 
 replace k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20190404173353-6a84e37a896d
 
-replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.0+incompatible
+replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
