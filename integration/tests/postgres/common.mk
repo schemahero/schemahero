@@ -8,6 +8,7 @@ URI := postgres://schemahero:password@$(DATABASE_CONTAINER_NAME):5432/schemahero
 run:
 	@rm -rf ./out
 	@mkdir ./out
+	@chmod 777 ./out
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	@-docker rm -f $(TEST_NAME) > /dev/null 2>&1 ||:
 	@-docker network rm $(TEST_NAME) > /dev/null 2>&1 ||:
