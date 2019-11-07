@@ -1,19 +1,14 @@
 FROM debian:stretch
 WORKDIR /
 COPY schemahero /schemahero
+RUN chmod a+x /schemahero
 
 RUN apt-get -qq update \
  && apt-get -qq -y install \
     ca-certificates
 
-RUN set -eux; \
-	apt-get -qq update; \
-	apt-get -qq install -y gosu; \
-	rm -rf /var/lib/apt/lists/*; \
-# verify that the binary works
-	gosu nobody true
+RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 schemahero
+USER schemahero
+ENV HOME /home/schemahero
 
-COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/schemahero"]

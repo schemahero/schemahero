@@ -18,4 +18,10 @@ RUN make bin/manager
 FROM ubuntu:latest
 WORKDIR /
 COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/manager .
+RUN chmod a+x /manager
+
+RUN useradd -c 'schemahero-manager user' -m -d /home/schemahero-manager -s /bin/bash -u 1001 schemahero-manager
+USER schemahero-manager
+ENV HOME /home/schemahero-manager
+
 ENTRYPOINT ["/manager"]
