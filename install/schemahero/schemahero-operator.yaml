@@ -1778,6 +1778,9 @@ spec:
         control-plane: controller-manager
         controller-tools.k8s.io: "1.0"
     spec:
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
       containers:
       - args:
         - --secure-listen-address=0.0.0.0:8443

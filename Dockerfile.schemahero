@@ -16,7 +16,6 @@ COPY cmd/ cmd/
 COPY pkg/ pkg/
 RUN make bin/schemahero
 
-
 # Copy schemahero into a thin image
 FROM debian:buster
 WORKDIR /
@@ -25,16 +24,11 @@ RUN apt-get update \
  && apt-get -y install \
     ca-certificates
 
-RUN set -eux; \
-	apt-get update; \
-	apt-get install -y gosu; \
-	rm -rf /var/lib/apt/lists/*; \
-# verify that the binary works
-	gosu nobody true
-
 COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/schemahero .
+RUN chmod a+x /schemahero
 
-COPY deploy/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 schemahero
+USER schemahero
+ENV HOME /home/schemahero
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/schemahero"]
