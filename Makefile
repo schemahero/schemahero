@@ -35,7 +35,7 @@ all: test bin/schemahero manager
 
 .PHONY: clean-and-tidy
 clean-and-tidy:
-	go clean -modcache
+	@go clean -modcache ||:
 	go mod tidy
 
 .PHONY: deps
