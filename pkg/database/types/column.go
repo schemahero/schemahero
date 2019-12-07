@@ -20,6 +20,7 @@ type Column struct {
 	DataType      string
 	ColumnDefault *string
 	Constraints   *ColumnConstraints
+	IsArray       bool
 }
 
 func ColumnToSchemaColumn(column *Column) (*schemasv1alpha2.SQLTableColumn, error) {

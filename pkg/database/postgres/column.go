@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/lib/pq"
-
 	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -22,6 +22,12 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha2.SQLTableColumn) (*types.
 	}
 
 	requestedType := schemaColumn.Type
+
+	// split on the "[" character, which is only present in arrays
+	requestedType = strings.Split(requestedType, "[")[0]
+	// if the first element after splitting is not the entire string, it's an array
+	column.IsArray = len(requestedType) < len(schemaColumn.Type)
+
 	unaliasedColumnType := unaliasUnparameterizedColumnType(requestedType)
 	if unaliasedColumnType != "" {
 		requestedType = unaliasedColumnType
@@ -62,7 +68,12 @@ func postgresColumnAsInsert(column *schemasv1alpha2.SQLTableColumn) (string, err
 		return "", err
 	}
 
-	formatted := fmt.Sprintf("%s %s", pq.QuoteIdentifier(column.Name), postgresColumn.DataType)
+	arraySpecifier := ""
+	if postgresColumn.IsArray {
+		arraySpecifier = "[]"
+	}
+
+	formatted := fmt.Sprintf("%s %s%s", pq.QuoteIdentifier(column.Name), postgresColumn.DataType, arraySpecifier)
 
 	if postgresColumn.Constraints != nil && postgresColumn.Constraints.NotNull != nil {
 		if *postgresColumn.Constraints.NotNull == true {
