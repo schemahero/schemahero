@@ -69,6 +69,14 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 			},
 			expectedStatement: `"c" integer default '11'`,
 		},
+		{
+			name: "text[]",
+			column: &schemasv1alpha2.SQLTableColumn{
+				Name: "c",
+				Type: "text[]",
+			},
+			expectedStatement: `"c" text[]`,
+		},
 	}
 
 	for _, test := range tests {
