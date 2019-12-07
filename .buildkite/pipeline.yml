@@ -4,6 +4,7 @@
 steps:
   - label: build
     commands:
+      - make clean-and-tidy
       - make
     plugins:
       - docker#v3.2.0:
