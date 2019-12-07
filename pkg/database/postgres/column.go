@@ -22,8 +22,10 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha2.SQLTableColumn) (*types.
 	}
 
 	requestedType := schemaColumn.Type
-	requestedType = strings.Split(requestedType, "[")[0]
 
+	// split on the "[" character, which is only present in arrays
+	requestedType = strings.Split(requestedType, "[")[0]
+	// if the first element after splitting is not the entire string, it's an array
 	column.IsArray = len(requestedType) < len(schemaColumn.Type)
 
 	unaliasedColumnType := unaliasUnparameterizedColumnType(requestedType)
