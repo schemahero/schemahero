@@ -29,9 +29,14 @@ define LDFLAGS
 endef
 
 export GO111MODULE=on
-export GOPROXY=https://proxy.golang.org
+# export GOPROXY=https://proxy.golang.org
 
 all: test bin/schemahero manager
+
+.PHONY: clean-and-tidy
+clean-and-tidy:
+	@go clean -modcache ||:
+	@go mod tidy ||:
 
 .PHONY: deps
 deps: ./hack/deps.sh
