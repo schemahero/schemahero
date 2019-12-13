@@ -1,4 +1,6 @@
-![SchemaHero](./schemahero_logo.svg)
+<div style="width: 100%; text-align:center; margin-bottom:30px;">
+  <img alt="SchemaHero" src="./schemahero_logo.svg" width="600px" />
+</div>
 
 # SchemaHero
 
