@@ -1,4 +1,4 @@
-<div style="width: 100%; text-align: center"><img src="/schemahero/schemahero/raw/master/schemahero_logo.svg?sanitize=true" style="height: 200px" /></div>
+![SchemaHero](./schemahero_logo.svg)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/schemahero/schemahero?style=flat-square)](https://goreportcard.com/report/github.com/schemahero/schemahero)
 [![Build Status](https://badge.buildkite.com/deaf7798e8cc5f726c9684514a4e63285123481ee410aad94e.svg?branch=master)](https://buildkite.com/replicated/schemahero)
