@@ -1,3 +1,5 @@
+![SchemaHero](./schemahero_logo.svg)
+
 # SchemaHero
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/schemahero/schemahero?style=flat-square)](https://goreportcard.com/report/github.com/schemahero/schemahero)
