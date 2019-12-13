@@ -2,8 +2,6 @@
   <img alt="SchemaHero" src="./schemahero_logo.svg" width="600px" />
 </div>
 
-# SchemaHero
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/schemahero/schemahero?style=flat-square)](https://goreportcard.com/report/github.com/schemahero/schemahero)
 [![Build Status](https://badge.buildkite.com/deaf7798e8cc5f726c9684514a4e63285123481ee410aad94e.svg?branch=master)](https://buildkite.com/replicated/schemahero)
 [![Godoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/schemahero/schemahero)
