@@ -1,14 +1,14 @@
-apiVersion: schemas.schemahero.io/v1alpha2
+apiVersion: schemas.schemahero.io/v1alpha3
 kind: Table
 metadata:
   name: projects
 spec:
   database: testdb
   name: projects
-  requires: []
   schema:
     postgres:
-      primaryKey: [id]
+      primaryKey:
+        - id
       foreignKeys:
         - columns:
             - id

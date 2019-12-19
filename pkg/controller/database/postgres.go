@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha2.Database) error {
+func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha3.Database) error {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 
@@ -84,7 +84,6 @@ func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha2.Data
 	found := &appsv1.Deployment{}
 	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		log.Info("Creating watch deployment", "namespace", deploy.Namespace, "name", deploy.Name)
 		err = r.Create(context.TODO(), deploy)
 		return err
 	} else if err != nil {

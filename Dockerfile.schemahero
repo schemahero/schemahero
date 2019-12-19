@@ -1,21 +1,3 @@
-# Build the manager binary
-FROM golang:1.12 as builder
-
-# Copy in the go src
-WORKDIR /go/src/github.com/schemahero/schemahero
-COPY go.mod  ./
-COPY go.sum ./
-COPY Makefile ./
-
-# Download vendored deps
-ENV GO111MODULE=on
-RUN go mod vendor
-
-# Build
-COPY cmd/ cmd/
-COPY pkg/ pkg/
-RUN make bin/schemahero
-
 # Copy schemahero into a thin image
 FROM debian:buster
 WORKDIR /
@@ -24,7 +6,10 @@ RUN apt-get update \
  && apt-get -y install \
     ca-certificates
 
-COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/schemahero .
+ADD ./bin/schemahero /schemahero
+ADD ./bin/manager /manager
+ADD ./bin/kubectl-schemahero /kubectl-schemahero
+
 RUN chmod a+x /schemahero
 
 RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 schemahero

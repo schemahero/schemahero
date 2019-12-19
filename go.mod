@@ -12,7 +12,10 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.4.0
+	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
+	github.com/ventu-io/go-shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/xo/dburl v0.0.0-20190203050942-98997a05b24f
+	go.uber.org/zap v1.10.0
 	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
 	golang.org/x/net v0.0.0-20191004110552-13f9640d40b9
 	golang.org/x/tools v0.0.0-20190920225731-5eefd052ad72 // indirect

@@ -19,15 +19,16 @@ package table
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"time"
 
 	"github.com/pkg/errors"
-	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
-	databasesclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha2"
-	schemasclientv1alpha2 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha2"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3"
+	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
+	"github.com/schemahero/schemahero/pkg/logger"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,16 +42,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-var log = logf.Log.WithName("controller")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new Table Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -72,7 +65,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Table
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha2.Table{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Table{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -80,7 +73,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Add an informer on pods, which are created to deploy schemas. the informer will
 	// update the status of the table custom resource and do a little garbage collection
 	generatedClient := kubernetes.NewForConfigOrDie(mgr.GetConfig())
-	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Second)
+	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Minute)
 	err = mgr.Add(manager.RunnableFunc(func(s <-chan struct{}) error {
 		generatedInformers.Start(s)
 		<-s
@@ -90,20 +83,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	// watch for pods because pods are how schemahero deploys, and the lifecycle of a pod is important
+	// to ensure that we are deployed
 	err = c.Watch(&source.Informer{
 		Informer: generatedInformers.Core().V1().Pods().Informer(),
 	}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
-
-	// err = c.Watch(&source.Kind{Type: &corev1.Pod{}}, &handler.EnqueueRequestForOwner{
-	// 	IsController: true,
-	// 	OwnerType:    &schemasv1alpha2.Table{},
-	// })
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
@@ -124,158 +111,233 @@ type ReconcileTable struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables/status,verbs=get;update;patch
 func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	// Fetch the Table instance
-	instance := &schemasv1alpha2.Table{}
-	instanceErr := r.Get(context.TODO(), request.NamespacedName, instance)
+	instance, instanceErr := r.getInstance(request)
+	if instanceErr == nil {
+		result, err := r.reconcileInstance(instance)
+		if err != nil {
+			logger.Error(err)
+		}
+		return result, err
+	}
 
 	pod := &corev1.Pod{}
 	podErr := r.Get(context.TODO(), request.NamespacedName, pod)
+	if podErr == nil {
+		result, err := r.reconcilePod(pod)
+		if err != nil {
+			logger.Error(err)
+		}
+		return result, err
+	}
 
-	// operator reconciler (table object)
-	if instanceErr == nil {
-		database, err := r.getDatabaseSpec(instance.Namespace, instance.Spec.Database)
+	return reconcile.Result{}, errors.New("unknown error in table reconciler")
+}
+
+func (r *ReconcileTable) reconcileInstance(instance *schemasv1alpha3.Table) (reconcile.Result, error) {
+	logger.Debug("reconciling table",
+		zap.String("kind", instance.Kind),
+		zap.String("name", instance.Name),
+		zap.String("database", instance.Spec.Database))
+
+	database, err := r.getDatabaseSpec(instance.Namespace, instance.Spec.Database)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get database spec")
+	}
+
+	if database == nil {
+		logger.Debug("requeuing table reconcile request for 10 seconds because database instance was not present",
+			zap.String("database.name", instance.Spec.Database),
+			zap.String("database.namespace", instance.Namespace))
+
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Second * 10,
+		}, nil
+	}
+
+	matchingType := r.checkDatabaseTypeMatches(&database.Connection, instance.Spec.Schema)
+	if !matchingType {
+		return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
+	}
+
+	for _, plan := range instance.Status.Plans {
+		if plan.ApprovedAt > 0 && plan.ExecutedAt == 0 {
+			// execute!
+			if err := r.deploy(database, instance, plan); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to deploy planned migration")
+			}
+
+			return reconcile.Result{}, nil
+		}
+	}
+
+	// if there's already a plan, do nothing
+	tableSHA, err := instance.GetSHA()
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get table sha")
+	}
+
+	for _, plan := range instance.Status.Plans {
+		if plan.Name == tableSHA {
+			return reconcile.Result{}, nil
+		}
+	}
+
+	// Deploy the plan
+	if err := r.plan(database, instance); err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to schedule plan phase")
+	}
+
+	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error) {
+	podLabels := pod.GetObjectMeta().GetLabels()
+	role, ok := podLabels["schemahero-role"]
+	if !ok {
+		return reconcile.Result{}, nil
+	}
+
+	logger.Debug("reconciling schemahero pod",
+		zap.String("kind", pod.Kind),
+		zap.String("name", pod.Name),
+		zap.String("role", role),
+		zap.String("podPhase", string(pod.Status.Phase)))
+
+	if role != "table" && role != "plan" {
+		return reconcile.Result{}, nil
+	}
+
+	if pod.Status.Phase == corev1.PodSucceeded {
+		if role == "plan" {
+			// Write the plan from stdout to the object itself
+			cfg, err := config.GetConfig()
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to get config")
+			}
+			client, err := kubernetes.NewForConfig(cfg)
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to create client")
+			}
+
+			podLogOpts := corev1.PodLogOptions{}
+			req := client.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
+			podLogs, err := req.Stream()
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to open log stream")
+			}
+			defer podLogs.Close()
+
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, podLogs)
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to copy logs too buffer")
+			}
+
+			out := buf.String()
+
+			logger.Debug("read output from pod",
+				zap.String("kind", pod.Kind),
+				zap.String("name", pod.Name),
+				zap.String("role", role),
+				zap.String("output", out))
+
+			tableName, ok := podLabels["schemahero-name"]
+			if !ok {
+				return reconcile.Result{}, nil
+			}
+			tableNamespace, ok := podLabels["schemahero-namespace"]
+			if !ok {
+				return reconcile.Result{}, nil
+			}
+
+			schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to create schema client")
+			}
+
+			table, err := schemasClient.Tables(tableNamespace).Get(tableName, metav1.GetOptions{})
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
+			}
+
+			tableSHA, err := table.GetSHA()
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
+			}
+
+			plan := schemasv1alpha3.TablePlan{
+				Name:       tableSHA,
+				DDL:        out,
+				PlannedAt:  time.Now().Unix(),
+				ApprovedAt: 0,
+				RejectedAt: 0,
+				ExecutedAt: 0,
+			}
+			table.Status.Plans = append(table.Status.Plans, &plan)
+
+			logger.Debug("adding plan to table",
+				zap.String("table", table.Name),
+				zap.String("planName", tableSHA),
+				zap.String("plan", out))
+
+			_, err = schemasClient.Tables(table.Namespace).Update(table)
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to write plan to table status")
+			}
+		}
+
+		// Delete the pod and config map
+		if err := r.Delete(context.Background(), pod); err != nil {
+			return reconcile.Result{}, err
+		}
+
+		// read the name of the config map
+		configMapName := ""
+		for _, volume := range pod.Spec.Volumes {
+			if volume.Name == "specs" && volume.ConfigMap != nil {
+				configMapName = volume.ConfigMap.Name
+			}
+		}
+
+		configMap := corev1.ConfigMap{}
+		err := r.Get(context.Background(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
 		if err != nil {
 			return reconcile.Result{}, err
 		}
-		if database == nil {
-			// TODO get a real logger, this isn't a warning, it's expected, probably debug level
-			fmt.Printf("requeuing table deployment for %q, database is not available\n", instance.Spec.Name)
-			return reconcile.Result{
-				Requeue:      true,
-				RequeueAfter: time.Second * 10,
-			}, nil
-		}
 
-		matchingType := r.checkDatabaseTypeMatches(&database.Connection, instance.Spec.Schema)
-		if !matchingType {
-			return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
+		if err := r.Delete(context.Background(), &configMap); err != nil {
+			return reconcile.Result{}, err
 		}
-
-		if instance.Spec.IsPlan {
-			if err := r.plan(database, instance); err != nil {
-				return reconcile.Result{}, err
-			}
-		} else {
-			if err := r.deploy(database, instance); err != nil {
-				return reconcile.Result{}, err
-			}
-		}
-
-		return reconcile.Result{}, nil
 	}
 
-	// pod informer
-	if podErr == nil {
-		podLabels := pod.GetObjectMeta().GetLabels()
-		role, ok := podLabels["schemahero-role"]
-		if !ok {
-			return reconcile.Result{}, nil
-		}
-
-		if role != "table" && role != "plan" {
-			return reconcile.Result{}, nil
-		}
-
-		if pod.Status.Phase == corev1.PodSucceeded {
-			if role == "plan" {
-				// Write the plan from stdout to the object itself
-				cfg, err := config.GetConfig()
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to get config")
-				}
-				client, err := kubernetes.NewForConfig(cfg)
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to create client")
-				}
-
-				podLogOpts := corev1.PodLogOptions{}
-				req := client.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
-				podLogs, err := req.Stream()
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to open log stream")
-				}
-				defer podLogs.Close()
-
-				buf := new(bytes.Buffer)
-				_, err = io.Copy(buf, podLogs)
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to copy logs too buffer")
-				}
-
-				out := buf.String()
-
-				tableName, ok := podLabels["schemahero-name"]
-				if !ok {
-					return reconcile.Result{}, nil
-				}
-				tableNamespace, ok := podLabels["schemahero-namespace"]
-				if !ok {
-					return reconcile.Result{}, nil
-				}
-
-				schemasClient, err := schemasclientv1alpha2.NewForConfig(cfg)
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to create schema client")
-				}
-
-				table, err := schemasClient.Tables(tableNamespace).Get(tableName, metav1.GetOptions{})
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
-				}
-
-				table.Status.Plan = out
-
-				_, err = schemasClient.Tables(table.Namespace).Update(table)
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to write plan to table status")
-				}
-			}
-
-			// Delete the pod and config map
-			if err := r.Delete(context.Background(), pod); err != nil {
-				return reconcile.Result{}, err
-			}
-
-			// read the name of the config map
-			configMapName := ""
-			for _, volume := range pod.Spec.Volumes {
-				if volume.Name == "specs" && volume.ConfigMap != nil {
-					configMapName = volume.ConfigMap.Name
-				}
-			}
-
-			configMap := corev1.ConfigMap{}
-			err := r.Get(context.Background(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
-			if err != nil {
-				return reconcile.Result{}, err
-			}
-
-			if err := r.Delete(context.Background(), &configMap); err != nil {
-				return reconcile.Result{}, err
-			}
-		}
-
-		return reconcile.Result{}, nil
-	}
-
-	if kuberneteserrors.IsNotFound(instanceErr) {
-		// Object not found, return.  Created objects are automatically garbage collected.
-		// For additional cleanup logic use finalizers.
-		return reconcile.Result{}, nil
-	}
-	// Error reading the object - requeue the request.
-	return reconcile.Result{}, instanceErr
+	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha2.Database, error) {
+func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha3.Table, error) {
+	v1alpha3instance := &schemasv1alpha3.Table{}
+	err := r.Get(context.Background(), request.NamespacedName, v1alpha3instance)
+	if err != nil {
+		return nil, err // don't wrap
+	}
+
+	return v1alpha3instance, nil
+}
+
+func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha3.Database, error) {
+	logger.Debug("getting database spec",
+		zap.String("namespace", namespace),
+		zap.String("name", name))
+
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, err
 	}
-	databasesClient, err := databasesclientv1alpha2.NewForConfig(cfg)
+	databasesClient, err := databasesclientv1alpha3.NewForConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
+
 	database, err := databasesClient.Databases(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		// tables might be deployed before a database... if this is the case
@@ -304,7 +366,7 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 	return database, nil
 }
 
-func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha2.DatabaseConnection, tableSchema *schemasv1alpha2.TableSchema) bool {
+func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, tableSchema *schemasv1alpha3.TableSchema) bool {
 	if connection.Postgres != nil {
 		return tableSchema.Postgres != nil
 	} else if connection.Mysql != nil {
@@ -314,8 +376,8 @@ func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha2.
 	return false
 }
 
-func (r *ReconcileTable) plan(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table) error {
-	if err := r.ensureTableConfigMap(database, table, true); err != nil {
+func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
+	if err := r.ensureTableConfigMap(database, table, nil); err != nil {
 		return err
 	}
 
@@ -326,8 +388,8 @@ func (r *ReconcileTable) plan(database *databasesv1alpha2.Database, table *schem
 	return nil
 }
 
-func (r *ReconcileTable) deploy(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table) error {
-	if err := r.ensureTableConfigMap(database, table, false); err != nil {
+func (r *ReconcileTable) deploy(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table, plan *schemasv1alpha3.TablePlan) error {
+	if err := r.ensureTableConfigMap(database, table, plan); err != nil {
 		return err
 	}
 
@@ -338,16 +400,31 @@ func (r *ReconcileTable) deploy(database *databasesv1alpha2.Database, table *sch
 	return nil
 }
 
-func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table, isPlan bool) error {
-	destiredConfigMap, err := r.configMap(database, table, isPlan)
-	if err != nil {
-		return errors.Wrap(err, "failed to get config map object")
+func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table, plan *schemasv1alpha3.TablePlan) error {
+	var desiredConfigMap *corev1.ConfigMap
+
+	if plan == nil {
+		// we need to plan
+		cm, err := r.planConfigMap(database, table)
+		if err != nil {
+			return errors.Wrap(err, "failed to get config map object")
+		}
+
+		desiredConfigMap = cm
+	} else {
+		// let's deploy
+		cm, err := r.applyConfigMap(database, table, plan)
+		if err != nil {
+			return errors.Wrap(err, "failed to get config map object")
+		}
+
+		desiredConfigMap = cm
 	}
 
 	existingConfigMap := corev1.ConfigMap{}
-	if err := r.Get(context.TODO(), types.NamespacedName{Name: destiredConfigMap.Name, Namespace: destiredConfigMap.Namespace}, &existingConfigMap); err != nil {
+	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
-			err = r.Create(context.TODO(), destiredConfigMap)
+			err = r.Create(context.TODO(), desiredConfigMap)
 			if err != nil {
 				return errors.Wrap(err, "failed to create configmap")
 			}
@@ -359,16 +436,29 @@ func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha2.Databa
 	return nil
 }
 
-func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha2.Database, table *schemasv1alpha2.Table, isPlan bool) error {
-	destiredPod, err := r.pod(database, table, isPlan)
-	if err != nil {
-		return errors.Wrap(err, "failed to get pod object")
+func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table, isPlan bool) error {
+	var desiredPod *corev1.Pod
+
+	if isPlan {
+		p, err := r.planPod(database, table)
+		if err != nil {
+			return errors.Wrap(err, "failed to get pod object")
+		}
+
+		desiredPod = p
+	} else {
+		p, err := r.applyPod(database, table)
+		if err != nil {
+			return errors.Wrap(err, "failed to get pod object")
+		}
+
+		desiredPod = p
 	}
 
 	existingPod := corev1.Pod{}
-	if err := r.Get(context.TODO(), types.NamespacedName{Name: destiredPod.Name, Namespace: destiredPod.Namespace}, &existingPod); err != nil {
+	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
-			err = r.Create(context.TODO(), destiredPod)
+			err = r.Create(context.TODO(), desiredPod)
 			if err != nil {
 				return errors.Wrap(err, "failed to create table migration pod")
 			}
@@ -382,7 +472,7 @@ func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha2.Database, ta
 	return nil
 }
 
-func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha2.ValueOrValueFrom) (string, error) {
+func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}

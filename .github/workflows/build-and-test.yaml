@@ -1,0 +1,28 @@
+name: "Build and test"
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.12.14'
+      - name: setup goenv
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+        shell: bash
+      - uses: actions/checkout@master
+      - name: setup kubebuilder
+        run: |
+          echo "::add-path::/usr/local/kubebuilder/bin"
+      - run: make kubebuilder all
+      - uses: actions/upload-artifact@v1
+        with:
+          name: schemahero
+          path: bin/schemahero
+      - uses: actions/upload-artifact@v1
+        with:
+          name: manager
+          path: bin/manager

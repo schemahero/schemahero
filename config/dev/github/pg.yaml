@@ -1,8 +1,6 @@
-apiVersion: databases.schemahero.io/v1alpha2
+apiVersion: databases.schemahero.io/v1alpha3
 kind: Database
 metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
   name: testdb
 schemahero:
   image: "localhost:32000/schemahero/schemahero"

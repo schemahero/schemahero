@@ -54,6 +54,7 @@ type DatabaseStatus struct {
 // Database is the Schema for the databases API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 type Database struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

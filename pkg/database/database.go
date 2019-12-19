@@ -115,7 +115,7 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) ApplySync(filename string) error {
+func (d *Database) PlanSync(filename string) error {
 	specContents, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
@@ -144,9 +144,19 @@ func (d *Database) ApplySync(filename string) error {
 	}
 
 	if d.Viper.GetString("driver") == "postgres" {
-		return postgres.DeployPostgresTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Postgres)
+		return postgres.PlanPostgresTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Postgres)
 	} else if d.Viper.GetString("driver") == "mysql" {
-		return mysql.DeployMysqlTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Mysql)
+		return mysql.PlanMysqlTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Mysql)
+	}
+
+	return errors.New("unknown database driver")
+}
+
+func (d *Database) ApplySync(statements []string) error {
+	if d.Viper.GetString("driver") == "postgres" {
+		return postgres.DeployPostgresStatements(d.Viper.GetString("uri"), statements)
+	} else if d.Viper.GetString("driver") == "mysql" {
+		return mysql.DeployMysqlStatements(d.Viper.GetString("uri"), statements)
 	}
 
 	return errors.New("unknown database driver")
