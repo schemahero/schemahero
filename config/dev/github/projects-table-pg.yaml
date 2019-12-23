@@ -21,3 +21,4 @@ spec:
           type: integer
         - name: user_id
           type: integer
+
