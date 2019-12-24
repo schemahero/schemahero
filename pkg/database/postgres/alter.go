@@ -28,6 +28,10 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
 				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
+			} else if column.DataType == existingColumn.DataType {
+				if column.IsArray != existingColumn.IsArray {
+					changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pq.QuoteIdentifier(existingColumn.Name), column.DataType))
+				}
 			}
 
 			if column.ColumnDefault != nil {
@@ -79,6 +83,10 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 
 func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	if col1.DataType != col2.DataType {
+		return false
+	}
+
+	if col1.IsArray != col2.IsArray {
 		return false
 	}
 
