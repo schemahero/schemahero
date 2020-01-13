@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -235,6 +236,10 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 			}
 
 			out := buf.String()
+
+			// remove empty lines from output
+			// the planner plans each row, and can leave empty lines
+			out = strings.Replace(out, "\n\n", "\n", -1)
 
 			logger.Debug("read output from pod",
 				zap.String("kind", pod.Kind),

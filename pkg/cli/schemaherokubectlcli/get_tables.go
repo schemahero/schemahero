@@ -66,7 +66,7 @@ func GetTablesCmd() *cobra.Command {
 			}
 
 			if len(matchingTables) == 0 {
-				fmt.Println("No reosurces found.")
+				fmt.Println("No resources found.")
 				return nil
 			}
 
@@ -76,10 +76,15 @@ func GetTablesCmd() *cobra.Command {
 			for _, table := range matchingTables {
 				status := "Current"
 
+				if len(table.Status.Plans) == 0 {
+					status = "Planning"
+					continue
+				}
+
 				for _, plan := range table.Status.Plans {
 					if plan.ExecutedAt == 0 && plan.RejectedAt == 0 && plan.ApprovedAt == 0 {
 						status = "Pending"
-					} else if plan.PlannedAt == 0 || plan.InvalidatedAt == 0 {
+					} else if plan.PlannedAt == 0 {
 						status = "Planning"
 					}
 				}

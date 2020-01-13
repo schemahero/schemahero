@@ -100,7 +100,7 @@ func Apply() *cobra.Command {
 					return err
 				}
 
-				return db.ApplySync([]string{})
+				return db.ApplySync(commands)
 			}
 		},
 	}

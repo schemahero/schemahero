@@ -19,3 +19,5 @@ spec:
           type: text
         - name: someone
           type: text[]
+        - name: it
+          type: int
