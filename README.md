@@ -29,3 +29,7 @@ kubectl apply -f https://git.io/schemahero
 
 To get started, read the [tutorial](https://schemahero.io/tutorial/) and the [full documentation](https://schemahero.io/docs/)
 
+# Community
+
+For questions about using SchemaHero, there's a [Replicated Community](https://help.replicated.com/community) forum, and a [#schemahero channel in Kubernetes Slack](https://kubernetes.slack.com/channels/schemahero).
+
