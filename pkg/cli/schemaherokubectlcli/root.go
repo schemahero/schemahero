@@ -31,6 +31,7 @@ func RootCmd() *cobra.Command {
 	cobra.OnInitialize(initConfig)
 
 	cmd.AddCommand(Version())
+	cmd.AddCommand(InstallCmd())
 	cmd.AddCommand(GetCmd())
 	cmd.AddCommand(DescribeCmd())
 	cmd.AddCommand(UpdateCmd())

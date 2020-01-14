@@ -17,10 +17,10 @@ import (
 
 func GetMigrationsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "migrations",
-		Short: "",
-		Long:  `...`,
-		SilenceErrors: true,,
+		Use:           "migrations",
+		Short:         "",
+		Long:          `...`,
+		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
