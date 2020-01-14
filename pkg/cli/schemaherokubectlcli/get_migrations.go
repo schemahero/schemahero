@@ -20,6 +20,7 @@ func GetMigrationsCmd() *cobra.Command {
 		Use:   "migrations",
 		Short: "",
 		Long:  `...`,
+		SilenceErrors: true,,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},

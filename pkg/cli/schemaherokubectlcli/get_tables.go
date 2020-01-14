@@ -16,9 +16,10 @@ import (
 
 func GetTablesCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tables",
-		Short: "",
-		Long:  `...`,
+		Use:           "tables",
+		Short:         "",
+		Long:          `...`,
+		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},

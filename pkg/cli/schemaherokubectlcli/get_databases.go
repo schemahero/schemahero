@@ -16,9 +16,10 @@ import (
 
 func GetDatabasesCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "databases",
-		Short: "",
-		Long:  `...`,
+		Use:           "databases",
+		Short:         "",
+		Long:          `...`,
+		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},

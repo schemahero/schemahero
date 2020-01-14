@@ -7,9 +7,10 @@ import (
 
 func UpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update",
-		Short: "",
-		Long:  `...`,
+		Use:           "update",
+		Short:         "",
+		Long:          `...`,
+		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},

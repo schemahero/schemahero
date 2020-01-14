@@ -10,9 +10,10 @@ import (
 
 func Version() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "version",
-		Short: "schemahero version information",
-		Long:  `...`,
+		Use:           "version",
+		Short:         "schemahero version information",
+		Long:          `...`,
+		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Printf("SchemaHero %s\n", version.Version())
 			return nil
