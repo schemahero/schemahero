@@ -1,7 +1,7 @@
 package main
 
-import "github.com/schemahero/schemahero/pkg/cli"
+import "github.com/schemahero/schemahero/pkg/cli/schemaherocli"
 
 func main() {
-	cli.InitAndExecute()
+	schemaherocli.InitAndExecute()
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) error {
+func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) error {
 	m, err := Connect(uri)
 	if err != nil {
 		return err
@@ -31,11 +31,7 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 			return err
 		}
 
-		fmt.Printf("Executing query %q\n", query)
-		_, err = m.db.Exec(query)
-		if err != nil {
-			return err
-		}
+		fmt.Println(query)
 
 		return nil
 	}
@@ -45,8 +41,8 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(m, columnStatements); err != nil {
-		return err
+	for _, columnStatement := range columnStatements {
+		fmt.Println(columnStatement)
 	}
 
 	// primary key changes
@@ -54,8 +50,8 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(m, primaryKeyStatements); err != nil {
-		return err
+	for _, primaryKeyStatement := range primaryKeyStatements {
+		fmt.Println(primaryKeyStatement)
 	}
 
 	// foreign key changes
@@ -63,8 +59,8 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(m, foreignKeyStatements); err != nil {
-		return err
+	for _, foreignKeyStatement := range foreignKeyStatements {
+		fmt.Println(foreignKeyStatement)
 	}
 
 	// index changes
@@ -72,7 +68,23 @@ func DeployMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1a
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(m, indexStatements); err != nil {
+	for _, indexStatement := range indexStatements {
+		fmt.Println(indexStatement)
+	}
+
+	return nil
+
+}
+
+func DeployMysqlStatements(uri string, statements []string) error {
+	m, err := Connect(uri)
+	if err != nil {
+		return err
+	}
+	defer m.db.Close()
+
+	// execute
+	if err := executeStatements(m, statements); err != nil {
 		return err
 	}
 

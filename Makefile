@@ -31,7 +31,7 @@ endef
 export GO111MODULE=on
 # export GOPROXY=https://proxy.golang.org
 
-all: test bin/schemahero manager
+all: generate fmt vet manifests bin/schemahero bin/kubectl-schemahero manager
 
 .PHONY: clean-and-tidy
 clean-and-tidy:
@@ -61,7 +61,7 @@ run: generate fmt vet bin/schemahero
 	go run ./cmd/manager/main.go
 
 .PHONY: install
-install: manifests microk8s
+install: manifests generate microk8s
 	kubectl apply -f config/crds
 
 .PHONY: deploy
@@ -82,8 +82,9 @@ vet:
 	go vet ./pkg/... ./cmd/...
 
 .PHONY: generate
-generate: controller-gen
+generate: controller-gen client-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/api/...
+	$(CLIENT_GEN) --output-package=github.com/schemahero/schemahero/pkg/client --clientset-name schemaheroclientset --input-base github.com/schemahero/schemahero/pkg/apis --input databases/v1alpha3 --input schemas/v1alpha3 -h ./hack/boilerplate.go.txt
 
 .PHONY: bin/schemahero
 bin/schemahero:
@@ -94,9 +95,14 @@ bin/schemahero:
 		./cmd/schemahero
 	@echo "built bin/schemahero"
 
-.PHONY: docker-login
-docker-login:
-	echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+.PHONY: bin/kubectl-schemahero
+bin/kubectl-schemahero:
+	go build \
+		${LDFLAGS} \
+		-i \
+		-o bin/kubectl-schemahero \
+		./cmd/kubectl-schemahero
+	@echo "built bin/kubectl-schemahero"
 
 .PHONY: snapshot-release
 snapshot-release: build-snapshot-release
@@ -108,7 +114,7 @@ build-snapshot-release:
 	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --snapshot --config deploy/.goreleaser.snapshot.yml
 
 .PHONY: microk8s
-microk8s:
+microk8s: bin/schemahero bin/kubectl-schemahero manager
 	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest
@@ -125,4 +131,22 @@ ifeq (, $(shell which controller-gen))
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
+endif
+
+.PHONY: client-gen
+client-gen:
+ifeq (, $(shell which client-gen))
+	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.16.4
+CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
+else
+CLIENT_GEN=$(shell which client-gen)
+endif
+
+.PHONY: kubebuilder
+kubebuilder:
+ifeq (, $(shell which kubebuilder))
+	curl -L -O "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v1.0.8/kubebuilder_1.0.8_darwin_amd64.tar.gz"
+	tar -zxvf kubebuilder_1.0.8_darwin_amd64.tar.gz
+	mv kubebuilder_1.0.8_darwin_amd64 kubebuilder && sudo mv kubebuilder /usr/local/
+	echo "export PATH=\$PATH:/usr/local/kubebuilder/bin" | sudo tee -a /etc/profile > /dev/null
 endif

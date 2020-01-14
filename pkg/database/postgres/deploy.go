@@ -10,7 +10,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func DeployPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) error {
+func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) error {
 	p, err := Connect(uri)
 	if err != nil {
 		return err
@@ -32,11 +32,7 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 			return err
 		}
 
-		fmt.Printf("Executing query %q\n", query)
-		_, err = p.db.Exec(query)
-		if err != nil {
-			return err
-		}
+		fmt.Println(query)
 
 		return nil
 	}
@@ -46,8 +42,8 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(p, columnStatements); err != nil {
-		return err
+	for _, columnStatement := range columnStatements {
+		fmt.Println(columnStatement)
 	}
 
 	// primary key changes
@@ -55,8 +51,8 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(p, primaryKeyStatements); err != nil {
-		return err
+	for _, primaryKeyStatement := range primaryKeyStatements {
+		fmt.Println(primaryKeyStatement)
 	}
 
 	// foreign key changes
@@ -64,8 +60,8 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(p, foreignKeyStatements); err != nil {
-		return err
+	for _, foreignKeyStatement := range foreignKeyStatements {
+		fmt.Println(foreignKeyStatement)
 	}
 
 	// index changes
@@ -73,7 +69,22 @@ func DeployPostgresTable(uri string, tableName string, postgresTableSchema *sche
 	if err != nil {
 		return err
 	}
-	if err := executeStatements(p, indexStatements); err != nil {
+	for _, indexStatement := range indexStatements {
+		fmt.Println(indexStatement)
+	}
+
+	return nil
+}
+
+func DeployPostgresStatements(uri string, statements []string) error {
+	p, err := Connect(uri)
+	if err != nil {
+		return err
+	}
+	defer p.db.Close()
+
+	// execute
+	if err := executeStatements(p, statements); err != nil {
 		return err
 	}
 

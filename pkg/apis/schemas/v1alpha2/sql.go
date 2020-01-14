@@ -24,7 +24,7 @@ type SQLTableForeignKeyReferences struct {
 type SQLTableForeignKey struct {
 	Columns    []string                     `json:"columns" yaml:"columns"`
 	References SQLTableForeignKeyReferences `json:"references" yaml:"references"`
-	OnDelete   string                       `json:"onDelete" yaml:"onDelete,omitempty"`
+	OnDelete   string                       `json:"onDelete,omitempty" yaml:"onDelete,omitempty"`
 	Name       string                       `json:"name,omitempty" yaml:"name,omitempty"`
 }
 

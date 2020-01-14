@@ -30,7 +30,6 @@ type TableSpec struct {
 	Database string       `json:"database" yaml:"database"`
 	Name     string       `json:"name" yaml:"name"`
 	Requires []string     `json:"requires,omitempty" yaml:"requires,omitempty"`
-	IsPlan   bool         `json:"isPlan,omitempty" yaml:"isPlan,omitempty"`
 	Schema   *TableSchema `json:"schema" yaml:"schema"`
 }
 
@@ -44,6 +43,7 @@ type TableStatus struct {
 
 // Table is the Schema for the tables API
 // +k8s:openapi-gen=true
+// +kubebuilder:storageversion
 type Table struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

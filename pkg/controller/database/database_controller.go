@@ -21,10 +21,12 @@ import (
 	goerrors "errors"
 	"fmt"
 
+	"github.com/pkg/errors"
 	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
-	appsv1 "k8s.io/api/apps/v1"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
+	"github.com/schemahero/schemahero/pkg/logger"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -33,16 +35,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-var log = logf.Log.WithName("controller")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -63,18 +57,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// Watch for changes to Database
+	// Watch for changes to Database kinds
 	err = c.Watch(&source.Kind{Type: &databasesv1alpha2.Database{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create
-	// Uncomment watch a Deployment created by Database - change this for objects you create
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &databasesv1alpha2.Database{},
-	})
+	err = c.Watch(&source.Kind{Type: &databasesv1alpha3.Database{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -92,46 +81,24 @@ type ReconcileDatabase struct {
 
 // Reconcile reads that state of the cluster for a Database object and makes changes based on the state read
 // and what is in the Database.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
-// a Deployment as an example
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases/status,verbs=get;update;patch
 func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	// Fetch the Database instance
-	instance := &databasesv1alpha2.Database{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
+	instance, err := r.getInstance(request)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			return reconcile.Result{}, nil
-		}
-		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
-	}
-
-	// If a gitops configuration is set on the database object, then
-	// make sure that is creates and initialized
-
-	if instance.GitOps != nil {
-		if instance.GitOps.IsPlanEnabled {
-			if err := r.ensureGitOpsPlan(instance); err != nil {
-				gitopsPlanLoop = nil
-				return reconcile.Result{}, err
-			}
-		}
-
-		if err := r.ensureGitOps(instance); err != nil {
-			gitopsLoop = nil
-			return reconcile.Result{}, err
-		}
 	}
 
 	// A "database" object is realized in the cluster as a deployment object,
 	// in the namespace specified in the custom resource,
+
+	logger.Debug("reconciling database",
+		zap.String("name", instance.Name))
+
+	// TODO add watches back in if we need them.  Today they aren't used for anything
 
 	if instance.Connection.Postgres != nil {
 		if err = r.ensurePostgresWatch(instance); err != nil {
@@ -146,7 +113,23 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha2.ValueOrValueFrom) (string, error) {
+func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1alpha3.Database, error) {
+	v1alpha2instance := &databasesv1alpha2.Database{}
+	err := r.Get(context.Background(), request.NamespacedName, v1alpha2instance)
+	if err == nil {
+		return databasesv1alpha3.ConvertFromV1Alpha2(v1alpha2instance), nil
+	}
+
+	instance := &databasesv1alpha3.Database{}
+	err = r.Get(context.Background(), request.NamespacedName, instance)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get databasesv1alpha3 instance")
+	}
+
+	return instance, nil
+}
+
+func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}

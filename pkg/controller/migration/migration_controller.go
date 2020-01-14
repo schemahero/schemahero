@@ -19,8 +19,7 @@ package migration
 import (
 	"context"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
-	appsv1 "k8s.io/api/apps/v1"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -59,17 +58,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Migration
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha2.Migration{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	// TODO(user): Modify this to be the types you create
-	// Uncomment watch a Deployment created by Migration - change this for objects you create
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &schemasv1alpha2.Migration{},
-	})
+	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Migration{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
 	}
@@ -87,8 +76,6 @@ type ReconcileMigration struct {
 
 // Reconcile reads that state of the cluster for a Migration object and makes changes based on the state read
 // and what is in the Migration.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
-// a Deployment as an example
 // Automatically generate RBAC rules to allow the Controller to read and write Deployments
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
@@ -96,7 +83,7 @@ type ReconcileMigration struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=migrations/status,verbs=get;update;patch
 func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	// Fetch the Migration instance
-	instance := &schemasv1alpha2.Migration{}
+	instance := &schemasv1alpha3.Migration{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {

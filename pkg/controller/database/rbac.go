@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *ReconcileDatabase) ensureWatchRBAC(instance *databasesv1alpha2.Database) error {
+func (r *ReconcileDatabase) ensureWatchRBAC(instance *databasesv1alpha3.Database) error {
 	err := r.ensureRoleInNamespaceForInstance(instance)
 	if err != nil {
 		fmt.Printf("%#v\n", err)
@@ -35,7 +35,7 @@ func (r *ReconcileDatabase) ensureWatchRBAC(instance *databasesv1alpha2.Database
 	return nil
 }
 
-func (r *ReconcileDatabase) ensureRoleInNamespaceForInstance(instance *databasesv1alpha2.Database) error {
+func (r *ReconcileDatabase) ensureRoleInNamespaceForInstance(instance *databasesv1alpha3.Database) error {
 	namespacedName := types.NamespacedName{
 		Name:      instance.Name,
 		Namespace: instance.Namespace,
@@ -60,7 +60,7 @@ func (r *ReconcileDatabase) ensureRoleInNamespaceForInstance(instance *databases
 	return nil
 }
 
-func (r *ReconcileDatabase) ensureRoleBindingInNamespaceForInstance(instance *databasesv1alpha2.Database) error {
+func (r *ReconcileDatabase) ensureRoleBindingInNamespaceForInstance(instance *databasesv1alpha3.Database) error {
 	namespacedName := types.NamespacedName{
 		Name:      instance.Name,
 		Namespace: instance.Namespace,
@@ -85,7 +85,7 @@ func (r *ReconcileDatabase) ensureRoleBindingInNamespaceForInstance(instance *da
 	return nil
 }
 
-func (r *ReconcileDatabase) ensureServiceAccountInNamespaceForInstance(instance *databasesv1alpha2.Database) error {
+func (r *ReconcileDatabase) ensureServiceAccountInNamespaceForInstance(instance *databasesv1alpha3.Database) error {
 	namespacedName := types.NamespacedName{
 		Name:      instance.Name,
 		Namespace: instance.Namespace,
