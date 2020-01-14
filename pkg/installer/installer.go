@@ -41,8 +41,68 @@ func createDatabasesCRD(client *kubernetes.Clientset, extensionsClient *extensio
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "databases.databases.schemahero.io",
 		},
+		Status: extensionsv1.CustomResourceDefinitionStatus{
+			StoredVersions: []string{},
+			Conditions:     []extensionsv1.CustomResourceDefinitionCondition{},
+			AcceptedNames: extensionsv1.CustomResourceDefinitionNames{
+				Kind:   "",
+				Plural: "",
+			},
+		},
 		Spec: extensionsv1.CustomResourceDefinitionSpec{
 			Group: "databases.schemahero.io",
+			Names: extensionsv1.CustomResourceDefinitionNames{
+				Kind:     "Database",
+				ListKind: "DatabaseList",
+				Plural:   "databases",
+				Singular: "database",
+			},
+			Scope: "Namespaced",
+			Versions: []extensionsv1.CustomResourceDefinitionVersion{
+				{
+					Name:    "v1alpha3",
+					Served:  true,
+					Storage: true,
+					Subresources: &extensionsv1.CustomResourceSubresources{
+						Status: &extensionsv1.CustomResourceSubresourceStatus{},
+					},
+					Schema: &extensionsv1.CustomResourceValidation{
+						OpenAPIV3Schema: &extensionsv1.JSONSchemaProps{
+							Description: "Database is the Schema for the databases API",
+							Type:        "object",
+							Properties: map[string]extensionsv1.JSONSchemaProps{
+								"apiVersion": extensionsv1.JSONSchemaProps{
+									Type:        "string",
+									Description: `APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources`,
+								},
+								"kind": extensionsv1.JSONSchemaProps{
+									Type:        "string",
+									Description: `Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds`,
+								},
+								"metadata": extensionsv1.JSONSchemaProps{
+									Type: "object",
+								},
+								"status": extensionsv1.JSONSchemaProps{
+									Type:        "object",
+									Required:    []string{"isConnected", "lastPing"},
+									Description: "DatabaseStatus defines the observed state of Database",
+									Properties: map[string]extensionsv1.JSONSchemaProps{
+										"isConnected": extensionsv1.JSONSchemaProps{
+											Type: "boolean",
+										},
+										"lastPing": extensionsv1.JSONSchemaProps{
+											Type: "string",
+										},
+									},
+								},
+								"connection":      extensionsv1.JSONSchemaProps{},
+								"immediateDeploy": extensionsv1.JSONSchemaProps{},
+								"schemahero":      extensionsv1.JSONSchemaProps{},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
