@@ -1,9 +1,9 @@
 package schemaherokubectlcli
 
 import (
+	"github.com/schemahero/schemahero/pkg/installer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/schemahero/schemahero/pkg/installer"
 )
 
 func InstallCmd() *cobra.Command {
