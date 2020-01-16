@@ -28,3 +28,4 @@ dist/
 .DS_Store
 
 vendor
+integration/**/out.sql
