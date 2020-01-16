@@ -22,6 +22,8 @@ postgres:
 	make -C tests/postgres/index-create run
 	make -C tests/postgres/primary-key-add run
 	make -C tests/postgres/primary-key-drop run
+	make -C tests/postgres/unique-constraint-add run
+	make -C tests/postgres/unique-constraint-drop run
 
 .PHONY: mysql
 mysql:

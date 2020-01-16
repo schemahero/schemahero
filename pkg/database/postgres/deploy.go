@@ -198,7 +198,7 @@ func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgres
 func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
 	foreignKeyStatements := []string{}
 	droppedKeys := []string{}
-	currentForeignKeys, err := p.ListTableForeignKeys("", tableName)
+	currentForeignKeys, err := p.ListTableForeignKeys(p.databaseName, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -254,11 +254,11 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	droppedIndexes := []string{}
-	currentIndexes, err := p.ListTableIndexes("", tableName)
+	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list table indexes")
 	}
-	currentConstraints, err := p.ListTableConstraints("", tableName)
+	currentConstraints, err := p.ListTableConstraints(p.databaseName, tableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list table constraints")
 	}
