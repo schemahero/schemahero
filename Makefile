@@ -104,25 +104,11 @@ bin/kubectl-schemahero:
 		./cmd/kubectl-schemahero
 	@echo "built bin/kubectl-schemahero"
 
-.PHONY: snapshot-release
-snapshot-release: build-snapshot-release
-	docker push schemahero/schemahero:alpha
-	docker push schemahero/schemahero-manager:alpha
-
-.PHONY: build-snapshot-release
-build-snapshot-release:
-	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --snapshot --config deploy/.goreleaser.snapshot.yml
-
 .PHONY: microk8s
 microk8s: bin/schemahero bin/kubectl-schemahero manager
 	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest
-
-.PHONY: release
-release: export GITHUB_TOKEN = $(shell echo ${GITHUB_TOKEN_REPLICATEDBOT})
-release:
-	curl -sL https://git.io/goreleaser | bash -s -- --rm-dist --config deploy/.goreleaser.yml
 
 .PHONY: contoller-gen
 controller-gen:
