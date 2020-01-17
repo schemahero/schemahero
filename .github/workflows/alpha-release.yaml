@@ -46,17 +46,17 @@ jobs:
           name: schemahero
           path: bin/
       - run: chmod +x bin/schemahero
-      - run: make -C integration/tests/postgres/column-set-default run
-      - run: make -C integration/tests/postgres/column-unset-default run
-      - run: make -C integration/tests/postgres/create-table run
-      - run: make -C integration/tests/postgres/foreign-key-create run
-      - run: make -C integration/tests/postgres/foreign-key-action run
-      - run: make -C integration/tests/postgres/foreign-key-drop run
-      - run: make -C integration/tests/postgres/foreign-key-alter run
-      - run: make -C integration/tests/postgres/not-null run
-      - run: make -C integration/tests/postgres/index-create run
-      - run: make -C integration/tests/postgres/primary-key-add run
-      - run: make -C integration/tests/postgres/primary-key-drop run
+      # - run: make -C integration/tests/postgres/column-set-default run
+      # - run: make -C integration/tests/postgres/column-unset-default run
+      # - run: make -C integration/tests/postgres/create-table run
+      # - run: make -C integration/tests/postgres/foreign-key-create run
+      # - run: make -C integration/tests/postgres/foreign-key-action run
+      # - run: make -C integration/tests/postgres/foreign-key-drop run
+      # - run: make -C integration/tests/postgres/foreign-key-alter run
+      # - run: make -C integration/tests/postgres/not-null run
+      # - run: make -C integration/tests/postgres/index-create run
+      # - run: make -C integration/tests/postgres/primary-key-add run
+      # - run: make -C integration/tests/postgres/primary-key-drop run
 
   ## We list each here so that they all show up in the output of github checks
   test-mysql:
@@ -70,17 +70,17 @@ jobs:
           name: schemahero
           path: bin/
       - run: chmod +x bin/schemahero
-      - run: make -C integration/tests/mysql/column-set-default run
-      - run: make -C integration/tests/mysql/column-unset-default run
-      - run: make -C integration/tests/mysql/create-table run
-      - run: make -C integration/tests/mysql/foreign-key-create run
-      - run: make -C integration/tests/mysql/foreign-key-action run
-      - run: make -C integration/tests/mysql/foreign-key-drop run
-      - run: make -C integration/tests/mysql/foreign-key-alter run
-      - run: make -C integration/tests/mysql/not-null run
-      - run: make -C integration/tests/mysql/index-create run
-      - run: make -C integration/tests/mysql/primary-key-add run
-      - run: make -C integration/tests/mysql/primary-key-drop run
+      # - run: make -C integration/tests/mysql/column-set-default run
+      # - run: make -C integration/tests/mysql/column-unset-default run
+      # - run: make -C integration/tests/mysql/create-table run
+      # - run: make -C integration/tests/mysql/foreign-key-create run
+      # - run: make -C integration/tests/mysql/foreign-key-action run
+      # - run: make -C integration/tests/mysql/foreign-key-drop run
+      # - run: make -C integration/tests/mysql/foreign-key-alter run
+      # - run: make -C integration/tests/mysql/not-null run
+      # - run: make -C integration/tests/mysql/index-create run
+      # - run: make -C integration/tests/mysql/primary-key-add run
+      # - run: make -C integration/tests/mysql/primary-key-drop run
 
   goreleaser:
     runs-on: ubuntu-latest
