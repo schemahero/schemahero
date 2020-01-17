@@ -23,6 +23,25 @@ builds:
     flags: -tags netgo -installsuffix netgo
     binary: schemahero
     hooks: {}
+  - id: kubectl-schemahero
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - "386"
+    env:
+      - CGO_ENABLED=0
+    main: cmd/kubectl-schemahero/main.go
+    ldflags: -s -w
+      -X github.com/schemahero/schemahero/pkg/version.version={{.Version}}
+      -X github.com/schemahero/schemahero/pkg/version.gitSHA={{.Commit}}
+      -X github.com/schemahero/schemahero/pkg/version.buildTime={{.Date}}
+      -extldflags "-static"
+    flags: -tags netgo -installsuffix netgo
+    binary: kubectl-schemahero
+    hooks: {}
   - id: manager
     goos:
       - linux
@@ -42,7 +61,7 @@ builds:
 archives:
   - id: tar
     format: tar.gz
-    name_template: '{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{.Arm }}{{ end }}-alpha'
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
     files:
       - licence*
       - LICENCE*
@@ -55,13 +74,15 @@ archives:
 dockers:
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates:
-      - "schemahero/schemahero:alpha"
+      - "schemahero/schemahero:{{.Major}}"
+      - "schemahero/schemahero:{{.Major}}.{{.Minor}}"
+      - "schemahero/schemahero:{{.Major}}.{{.Minor}}.{{.Patch}}"
     binaries:
       - schemahero
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates:
-      - "schemahero/schemahero-manager:alpha"
+      - "schemahero/schemahero-manager:{{.Major}}"
+      - "schemahero/schemahero-manager:{{.Major}}.{{.Minor}}"
+      - "schemahero/schemahero-manager:{{.Major}}.{{.Minor}}.{{.Patch}}"
     binaries:
       - manager
-snapshot:
-  name_template: SNAPSHOT-{{ .Commit }}

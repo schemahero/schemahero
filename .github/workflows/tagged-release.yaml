@@ -83,6 +83,9 @@ jobs:
 
   goreleaser:
     runs-on: ubuntu-latest
+    needs:
+      - test-postgres
+      - test-mysql
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -95,6 +98,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist --config deploy/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,5 +1,8 @@
 name: "Build and test"
-on: [push]
+on:
+  push:
+    branches-ignore: [master] # master branch runs alpha-release workflow
+    tags-ignore: ["*"] # tags run tagged-release workflow
 
 jobs:
   build:
