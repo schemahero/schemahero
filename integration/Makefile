@@ -1,13 +1,11 @@
 
 SHELL := /bin/bash
-CONSTIMAGE := "ttl.sh/$(shell uuidgen | tr '[:upper:]' '[:lower:]'):1h"
-IMAGE ?= $(CONSTIMAGE)
 
 export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: build postgres mysql
+run: postgres mysql
 
 .PHONY: postgres
 postgres:
@@ -38,12 +36,3 @@ mysql:
 	make -C tests/mysql/index-create run
 	make -C tests/mysql/primary-key-add run
 	make -C tests/mysql/primary-key-drop run
-
-.PHONY: build
-build: docker-build
-	docker push $(IMAGE)
-
-.PHONY: docker-build
-docker-build:
-	docker build -t $(IMAGE) -f ../Dockerfile.schemahero ..
-	@echo "export IMAGE=$(IMAGE)"
