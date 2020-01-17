@@ -2,7 +2,7 @@ name: "Alpha release"
 on:
   push:
     branches:
-      - master
+      - github-actions
 
 jobs:
   build:
@@ -96,6 +96,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v1
         with:
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist --snapshot --config deploy/.goreleaser.snapshot.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
