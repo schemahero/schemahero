@@ -71,7 +71,9 @@ deploy: manifests
 
 .PHONY: manifests
 manifests: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd output:crd:artifacts:config=config/crds paths="./..."
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd:crdVersions=v1beta1 output:crd:artifacts:config=config/crds/v1beta1 paths="./..."
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd:crdVersions=v1 output:crd:artifacts:config=config/crds/v1 paths="./..."
+	go run ./generate/...
 
 .PHONY: fmt
 fmt:
