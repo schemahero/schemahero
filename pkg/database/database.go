@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/spf13/viper"
@@ -43,9 +43,9 @@ func (d *Database) CreateFixturesSync() error {
 			return err
 		}
 
-		var spec *schemasv1alpha2.TableSpec
+		var spec *schemasv1alpha3.TableSpec
 
-		parsedK8sObject := schemasv1alpha2.Table{}
+		parsedK8sObject := schemasv1alpha3.Table{}
 		if err := yaml.Unmarshal(fileData, &parsedK8sObject); err == nil {
 			if parsedK8sObject.Spec.Schema != nil {
 				spec = &parsedK8sObject.Spec
@@ -53,7 +53,7 @@ func (d *Database) CreateFixturesSync() error {
 		}
 
 		if spec == nil {
-			plainSpec := schemasv1alpha2.TableSpec{}
+			plainSpec := schemasv1alpha3.TableSpec{}
 			if err := yaml.Unmarshal(fileData, &plainSpec); err != nil {
 				return err
 			}
@@ -121,8 +121,8 @@ func (d *Database) PlanSync(filename string) error {
 		return err
 	}
 
-	var spec *schemasv1alpha2.TableSpec
-	parsedK8sObject := schemasv1alpha2.Table{}
+	var spec *schemasv1alpha3.TableSpec
+	parsedK8sObject := schemasv1alpha3.Table{}
 	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
 		if parsedK8sObject.Spec.Schema != nil {
 			spec = &parsedK8sObject.Spec
@@ -130,7 +130,7 @@ func (d *Database) PlanSync(filename string) error {
 	}
 
 	if spec == nil {
-		plainSpec := schemasv1alpha2.TableSpec{}
+		plainSpec := schemasv1alpha3.TableSpec{}
 		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
 			return err
 		}

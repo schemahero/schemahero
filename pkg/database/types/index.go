@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 )
 
 type Index struct {
@@ -41,8 +41,8 @@ func (idx *Index) Equals(other *Index) bool {
 	return true
 }
 
-func IndexToSchemaIndex(index *Index) *schemasv1alpha2.SQLTableIndex {
-	schemaIndex := schemasv1alpha2.SQLTableIndex{
+func IndexToSchemaIndex(index *Index) *schemasv1alpha3.SQLTableIndex {
+	schemaIndex := schemasv1alpha3.SQLTableIndex{
 		Columns:  index.Columns,
 		Name:     index.Name,
 		IsUnique: index.IsUnique,
@@ -51,7 +51,7 @@ func IndexToSchemaIndex(index *Index) *schemasv1alpha2.SQLTableIndex {
 	return &schemaIndex
 }
 
-func SchemaIndexToIndex(schemaIndex *schemasv1alpha2.SQLTableIndex) *Index {
+func SchemaIndexToIndex(schemaIndex *schemasv1alpha3.SQLTableIndex) *Index {
 	index := Index{
 		Columns:  schemaIndex.Columns,
 		Name:     schemaIndex.Name,
@@ -61,6 +61,6 @@ func SchemaIndexToIndex(schemaIndex *schemasv1alpha2.SQLTableIndex) *Index {
 	return &index
 }
 
-func GenerateIndexName(tableName string, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
+func GenerateIndexName(tableName string, schemaIndex *schemasv1alpha3.SQLTableIndex) string {
 	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
 }

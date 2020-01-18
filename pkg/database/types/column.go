@@ -1,7 +1,7 @@
 package types
 
 import (
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 )
 
 type ColumnConstraints struct {
@@ -23,14 +23,14 @@ type Column struct {
 	IsArray       bool
 }
 
-func ColumnToSchemaColumn(column *Column) (*schemasv1alpha2.SQLTableColumn, error) {
-	schemaColumn := &schemasv1alpha2.SQLTableColumn{
+func ColumnToSchemaColumn(column *Column) (*schemasv1alpha3.SQLTableColumn, error) {
+	schemaColumn := &schemasv1alpha3.SQLTableColumn{
 		Name: column.Name,
 		Type: column.DataType,
 	}
 
 	if column.Constraints != nil {
-		schemaColumn.Constraints = &schemasv1alpha2.SQLTableColumnConstraints{
+		schemaColumn.Constraints = &schemasv1alpha3.SQLTableColumnConstraints{
 			NotNull: column.Constraints.NotNull,
 		}
 	}

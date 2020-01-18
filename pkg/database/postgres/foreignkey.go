@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/lib/pq"
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
@@ -13,11 +13,11 @@ func RemoveForeignKeyStatement(tableName string, foreignKey *types.ForeignKey) s
 	return fmt.Sprintf("alter table %s drop constraint %s", tableName, pq.QuoteIdentifier(foreignKey.Name))
 }
 
-func AddForeignKeyStatement(tableName string, schemaForeignKey *schemasv1alpha2.SQLTableForeignKey) string {
+func AddForeignKeyStatement(tableName string, schemaForeignKey *schemasv1alpha3.SQLTableForeignKey) string {
 	return fmt.Sprintf("alter table %s add %s", tableName, foreignKeyConstraintClause(tableName, schemaForeignKey))
 }
 
-func foreignKeyConstraintClause(tableName string, schemaForeignKey *schemasv1alpha2.SQLTableForeignKey) string {
+func foreignKeyConstraintClause(tableName string, schemaForeignKey *schemasv1alpha3.SQLTableForeignKey) string {
 	onDelete := ""
 	if schemaForeignKey.OnDelete != "" {
 		onDelete = fmt.Sprintf(" on delete %s", schemaForeignKey.OnDelete)

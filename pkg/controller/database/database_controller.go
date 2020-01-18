@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	databasesv1alpha2 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha2"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
@@ -58,11 +57,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Database kinds
-	err = c.Watch(&source.Kind{Type: &databasesv1alpha2.Database{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
 	err = c.Watch(&source.Kind{Type: &databasesv1alpha3.Database{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return err
@@ -114,14 +108,8 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 }
 
 func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1alpha3.Database, error) {
-	v1alpha2instance := &databasesv1alpha2.Database{}
-	err := r.Get(context.Background(), request.NamespacedName, v1alpha2instance)
-	if err == nil {
-		return databasesv1alpha3.ConvertFromV1Alpha2(v1alpha2instance), nil
-	}
-
 	instance := &databasesv1alpha3.Database{}
-	err = r.Get(context.Background(), request.NamespacedName, instance)
+	err := r.Get(context.Background(), request.NamespacedName, instance)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get databasesv1alpha3 instance")
 	}

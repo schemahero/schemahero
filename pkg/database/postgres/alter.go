@@ -6,11 +6,11 @@ import (
 
 	"github.com/lib/pq"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha2.SQLTableColumn, existingColumn *types.Column) (string, error) {
+func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha3.SQLTableColumn, existingColumn *types.Column) (string, error) {
 	alterStatement := fmt.Sprintf("alter column %s", pq.QuoteIdentifier(existingColumn.Name))
 
 	// this could be an alter or a drop column command

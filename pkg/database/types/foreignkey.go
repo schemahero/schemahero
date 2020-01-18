@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 )
 
 type ForeignKey struct {
@@ -21,10 +21,10 @@ func (fk *ForeignKey) Equals(other *ForeignKey) bool {
 	return false
 }
 
-func ForeignKeyToSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha2.SQLTableForeignKey {
-	schemaForeignKey := schemasv1alpha2.SQLTableForeignKey{
+func ForeignKeyToSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha3.SQLTableForeignKey {
+	schemaForeignKey := schemasv1alpha3.SQLTableForeignKey{
 		Columns: foreignKey.ChildColumns,
-		References: schemasv1alpha2.SQLTableForeignKeyReferences{
+		References: schemasv1alpha3.SQLTableForeignKeyReferences{
 			Table:   foreignKey.ParentTable,
 			Columns: foreignKey.ParentColumns,
 		},
@@ -35,7 +35,7 @@ func ForeignKeyToSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha2.SQLTa
 	return &schemaForeignKey
 }
 
-func SchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha2.SQLTableForeignKey) *ForeignKey {
+func SchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha3.SQLTableForeignKey) *ForeignKey {
 	foreignKey := ForeignKey{
 		ChildColumns:  schemaForeignKey.Columns,
 		ParentTable:   schemaForeignKey.References.Table,
@@ -47,7 +47,7 @@ func SchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha2.SQLTableFore
 	return &foreignKey
 }
 
-func GenerateFKName(tableName string, schemaForeignKey *schemasv1alpha2.SQLTableForeignKey) string {
+func GenerateFKName(tableName string, schemaForeignKey *schemasv1alpha3.SQLTableForeignKey) string {
 	if schemaForeignKey.Name != "" {
 		return schemaForeignKey.Name
 	}
