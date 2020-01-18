@@ -19,8 +19,8 @@ func main() {
 	err := templateManifest(
 		filepath.Join("config", "crds", "v1beta1", "databases.schemahero.io_databases.yaml"),
 		filepath.Join("config", "crds", "v1", "databases.schemahero.io_databases.yaml"),
-		filepath.Join("pkg", "installer", "database.tmpl"),
-		filepath.Join("pkg", "installer", "database.go"))
+		filepath.Join("pkg", "installer", "database_objects.tmpl"),
+		filepath.Join("pkg", "installer", "database_objects.go"))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -29,8 +29,8 @@ func main() {
 	err = templateManifest(
 		filepath.Join("config", "crds", "v1beta1", "schemas.schemahero.io_tables.yaml"),
 		filepath.Join("config", "crds", "v1", "schemas.schemahero.io_tables.yaml"),
-		filepath.Join("pkg", "installer", "table.tmpl"),
-		filepath.Join("pkg", "installer", "table.go"))
+		filepath.Join("pkg", "installer", "table_objects.tmpl"),
+		filepath.Join("pkg", "installer", "table_objects.go"))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -39,8 +39,8 @@ func main() {
 	err = templateManifest(
 		filepath.Join("config", "crds", "v1beta1", "schemas.schemahero.io_migrations.yaml"),
 		filepath.Join("config", "crds", "v1", "schemas.schemahero.io_migrations.yaml"),
-		filepath.Join("pkg", "installer", "migration.tmpl"),
-		filepath.Join("pkg", "installer", "migration.go"))
+		filepath.Join("pkg", "installer", "migration_objects.tmpl"),
+		filepath.Join("pkg", "installer", "migration_objects.go"))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

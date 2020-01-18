@@ -5,6 +5,7 @@ go 1.12
 require (
 	cloud.google.com/go v0.38.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.9.0 // indirect
+	github.com/blang/semver v3.5.1+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gophercloud/gophercloud v0.1.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
