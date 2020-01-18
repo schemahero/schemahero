@@ -97,7 +97,7 @@ jobs:
       - uses: azure/docker-login@v1
         with:
           username: schemaherodeploy
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1
         with:
