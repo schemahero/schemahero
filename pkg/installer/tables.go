@@ -7,6 +7,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
 	extensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	extensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	extensionsscheme "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme"
 	extensionsv1client "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	extensionsv1beta1client "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -75,9 +76,23 @@ func ensureTablesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 }
 
 func tablesCRDV1Beta1() *extensionsv1beta1.CustomResourceDefinition {
-	return nil
+	extensionsscheme.AddToScheme(scheme.Scheme)
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	obj, _, err := decode([]byte(generatedTableCRDV1Beta1), nil, nil)
+	if err != nil {
+		panic(err) // todo
+	}
+
+	return obj.(*extensionsv1beta1.CustomResourceDefinition)
 }
 
 func tablesCRDV1() *extensionsv1.CustomResourceDefinition {
-	return nil
+	extensionsscheme.AddToScheme(scheme.Scheme)
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+	obj, _, err := decode([]byte(generatedTableCRDV1), nil, nil)
+	if err != nil {
+		panic(err) // todo
+	}
+
+	return obj.(*extensionsv1.CustomResourceDefinition)
 }

@@ -11,22 +11,27 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func GenerateOperatorYAML() ([]byte, error) {
+func GenerateOperatorYAML(requestedExtensionsAPIVersion string) ([]byte, error) {
 	manifests := [][]byte{}
 
-	manifest, err := databasesCRDYAML(false)
+	useExtensionsV1Beta1 := false
+	if requestedExtensionsAPIVersion == "v1beta1" {
+		useExtensionsV1Beta1 = true
+	}
+
+	manifest, err := databasesCRDYAML(useExtensionsV1Beta1)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get databases crd")
 	}
 	manifests = append(manifests, manifest)
 
-	manifest, err = tablesCRDYAML(false)
+	manifest, err = tablesCRDYAML(useExtensionsV1Beta1)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tables crd")
 	}
 	manifests = append(manifests, manifest)
 
-	manifest, err = migrationsCRDYAML(false)
+	manifest, err = migrationsCRDYAML(useExtensionsV1Beta1)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get migrations crd")
 	}

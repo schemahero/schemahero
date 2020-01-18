@@ -1,6 +1,6 @@
 package installer
 
-var generatedTableRDV1Beta1 = `
+var generatedTableCRDV1Beta1 = `
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -249,7 +249,7 @@ status:
 `
 var generatedTableCRDV1 = `
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
@@ -264,227 +264,226 @@ spec:
     plural: tables
     singular: table
   scope: Namespaced
-  validation:
-    openAPIV3Schema:
-      description: Table is the Schema for the tables API
-      properties:
-        apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
-            of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-          type: string
-        kind:
-          description: 'Kind is a string value representing the REST resource this
-            object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-          type: string
-        metadata:
-          type: object
-        spec:
-          description: TableSpec defines the desired state of Table
-          properties:
-            database:
-              type: string
-            name:
-              type: string
-            requires:
-              items:
-                type: string
-              type: array
-            schema:
-              properties:
-                mysql:
-                  properties:
-                    columns:
-                      items:
-                        properties:
-                          constraints:
-                            properties:
-                              notNull:
-                                type: boolean
-                            type: object
-                          default:
-                            type: string
-                          name:
-                            type: string
-                          type:
-                            type: string
-                        required:
-                        - name
-                        - type
-                        type: object
-                      type: array
-                    foreignKeys:
-                      items:
-                        properties:
-                          columns:
-                            items:
-                              type: string
-                            type: array
-                          name:
-                            type: string
-                          onDelete:
-                            type: string
-                          references:
-                            properties:
-                              columns:
-                                items:
-                                  type: string
-                                type: array
-                              table:
-                                type: string
-                            required:
-                            - columns
-                            - table
-                            type: object
-                        required:
-                        - columns
-                        - references
-                        type: object
-                      type: array
-                    indexes:
-                      items:
-                        properties:
-                          columns:
-                            items:
-                              type: string
-                            type: array
-                          isUnique:
-                            type: boolean
-                          name:
-                            type: string
-                          type:
-                            type: string
-                        required:
-                        - columns
-                        type: object
-                      type: array
-                    isDeleted:
-                      type: boolean
-                    primaryKey:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - primaryKey
-                  type: object
-                postgres:
-                  properties:
-                    columns:
-                      items:
-                        properties:
-                          constraints:
-                            properties:
-                              notNull:
-                                type: boolean
-                            type: object
-                          default:
-                            type: string
-                          name:
-                            type: string
-                          type:
-                            type: string
-                        required:
-                        - name
-                        - type
-                        type: object
-                      type: array
-                    foreignKeys:
-                      items:
-                        properties:
-                          columns:
-                            items:
-                              type: string
-                            type: array
-                          name:
-                            type: string
-                          onDelete:
-                            type: string
-                          references:
-                            properties:
-                              columns:
-                                items:
-                                  type: string
-                                type: array
-                              table:
-                                type: string
-                            required:
-                            - columns
-                            - table
-                            type: object
-                        required:
-                        - columns
-                        - references
-                        type: object
-                      type: array
-                    indexes:
-                      items:
-                        properties:
-                          columns:
-                            items:
-                              type: string
-                            type: array
-                          isUnique:
-                            type: boolean
-                          name:
-                            type: string
-                          type:
-                            type: string
-                        required:
-                        - columns
-                        type: object
-                      type: array
-                    isDeleted:
-                      type: boolean
-                    primaryKey:
-                      items:
-                        type: string
-                      type: array
-                  required:
-                  - primaryKey
-                  type: object
-              type: object
-          required:
-          - database
-          - name
-          - schema
-          type: object
-        status:
-          description: TableStatus defines the observed state of Table
-          properties:
-            plans:
-              items:
-                properties:
-                  approvedAt:
-                    format: int64
-                    type: integer
-                  ddl:
-                    type: string
-                  executedAt:
-                    format: int64
-                    type: integer
-                  invalidatedAt:
-                    description: InvalidatedAt is the unix nano timestamp when this
-                      plan was determined to be invalid or outdated
-                    format: int64
-                    type: integer
-                  name:
-                    type: string
-                  plannedAt:
-                    description: PlannedAt is the unix nano timestamp when the plan
-                      was generated
-                    format: int64
-                    type: integer
-                  rejectedAt:
-                    format: int64
-                    type: integer
-                type: object
-              type: array
-          type: object
-      type: object
-  version: v1alpha3
   versions:
   - name: v1alpha3
+    schema:
+      openAPIV3Schema:
+        description: Table is the Schema for the tables API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TableSpec defines the desired state of Table
+            properties:
+              database:
+                type: string
+              name:
+                type: string
+              requires:
+                items:
+                  type: string
+                type: array
+              schema:
+                properties:
+                  mysql:
+                    properties:
+                      columns:
+                        items:
+                          properties:
+                            constraints:
+                              properties:
+                                notNull:
+                                  type: boolean
+                              type: object
+                            default:
+                              type: string
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - name
+                          - type
+                          type: object
+                        type: array
+                      foreignKeys:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            onDelete:
+                              type: string
+                            references:
+                              properties:
+                                columns:
+                                  items:
+                                    type: string
+                                  type: array
+                                table:
+                                  type: string
+                              required:
+                              - columns
+                              - table
+                              type: object
+                          required:
+                          - columns
+                          - references
+                          type: object
+                        type: array
+                      indexes:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            isUnique:
+                              type: boolean
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - columns
+                          type: object
+                        type: array
+                      isDeleted:
+                        type: boolean
+                      primaryKey:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - primaryKey
+                    type: object
+                  postgres:
+                    properties:
+                      columns:
+                        items:
+                          properties:
+                            constraints:
+                              properties:
+                                notNull:
+                                  type: boolean
+                              type: object
+                            default:
+                              type: string
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - name
+                          - type
+                          type: object
+                        type: array
+                      foreignKeys:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            onDelete:
+                              type: string
+                            references:
+                              properties:
+                                columns:
+                                  items:
+                                    type: string
+                                  type: array
+                                table:
+                                  type: string
+                              required:
+                              - columns
+                              - table
+                              type: object
+                          required:
+                          - columns
+                          - references
+                          type: object
+                        type: array
+                      indexes:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            isUnique:
+                              type: boolean
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - columns
+                          type: object
+                        type: array
+                      isDeleted:
+                        type: boolean
+                      primaryKey:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - primaryKey
+                    type: object
+                type: object
+            required:
+            - database
+            - name
+            - schema
+            type: object
+          status:
+            description: TableStatus defines the observed state of Table
+            properties:
+              plans:
+                items:
+                  properties:
+                    approvedAt:
+                      format: int64
+                      type: integer
+                    ddl:
+                      type: string
+                    executedAt:
+                      format: int64
+                      type: integer
+                    invalidatedAt:
+                      description: InvalidatedAt is the unix nano timestamp when this
+                        plan was determined to be invalid or outdated
+                      format: int64
+                      type: integer
+                    name:
+                      type: string
+                    plannedAt:
+                      description: PlannedAt is the unix nano timestamp when the plan
+                        was generated
+                      format: int64
+                      type: integer
+                    rejectedAt:
+                      format: int64
+                      type: integer
+                  type: object
+                type: array
+            type: object
+        type: object
     served: true
     storage: true
 status:
