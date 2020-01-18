@@ -39,13 +39,13 @@ func ensureTablesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 			return errors.Wrap(err, "faild to create extensions client")
 		}
 
-		_, err := extensionsClient.CustomResourceDefinitions().Get("tables.schemas.schemahero.io", metav1.GetOptions{})
+		_, err = extensionsClient.CustomResourceDefinitions().Get("tables.schemas.schemahero.io", metav1.GetOptions{})
 		if err != nil {
 			if !kuberneteserrors.IsNotFound(err) {
 				return errors.Wrap(err, "failed to get tables crd")
 			}
 
-			_, err := extensionsClient.CustomResourceDefinitions().Create(tablesCRDV1Beta1())
+			_, err = extensionsClient.CustomResourceDefinitions().Create(tablesCRDV1Beta1())
 			if err != nil {
 				return errors.Wrap(err, "failed to create tables crd")
 			}
@@ -59,7 +59,7 @@ func ensureTablesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 		return errors.Wrap(err, "faild to create extensions client")
 	}
 
-	_, err := extensionsClient.CustomResourceDefinitions().Get("tables.schemas.schemahero.io", metav1.GetOptions{})
+	_, err = extensionsClient.CustomResourceDefinitions().Get("tables.schemas.schemahero.io", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get tables crd")

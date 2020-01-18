@@ -19,10 +19,9 @@ func migrationsCRDYAML(useExtensionsv1beta1 bool) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
 	if useExtensionsv1beta1 {
-		if err := s.Encode(mnigrationsCRDV1Beta1(), &result); err != nil {
+		if err := s.Encode(migrationsCRDV1Beta1(), &result); err != nil {
 			return nil, errors.Wrap(err, "failed to marshal migrations v1beta1 crd")
 		}
-
 	} else {
 		if err := s.Encode(migrationsCRDV1(), &result); err != nil {
 			return nil, errors.Wrap(err, "failed to marshal migrations v1 crd")
@@ -39,13 +38,13 @@ func ensureMigrationsCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 			return errors.Wrap(err, "faild to create extensions client")
 		}
 
-		_, err := extensionsClient.CustomResourceDefinitions().Get("migrations.schemas.schemahero.io", metav1.GetOptions{})
+		_, err = extensionsClient.CustomResourceDefinitions().Get("migrations.schemas.schemahero.io", metav1.GetOptions{})
 		if err != nil {
 			if !kuberneteserrors.IsNotFound(err) {
 				return errors.Wrap(err, "failed to get migrations crd")
 			}
 
-			_, err := extensionsClient.CustomResourceDefinitions().Create(migrationsCRDV1Beta1())
+			_, err = extensionsClient.CustomResourceDefinitions().Create(migrationsCRDV1Beta1())
 			if err != nil {
 				return errors.Wrap(err, "failed to create migrations crd")
 			}
@@ -59,7 +58,7 @@ func ensureMigrationsCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 		return errors.Wrap(err, "faild to create extensions client")
 	}
 
-	_, err := extensionsClient.CustomResourceDefinitions().Get("migrations.schemas.schemahero.io", metav1.GetOptions{})
+	_, err = extensionsClient.CustomResourceDefinitions().Get("migrations.schemas.schemahero.io", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get migrations crd")

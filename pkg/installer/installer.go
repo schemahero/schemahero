@@ -7,7 +7,6 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
-	extensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -83,11 +82,6 @@ func InstallOperator() error {
 	client, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return errors.Wrap(err, "failed to create new kubernetes client")
-	}
-
-	extensionsClient, err := extensionsclient.NewForConfig(cfg)
-	if err != nil {
-		return errors.Wrap(err, "faild to create extensions client")
 	}
 
 	useExtensionsV1Beta1 := shouldUseExtensionsV1Beta1(client)
