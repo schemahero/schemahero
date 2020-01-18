@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/lib/pq"
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
@@ -20,7 +20,7 @@ func RemoveIndexStatement(tableName string, index *types.Index) string {
 	return fmt.Sprintf("drop index %s", pq.QuoteIdentifier(index.Name))
 }
 
-func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
+func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha3.SQLTableIndex) string {
 	unique := ""
 	if schemaIndex.IsUnique {
 		unique = "unique "
@@ -38,6 +38,6 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha2.SQLTableIn
 		strings.Join(schemaIndex.Columns, ", "))
 }
 
-func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha2.SQLTableIndex) string {
+func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha3.SQLTableIndex) string {
 	return fmt.Sprintf("alter index %s rename to %s", pq.QuoteIdentifier(index.Name), pq.QuoteIdentifier(schemaIndex.Name))
 }

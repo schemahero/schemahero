@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,13 +12,13 @@ func Test_AddIndexStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
-		schemaIndex       *schemasv1alpha2.SQLTableIndex
+		schemaIndex       *schemasv1alpha3.SQLTableIndex
 		expectedStatement string
 	}{
 		{
 			name:      "no name, one column, not specified unique",
 			tableName: "t2",
-			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+			schemaIndex: &schemasv1alpha3.SQLTableIndex{
 				Columns: []string{
 					"c1",
 				},
@@ -28,7 +28,7 @@ func Test_AddIndexStatement(t *testing.T) {
 		{
 			name:      "specified name, one column, not specified unique",
 			tableName: "t2",
-			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+			schemaIndex: &schemasv1alpha3.SQLTableIndex{
 				Columns: []string{
 					"c1",
 				},
@@ -39,7 +39,7 @@ func Test_AddIndexStatement(t *testing.T) {
 		{
 			name:      "no name, two columns, not specified unique",
 			tableName: "t2",
-			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+			schemaIndex: &schemasv1alpha3.SQLTableIndex{
 				Columns: []string{
 					"c1",
 					"c2",
@@ -50,7 +50,7 @@ func Test_AddIndexStatement(t *testing.T) {
 		{
 			name:      "np name, one column, unique",
 			tableName: "t2",
-			schemaIndex: &schemasv1alpha2.SQLTableIndex{
+			schemaIndex: &schemasv1alpha3.SQLTableIndex{
 				Columns: []string{
 					"c1",
 				},

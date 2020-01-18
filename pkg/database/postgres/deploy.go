@@ -6,11 +6,11 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) error {
+func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) error {
 	p, err := Connect(uri)
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func executeStatements(p *PostgresConnection, statements []string) error {
 	return nil
 }
 
-func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	query := `select
 		column_name, column_default, is_nullable, data_type, character_maximum_length
 		from information_schema.columns
@@ -177,7 +177,7 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 	return alterAndDropStatements, nil
 }
 
-func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	currentPrimaryKey, err := p.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -206,7 +206,7 @@ func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgres
 	return statements, nil
 }
 
-func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	foreignKeyStatements := []string{}
 	droppedKeys := []string{}
 	currentForeignKeys, err := p.ListTableForeignKeys(p.databaseName, tableName)
@@ -262,7 +262,7 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	return foreignKeyStatements, nil
 }
 
-func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)

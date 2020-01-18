@@ -49,7 +49,7 @@ func tablesCRD() *extensionsv1.CustomResourceDefinition {
 			Name: "tables.schemas.schemahero.io",
 		},
 		Status: extensionsv1.CustomResourceDefinitionStatus{
-			StoredVersions: []string{},
+			StoredVersions: []string{"v1alpha3"},
 			Conditions:     []extensionsv1.CustomResourceDefinitionCondition{},
 			AcceptedNames: extensionsv1.CustomResourceDefinitionNames{
 				Kind:   "",

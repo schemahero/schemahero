@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) error {
+func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) error {
 	m, err := Connect(uri)
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 	return nil
 }
 
-func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	query := `select
 		COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
 		from information_schema.COLUMNS
@@ -183,7 +183,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 	return alterAndDropStatements, nil
 }
 
-func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	currentPrimaryKey, err := m.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	return statements, nil
 }
 
-func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	foreignKeyStatements := []string{}
 	currentForeignKeys, err := m.ListTableForeignKeys(m.databaseName, tableName)
 	if err != nil {
@@ -266,7 +266,7 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	return foreignKeyStatements, nil
 }
 
-func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha2.SQLTableSchema) ([]string, error) {
+func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	currentIndexes, err := m.ListTableIndexes(m.databaseName, tableName)
 	if err != nil {

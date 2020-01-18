@@ -211,8 +211,8 @@ func manager() *appsv1.StatefulSet {
 					},
 					Containers: []corev1.Container{
 						{
-							Image:           "schemahero/schemahero-manager:latest",
-							ImagePullPolicy: corev1.PullIfNotPresent,
+							Image:           "schemahero/schemahero-manager:0.8.0-alpha",
+							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
 							Command:         []string{"/manager"},
 							Env: []corev1.EnvVar{
@@ -232,11 +232,11 @@ func manager() *appsv1.StatefulSet {
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("1"),
-									corev1.ResourceMemory: resource.MustParse("150m"),
+									corev1.ResourceMemory: resource.MustParse("150Mi"),
 								},
 								Requests: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("100m"),
-									corev1.ResourceMemory: resource.MustParse("50m"),
+									corev1.ResourceMemory: resource.MustParse("50Mi"),
 								},
 							},
 							Ports: []corev1.ContainerPort{

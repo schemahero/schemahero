@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12,18 +12,18 @@ import (
 func Test_CreateTableStatement(t *testing.T) {
 	tests := []struct {
 		name              string
-		tableSchema       *schemasv1alpha2.SQLTableSchema
+		tableSchema       *schemasv1alpha3.SQLTableSchema
 		tableName         string
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			tableSchema: &schemasv1alpha2.SQLTableSchema{
+			tableSchema: &schemasv1alpha3.SQLTableSchema{
 				PrimaryKey: []string{
 					"id",
 				},
-				Columns: []*schemasv1alpha2.SQLTableColumn{
-					&schemasv1alpha2.SQLTableColumn{
+				Columns: []*schemasv1alpha3.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "id",
 						Type: "integer",
 					},
@@ -34,21 +34,21 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "composite primary key",
-			tableSchema: &schemasv1alpha2.SQLTableSchema{
+			tableSchema: &schemasv1alpha3.SQLTableSchema{
 				PrimaryKey: []string{
 					"one",
 					"two",
 				},
-				Columns: []*schemasv1alpha2.SQLTableColumn{
-					&schemasv1alpha2.SQLTableColumn{
+				Columns: []*schemasv1alpha3.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "one",
 						Type: "integer",
 					},
-					&schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "two",
 						Type: "integer",
 					},
-					&schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "three",
 						Type: "varchar(255)",
 					},
@@ -59,26 +59,26 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "composite unique index",
-			tableSchema: &schemasv1alpha2.SQLTableSchema{
+			tableSchema: &schemasv1alpha3.SQLTableSchema{
 				PrimaryKey: []string{
 					"one",
 				},
-				Indexes: []*schemasv1alpha2.SQLTableIndex{
-					&schemasv1alpha2.SQLTableIndex{
+				Indexes: []*schemasv1alpha3.SQLTableIndex{
+					&schemasv1alpha3.SQLTableIndex{
 						Columns:  []string{"two", "three"},
 						IsUnique: true,
 					},
 				},
-				Columns: []*schemasv1alpha2.SQLTableColumn{
-					&schemasv1alpha2.SQLTableColumn{
+				Columns: []*schemasv1alpha3.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "one",
 						Type: "integer",
 					},
-					&schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "two",
 						Type: "integer",
 					},
-					&schemasv1alpha2.SQLTableColumn{
+					&schemasv1alpha3.SQLTableColumn{
 						Name: "three",
 						Type: "varchar(255)",
 					},

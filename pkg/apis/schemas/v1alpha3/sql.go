@@ -16,10 +16,6 @@ limitations under the License.
 
 package v1alpha3
 
-import (
-	"github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
-)
-
 type SQLTableForeignKeyReferences struct {
 	Table   string   `json:"table"`
 	Columns []string `json:"columns"`
@@ -56,39 +52,4 @@ type SQLTableSchema struct {
 	Indexes     []*SQLTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
 	Columns     []*SQLTableColumn     `json:"columns,omitempty" yaml:"columns"`
 	IsDeleted   bool                  `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
-}
-
-func (s *SQLTableSchema) fromV1Alpha2(instance *v1alpha2.SQLTableSchema) {
-	s.PrimaryKey = instance.PrimaryKey
-
-	s.ForeignKeys = []*SQLTableForeignKey{}
-	for _, fk := range instance.ForeignKeys {
-		converted := SQLTableForeignKey{
-			Columns:    fk.Columns,
-			References: SQLTableForeignKeyReferences(fk.References),
-			OnDelete:   fk.OnDelete,
-			Name:       fk.Name,
-		}
-		s.ForeignKeys = append(s.ForeignKeys, &converted)
-	}
-
-	s.Indexes = []*SQLTableIndex{}
-	for _, idx := range instance.Indexes {
-		converted := SQLTableIndex(*idx)
-		s.Indexes = append(s.Indexes, &converted)
-	}
-
-	s.Columns = []*SQLTableColumn{}
-	for _, col := range instance.Columns {
-		converted := SQLTableColumn{
-			Name:    col.Name,
-			Type:    col.Type,
-			Default: col.Default,
-		}
-
-		if col.Constraints != nil {
-			constraints := SQLTableColumnConstraints(*col.Constraints)
-			converted.Constraints = &constraints
-		}
-	}
 }

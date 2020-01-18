@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	schemasv1alpha2 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha2"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/interfaces"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
@@ -120,19 +120,19 @@ func (g *Generator) RunSync() error {
 }
 
 func generateTableYAML(driver string, dbName string, tableName string, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
-	schemaForeignKeys := make([]*schemasv1alpha2.SQLTableForeignKey, 0, 0)
+	schemaForeignKeys := make([]*schemasv1alpha3.SQLTableForeignKey, 0, 0)
 	for _, foreignKey := range foreignKeys {
 		schemaForeignKey := types.ForeignKeyToSchemaForeignKey(foreignKey)
 		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
 	}
 
-	schemaIndexes := make([]*schemasv1alpha2.SQLTableIndex, 0, 0)
+	schemaIndexes := make([]*schemasv1alpha3.SQLTableIndex, 0, 0)
 	for _, index := range indexes {
 		schemaIndex := types.IndexToSchemaIndex(index)
 		schemaIndexes = append(schemaIndexes, schemaIndex)
 	}
 
-	schemaTableColumns := make([]*schemasv1alpha2.SQLTableColumn, 0, 0)
+	schemaTableColumns := make([]*schemasv1alpha3.SQLTableColumn, 0, 0)
 	for _, column := range columns {
 		schemaTableColumn, err := types.ColumnToSchemaColumn(column)
 		if err != nil {
@@ -143,14 +143,14 @@ func generateTableYAML(driver string, dbName string, tableName string, primaryKe
 		schemaTableColumns = append(schemaTableColumns, schemaTableColumn)
 	}
 
-	tableSchema := &schemasv1alpha2.SQLTableSchema{
+	tableSchema := &schemasv1alpha3.SQLTableSchema{
 		PrimaryKey:  primaryKey,
 		Columns:     schemaTableColumns,
 		ForeignKeys: schemaForeignKeys,
 		Indexes:     schemaIndexes,
 	}
 
-	schema := &schemasv1alpha2.TableSchema{}
+	schema := &schemasv1alpha3.TableSchema{}
 
 	if driver == "postgres" {
 		schema.Postgres = tableSchema
@@ -158,7 +158,7 @@ func generateTableYAML(driver string, dbName string, tableName string, primaryKe
 		schema.Mysql = tableSchema
 	}
 
-	schemaHeroResource := schemasv1alpha2.TableSpec{
+	schemaHeroResource := schemasv1alpha3.TableSpec{
 		Database: dbName,
 		Name:     tableName,
 		Requires: []string{},
@@ -166,7 +166,7 @@ func generateTableYAML(driver string, dbName string, tableName string, primaryKe
 	}
 
 	specDoc := struct {
-		Spec schemasv1alpha2.TableSpec `yaml:"spec"`
+		Spec schemasv1alpha3.TableSpec `yaml:"spec"`
 	}{
 		schemaHeroResource,
 	}
@@ -178,7 +178,7 @@ func generateTableYAML(driver string, dbName string, tableName string, primaryKe
 	}
 
 	// TODO consider marshaling this instead of inline
-	tableDoc := fmt.Sprintf(`apiVersion: schemas.schemahero.io/v1alpha2
+	tableDoc := fmt.Sprintf(`apiVersion: schemas.schemahero.io/v1alpha3
 kind: Table
 metadata:
   name: %s
