@@ -74,15 +74,11 @@ archives:
 dockers:
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates:
-      - "schemahero/schemahero:{{.Major}}"
-      - "schemahero/schemahero:{{.Major}}.{{.Minor}}"
-      - "schemahero/schemahero:{{.Major}}.{{.Minor}}.{{.Patch}}"
+      - "schemahero/schemahero:{{.Tag}}"
     binaries:
       - schemahero
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates:
-      - "schemahero/schemahero-manager:{{.Major}}"
-      - "schemahero/schemahero-manager:{{.Major}}.{{.Minor}}"
-      - "schemahero/schemahero-manager:{{.Major}}.{{.Minor}}.{{.Patch}}"
+      - "schemahero/schemahero-manager:{{.Tag}}"
     binaries:
       - manager
