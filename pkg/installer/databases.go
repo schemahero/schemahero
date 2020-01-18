@@ -120,7 +120,7 @@ func databasesCRD() *extensionsv1.CustomResourceDefinition {
 															Properties: map[string]extensionsv1.JSONSchemaProps{
 																"secretKeyRef": extensionsv1.JSONSchemaProps{
 																	Type:     "object",
-																	Required: []string{"key", "namme"},
+																	Required: []string{"key", "name"},
 																	Properties: map[string]extensionsv1.JSONSchemaProps{
 																		"key": extensionsv1.JSONSchemaProps{
 																			Type: "string",
@@ -150,7 +150,7 @@ func databasesCRD() *extensionsv1.CustomResourceDefinition {
 															Properties: map[string]extensionsv1.JSONSchemaProps{
 																"secretKeyRef": extensionsv1.JSONSchemaProps{
 																	Type:     "object",
-																	Required: []string{"key", "namme"},
+																	Required: []string{"key", "name"},
 																	Properties: map[string]extensionsv1.JSONSchemaProps{
 																		"key": extensionsv1.JSONSchemaProps{
 																			Type: "string",
