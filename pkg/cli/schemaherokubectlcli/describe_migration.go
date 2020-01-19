@@ -2,6 +2,7 @@ package schemaherokubectlcli
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
@@ -72,12 +73,26 @@ func DescribeMigrationCmd() *cobra.Command {
 					return err
 				}
 
-				b, err := foundMigration.GetOutput(v.GetString("output"))
-				if err != nil {
-					return err
-				}
+				fmt.Printf("\nMigration Name: %s\n\n", foundMigration.Name)
+				fmt.Printf("Generated DDL Statement (generated at %s): \n  %s\n",
+					time.Unix(foundMigration.Status.PlannedAt, 0).Format(time.RFC3339),
+					foundMigration.Spec.GeneratedDDL)
 
-				fmt.Printf("%s\n", b)
+				fmt.Println("")
+				fmt.Println("To apply this migration:")
+				fmt.Printf(`  kubectl schemahero approve migration %s`, foundMigration.Name)
+				fmt.Println("")
+
+				fmt.Println("")
+				fmt.Println("To recalculate this migration against the current schema:")
+				fmt.Printf(`  kubectl schemahero recalculate migration %s`, foundMigration.Name)
+				fmt.Println("")
+
+				fmt.Println("")
+				fmt.Println("To deny and cancel this migration:")
+				fmt.Printf(`  kubectl schemahero reject migration %s`, foundMigration.Name)
+				fmt.Println("")
+
 				return nil
 			}
 

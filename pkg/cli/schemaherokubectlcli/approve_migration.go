@@ -2,11 +2,13 @@ package schemaherokubectlcli
 
 import (
 	"fmt"
+	"time"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	"github.com/pkg/errors"
 	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -19,12 +21,13 @@ func ApproveMigrationCmd() *cobra.Command {
 		Long:          `...`,
 		Args:          cobra.MinimumNArgs(1),
 		SilenceErrors: true,
+		SilenceUsage:  true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
-			// migrationName := args[0]
+			migrationName := args[0]
 
 			cfg, err := config.GetConfig()
 			if err != nil {
@@ -60,51 +63,27 @@ func ApproveMigrationCmd() *cobra.Command {
 				}
 			}
 
-			matchingTables := []*schemasv1alpha3.Table{}
-			matchingPlanName := ""
-			matchingNamespace := ""
+			for _, namespaceName := range namespaceNames {
+				migration, err := schemasClient.Migrations(namespaceName).Get(migrationName, metav1.GetOptions{})
+				if kuberneteserrors.IsNotFound(err) {
+					// continue to the next namespace
+					continue
+				}
+				if err != nil {
+					return err
+				}
 
-			// for _, namespaceName := range namespaceNames {
-			// 	// TODO this could be rewritten to use a fieldselector and find the table quicker
-			// 	tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
-			// 	if err != nil {
-			// 		return err
-			// 	}
+				migration.Status.ApprovedAt = time.Now().Unix()
+				if _, err := schemasClient.Migrations(namespaceName).Update(migration); err != nil {
+					return err
+				}
 
-			// 	for _, table := range tables.Items {
-			// 		for _, plan := range table.Status.Plans {
-			// 			if strings.HasPrefix(plan.Name, migrationName) {
-			// 				matchingTables = append(matchingTables, &table)
-			// 				matchingPlanName = plan.Name
-			// 				matchingNamespace = namespaceName
-			// 			}
-			// 		}
-			// 	}
-			// }
-
-			if len(matchingTables) == 0 {
-				fmt.Println("No resources found.")
+				fmt.Printf("Migration %s approved\n", migrationName)
 				return nil
 			}
 
-			if len(matchingTables) > 1 {
-				fmt.Println("Ambiguious migration name. Multiple migrations found with prefix.")
-				return nil
-			}
-
-			table := matchingTables[0]
-			// for _, plan := range table.Status.Plans {
-			// 	if plan.Name == matchingPlanName {
-			// 		plan.ApprovedAt = time.Now().Unix()
-			// 	}
-			// }
-
-			if _, err := schemasClient.Tables(matchingNamespace).Update(table); err != nil {
-				return err
-			}
-
-			fmt.Printf("Migration %s approved\n", matchingPlanName)
-			return nil
+			err = errors.Errorf("migration %q not found", migrationName)
+			return err
 		},
 	}
 

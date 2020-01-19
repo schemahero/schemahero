@@ -17,38 +17,8 @@ limitations under the License.
 package v1alpha3
 
 import (
-	"encoding/json"
-	"time"
-
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-func (s Migration) GetOutput(format string) ([]byte, error) {
-	output := map[string]interface{}{
-		"Name":      s.Name,
-		"PlannedAt": time.Unix(s.Status.PlannedAt, 0).Format(time.RFC3339),
-		"Migration": s.Spec.GeneratedDDL,
-	}
-
-	result := []byte("")
-	if format == "json" {
-		b, err := json.Marshal(output)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to marshal output to json")
-		}
-		result = b
-	} else if format == "yaml" {
-		b, err := yaml.Marshal(output)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to marshal output to yaml")
-		}
-		result = b
-	}
-
-	return result, nil
-}
 
 // MigrationSpec defines the desired state of Migration
 type MigrationSpec struct {
