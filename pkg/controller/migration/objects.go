@@ -8,7 +8,6 @@ import (
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
@@ -104,9 +103,6 @@ func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, tabl
 				},
 			},
 		},
-	}
-	if err := controllerutil.SetControllerReference(table, pod, r.scheme); err != nil {
-		return nil, errors.Wrap(err, "failed to set controller ref")
 	}
 
 	return pod, nil

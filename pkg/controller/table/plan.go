@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -129,13 +128,31 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 
 	// Delete the pod and config map
 	if err := r.Delete(context.Background(), pod); err != nil {
-		return reconcile.Result{}, err
+		return reconcile.Result{}, errors.Wrap(err, "failed to delete pod from plan phase")
+	}
+
+	configMapName := ""
+	for _, volume := range pod.Spec.Volumes {
+		if volume.Name == "specs" && volume.ConfigMap != nil {
+			configMapName = volume.ConfigMap.Name
+		}
+	}
+	configMap := corev1.ConfigMap{}
+	err = r.Get(context.Background(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get config map from plan phase")
+	}
+
+	if err := r.Delete(context.Background(), &configMap); err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to delete config map from plan phase")
 	}
 
 	return reconcile.Result{}, nil
 }
 
 func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
+	logger.Debug("deploying plan")
+
 	configMap, err := r.planConfigMap(database, table)
 	if err != nil {
 		return errors.Wrap(err, "failed to get config map object for plan")
@@ -143,10 +160,6 @@ func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schem
 	pod, err := r.planPod(database, table)
 	if err != nil {
 		return errors.Wrap(err, "failed to get pod for plan")
-	}
-
-	if err := controllerutil.SetControllerReference(pod, configMap, r.scheme); err != nil {
-		return errors.Wrap(err, "failed to set controller reference")
 	}
 
 	if err := r.ensureTableConfigMap(configMap); err != nil {

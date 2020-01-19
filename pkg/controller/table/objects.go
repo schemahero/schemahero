@@ -12,7 +12,6 @@ import (
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 func (r *ReconcileTable) planConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.ConfigMap, error) {
@@ -133,9 +132,6 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 				},
 			},
 		},
-	}
-	if err := controllerutil.SetControllerReference(table, pod, r.scheme); err != nil {
-		return nil, errors.Wrap(err, "failed to set controller ref")
 	}
 
 	return pod, nil
