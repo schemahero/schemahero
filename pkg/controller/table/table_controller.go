@@ -146,6 +146,7 @@ func (r *ReconcileTable) reconcileInstance(instance *schemasv1alpha3.Table) (rec
 	}
 
 	if database == nil {
+		// TDOO add a status field with this state
 		logger.Debug("requeuing table reconcile request for 10 seconds because database instance was not present",
 			zap.String("database.name", instance.Spec.Database),
 			zap.String("database.namespace", instance.Namespace))
@@ -158,33 +159,29 @@ func (r *ReconcileTable) reconcileInstance(instance *schemasv1alpha3.Table) (rec
 
 	matchingType := r.checkDatabaseTypeMatches(&database.Connection, instance.Spec.Schema)
 	if !matchingType {
+		// TODO add a status field with this state
 		return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
 	}
 
-	for _, plan := range instance.Status.Plans {
-		if plan.ApprovedAt > 0 && plan.ExecutedAt == 0 {
-			// execute!
-			if err := r.deploy(database, instance, plan); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to deploy planned migration")
-			}
-
-			return reconcile.Result{}, nil
-		}
-	}
-
-	// if there's already a plan, do nothing
+	// Look for a migration with for this table
 	tableSHA, err := instance.GetSHA()
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get table sha")
 	}
 
-	for _, plan := range instance.Status.Plans {
-		if plan.Name == tableSHA {
-			return reconcile.Result{}, nil
-		}
+	migration, err := r.getMigrationSpec(instance.Namespace, tableSHA)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get migration spec")
 	}
 
-	// Deploy the plan
+	if migration != nil {
+		// a migration has already been queued. why are we reconciling?
+		// if it's not in the sha calculation, then it's not something
+		// we are about
+		return reconcile.Result{}, nil
+	}
+
+	// Deploy a pod to calculculate the plan
 	if err := r.plan(database, instance); err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to schedule plan phase")
 	}
@@ -266,25 +263,25 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 				return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
 			}
 
-			tableSHA, err := table.GetSHA()
-			if err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
-			}
+			// tableSHA, err := table.GetSHA()
+			// if err != nil {
+			// 	return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
+			// }
 
-			plan := schemasv1alpha3.TablePlan{
-				Name:       tableSHA,
-				DDL:        out,
-				PlannedAt:  time.Now().Unix(),
-				ApprovedAt: 0,
-				RejectedAt: 0,
-				ExecutedAt: 0,
-			}
-			table.Status.Plans = append(table.Status.Plans, &plan)
+			// plan := schemasv1alpha3.TablePlan{
+			// 	Name:       tableSHA,
+			// 	DDL:        out,
+			// 	PlannedAt:  time.Now().Unix(),
+			// 	ApprovedAt: 0,
+			// 	RejectedAt: 0,
+			// 	ExecutedAt: 0,
+			// }
+			// table.Status.Plans = append(table.Status.Plans, &plan)
 
-			logger.Debug("adding plan to table",
-				zap.String("table", table.Name),
-				zap.String("planName", tableSHA),
-				zap.String("plan", out))
+			// logger.Debug("adding plan to table",
+			// 	zap.String("table", table.Name),
+			// 	zap.String("planName", tableSHA),
+			// 	zap.String("plan", out))
 
 			_, err = schemasClient.Tables(table.Namespace).Update(table)
 			if err != nil {
@@ -327,6 +324,14 @@ func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha
 	}
 
 	return v1alpha3instance, nil
+}
+
+func (r *ReconcileTable) getMigrationSpec(namespace string, name string) (*schemasv1alpha3.Migration, error) {
+	logger.Debug("getting migration spec",
+		zap.String("namespace", namespace),
+		zap.String("name", name))
+
+	return nil, nil
 }
 
 func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha3.Database, error) {
@@ -382,7 +387,7 @@ func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha3.
 }
 
 func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
-	if err := r.ensureTableConfigMap(database, table, nil); err != nil {
+	if err := r.ensureTableConfigMap(database, table); err != nil {
 		return err
 	}
 
@@ -393,37 +398,10 @@ func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schem
 	return nil
 }
 
-func (r *ReconcileTable) deploy(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table, plan *schemasv1alpha3.TablePlan) error {
-	if err := r.ensureTableConfigMap(database, table, plan); err != nil {
-		return err
-	}
-
-	if err := r.ensureTablePod(database, table, false); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table, plan *schemasv1alpha3.TablePlan) error {
-	var desiredConfigMap *corev1.ConfigMap
-
-	if plan == nil {
-		// we need to plan
-		cm, err := r.planConfigMap(database, table)
-		if err != nil {
-			return errors.Wrap(err, "failed to get config map object")
-		}
-
-		desiredConfigMap = cm
-	} else {
-		// let's deploy
-		cm, err := r.applyConfigMap(database, table, plan)
-		if err != nil {
-			return errors.Wrap(err, "failed to get config map object")
-		}
-
-		desiredConfigMap = cm
+func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
+	desiredConfigMap, err := r.planConfigMap(database, table)
+	if err != nil {
+		return errors.Wrap(err, "failed to get config map object")
 	}
 
 	existingConfigMap := corev1.ConfigMap{}
@@ -442,22 +420,9 @@ func (r *ReconcileTable) ensureTableConfigMap(database *databasesv1alpha3.Databa
 }
 
 func (r *ReconcileTable) ensureTablePod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table, isPlan bool) error {
-	var desiredPod *corev1.Pod
-
-	if isPlan {
-		p, err := r.planPod(database, table)
-		if err != nil {
-			return errors.Wrap(err, "failed to get pod object")
-		}
-
-		desiredPod = p
-	} else {
-		p, err := r.applyPod(database, table)
-		if err != nil {
-			return errors.Wrap(err, "failed to get pod object")
-		}
-
-		desiredPod = p
+	desiredPod, err := r.planPod(database, table)
+	if err != nil {
+		return errors.Wrap(err, "failed to get pod object")
 	}
 
 	existingPod := corev1.Pod{}

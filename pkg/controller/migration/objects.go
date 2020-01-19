@@ -1,4 +1,4 @@
-package table
+package migration
 
 import (
 	"fmt"
@@ -6,41 +6,12 @@ import (
 	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *ReconcileTable) planConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.ConfigMap, error) {
-	b, err := yaml.Marshal(table.Spec)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal yaml spec")
-	}
-
-	tableData := make(map[string]string)
-	tableData["table.yaml"] = string(b)
-
-	name := table.Name
-	configMap := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: database.Namespace,
-		},
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ConfigMap",
-		},
-		Data: tableData,
-	}
-	if err := controllerutil.SetControllerReference(table, configMap, r.scheme); err != nil {
-		return nil, errors.Wrap(err, "failed to set controller reference")
-	}
-
-	return configMap, nil
-}
-
-func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 	driver := ""
@@ -77,19 +48,19 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 	labels := make(map[string]string)
 	labels["schemahero-name"] = table.Name
 	labels["schemahero-namespace"] = table.Namespace
-	labels["schemahero-role"] = "plan"
+	labels["schemahero-role"] = "apply"
 
-	name := fmt.Sprintf("%s-plan", table.Name)
+	name := fmt.Sprintf("%s-apply", table.Name)
 	configMapName := table.Name
 
 	args := []string{
-		"plan",
+		"apply",
 		"--driver",
 		driver,
 		"--uri",
 		connectionURI,
-		"--spec-file",
-		"/specs/table.yaml",
+		"--ddl",
+		"/input/ddl.sql",
 	}
 
 	pod := &corev1.Pod{
@@ -114,15 +85,15 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 					Args:            args,
 					VolumeMounts: []corev1.VolumeMount{
 						{
-							Name:      "specs",
-							MountPath: "/specs",
+							Name:      "input",
+							MountPath: "/input",
 						},
 					},
 				},
 			},
 			Volumes: []corev1.Volume{
 				{
-					Name: "specs",
+					Name: "input",
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{

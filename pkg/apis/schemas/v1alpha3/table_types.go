@@ -20,10 +20,8 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -41,51 +39,8 @@ type TableSpec struct {
 	Schema *TableSchema `json:"schema" yaml:"schema"`
 }
 
-type TablePlan struct {
-	Name string `json:"name,omitempty"`
-	DDL  string `json:"ddl,omitempty"`
-
-	// PlannedAt is the unix nano timestamp when the plan was generated
-	PlannedAt int64 `json:"plannedAt,omitempty"`
-
-	// InvalidatedAt is the unix nano timestamp when this plan was determined to be invalid or outdated
-	InvalidatedAt int64 `json:"invalidatedAt,omitempty"`
-
-	ApprovedAt int64 `json:"approvedAt,omitempty"`
-	RejectedAt int64 `json:"rejectedAt,omitempty"`
-
-	ExecutedAt int64 `json:"executedAt,omitempty"`
-}
-
-func (tp TablePlan) GetOutput(format string) ([]byte, error) {
-	output := map[string]interface{}{
-		"Name":      tp.Name,
-		"PlannedAt": time.Unix(tp.PlannedAt, 0).Format(time.RFC3339),
-		"Migration": tp.DDL,
-	}
-
-	result := []byte("")
-	if format == "json" {
-		b, err := json.Marshal(output)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to marshal output to json")
-		}
-		result = b
-	} else if format == "yaml" {
-		b, err := yaml.Marshal(output)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to marshal output to yaml")
-		}
-		result = b
-	}
-
-	return result, nil
-}
-
 // TableStatus defines the observed state of Table
 type TableStatus struct {
-	Plans []*TablePlan `json:"plans,omitempty"`
-	// Plan string `json:"plans,omitempty"`
 }
 
 // +genclient

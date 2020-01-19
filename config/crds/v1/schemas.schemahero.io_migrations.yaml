@@ -35,9 +35,41 @@ spec:
             type: object
           spec:
             description: MigrationSpec defines the desired state of Migration
+            properties:
+              editedDDL:
+                type: string
+              generatedDDL:
+                type: string
+              tableName:
+                type: string
+              tableNamespace:
+                type: string
+            required:
+            - tableName
+            - tableNamespace
             type: object
           status:
             description: MigrationStatus defines the observed state of Migration
+            properties:
+              approvedAt:
+                format: int64
+                type: integer
+              executedAt:
+                format: int64
+                type: integer
+              invalidatedAt:
+                description: InvalidatedAt is the unix nano timestamp when this plan
+                  was determined to be invalid or outdated
+                format: int64
+                type: integer
+              plannedAt:
+                description: PlannedAt is the unix nano timestamp when the plan was
+                  generated
+                format: int64
+                type: integer
+              rejectedAt:
+                format: int64
+                type: integer
             type: object
         type: object
     served: true

@@ -17,22 +17,59 @@ limitations under the License.
 package v1alpha3
 
 import (
+	"encoding/json"
+	"time"
+
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+func (s Migration) GetOutput(format string) ([]byte, error) {
+	output := map[string]interface{}{
+		"Name":      s.Name,
+		"PlannedAt": time.Unix(s.Status.PlannedAt, 0).Format(time.RFC3339),
+		"Migration": s.Spec.GeneratedDDL,
+	}
+
+	result := []byte("")
+	if format == "json" {
+		b, err := json.Marshal(output)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to marshal output to json")
+		}
+		result = b
+	} else if format == "yaml" {
+		b, err := yaml.Marshal(output)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to marshal output to yaml")
+		}
+		result = b
+	}
+
+	return result, nil
+}
 
 // MigrationSpec defines the desired state of Migration
 type MigrationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	TableName      string `json:"tableName"`
+	TableNamespace string `json:"tableNamespace"`
+	GeneratedDDL   string `json:"generatedDDL,omitempty"`
+	EditedDDL      string `json:"editedDDL,omitempty"`
 }
 
 // MigrationStatus defines the observed state of Migration
 type MigrationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// PlannedAt is the unix nano timestamp when the plan was generated
+	PlannedAt int64 `json:"plannedAt,omitempty"`
+
+	// InvalidatedAt is the unix nano timestamp when this plan was determined to be invalid or outdated
+	InvalidatedAt int64 `json:"invalidatedAt,omitempty"`
+
+	ApprovedAt int64 `json:"approvedAt,omitempty"`
+	RejectedAt int64 `json:"rejectedAt,omitempty"`
+
+	ExecutedAt int64 `json:"executedAt,omitempty"`
 }
 
 // +genclient

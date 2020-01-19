@@ -19,24 +19,20 @@ package migration
 import (
 	"context"
 
+	"github.com/pkg/errors"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
-	"k8s.io/apimachinery/pkg/api/errors"
+	corev1 "k8s.io/api/core/v1"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-var log = logf.Log.WithName("controller")
-
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
 
 // Add creates a new Migration Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -86,7 +82,7 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	instance := &schemasv1alpha3.Migration{}
 	err := r.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if kuberneteserrors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
 			return reconcile.Result{}, nil
@@ -96,4 +92,34 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func (r *ReconcileMigration) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {
+	if valueOrValueFrom.Value != "" {
+		return valueOrValueFrom.Value, nil
+	}
+
+	if valueOrValueFrom.ValueFrom == nil {
+		return "", errors.New("value and valueFrom cannot both be nil/empty")
+	}
+
+	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
+		secret := &corev1.Secret{}
+		secretNamespacedName := types.NamespacedName{
+			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
+			Namespace: namespace,
+		}
+
+		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
+			if kuberneteserrors.IsNotFound(err) {
+				return "", errors.New("table secret not found")
+			} else {
+				return "", errors.Wrap(err, "failed to get existing connection secret")
+			}
+		}
+
+		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
+	}
+
+	return "", errors.New("unable to find supported valueFrom")
 }

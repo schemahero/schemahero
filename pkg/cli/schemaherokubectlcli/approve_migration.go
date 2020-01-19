@@ -2,8 +2,6 @@ package schemaherokubectlcli
 
 import (
 	"fmt"
-	"strings"
-	"time"
 
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
@@ -26,7 +24,7 @@ func ApproveMigrationCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
-			migrationName := args[0]
+			// migrationName := args[0]
 
 			cfg, err := config.GetConfig()
 			if err != nil {
@@ -66,23 +64,23 @@ func ApproveMigrationCmd() *cobra.Command {
 			matchingPlanName := ""
 			matchingNamespace := ""
 
-			for _, namespaceName := range namespaceNames {
-				// TODO this could be rewritten to use a fieldselector and find the table quicker
-				tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
-				if err != nil {
-					return err
-				}
+			// for _, namespaceName := range namespaceNames {
+			// 	// TODO this could be rewritten to use a fieldselector and find the table quicker
+			// 	tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
+			// 	if err != nil {
+			// 		return err
+			// 	}
 
-				for _, table := range tables.Items {
-					for _, plan := range table.Status.Plans {
-						if strings.HasPrefix(plan.Name, migrationName) {
-							matchingTables = append(matchingTables, &table)
-							matchingPlanName = plan.Name
-							matchingNamespace = namespaceName
-						}
-					}
-				}
-			}
+			// 	for _, table := range tables.Items {
+			// 		for _, plan := range table.Status.Plans {
+			// 			if strings.HasPrefix(plan.Name, migrationName) {
+			// 				matchingTables = append(matchingTables, &table)
+			// 				matchingPlanName = plan.Name
+			// 				matchingNamespace = namespaceName
+			// 			}
+			// 		}
+			// 	}
+			// }
 
 			if len(matchingTables) == 0 {
 				fmt.Println("No resources found.")
@@ -95,11 +93,11 @@ func ApproveMigrationCmd() *cobra.Command {
 			}
 
 			table := matchingTables[0]
-			for _, plan := range table.Status.Plans {
-				if plan.Name == matchingPlanName {
-					plan.ApprovedAt = time.Now().Unix()
-				}
-			}
+			// for _, plan := range table.Status.Plans {
+			// 	if plan.Name == matchingPlanName {
+			// 		plan.ApprovedAt = time.Now().Unix()
+			// 	}
+			// }
 
 			if _, err := schemasClient.Tables(matchingNamespace).Update(table); err != nil {
 				return err

@@ -3,10 +3,8 @@ package schemaherokubectlcli
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
-	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +24,7 @@ func DescribeMigrationCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
-			migrationName := args[0]
+			// migrationName := args[0]
 
 			cfg, err := config.GetConfig()
 			if err != nil {
@@ -38,10 +36,10 @@ func DescribeMigrationCmd() *cobra.Command {
 				return err
 			}
 
-			schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
-			if err != nil {
-				return err
-			}
+			// schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
+			// if err != nil {
+			// 	return err
+			// }
 
 			namespaceNames := []string{}
 
@@ -63,24 +61,24 @@ func DescribeMigrationCmd() *cobra.Command {
 			}
 
 			matchingTables := []*schemasv1alpha3.Table{}
-			matchingPlans := []*schemasv1alpha3.TablePlan{}
+			matchingPlans := []*schemasv1alpha3.Migration{}
 
-			for _, namespaceName := range namespaceNames {
-				// TODO this could be rewritten to use a fieldselector and find the table quicker
-				tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
-				if err != nil {
-					return err
-				}
+			// for _, namespaceName := range namespaceNames {
+			// 	// TODO this could be rewritten to use a fieldselector and find the table quicker
+			// 	tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
+			// 	if err != nil {
+			// 		return err
+			// 	}
 
-				for _, table := range tables.Items {
-					for _, plan := range table.Status.Plans {
-						if strings.HasPrefix(plan.Name, migrationName) {
-							matchingTables = append(matchingTables, &table)
-							matchingPlans = append(matchingPlans, plan)
-						}
-					}
-				}
-			}
+			// 	for _, table := range tables.Items {
+			// 		for _, plan := range table.Status.Plans {
+			// 			if strings.HasPrefix(plan.Name, migrationName) {
+			// 				matchingTables = append(matchingTables, &table)
+			// 				matchingPlans = append(matchingPlans, plan)
+			// 			}
+			// 		}
+			// 	}
+			// }
 
 			if len(matchingTables) == 0 {
 				fmt.Println("No resources found.")

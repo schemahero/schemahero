@@ -202,35 +202,6 @@ spec:
           type: object
         status:
           description: TableStatus defines the observed state of Table
-          properties:
-            plans:
-              items:
-                properties:
-                  approvedAt:
-                    format: int64
-                    type: integer
-                  ddl:
-                    type: string
-                  executedAt:
-                    format: int64
-                    type: integer
-                  invalidatedAt:
-                    description: InvalidatedAt is the unix nano timestamp when this
-                      plan was determined to be invalid or outdated
-                    format: int64
-                    type: integer
-                  name:
-                    type: string
-                  plannedAt:
-                    description: PlannedAt is the unix nano timestamp when the plan
-                      was generated
-                    format: int64
-                    type: integer
-                  rejectedAt:
-                    format: int64
-                    type: integer
-                type: object
-              type: array
           type: object
       type: object
   version: v1alpha3

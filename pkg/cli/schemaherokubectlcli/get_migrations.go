@@ -87,30 +87,30 @@ func GetMigrationsCmd() *cobra.Command {
 			}
 
 			rows := [][]string{}
-			for _, table := range matchingTables {
-				for _, plan := range table.Status.Plans {
-					// TODO should we show these?
-					if plan.ExecutedAt > 0 {
-						continue
-					}
-					if plan.RejectedAt > 0 {
-						continue
-					}
-					if plan.ApprovedAt > 0 {
-						continue
-					}
+			// for _, table := range matchingTables {
+			// 	for _, plan := range table.Status.Plans {
+			// 		// TODO should we show these?
+			// 		if plan.ExecutedAt > 0 {
+			// 			continue
+			// 		}
+			// 		if plan.RejectedAt > 0 {
+			// 			continue
+			// 		}
+			// 		if plan.ApprovedAt > 0 {
+			// 			continue
+			// 		}
 
-					rows = append(rows, []string{
-						plan.Name,
-						table.Spec.Database,
-						table.Name,
-						timestampToAge(plan.PlannedAt),
-						timestampToAge(plan.ExecutedAt),
-						timestampToAge(plan.ApprovedAt),
-						timestampToAge(plan.RejectedAt),
-					})
-				}
-			}
+			// 		rows = append(rows, []string{
+			// 			plan.Name,
+			// 			table.Spec.Database,
+			// 			table.Name,
+			// 			timestampToAge(plan.PlannedAt),
+			// 			timestampToAge(plan.ExecutedAt),
+			// 			timestampToAge(plan.ApprovedAt),
+			// 			timestampToAge(plan.RejectedAt),
+			// 		})
+			// 	}
+			// }
 
 			if len(rows) == 0 {
 				fmt.Println("No resources found.")
