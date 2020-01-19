@@ -62,11 +62,11 @@ run: generate fmt vet bin/schemahero
 
 .PHONY: install
 install: manifests generate microk8s
-	kubectl apply -f config/crds
+	kubectl apply -f config/crds/v1
 
 .PHONY: deploy
 deploy: manifests
-	kubectl apply -f config/crds
+	kubectl apply -f config/crds/v1
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: manifests
