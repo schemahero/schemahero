@@ -1,6 +1,7 @@
 package table
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -8,7 +9,9 @@ import (
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -32,9 +35,6 @@ func (r *ReconcileTable) planConfigMap(database *databasesv1alpha3.Database, tab
 			Kind:       "ConfigMap",
 		},
 		Data: tableData,
-	}
-	if err := controllerutil.SetControllerReference(table, configMap, r.scheme); err != nil {
-		return nil, errors.Wrap(err, "failed to set controller reference")
 	}
 
 	return configMap, nil
@@ -139,4 +139,38 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 	}
 
 	return pod, nil
+}
+
+func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap) error {
+	existingConfigMap := corev1.ConfigMap{}
+	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
+		if kuberneteserrors.IsNotFound(err) {
+			err = r.Create(context.Background(), desiredConfigMap)
+			if err != nil {
+				return errors.Wrap(err, "failed to create configmap")
+			}
+		}
+
+		return errors.Wrap(err, "failed to get existing configmap")
+	}
+
+	return nil
+}
+
+func (r *ReconcileTable) ensureTablePod(desiredPod *corev1.Pod) error {
+	existingPod := corev1.Pod{}
+	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
+		if kuberneteserrors.IsNotFound(err) {
+			err = r.Create(context.Background(), desiredPod)
+			if err != nil {
+				return errors.Wrap(err, "failed to create table migration pod")
+			}
+
+			return nil
+		}
+
+		return errors.Wrap(err, "failed to get existing pod object")
+	}
+
+	return nil
 }
