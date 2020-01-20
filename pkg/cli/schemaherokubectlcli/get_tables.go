@@ -77,19 +77,6 @@ func GetTablesCmd() *cobra.Command {
 			for _, table := range matchingTables {
 				status := "Current"
 
-				// if len(table.Status.Plans) == 0 {
-				// 	status = "Planning"
-				// 	continue
-				// }
-
-				// for _, plan := range table.Status.Plans {
-				// 	if plan.ExecutedAt == 0 && plan.RejectedAt == 0 && plan.ApprovedAt == 0 {
-				// 		status = "Pending"
-				// 	} else if plan.PlannedAt == 0 {
-				// 		status = "Planning"
-				// 	}
-				// }
-
 				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", table.Name, table.Spec.Database, status))
 			}
 			w.Flush()

@@ -106,7 +106,7 @@ func GetMigrationsCmd() *cobra.Command {
 
 				rows = append(rows, []string{
 					migration.Name,
-					"??",
+					"<Database Unknown>",
 					migration.Spec.TableName,
 					timestampToAge(migration.Status.PlannedAt),
 					timestampToAge(migration.Status.ExecutedAt),
