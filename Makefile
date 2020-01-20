@@ -62,16 +62,18 @@ run: generate fmt vet bin/schemahero
 
 .PHONY: install
 install: manifests generate microk8s
-	kubectl apply -f config/crds
+	kubectl apply -f config/crds/v1
 
 .PHONY: deploy
 deploy: manifests
-	kubectl apply -f config/crds
+	kubectl apply -f config/crds/v1
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: manifests
 manifests: controller-gen
-	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd output:crd:artifacts:config=config/crds paths="./..."
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd:crdVersions=v1beta1 output:crd:artifacts:config=config/crds/v1beta1 paths="./..."
+	$(CONTROLLER_GEN) rbac:roleName=manager-role webhook crd:crdVersions=v1 output:crd:artifacts:config=config/crds/v1 paths="./..."
+	go run ./generate/...
 
 .PHONY: fmt
 fmt:

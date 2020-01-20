@@ -46,7 +46,7 @@ func (r *ReconcileDatabase) ensureRoleInNamespaceForInstance(instance *databases
 	if err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			role := getRoleSpecForInstance(context.TODO(), namespacedName)
-			if err := r.Create(context.TODO(), role); err != nil {
+			if err := r.Create(context.Background(), role); err != nil {
 				return err
 			}
 			if err := controllerutil.SetControllerReference(instance, role, r.scheme); err != nil {
@@ -71,7 +71,7 @@ func (r *ReconcileDatabase) ensureRoleBindingInNamespaceForInstance(instance *da
 	if err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			roleBinding := getRoleBindingSpecForInstance(context.TODO(), namespacedName)
-			if err := r.Create(context.TODO(), roleBinding); err != nil {
+			if err := r.Create(context.Background(), roleBinding); err != nil {
 				return err
 			}
 			if err := controllerutil.SetControllerReference(instance, roleBinding, r.scheme); err != nil {
@@ -96,7 +96,7 @@ func (r *ReconcileDatabase) ensureServiceAccountInNamespaceForInstance(instance 
 	if err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			serviceAccount := getServiceAccountSpecForInstance(context.TODO(), namespacedName)
-			if err := r.Create(context.TODO(), serviceAccount); err != nil {
+			if err := r.Create(context.Background(), serviceAccount); err != nil {
 				return err
 			}
 			if err := controllerutil.SetControllerReference(instance, serviceAccount, r.scheme); err != nil {

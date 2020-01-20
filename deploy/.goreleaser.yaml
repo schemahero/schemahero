@@ -59,7 +59,23 @@ builds:
     binary: manager
     hooks: {}
 archives:
-  - id: tar
+  - id: kubectl-schemahero
+    builds:
+      - kubectl-schemahero
+    format: tar.gz
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - licence*
+      - LICENCE*
+      - license*
+      - LICENSE*
+      - readme*
+      - README*
+      - changelog*
+      - CHANGELOG*
+  - id: schemahero
+    builds:
+      - schemahero
     format: tar.gz
     name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
     files:

@@ -20,19 +20,26 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // MigrationSpec defines the desired state of Migration
 type MigrationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	TableName      string `json:"tableName"`
+	TableNamespace string `json:"tableNamespace"`
+	GeneratedDDL   string `json:"generatedDDL,omitempty"`
+	EditedDDL      string `json:"editedDDL,omitempty"`
 }
 
 // MigrationStatus defines the observed state of Migration
 type MigrationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// PlannedAt is the unix nano timestamp when the plan was generated
+	PlannedAt int64 `json:"plannedAt,omitempty"`
+
+	// InvalidatedAt is the unix nano timestamp when this plan was determined to be invalid or outdated
+	InvalidatedAt int64 `json:"invalidatedAt,omitempty"`
+
+	ApprovedAt int64 `json:"approvedAt,omitempty"`
+	RejectedAt int64 `json:"rejectedAt,omitempty"`
+
+	ExecutedAt int64 `json:"executedAt,omitempty"`
 }
 
 // +genclient

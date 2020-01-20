@@ -1,14 +1,14 @@
 package schemaherokubectlcli
 
 import (
-	"errors"
 	"fmt"
-	"strings"
+	"time"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	"github.com/pkg/errors"
 	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -21,6 +21,7 @@ func DescribeMigrationCmd() *cobra.Command {
 		Long:          `...`,
 		Args:          cobra.MinimumNArgs(1),
 		SilenceErrors: true,
+		SilenceUsage:  true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
@@ -62,48 +63,42 @@ func DescribeMigrationCmd() *cobra.Command {
 				}
 			}
 
-			matchingTables := []*schemasv1alpha3.Table{}
-			matchingPlans := []*schemasv1alpha3.TablePlan{}
-
 			for _, namespaceName := range namespaceNames {
-				// TODO this could be rewritten to use a fieldselector and find the table quicker
-				tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
+				foundMigration, err := schemasClient.Migrations(namespaceName).Get(migrationName, metav1.GetOptions{})
+				if kuberneteserrors.IsNotFound(err) {
+					// next namespace
+					continue
+				}
 				if err != nil {
 					return err
 				}
 
-				for _, table := range tables.Items {
-					for _, plan := range table.Status.Plans {
-						if strings.HasPrefix(plan.Name, migrationName) {
-							matchingTables = append(matchingTables, &table)
-							matchingPlans = append(matchingPlans, plan)
-						}
-					}
-				}
-			}
+				fmt.Printf("\nMigration Name: %s\n\n", foundMigration.Name)
+				fmt.Printf("Generated DDL Statement (generated at %s): \n  %s\n",
+					time.Unix(foundMigration.Status.PlannedAt, 0).Format(time.RFC3339),
+					foundMigration.Spec.GeneratedDDL)
 
-			if len(matchingTables) == 0 {
-				fmt.Println("No resources found.")
+				fmt.Println("")
+				fmt.Println("To apply this migration:")
+				fmt.Printf(`  kubectl schemahero approve migration %s`, foundMigration.Name)
+				fmt.Println("")
+
+				fmt.Println("")
+				fmt.Println("To recalculate this migration against the current schema:")
+				fmt.Printf(`  kubectl schemahero recalculate migration %s`, foundMigration.Name)
+				fmt.Println("")
+
+				fmt.Println("")
+				fmt.Println("To deny and cancel this migration:")
+				fmt.Printf(`  kubectl schemahero reject migration %s`, foundMigration.Name)
+				fmt.Println("")
+
 				return nil
 			}
 
-			if len(matchingTables) > 1 {
-				fmt.Println("Ambiguious migration name. Multiple migrations found with prefix.")
-				return nil
-			}
+			err = errors.Errorf("migration %q not found", migrationName)
+			return err
 
-			if len(matchingTables) != len(matchingPlans) {
-				fmt.Println("Unexpected error, tables and plan counts do not match")
-				return errors.New("error")
-			}
-
-			b, err := matchingPlans[0].GetOutput(v.GetString("output"))
-			if err != nil {
-				return err
-			}
-
-			fmt.Printf("%s\n", b)
-			return nil
 		},
 	}
 

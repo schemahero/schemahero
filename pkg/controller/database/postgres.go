@@ -84,7 +84,7 @@ func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha3.Data
 	found := &appsv1.Deployment{}
 	err = r.Get(context.TODO(), types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		err = r.Create(context.TODO(), deploy)
+		err = r.Create(context.Background(), deploy)
 		return err
 	} else if err != nil {
 		return err

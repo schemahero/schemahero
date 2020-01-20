@@ -62,54 +62,57 @@ func GetMigrationsCmd() *cobra.Command {
 				}
 			}
 
-			matchingTables := []schemasv1alpha3.Table{}
-
+			matchingMigrations := []schemasv1alpha3.Migration{}
 			for _, namespaceName := range namespaceNames {
-				tables, err := schemasClient.Tables(namespaceName).List(metav1.ListOptions{})
+				migrations, err := schemasClient.Migrations(namespaceName).List(metav1.ListOptions{})
 				if err != nil {
 					return err
 				}
 
-				for _, table := range tables.Items {
-					if databaseNameFilter != "" {
-						if table.Spec.Database != databaseNameFilter {
-							continue
-						}
+				for _, migration := range migrations.Items {
+					if databaseNameFilter == "" {
+						matchingMigrations = append(matchingMigrations, migration)
+						continue
 					}
 
-					matchingTables = append(matchingTables, table)
+					table, err := schemasClient.Tables(migration.Spec.TableNamespace).Get(migration.Spec.TableName, metav1.GetOptions{})
+					if err != nil {
+						return err
+					}
+
+					if table.Spec.Database == databaseNameFilter {
+						matchingMigrations = append(matchingMigrations, migration)
+					}
 				}
 			}
 
-			if len(matchingTables) == 0 {
+			if len(matchingMigrations) == 0 {
 				fmt.Println("No resources found.")
 				return nil
 			}
 
 			rows := [][]string{}
-			for _, table := range matchingTables {
-				for _, plan := range table.Status.Plans {
-					// TODO should we show these?
-					if plan.ExecutedAt > 0 {
-						continue
-					}
-					if plan.RejectedAt > 0 {
-						continue
-					}
-					if plan.ApprovedAt > 0 {
-						continue
-					}
-
-					rows = append(rows, []string{
-						plan.Name,
-						table.Spec.Database,
-						table.Name,
-						timestampToAge(plan.PlannedAt),
-						timestampToAge(plan.ExecutedAt),
-						timestampToAge(plan.ApprovedAt),
-						timestampToAge(plan.RejectedAt),
-					})
+			for _, migration := range matchingMigrations {
+				// TODO should we show these?
+				if migration.Status.ExecutedAt > 0 {
+					continue
 				}
+				if migration.Status.RejectedAt > 0 {
+					continue
+				}
+				if migration.Status.ApprovedAt > 0 {
+					continue
+				}
+
+				rows = append(rows, []string{
+					migration.Name,
+					"<Database Unknown>",
+					migration.Spec.TableName,
+					timestampToAge(migration.Status.PlannedAt),
+					timestampToAge(migration.Status.ExecutedAt),
+					timestampToAge(migration.Status.ApprovedAt),
+					timestampToAge(migration.Status.RejectedAt),
+				})
 			}
 
 			if len(rows) == 0 {
