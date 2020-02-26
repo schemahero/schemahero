@@ -18,24 +18,24 @@ import (
 var tenSeconds = int64(10)
 var defaultMode = int32(420)
 
-func namespaceYAML() ([]byte, error) {
+func namespaceYAML(name string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(namespace(), &result); err != nil {
+	if err := s.Encode(namespace(name), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal namespace")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureNamespace(clientset *kubernetes.Clientset) error {
-	_, err := clientset.CoreV1().Namespaces().Get("schemahero-system", metav1.GetOptions{})
+func ensureNamespace(clientset *kubernetes.Clientset, name string) error {
+	_, err := clientset.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get namespace")
 		}
 
-		_, err := clientset.CoreV1().Namespaces().Create(namespace())
+		_, err := clientset.CoreV1().Namespaces().Create(namespace(name))
 		if err != nil {
 			return errors.Wrap(err, "failed to create namespace")
 		}
@@ -44,36 +44,36 @@ func ensureNamespace(clientset *kubernetes.Clientset) error {
 	return nil
 }
 
-func namespace() *corev1.Namespace {
+func namespace(name string) *corev1.Namespace {
 	return &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "Namespace",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "schemahero-system",
+			Name: name,
 		},
 	}
 }
 
-func serviceYAML() ([]byte, error) {
+func serviceYAML(namespace string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(service(), &result); err != nil {
+	if err := s.Encode(service(namespace), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal service")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureService(clientset *kubernetes.Clientset) error {
-	_, err := clientset.CoreV1().Services("schemahero-system").Get("controller-manager-service", metav1.GetOptions{})
+func ensureService(clientset *kubernetes.Clientset, namespace string) error {
+	_, err := clientset.CoreV1().Services(namespace).Get("controller-manager-service", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get service")
 		}
 
-		_, err := clientset.CoreV1().Secrets("schemahero-system").Create(secret())
+		_, err := clientset.CoreV1().Secrets(namespace).Create(secret(namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to create service")
 		}
@@ -82,7 +82,7 @@ func ensureService(clientset *kubernetes.Clientset) error {
 	return nil
 }
 
-func service() *corev1.Service {
+func service(namespace string) *corev1.Service {
 	return &corev1.Service{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -90,7 +90,7 @@ func service() *corev1.Service {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "controller-webhook-server",
-			Namespace: "schemahero-system",
+			Namespace: namespace,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
@@ -106,24 +106,24 @@ func service() *corev1.Service {
 	}
 }
 
-func secretYAML() ([]byte, error) {
+func secretYAML(namespace string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(secret(), &result); err != nil {
+	if err := s.Encode(secret(namespace), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal secret")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureSecret(clientset *kubernetes.Clientset) error {
-	_, err := clientset.CoreV1().Secrets("schemahero-system").Get("webhook-server-secret", metav1.GetOptions{})
+func ensureSecret(clientset *kubernetes.Clientset, namespace string) error {
+	_, err := clientset.CoreV1().Secrets(namespace).Get("webhook-server-secret", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get secret")
 		}
 
-		_, err := clientset.CoreV1().Secrets("schemahero-system").Create(secret())
+		_, err := clientset.CoreV1().Secrets(namespace).Create(secret(namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to create secret")
 		}
@@ -132,7 +132,7 @@ func ensureSecret(clientset *kubernetes.Clientset) error {
 	return nil
 }
 
-func secret() *corev1.Secret {
+func secret(namespace string) *corev1.Secret {
 	return &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -140,29 +140,29 @@ func secret() *corev1.Secret {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "webhook-server-secret",
-			Namespace: "schemahero-system",
+			Namespace: namespace,
 		},
 	}
 }
 
-func managerYAML(isEnterprise bool) ([]byte, error) {
+func managerYAML(isEnterprise bool, namespace string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(manager(isEnterprise), &result); err != nil {
+	if err := s.Encode(manager(isEnterprise, namespace), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal manager")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureManager(clientset *kubernetes.Clientset, isEnterprise bool) error {
-	_, err := clientset.AppsV1().StatefulSets("schemahero-system").Get("schemahero", metav1.GetOptions{})
+func ensureManager(clientset *kubernetes.Clientset, isEnterprise bool, namespace string) error {
+	_, err := clientset.AppsV1().StatefulSets(namespace).Get("schemahero", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get statefulset")
 		}
 
-		_, err := clientset.AppsV1().StatefulSets("schemahero-system").Create(manager(isEnterprise))
+		_, err := clientset.AppsV1().StatefulSets(namespace).Create(manager(isEnterprise, namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to create statefulset")
 		}
@@ -171,7 +171,7 @@ func ensureManager(clientset *kubernetes.Clientset, isEnterprise bool) error {
 	return nil
 }
 
-func manager(isEnterprise bool) *appsv1.StatefulSet {
+func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 	env := []corev1.EnvVar{
 		{
 			Name: "POD_NAMESPACE",
@@ -206,7 +206,7 @@ func manager(isEnterprise bool) *appsv1.StatefulSet {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "schemahero",
-			Namespace: "schemahero-system",
+			Namespace: namespace,
 			Labels: map[string]string{
 				"control-plane": "schemahero",
 			},
