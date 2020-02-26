@@ -112,6 +112,13 @@ microk8s: bin/schemahero bin/kubectl-schemahero manager
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest
 
+.PHONY: kotsimages
+kotsimages:
+bin/schemahero bin/kubectl-schemahero manager
+	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
+	docker tag schemahero/schemahero registry.replicated.com/schemahero-enterprise/schemahero:$(ENV)
+	docker push registry.replicated.com/schemahero-enterprise/schemahero:$(ENV)
+
 .PHONY: contoller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))

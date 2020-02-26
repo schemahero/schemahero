@@ -97,7 +97,13 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
 
+      - run: make kotsimages
+        env:
+          SHA: $(echo ${GITHUB_SHA} | cut -c1-7)
+
       - run: ./bin/kubectl-schemahero install --yaml --out-dir=./kots --enterprise --namespace="repl{{ Namespace }}"
+        env:
+          SHA: $(echo ${GITHUB_SHA} | cut -c1-7)
 
       - name: Lint the release
         id: lint-action
@@ -106,6 +112,7 @@ jobs:
           replicated-app: "schemahero-enterprise"
           replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
           yaml-dir: kots
+
       - name: Create the release
         id: test-action
         uses: replicatedhq/action-kots-release@v0.2.0
