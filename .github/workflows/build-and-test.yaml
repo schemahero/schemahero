@@ -1,8 +1,8 @@
 name: "Build and test"
 on:
   push:
-    branches-ignore: [master] # master branch runs alpha-release workflow
     tags-ignore: ["*"] # tags run tagged-release workflow
+    branches: ["*"]
 
 jobs:
   build:
@@ -81,3 +81,35 @@ jobs:
       - run: make -C integration/tests/mysql/index-create run
       - run: make -C integration/tests/mysql/primary-key-add run
       - run: make -C integration/tests/mysql/primary-key-drop run
+
+  kots:
+    runs-on: ubuntu-latest
+    name: kots
+    needs: [test-mysql, test-postgres]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v1
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+
+      - run: ./bin/kubectl-schemahero install --yaml --out-dir ./kots
+
+      - name: Lint the release
+        id: lint-action
+        uses: replicatedhq/action-kots-lint@v0.1.0
+        with:
+          replicated-app: "schemahero-enterprise"
+          replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
+          yaml-dir: kots
+      - name: Create the release
+        id: test-action
+        uses: replicatedhq/action-kots-release@v0.2.0
+        with:
+          replicated-app: "schemahero-enterprise"
+          replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
+          yaml-dir: kots
