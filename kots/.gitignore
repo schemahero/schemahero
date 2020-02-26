@@ -1,0 +1,9 @@
+cluster-role-binding.yaml
+cluster-role.yaml
+databases_crd.yaml
+tables_crd.yaml
+migrations_crd.yaml
+service.yaml
+namespace.yaml
+secret.yaml
+manager.yaml

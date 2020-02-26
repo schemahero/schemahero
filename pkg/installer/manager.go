@@ -145,24 +145,24 @@ func secret() *corev1.Secret {
 	}
 }
 
-func managerYAML() ([]byte, error) {
+func managerYAML(isEnterprise bool) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(manager(), &result); err != nil {
+	if err := s.Encode(manager(isEnterprise), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal manager")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureManager(clientset *kubernetes.Clientset) error {
+func ensureManager(clientset *kubernetes.Clientset, isEnterprise bool) error {
 	_, err := clientset.AppsV1().StatefulSets("schemahero-system").Get("schemahero", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get statefulset")
 		}
 
-		_, err := clientset.AppsV1().StatefulSets("schemahero-system").Create(manager())
+		_, err := clientset.AppsV1().StatefulSets("schemahero-system").Create(manager(isEnterprise))
 		if err != nil {
 			return errors.Wrap(err, "failed to create statefulset")
 		}
@@ -171,7 +171,34 @@ func ensureManager(clientset *kubernetes.Clientset) error {
 	return nil
 }
 
-func manager() *appsv1.StatefulSet {
+func manager(isEnterprise bool) *appsv1.StatefulSet {
+	env := []corev1.EnvVar{
+		{
+			Name: "POD_NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "metadata.namespace",
+				},
+			},
+		},
+		{
+			Name:  "SECRET_NAME",
+			Value: "webhook-server-secret",
+		},
+	}
+
+	if isEnterprise {
+		env = append(env, corev1.EnvVar{
+			Name:  "SCHEMAHERO_IMAGE_NAME",
+			Value: `repl{{ LocalImageName "schemahero/schemahero:0.8.0"}}`,
+		})
+
+		env = append(env, corev1.EnvVar{
+			Name:  "SCHEMAHERO_IMAGE_PULLSECRET",
+			Value: `repl{{ LocalRegistryImagePullSecret }}`,
+		})
+	}
+
 	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -215,20 +242,7 @@ func manager() *appsv1.StatefulSet {
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
 							Command:         []string{"/manager"},
-							Env: []corev1.EnvVar{
-								{
-									Name: "POD_NAMESPACE",
-									ValueFrom: &corev1.EnvVarSource{
-										FieldRef: &corev1.ObjectFieldSelector{
-											FieldPath: "metadata.namespace",
-										},
-									},
-								},
-								{
-									Name:  "SECRET_NAME",
-									Value: "webhook-server-secret",
-								},
-							},
+							Env:             env,
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("1"),

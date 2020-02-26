@@ -97,7 +97,7 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
 
-      - run: ./bin/kubectl-schemahero install --yaml --out-dir ./kots
+      - run: ./bin/kubectl-schemahero install --yaml --out-dir ./kots --enterprise
 
       - name: Lint the release
         id: lint-action

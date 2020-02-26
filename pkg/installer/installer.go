@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string) (map[string][]byte, error) {
+func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
 	useExtensionsV1Beta1 := false
@@ -65,7 +65,7 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string) (map[string][]by
 	}
 	manifests["secret.yaml"] = manifest
 
-	manifest, err = managerYAML()
+	manifest, err = managerYAML(isEnterprise)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get manager")
 	}
@@ -74,7 +74,7 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string) (map[string][]by
 	return manifests, nil
 }
 
-func InstallOperator() error {
+func InstallOperator(isEnterprise bool) error {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to get kubernetes config")
@@ -118,7 +118,7 @@ func InstallOperator() error {
 		return errors.Wrap(err, "failed to create secret")
 	}
 
-	if err := ensureManager(client); err != nil {
+	if err := ensureManager(client, isEnterprise); err != nil {
 		return errors.Wrap(err, "failed to create manager")
 	}
 
