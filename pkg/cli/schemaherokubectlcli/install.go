@@ -32,7 +32,7 @@ func InstallCmd() *cobra.Command {
 			}
 
 			if v.GetBool("yaml") {
-				manifests, err := installer.GenerateOperatorYAML(v.GetString("extensions-api"))
+				manifests, err := installer.GenerateOperatorYAML(v.GetString("extensions-api"), v.GetBool("enterprise"))
 				if err != nil {
 					fmt.Printf("Error: %s\n", err.Error())
 					return err
@@ -61,7 +61,7 @@ func InstallCmd() *cobra.Command {
 				}
 				return nil
 			}
-			if err := installer.InstallOperator(); err != nil {
+			if err := installer.InstallOperator(v.GetBool("enterprise")); err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				return err
 			}
@@ -74,6 +74,7 @@ func InstallCmd() *cobra.Command {
 	cmd.Flags().Bool("yaml", false, "If present, don't install the operator, just generate the yaml")
 	cmd.Flags().String("out-dir", "", "If present and --yaml also specified, write all of the manifests to this directory")
 	cmd.Flags().String("extensions-api", "", "version of apiextensions.k8s.io to generate. if unset, will detect best version from kubernetes version")
+	cmd.Flags().Bool("enterprise", false, "If preset, generate enterprise YAML with KOTS template functions. This probably isn't what you want")
 
 	return cmd
 }
