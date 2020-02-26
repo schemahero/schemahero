@@ -113,8 +113,7 @@ microk8s: bin/schemahero bin/kubectl-schemahero manager
 	docker push localhost:32000/schemahero/schemahero:latest
 
 .PHONY: kotsimages
-kotsimages:
-bin/schemahero bin/kubectl-schemahero manager
+kotsimages: bin/schemahero bin/kubectl-schemahero manager
 	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
 	docker tag schemahero/schemahero registry.replicated.com/schemahero-enterprise/schemahero:$(ENV)
 	docker push registry.replicated.com/schemahero-enterprise/schemahero:$(ENV)
