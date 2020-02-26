@@ -91,11 +91,17 @@ jobs:
 
       - name: Collect files
         run: cp -r ./config/crds/v1/* ./kots
-
-      - name: Create the release
-        id: test-action
-        uses: replicatedhq/action-kots-release@v0.1.0
+      - name: Lint the release
+        id: lint-action
+        uses: replicatedhq/action-kots-lint@v0.1.0
         with:
           replicated-app: "schemahero-enterprise"
           replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
-          manifests-folder: kots
+          yaml-dir: kots
+      - name: Create the release
+        id: test-action
+        uses: replicatedhq/action-kots-release@v0.2.0
+        with:
+          replicated-app: "schemahero-enterprise"
+          replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
+          yaml-dir: kots
