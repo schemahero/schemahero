@@ -4,6 +4,6 @@ metadata:
   name: schemahero-enterprise
 spec:
   title: SchemaHero Enterprise
-  icon: https://github.com/cncf/artwork/blob/master/projects/kubernetes/icon/color/kubernetes-icon-color.png
+  icon: https://raw.githubusercontent.com/schemahero/schemahero-docs/0356662731945f066fe29be4a01edda481be277c/themes/hugo-whisper-theme/static/images/schemahero-logo.svg
   releaseNotes: |
     SchemaHero 0.8.0
