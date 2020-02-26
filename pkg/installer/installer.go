@@ -1,8 +1,6 @@
 package installer
 
 import (
-	"bytes"
-
 	"strings"
 
 	"github.com/blang/semver"
@@ -11,8 +9,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string) ([]byte, error) {
-	manifests := [][]byte{}
+func GenerateOperatorYAML(requestedExtensionsAPIVersion string) (map[string][]byte, error) {
+	manifests := map[string][]byte{}
 
 	useExtensionsV1Beta1 := false
 	if requestedExtensionsAPIVersion == "v1beta1" {
@@ -23,59 +21,57 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string) ([]byte, error) 
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get databases crd")
 	}
-	manifests = append(manifests, manifest)
+	manifests["databases_crd.yaml"] = manifest
 
 	manifest, err = tablesCRDYAML(useExtensionsV1Beta1)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tables crd")
 	}
-	manifests = append(manifests, manifest)
+	manifests["tables_crd.yaml"] = manifest
 
 	manifest, err = migrationsCRDYAML(useExtensionsV1Beta1)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get migrations crd")
 	}
-	manifests = append(manifests, manifest)
+	manifests["migrations_crd.yaml"] = manifest
 
 	manifest, err = clusterRoleYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get cluster role")
 	}
-	manifests = append(manifests, manifest)
+	manifests["cluster-role.yaml"] = manifest
 
 	manifest, err = clusterRoleBindingYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get cluster binding role")
 	}
-	manifests = append(manifests, manifest)
+	manifests["cluster-role-binding.yaml"] = manifest
 
 	manifest, err = namespaceYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get namespace")
 	}
-	manifests = append(manifests, manifest)
+	manifests["namespace.yaml"] = manifest
 
 	manifest, err = serviceYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get service")
 	}
-	manifests = append(manifests, manifest)
+	manifests["service.yaml"] = manifest
 
 	manifest, err = secretYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get secret")
 	}
-	manifests = append(manifests, manifest)
+	manifests["secret.yaml"] = manifest
 
 	manifest, err = managerYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get manager")
 	}
-	manifests = append(manifests, manifest)
+	manifests["manager.yaml"] = manifest
 
-	multiDocResult := bytes.Join(manifests, []byte("\n---\n"))
-
-	return multiDocResult, nil
+	return manifests, nil
 }
 
 func InstallOperator() error {

@@ -1,0 +1,18 @@
+apiVersion: kots.io/v1beta1
+kind: Config
+metadata:
+  name: config-sample
+spec:
+  groups:
+    - name: example_settings
+      title: My Example Config
+      description: Configuration to serve as an example for creating your own
+      items:
+        - name: a_bool
+          title: a bool field
+          help_text: When enabled we will not change anything, because this is an example
+          type: bool
+          default: "0"
+        - name: a_text
+          title: a text field
+          type: text
