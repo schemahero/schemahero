@@ -109,24 +109,24 @@ func clusterRole() *rbacv1.ClusterRole {
 	return clusterRole
 }
 
-func clusterRoleBindingYAML() ([]byte, error) {
+func clusterRoleBindingYAML(namespace string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(clusterRoleBinding(), &result); err != nil {
+	if err := s.Encode(clusterRoleBinding(namespace), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal cluster role binding")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureClusterRoleBinding(clientset *kubernetes.Clientset) error {
+func ensureClusterRoleBinding(clientset *kubernetes.Clientset, namespace string) error {
 	_, err := clientset.RbacV1().ClusterRoleBindings().Get("schemahero-rolebinding", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get clusterrolebinding")
 		}
 
-		_, err := clientset.RbacV1().ClusterRoleBindings().Create(clusterRoleBinding())
+		_, err := clientset.RbacV1().ClusterRoleBindings().Create(clusterRoleBinding(namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to create cluster rolebinding")
 		}
@@ -135,7 +135,7 @@ func ensureClusterRoleBinding(clientset *kubernetes.Clientset) error {
 	return nil
 }
 
-func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
+func clusterRoleBinding(namespace string) *rbacv1.ClusterRoleBinding {
 	clusterRoleBinding := &rbacv1.ClusterRoleBinding{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "rbac.authorization.k8s.io/v1",
@@ -148,7 +148,7 @@ func clusterRoleBinding() *rbacv1.ClusterRoleBinding {
 			{
 				Kind:      "ServiceAccount",
 				Name:      "default",
-				Namespace: "schemahero-system",
+				Namespace: namespace,
 			},
 		},
 		RoleRef: rbacv1.RoleRef{

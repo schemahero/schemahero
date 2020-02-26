@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool) (map[string][]byte, error) {
+func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool, namespace string) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
 	useExtensionsV1Beta1 := false
@@ -41,31 +41,33 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise boo
 	}
 	manifests["cluster-role.yaml"] = manifest
 
-	manifest, err = clusterRoleBindingYAML()
+	manifest, err = clusterRoleBindingYAML(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get cluster binding role")
 	}
 	manifests["cluster-role-binding.yaml"] = manifest
 
-	manifest, err = namespaceYAML()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get namespace")
+	if !isEnterprise {
+		manifest, err = namespaceYAML(namespace)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get namespace")
+		}
+		manifests["namespace.yaml"] = manifest
 	}
-	manifests["namespace.yaml"] = manifest
 
-	manifest, err = serviceYAML()
+	manifest, err = serviceYAML(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get service")
 	}
 	manifests["service.yaml"] = manifest
 
-	manifest, err = secretYAML()
+	manifest, err = secretYAML(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get secret")
 	}
 	manifests["secret.yaml"] = manifest
 
-	manifest, err = managerYAML(isEnterprise)
+	manifest, err = managerYAML(isEnterprise, namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get manager")
 	}
@@ -74,7 +76,7 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise boo
 	return manifests, nil
 }
 
-func InstallOperator(isEnterprise bool) error {
+func InstallOperator(isEnterprise bool, namespace string) error {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to get kubernetes config")
@@ -102,23 +104,23 @@ func InstallOperator(isEnterprise bool) error {
 		return errors.Wrap(err, "failed to create cluster role")
 	}
 
-	if err := ensureClusterRoleBinding(client); err != nil {
+	if err := ensureClusterRoleBinding(client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create cluster role binding")
 	}
 
-	if err := ensureNamespace(client); err != nil {
+	if err := ensureNamespace(client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create namespace")
 	}
 
-	if err := ensureService(client); err != nil {
+	if err := ensureService(client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create service")
 	}
 
-	if err := ensureSecret(client); err != nil {
+	if err := ensureSecret(client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create secret")
 	}
 
-	if err := ensureManager(client, isEnterprise); err != nil {
+	if err := ensureManager(client, isEnterprise, namespace); err != nil {
 		return errors.Wrap(err, "failed to create manager")
 	}
 
