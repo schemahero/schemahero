@@ -1,0 +1,9 @@
+apiVersion: kots.io/v1beta1
+kind: Application
+metadata:
+  name: schemahero-enterprise
+spec:
+  title: SchemaHero Enterprise
+  icon: https://github.com/cncf/artwork/blob/master/projects/kubernetes/icon/color/kubernetes-icon-color.png
+  releaseNotes: |
+    SchemaHero 0.8.0
