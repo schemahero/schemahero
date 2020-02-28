@@ -98,12 +98,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
 
       - run: make kotsimages
-        env:
-          SHA: $(echo ${GITHUB_SHA} | cut -c1-7)
 
       - run: ./bin/kubectl-schemahero install --yaml --out-dir=./kots --enterprise --namespace="repl{{ Namespace }}" --enterprise-tag=alpha
-        env:
-          SHA: $(echo ${GITHUB_SHA} | cut -c1-7)
 
       - name: Lint the release
         id: lint-action
