@@ -101,7 +101,7 @@ jobs:
         env:
           SHA: $(echo ${GITHUB_SHA} | cut -c1-7)
 
-      - run: ./bin/kubectl-schemahero install --yaml --out-dir=./kots --enterprise --namespace="repl{{ Namespace }}"
+      - run: ./bin/kubectl-schemahero install --yaml --out-dir=./kots --enterprise --namespace="repl{{ Namespace }}" --enterprise-tag=alpha
         env:
           SHA: $(echo ${GITHUB_SHA} | cut -c1-7)
 
