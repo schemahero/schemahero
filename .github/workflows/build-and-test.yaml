@@ -97,6 +97,11 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
 
+      - uses: azure/docker-login@v1
+        with:
+          login-server: registry.replicated.com
+          username: ${{ secrets.REPLICATED_API_TOKEN }}
+          password: ${{ secrets.REPLICATED_API_TOKEN }}
       - run: make kotsimages
 
       - run: ./bin/kubectl-schemahero install --yaml --out-dir=./kots --enterprise --namespace="repl{{ Namespace }}" --enterprise-tag=alpha
