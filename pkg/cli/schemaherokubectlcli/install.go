@@ -32,7 +32,7 @@ func InstallCmd() *cobra.Command {
 			}
 
 			if v.GetBool("yaml") {
-				manifests, err := installer.GenerateOperatorYAML(v.GetString("extensions-api"), v.GetBool("enterprise"), v.GetString("namespace"))
+				manifests, err := installer.GenerateOperatorYAML(v.GetString("extensions-api"), v.GetBool("enterprise"), v.GetString("enterprise-tag"), v.GetString("namespace"))
 				if err != nil {
 					fmt.Printf("Error: %s\n", err.Error())
 					return err
@@ -75,6 +75,7 @@ func InstallCmd() *cobra.Command {
 	cmd.Flags().String("out-dir", "", "If present and --yaml also specified, write all of the manifests to this directory")
 	cmd.Flags().String("extensions-api", "", "version of apiextensions.k8s.io to generate. if unset, will detect best version from kubernetes version")
 	cmd.Flags().Bool("enterprise", false, "If preset, generate enterprise YAML with KOTS template functions. This probably isn't what you want")
+	cmd.Flags().String("enterprise-tag", "latest", "the tag of the enterprise images to include")
 	cmd.Flags().StringP("namespace", "n", "schemahero-system", "The namespace to install SchemaHero Operator into")
 
 	return cmd

@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool, namespace string) (map[string][]byte, error) {
+func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool, enterpriseTag string, namespace string) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
 	useExtensionsV1Beta1 := false
@@ -73,6 +73,31 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise boo
 	}
 	manifests["manager.yaml"] = manifest
 
+	if isEnterprise {
+		manifest, err = heroAPIYAML(namespace, enterpriseTag)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get hero api")
+		}
+		manifests["hero-api.yaml"] = manifest
+
+		manifest, err = heroAPIServiceYAML(namespace)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get hero api service")
+		}
+		manifests["hero-api-service.yaml"] = manifest
+
+		manifest, err = heroWebYAML(namespace, enterpriseTag)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get hero web")
+		}
+		manifests["hero-web.yaml"] = manifest
+
+		manifest, err = heroWebServiceYAML(namespace)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get hero web service")
+		}
+		manifests["hero-web-service.yaml"] = manifest
+	}
 	return manifests, nil
 }
 
