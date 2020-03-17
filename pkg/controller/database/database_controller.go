@@ -94,11 +94,11 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// TODO add watches back in if we need them.  Today they aren't used for anything
 
-	if instance.Connection.Postgres != nil {
+	if instance.Spec.Connection.Postgres != nil {
 		if err = r.ensurePostgresWatch(instance); err != nil {
 			return reconcile.Result{}, err
 		}
-	} else if instance.Connection.Mysql != nil {
+	} else if instance.Spec.Connection.Mysql != nil {
 		if err := r.ensureMysqlWatch(instance); err != nil {
 			return reconcile.Result{}, err
 		}

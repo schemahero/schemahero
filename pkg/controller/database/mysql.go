@@ -17,16 +17,16 @@ func (r *ReconcileDatabase) ensureMysqlWatch(instance *databasesv1alpha3.Databas
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 
-	if instance.SchemaHero != nil {
-		if instance.SchemaHero.Image != "" {
-			imageName = instance.SchemaHero.Image
+	if instance.Spec.SchemaHero != nil {
+		if instance.Spec.SchemaHero.Image != "" {
+			imageName = instance.Spec.SchemaHero.Image
 		}
 
-		nodeSelector = instance.SchemaHero.NodeSelector
+		nodeSelector = instance.Spec.SchemaHero.NodeSelector
 	}
 
 	driver := "mysql"
-	connectionURI, err := r.readConnectionURI(instance.Namespace, instance.Connection.Mysql.URI)
+	connectionURI, err := r.readConnectionURI(instance.Namespace, instance.Spec.Connection.Mysql.URI)
 	if err != nil {
 		return err
 	}

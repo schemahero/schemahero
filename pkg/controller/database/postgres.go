@@ -17,16 +17,16 @@ func (r *ReconcileDatabase) ensurePostgresWatch(instance *databasesv1alpha3.Data
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 
-	if instance.SchemaHero != nil {
-		if instance.SchemaHero.Image != "" {
-			imageName = instance.SchemaHero.Image
+	if instance.Spec.SchemaHero != nil {
+		if instance.Spec.SchemaHero.Image != "" {
+			imageName = instance.Spec.SchemaHero.Image
 		}
 
-		nodeSelector = instance.SchemaHero.NodeSelector
+		nodeSelector = instance.Spec.SchemaHero.NodeSelector
 	}
 
 	driver := "postgres"
-	connectionURI, err := r.readConnectionURI(instance.Namespace, instance.Connection.Postgres.URI)
+	connectionURI, err := r.readConnectionURI(instance.Namespace, instance.Spec.Connection.Postgres.URI)
 	if err != nil {
 		fmt.Printf("%#v\n", err)
 		return err

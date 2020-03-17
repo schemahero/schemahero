@@ -6,9 +6,9 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
@@ -41,7 +41,7 @@ func heroAPIService(namespace string) *corev1.Service {
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Port:       3000,
+					Port: 3000,
 					Name: "http",
 				},
 			},
@@ -101,7 +101,7 @@ func heroAPI(namespace string, tag string) *appsv1.Deployment {
 							Ports: []corev1.ContainerPort{
 								{
 									ContainerPort: 3000,
-									Name: "http",
+									Name:          "http",
 								},
 							},
 						},

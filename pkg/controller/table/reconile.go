@@ -39,7 +39,7 @@ func (r *ReconcileTable) reconcileInstance(instance *schemasv1alpha3.Table) (rec
 		}, nil
 	}
 
-	matchingType := r.checkDatabaseTypeMatches(&database.Connection, instance.Spec.Schema)
+	matchingType := r.checkDatabaseTypeMatches(&database.Spec.Connection, instance.Spec.Schema)
 	if !matchingType {
 		// TODO add a status field with this state
 		return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
@@ -116,13 +116,13 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 	// try to parse the secret too, the database may be deployed, but that doesn't mean it's ready
 	// TODO this would be better as a status field on the database object, instead of this leaky
 	// interface
-	if database.Connection.Postgres != nil {
-		_, err := r.readConnectionURI(database.Namespace, database.Connection.Postgres.URI)
+	if database.Spec.Connection.Postgres != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Postgres.URI)
 		if err != nil {
 			return nil, nil
 		}
-	} else if database.Connection.Mysql != nil {
-		_, err := r.readConnectionURI(database.Namespace, database.Connection.Mysql.URI)
+	} else if database.Spec.Connection.Mysql != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Mysql.URI)
 		if err != nil {
 			return nil, nil
 		}
