@@ -85,7 +85,7 @@ func heroAPI(namespace string, tag string) *appsv1.Deployment {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Image:           fmt.Sprintf(`repl{{ LocalImageName "registry.replicated.com/schemahero-enterprise/hero-api:%s"}}`, tag),
+							Image:           fmt.Sprintf(`registry.replicated.com/schemahero-enterprise/hero-api:%s`, tag),
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "hero-api",
 							Command: []string{
