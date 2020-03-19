@@ -31,6 +31,12 @@ type SchemaHero struct {
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
+type DatabaseSpec struct {
+	Connection      DatabaseConnection `json:"connection,omitempty"`
+	ImmediateDeploy bool               `json:"immediateDeploy,omitempty"`
+	SchemaHero      *SchemaHero        `json:"schemahero,omitempty"`
+}
+
 // DatabaseStatus defines the observed state of Database
 type DatabaseStatus struct {
 	IsConnected bool   `json:"isConnected"`
@@ -47,11 +53,7 @@ type Database struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	SchemaHero *SchemaHero `json:"schemahero,omitempty"`
-
-	Connection      DatabaseConnection `json:"connection,omitempty"`
-	ImmediateDeploy bool               `json:"immediateDeploy,omitempty"`
-
+	Spec   DatabaseSpec   `json:"spec"`
 	Status DatabaseStatus `json:"status,omitempty"`
 }
 

@@ -2,12 +2,14 @@ apiVersion: databases.schemahero.io/v1alpha3
 kind: Database
 metadata:
   name: testdb
-schemahero:
-  image: "localhost:32000/schemahero/schemahero"
-connection:
-  postgres:
-    uri:
-      valueFrom:
-        secretKeyRef:
-          name: postgresql-secret
-          key: uri
+spec:
+  schemahero:
+    image: "localhost:32000/schemahero/schemahero"
+  immediateDeploy: true
+  connection:
+    postgres:
+      uri:
+        valueFrom:
+          secretKeyRef:
+            name: postgresql-secret
+            key: uri

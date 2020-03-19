@@ -16,24 +16,24 @@ func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, tabl
 	driver := ""
 	connectionURI := ""
 
-	if database.SchemaHero != nil {
-		if database.SchemaHero.Image != "" {
-			imageName = database.SchemaHero.Image
+	if database.Spec.SchemaHero != nil {
+		if database.Spec.SchemaHero.Image != "" {
+			imageName = database.Spec.SchemaHero.Image
 		}
 
-		nodeSelector = database.SchemaHero.NodeSelector
+		nodeSelector = database.Spec.SchemaHero.NodeSelector
 	}
 
-	if database.Connection.Postgres != nil {
+	if database.Spec.Connection.Postgres != nil {
 		driver = "postgres"
-		uri, err := r.readConnectionURI(database.Namespace, database.Connection.Postgres.URI)
+		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Postgres.URI)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to read postgres connection uri")
 		}
 		connectionURI = uri
-	} else if database.Connection.Mysql != nil {
+	} else if database.Spec.Connection.Mysql != nil {
 		driver = "mysql"
-		uri, err := r.readConnectionURI(database.Namespace, database.Connection.Mysql.URI)
+		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Mysql.URI)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to read mysql connection uri")
 		}
