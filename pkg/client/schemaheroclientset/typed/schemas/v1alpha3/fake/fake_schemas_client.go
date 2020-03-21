@@ -18,7 +18,8 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
+	v1alpha3 "pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
+
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

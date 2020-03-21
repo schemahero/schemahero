@@ -18,11 +18,12 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/schemahero/schemahero/pkg/client/schemaheroclientset"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3"
-	fakedatabasesv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3/fake"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
-	fakeschemasv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3/fake"
+	clientset "pkg/client/schemaheroclientset"
+	databasesv1alpha3 "pkg/client/schemaheroclientset/typed/databases/v1alpha3"
+	fakedatabasesv1alpha3 "pkg/client/schemaheroclientset/typed/databases/v1alpha3/fake"
+	schemasv1alpha3 "pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
+	fakeschemasv1alpha3 "pkg/client/schemaheroclientset/typed/schemas/v1alpha3/fake"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

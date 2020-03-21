@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha3
 
 import (
+	scheme "pkg/client/schemaheroclientset/scheme"
 	"time"
 
 	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
-	scheme "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
