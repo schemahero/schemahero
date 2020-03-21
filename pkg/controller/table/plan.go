@@ -153,7 +153,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
 	logger.Debug("deploying plan")
 
-	configMap, err := r.planConfigMap(database, table)
+	configMap, err := planConfigMap(database.Namespace, table.Name, table.Spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to get config map object for plan")
 	}
