@@ -19,6 +19,9 @@ kind: StatefulSet
 metadata:
   name: mysql
 spec:
+  selector:
+    matchLabels:
+      app: mysql
   serviceName: mysql
   template:
     metadata:
