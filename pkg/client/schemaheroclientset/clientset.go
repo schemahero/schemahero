@@ -19,9 +19,9 @@ package schemaheroclientset
 
 import (
 	"fmt"
-	databasesv1alpha3 "pkg/client/schemaheroclientset/typed/databases/v1alpha3"
-	schemasv1alpha3 "pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
 
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
