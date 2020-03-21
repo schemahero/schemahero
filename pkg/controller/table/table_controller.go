@@ -101,6 +101,10 @@ type ReconcileTable struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables/status,verbs=get;update;patch
 func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	// This reconcile loop will be called for all Table objects and all pods
+	// because of the informer that we have set up
+	// The behavior here is pretty different depending on the type
+	// so this function is simply an entrypoint that executes the right reconcile loop
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
 		result, err := r.reconcileInstance(instance)
