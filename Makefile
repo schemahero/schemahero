@@ -87,8 +87,8 @@ vet:
 generate: controller-gen client-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/apis/...
 	$(CLIENT_GEN) --output-package=github.com/schemahero/schemahero/pkg/client --clientset-name schemaheroclientset --input-base github.com/schemahero/schemahero/pkg/apis --input databases/v1alpha3 --input schemas/v1alpha3 -h ./hack/boilerplate.go.txt
-	rm -rf pkg/client && mv github.com/schemahero/schemahero/pkg/client pkg && rm -rf github.com
-	## ^^ this doesn't appear right.  it produces the right resutls, but this rm and mv shouldn't be necessary...
+	@if [ -d "github.com/schemahero/schemahero/pkg/client" ]; then rm -rf pkg/client && mv github.com/schemahero/schemahero/pkg/client pkg && rm -rf github.com; fi
+	@## ^^ this doesn't appear right.  it produces the right results, but this rm and mv shouldn't be necessary...
 
 .PHONY: bin/schemahero
 bin/schemahero:
