@@ -18,14 +18,18 @@ package migration
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	"github.com/schemahero/schemahero/pkg/logger"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	kubeinformers "k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -56,7 +60,26 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for changes to Migration
 	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Migration{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
+		return errors.Wrap(err, "failed to start watch on migrations")
+	}
+
+	// Migrations are executed as pods, so we should also watch pod lifecycle
+	generatedClient := kubernetes.NewForConfigOrDie(mgr.GetConfig())
+	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Minute)
+	err = mgr.Add(manager.RunnableFunc(func(s <-chan struct{}) error {
+		generatedInformers.Start(s)
+		<-s
+		return nil
+	}))
+	if err != nil {
 		return err
+	}
+
+	err = c.Watch(&source.Informer{
+		Informer: generatedInformers.Core().V1().Pods().Informer(),
+	}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return errors.Wrap(err, "failed to start watch on pods")
 	}
 
 	return nil
@@ -78,20 +101,30 @@ type ReconcileMigration struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=migrations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=migrations/status,verbs=get;update;patch
 func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	// Fetch the Migration instance
-	instance := &schemasv1alpha3.Migration{}
-	err := r.Get(context.TODO(), request.NamespacedName, instance)
-	if err != nil {
-		if kuberneteserrors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			return reconcile.Result{}, nil
+	// This reconcile loop will be called for all Migration objects and all pods
+	// because of the informer that we have set up
+	// The behavior here is pretty different depending on the type
+	// so this function is simply an entrypoint that executes the right reconcile loop
+	instance, instanceErr := r.getInstance(request)
+	if instanceErr == nil {
+		result, err := r.reconcileInstance(instance)
+		if err != nil {
+			logger.Error(err)
 		}
-		// Error reading the object - requeue the request.
-		return reconcile.Result{}, err
+		return result, err
 	}
 
-	return reconcile.Result{}, nil
+	pod := &corev1.Pod{}
+	podErr := r.Get(context.Background(), request.NamespacedName, pod)
+	if podErr == nil {
+		result, err := r.reconcilePod(pod)
+		if err != nil {
+			logger.Error(err)
+		}
+		return result, err
+	}
+
+	return reconcile.Result{}, errors.New("unknown error in migration reconciler")
 }
 
 func (r *ReconcileMigration) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {

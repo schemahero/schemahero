@@ -57,7 +57,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for changes to Table
 	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Table{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to start watch on tables")
 	}
 
 	// Add an informer on pods, which are created to deploy schemas. the informer will
@@ -79,7 +79,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		Informer: generatedInformers.Core().V1().Pods().Informer(),
 	}, &handler.EnqueueRequestForObject{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to start watch on pods")
 	}
 
 	return nil

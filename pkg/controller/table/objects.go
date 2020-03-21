@@ -139,7 +139,7 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 
 func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap) error {
 	existingConfigMap := corev1.ConfigMap{}
-	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
+	if err := r.Get(context.Background(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			err = r.Create(context.Background(), desiredConfigMap)
 			if err != nil {
@@ -155,7 +155,7 @@ func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap
 
 func (r *ReconcileTable) ensureTablePod(desiredPod *corev1.Pod) error {
 	existingPod := corev1.Pod{}
-	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
+	if err := r.Get(context.Background(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			err = r.Create(context.Background(), desiredPod)
 			if err != nil {
