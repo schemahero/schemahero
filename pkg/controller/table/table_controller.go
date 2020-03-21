@@ -18,7 +18,6 @@ package table
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -104,7 +103,6 @@ type ReconcileTable struct {
 func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
-		fmt.Printf("instance\n")
 		result, err := r.reconcileInstance(instance)
 		if err != nil {
 			logger.Error(err)
