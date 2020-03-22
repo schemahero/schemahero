@@ -7,7 +7,7 @@ import (
 var log *zap.Logger
 
 func init() {
-	l, err := zap.NewDevelopment()
+	l, err := zap.NewDevelopment(zap.AddCallerSkip(1))
 	if err != nil {
 		panic(err)
 	}
@@ -19,6 +19,12 @@ func Error(err error) {
 	defer log.Sync()
 	sugar := log.Sugar()
 	sugar.Error(err)
+}
+
+func Info(msg string, fields ...zap.Field) {
+	defer log.Sync()
+	sugar := log.Sugar()
+	sugar.Info(msg, fields)
 }
 
 func Infof(template string, args ...interface{}) {

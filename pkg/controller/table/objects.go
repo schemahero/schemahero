@@ -14,8 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (r *ReconcileTable) planConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.ConfigMap, error) {
-	b, err := yaml.Marshal(table.Spec)
+func planConfigMap(namespace string, tableName string, tableSpec schemasv1alpha3.TableSpec) (*corev1.ConfigMap, error) {
+	b, err := yaml.Marshal(tableSpec)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal yaml spec")
 	}
@@ -23,11 +23,11 @@ func (r *ReconcileTable) planConfigMap(database *databasesv1alpha3.Database, tab
 	tableData := make(map[string]string)
 	tableData["table.yaml"] = string(b)
 
-	name := table.Name
+	name := tableName
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
-			Namespace: database.Namespace,
+			Namespace: namespace,
 		},
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -139,7 +139,7 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 
 func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap) error {
 	existingConfigMap := corev1.ConfigMap{}
-	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
+	if err := r.Get(context.Background(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			err = r.Create(context.Background(), desiredConfigMap)
 			if err != nil {
@@ -155,7 +155,7 @@ func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap
 
 func (r *ReconcileTable) ensureTablePod(desiredPod *corev1.Pod) error {
 	existingPod := corev1.Pod{}
-	if err := r.Get(context.TODO(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
+	if err := r.Get(context.Background(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
 			err = r.Create(context.Background(), desiredPod)
 			if err != nil {

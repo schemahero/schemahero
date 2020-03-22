@@ -39,7 +39,7 @@ func (r *ReconcileTable) reconcileInstance(instance *schemasv1alpha3.Table) (rec
 		}, nil
 	}
 
-	matchingType := r.checkDatabaseTypeMatches(&database.Spec.Connection, instance.Spec.Schema)
+	matchingType := checkDatabaseTypeMatches(&database.Spec.Connection, instance.Spec.Schema)
 	if !matchingType {
 		// TODO add a status field with this state
 		return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
@@ -131,7 +131,7 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 	return database, nil
 }
 
-func (r *ReconcileTable) checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, tableSchema *schemasv1alpha3.TableSchema) bool {
+func checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, tableSchema *schemasv1alpha3.TableSchema) bool {
 	if connection.Postgres != nil {
 		return tableSchema.Postgres != nil
 	} else if connection.Mysql != nil {

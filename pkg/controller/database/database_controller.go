@@ -18,17 +18,12 @@ package database
 
 import (
 	"context"
-	goerrors "errors"
-	"fmt"
 
 	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
-	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -94,16 +89,6 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// TODO add watches back in if we need them.  Today they aren't used for anything
 
-	if instance.Spec.Connection.Postgres != nil {
-		if err = r.ensurePostgresWatch(instance); err != nil {
-			return reconcile.Result{}, err
-		}
-	} else if instance.Spec.Connection.Mysql != nil {
-		if err := r.ensureMysqlWatch(instance); err != nil {
-			return reconcile.Result{}, err
-		}
-	}
-
 	return reconcile.Result{}, nil
 }
 
@@ -115,34 +100,4 @@ func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1
 	}
 
 	return instance, nil
-}
-
-func (r *ReconcileDatabase) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {
-	if valueOrValueFrom.Value != "" {
-		return valueOrValueFrom.Value, nil
-	}
-
-	if valueOrValueFrom.ValueFrom == nil {
-		return "", goerrors.New("value and valueFrom cannot both be nil/empty")
-	}
-
-	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
-		secret := corev1.Secret{}
-		secretNamespacedName := types.NamespacedName{
-			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
-			Namespace: namespace,
-		}
-
-		if err := r.Get(context.TODO(), secretNamespacedName, &secret); err != nil {
-			if kuberneteserrors.IsNotFound(err) {
-				return "", fmt.Errorf("database secret (%s/%s) not found", secretNamespacedName.Namespace, secretNamespacedName.Name)
-			} else {
-				return "", err
-			}
-		}
-
-		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
-	}
-
-	return "", goerrors.New("unable to find supported valueFrom")
 }

@@ -11,7 +11,9 @@ import (
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
+	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,7 +28,8 @@ func NewDatabase() *Database {
 }
 
 func (d *Database) CreateFixturesSync() error {
-	fmt.Printf("generating fixtures for resources in %s\n", d.Viper.GetString("input-dir"))
+	logger.Infof("generating fixtures",
+		zap.String("input-dir", d.Viper.GetString("input-dir")))
 
 	statements := []string{}
 	handleFile := func(path string, info os.FileInfo, err error) error {

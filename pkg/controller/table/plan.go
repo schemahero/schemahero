@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3"
 	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
@@ -122,6 +123,21 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 		},
 	}
 
+	// If the database is set to immediate deploy, then set it as approved also
+	databasesClient, err := databasesclientv1alpha3.NewForConfig(cfg)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "Failed to create database client")
+	}
+
+	database, err := databasesClient.Databases(tableNamespace).Get(table.Spec.Database, metav1.GetOptions{})
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get database")
+	}
+
+	if database.Spec.ImmediateDeploy {
+		migration.Status.ApprovedAt = time.Now().Unix()
+	}
+
 	if err := r.Create(context.Background(), &migration); err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to create migration resource")
 	}
@@ -153,7 +169,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
 	logger.Debug("deploying plan")
 
-	configMap, err := r.planConfigMap(database, table)
+	configMap, err := planConfigMap(database.Namespace, table.Name, table.Spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to get config map object for plan")
 	}

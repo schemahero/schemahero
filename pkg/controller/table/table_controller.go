@@ -18,7 +18,6 @@ package table
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -58,7 +57,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Watch for changes to Table
 	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Table{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to start watch on tables")
 	}
 
 	// Add an informer on pods, which are created to deploy schemas. the informer will
@@ -80,7 +79,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		Informer: generatedInformers.Core().V1().Pods().Informer(),
 	}, &handler.EnqueueRequestForObject{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to start watch on pods")
 	}
 
 	return nil
@@ -102,9 +101,12 @@ type ReconcileTable struct {
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables/status,verbs=get;update;patch
 func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	// This reconcile loop will be called for all Table objects and all pods
+	// because of the informer that we have set up
+	// The behavior here is pretty different depending on the type
+	// so this function is simply an entrypoint that executes the right reconcile loop
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
-		fmt.Printf("instance\n")
 		result, err := r.reconcileInstance(instance)
 		if err != nil {
 			logger.Error(err)

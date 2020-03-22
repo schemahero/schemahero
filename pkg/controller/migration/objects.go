@@ -3,18 +3,34 @@ package migration
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func getApplyConfigMap(migrationID string, namespace string, preparedStatement string) (*corev1.ConfigMap, error) {
+	data := make(map[string]string)
+	data["ddl.sql"] = preparedStatement
+
+	configMap := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      migrationID,
+			Namespace: namespace,
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ConfigMap",
+		},
+		Data: data,
+	}
+
+	return configMap, nil
+}
+
+func getApplyPod(migrationID string, namespace string, connectionURI string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
-	driver := ""
-	connectionURI := ""
 
 	if database.Spec.SchemaHero != nil {
 		if database.Spec.SchemaHero.Image != "" {
@@ -24,33 +40,19 @@ func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, tabl
 		nodeSelector = database.Spec.SchemaHero.NodeSelector
 	}
 
-	if database.Spec.Connection.Postgres != nil {
-		driver = "postgres"
-		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Postgres.URI)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to read postgres connection uri")
-		}
-		connectionURI = uri
-	} else if database.Spec.Connection.Mysql != nil {
-		driver = "mysql"
-		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Mysql.URI)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to read mysql connection uri")
-		}
-		connectionURI = uri
-	}
-
-	if driver == "" {
-		return nil, errors.New("unknown database driver")
-	}
-
 	labels := make(map[string]string)
 	labels["schemahero-name"] = table.Name
 	labels["schemahero-namespace"] = table.Namespace
 	labels["schemahero-role"] = "apply"
 
 	name := fmt.Sprintf("%s-apply", table.Name)
-	configMapName := table.Name
+
+	driver := ""
+	if database.Spec.Connection.Postgres != nil {
+		driver = "postgres"
+	} else if database.Spec.Connection.Mysql != nil {
+		driver = "mysql"
+	}
 
 	args := []string{
 		"apply",
@@ -96,7 +98,7 @@ func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, tabl
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
-								Name: configMapName,
+								Name: migrationID,
 							},
 						},
 					},
