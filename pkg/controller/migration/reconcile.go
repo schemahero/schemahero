@@ -3,6 +3,8 @@ package migration
 import (
 	"context"
 
+	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
@@ -25,6 +27,25 @@ func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migrati
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
 		zap.String("tableName", instance.Spec.TableName))
+
+	if instance.Status.ApprovedAt > 0 && instance.Status.ExecutedAt == 0 {
+		// TODO incomplete code
+		connectionURI, err := r.readConnectionURI(instance.Name, v1alpha3.ValueOrValueFrom{})
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get connection uri")
+		}
+
+		pod, err := getApplyPod(connectionURI, instance.Namespace, nil, nil)
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get apply pod")
+		}
+
+		if err := r.Create(context.Background(), pod); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to create apply pod")
+		}
+
+		return reconcile.Result{}, nil
+	}
 
 	return reconcile.Result{}, nil
 }

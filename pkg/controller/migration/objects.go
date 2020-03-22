@@ -3,18 +3,15 @@ package migration
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func getApplyPod(connectionURI string, driver string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
-	driver := ""
-	connectionURI := ""
 
 	if database.Spec.SchemaHero != nil {
 		if database.Spec.SchemaHero.Image != "" {
@@ -22,26 +19,6 @@ func (r *ReconcileMigration) applyPod(database *databasesv1alpha3.Database, tabl
 		}
 
 		nodeSelector = database.Spec.SchemaHero.NodeSelector
-	}
-
-	if database.Spec.Connection.Postgres != nil {
-		driver = "postgres"
-		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Postgres.URI)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to read postgres connection uri")
-		}
-		connectionURI = uri
-	} else if database.Spec.Connection.Mysql != nil {
-		driver = "mysql"
-		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Mysql.URI)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to read mysql connection uri")
-		}
-		connectionURI = uri
-	}
-
-	if driver == "" {
-		return nil, errors.New("unknown database driver")
 	}
 
 	labels := make(map[string]string)
