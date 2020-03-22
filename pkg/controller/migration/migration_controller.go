@@ -127,7 +127,19 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	return reconcile.Result{}, errors.New("unknown error in migration reconciler")
 }
 
-func (r *ReconcileMigration) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {
+func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha3.Database) (string, error) {
+	var valueOrValueFrom *databasesv1alpha3.ValueOrValueFrom
+
+	if database.Spec.Connection.Postgres != nil {
+		valueOrValueFrom = &database.Spec.Connection.Postgres.URI
+	} else if database.Spec.Connection.Mysql != nil {
+		valueOrValueFrom = &database.Spec.Connection.Mysql.URI
+	}
+
+	if valueOrValueFrom == nil {
+		return "", errors.New("cannnot get value from unknown type")
+	}
+
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}
@@ -140,7 +152,7 @@ func (r *ReconcileMigration) readConnectionURI(namespace string, valueOrValueFro
 		secret := &corev1.Secret{}
 		secretNamespacedName := types.NamespacedName{
 			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
-			Namespace: namespace,
+			Namespace: database.Namespace,
 		}
 
 		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {

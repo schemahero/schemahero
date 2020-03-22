@@ -28,7 +28,7 @@ func getApplyConfigMap(migrationID string, namespace string, preparedStatement s
 	return configMap, nil
 }
 
-func getApplyPod(migrationID string, namespace string, connectionURI string, driver string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func getApplyPod(migrationID string, namespace string, connectionURI string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 
@@ -46,6 +46,13 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dri
 	labels["schemahero-role"] = "apply"
 
 	name := fmt.Sprintf("%s-apply", table.Name)
+
+	driver := ""
+	if database.Spec.Connection.Postgres != nil {
+		driver = "postgres"
+	} else if database.Spec.Connection.Mysql != nil {
+		driver = "mysql"
+	}
 
 	args := []string{
 		"apply",

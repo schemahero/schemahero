@@ -7,7 +7,7 @@ import (
 var log *zap.Logger
 
 func init() {
-	l, err := zap.NewDevelopment()
+	l, err := zap.NewDevelopment(zap.AddCallerSkip(1))
 	if err != nil {
 		panic(err)
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
@@ -29,12 +28,6 @@ func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migrati
 		zap.String("tableName", instance.Spec.TableName))
 
 	if instance.Status.ApprovedAt > 0 && instance.Status.ExecutedAt == 0 {
-		// TODO incomplete code
-		connectionURI, err := r.readConnectionURI(instance.Name, v1alpha3.ValueOrValueFrom{})
-		if err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to get connection uri")
-		}
-
 		configMap, err := getApplyConfigMap(instance.Name, instance.Namespace, instance.Spec.GeneratedDDL)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get apply config map")
@@ -43,7 +36,21 @@ func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migrati
 			return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
 		}
 
-		pod, err := getApplyPod(instance.Name, instance.Namespace, connectionURI, "", nil, nil)
+		table, err := tableFromMigration(instance)
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get table")
+		}
+		database, err := databaseFromTable(table)
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get database")
+		}
+
+		connectionURI, err := r.readConnectionURI(database)
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get connection uri")
+		}
+
+		pod, err := getApplyPod(instance.Name, instance.Namespace, connectionURI, database, table)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get apply pod")
 		}
