@@ -35,7 +35,15 @@ func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migrati
 			return reconcile.Result{}, errors.Wrap(err, "failed to get connection uri")
 		}
 
-		pod, err := getApplyPod(connectionURI, instance.Namespace, nil, nil)
+		configMap, err := getApplyConfigMap(instance.Name, instance.Namespace, instance.Spec.GeneratedDDL)
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get apply config map")
+		}
+		if err := r.Create(context.Background(), configMap); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
+		}
+
+		pod, err := getApplyPod(instance.Name, instance.Namespace, connectionURI, "", nil, nil)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get apply pod")
 		}
