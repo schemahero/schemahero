@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error) {
+func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (reconcile.Result, error) {
 	podLabels := pod.GetObjectMeta().GetLabels()
 	role, ok := podLabels["schemahero-role"]
 	if !ok {
@@ -57,7 +57,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 
 	podLogOpts := corev1.PodLogOptions{}
 	req := client.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
-	podLogs, err := req.Stream()
+	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to open log stream")
 	}
@@ -95,7 +95,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 		return reconcile.Result{}, errors.Wrap(err, "failed to create schema client")
 	}
 
-	table, err := schemasClient.Tables(tableNamespace).Get(tableName, metav1.GetOptions{})
+	table, err := schemasClient.Tables(tableNamespace).Get(ctx, tableName, metav1.GetOptions{})
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
 	}
@@ -129,7 +129,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 		return reconcile.Result{}, errors.Wrap(err, "Failed to create database client")
 	}
 
-	database, err := databasesClient.Databases(tableNamespace).Get(table.Spec.Database, metav1.GetOptions{})
+	database, err := databasesClient.Databases(tableNamespace).Get(ctx, table.Spec.Database, metav1.GetOptions{})
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get database")
 	}

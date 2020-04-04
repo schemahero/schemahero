@@ -2,6 +2,7 @@ package installer
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
@@ -34,20 +35,20 @@ func databasesCRDYAML(useExtensionsv1beta1 bool) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureDatabasesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
+func ensureDatabasesCRD(ctx context.Context, cfg *rest.Config, useExtensionsv1beta1 bool) error {
 	if useExtensionsv1beta1 {
 		extensionsClient, err := extensionsv1beta1client.NewForConfig(cfg)
 		if err != nil {
 			return errors.Wrap(err, "faild to create extensions client")
 		}
 
-		_, err = extensionsClient.CustomResourceDefinitions().Get("databases.databases.schemahero.io", metav1.GetOptions{})
+		_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "databases.databases.schemahero.io", metav1.GetOptions{})
 		if err != nil {
 			if !kuberneteserrors.IsNotFound(err) {
 				return errors.Wrap(err, "failed to get databases crd")
 			}
 
-			_, err = extensionsClient.CustomResourceDefinitions().Create(databasesCRDV1Beta1())
+			_, err = extensionsClient.CustomResourceDefinitions().Create(ctx, databasesCRDV1Beta1(), metav1.CreateOptions{})
 			if err != nil {
 				return errors.Wrap(err, "failed to create databases crd")
 			}
@@ -61,13 +62,13 @@ func ensureDatabasesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 		return errors.Wrap(err, "faild to create extensions client")
 	}
 
-	_, err = extensionsClient.CustomResourceDefinitions().Get("databases.databases.schemahero.io", metav1.GetOptions{})
+	_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "databases.databases.schemahero.io", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get databases crd")
 		}
 
-		_, err := extensionsClient.CustomResourceDefinitions().Create(databasesCRDV1())
+		_, err := extensionsClient.CustomResourceDefinitions().Create(ctx, databasesCRDV1(), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create databases crd")
 		}

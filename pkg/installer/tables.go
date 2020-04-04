@@ -2,6 +2,7 @@ package installer
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
@@ -33,20 +34,20 @@ func tablesCRDYAML(useExtensionsv1beta1 bool) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureTablesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
+func ensureTablesCRD(ctx context.Context, cfg *rest.Config, useExtensionsv1beta1 bool) error {
 	if useExtensionsv1beta1 {
 		extensionsClient, err := extensionsv1beta1client.NewForConfig(cfg)
 		if err != nil {
 			return errors.Wrap(err, "faild to create extensions client")
 		}
 
-		_, err = extensionsClient.CustomResourceDefinitions().Get("tables.schemas.schemahero.io", metav1.GetOptions{})
+		_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "tables.schemas.schemahero.io", metav1.GetOptions{})
 		if err != nil {
 			if !kuberneteserrors.IsNotFound(err) {
 				return errors.Wrap(err, "failed to get tables crd")
 			}
 
-			_, err = extensionsClient.CustomResourceDefinitions().Create(tablesCRDV1Beta1())
+			_, err = extensionsClient.CustomResourceDefinitions().Create(ctx, tablesCRDV1Beta1(), metav1.CreateOptions{})
 			if err != nil {
 				return errors.Wrap(err, "failed to create tables crd")
 			}
@@ -60,13 +61,13 @@ func ensureTablesCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 		return errors.Wrap(err, "faild to create extensions client")
 	}
 
-	_, err = extensionsClient.CustomResourceDefinitions().Get("tables.schemas.schemahero.io", metav1.GetOptions{})
+	_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "tables.schemas.schemahero.io", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get tables crd")
 		}
 
-		_, err := extensionsClient.CustomResourceDefinitions().Create(tablesCRDV1())
+		_, err := extensionsClient.CustomResourceDefinitions().Create(ctx, tablesCRDV1(), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create tables crd")
 		}

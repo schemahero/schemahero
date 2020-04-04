@@ -2,6 +2,7 @@ package installer
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
@@ -28,14 +29,14 @@ func namespaceYAML(name string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureNamespace(clientset *kubernetes.Clientset, name string) error {
-	_, err := clientset.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
+func ensureNamespace(ctx context.Context, clientset *kubernetes.Clientset, name string) error {
+	_, err := clientset.CoreV1().Namespaces().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get namespace")
 		}
 
-		_, err := clientset.CoreV1().Namespaces().Create(namespace(name))
+		_, err := clientset.CoreV1().Namespaces().Create(ctx, namespace(name), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create namespace")
 		}
@@ -66,14 +67,14 @@ func serviceYAML(namespace string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureService(clientset *kubernetes.Clientset, namespace string) error {
-	_, err := clientset.CoreV1().Services(namespace).Get("controller-manager-service", metav1.GetOptions{})
+func ensureService(ctx context.Context, clientset *kubernetes.Clientset, namespace string) error {
+	_, err := clientset.CoreV1().Services(namespace).Get(ctx, "controller-manager-service", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get service")
 		}
 
-		_, err := clientset.CoreV1().Secrets(namespace).Create(secret(namespace))
+		_, err := clientset.CoreV1().Secrets(namespace).Create(ctx, secret(namespace), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create service")
 		}
@@ -116,14 +117,14 @@ func secretYAML(namespace string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureSecret(clientset *kubernetes.Clientset, namespace string) error {
-	_, err := clientset.CoreV1().Secrets(namespace).Get("webhook-server-secret", metav1.GetOptions{})
+func ensureSecret(ctx context.Context, clientset *kubernetes.Clientset, namespace string) error {
+	_, err := clientset.CoreV1().Secrets(namespace).Get(ctx, "webhook-server-secret", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get secret")
 		}
 
-		_, err := clientset.CoreV1().Secrets(namespace).Create(secret(namespace))
+		_, err := clientset.CoreV1().Secrets(namespace).Create(ctx, secret(namespace), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create secret")
 		}
@@ -155,14 +156,14 @@ func managerYAML(isEnterprise bool, namespace string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureManager(clientset *kubernetes.Clientset, isEnterprise bool, namespace string) error {
-	_, err := clientset.AppsV1().StatefulSets(namespace).Get("schemahero", metav1.GetOptions{})
+func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, isEnterprise bool, namespace string) error {
+	_, err := clientset.AppsV1().StatefulSets(namespace).Get(ctx, "schemahero", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get statefulset")
 		}
 
-		_, err := clientset.AppsV1().StatefulSets(namespace).Create(manager(isEnterprise, namespace))
+		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(isEnterprise, namespace), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create statefulset")
 		}

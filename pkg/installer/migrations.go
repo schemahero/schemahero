@@ -2,6 +2,7 @@ package installer
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
@@ -32,20 +33,20 @@ func migrationsCRDYAML(useExtensionsv1beta1 bool) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureMigrationsCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
+func ensureMigrationsCRD(ctx context.Context, cfg *rest.Config, useExtensionsv1beta1 bool) error {
 	if useExtensionsv1beta1 {
 		extensionsClient, err := extensionsv1beta1client.NewForConfig(cfg)
 		if err != nil {
 			return errors.Wrap(err, "faild to create extensions client")
 		}
 
-		_, err = extensionsClient.CustomResourceDefinitions().Get("migrations.schemas.schemahero.io", metav1.GetOptions{})
+		_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "migrations.schemas.schemahero.io", metav1.GetOptions{})
 		if err != nil {
 			if !kuberneteserrors.IsNotFound(err) {
 				return errors.Wrap(err, "failed to get migrations crd")
 			}
 
-			_, err = extensionsClient.CustomResourceDefinitions().Create(migrationsCRDV1Beta1())
+			_, err = extensionsClient.CustomResourceDefinitions().Create(ctx, migrationsCRDV1Beta1(), metav1.CreateOptions{})
 			if err != nil {
 				return errors.Wrap(err, "failed to create migrations crd")
 			}
@@ -59,13 +60,13 @@ func ensureMigrationsCRD(cfg *rest.Config, useExtensionsv1beta1 bool) error {
 		return errors.Wrap(err, "faild to create extensions client")
 	}
 
-	_, err = extensionsClient.CustomResourceDefinitions().Get("migrations.schemas.schemahero.io", metav1.GetOptions{})
+	_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "migrations.schemas.schemahero.io", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get migrations crd")
 		}
 
-		_, err := extensionsClient.CustomResourceDefinitions().Create(migrationsCRDV1())
+		_, err := extensionsClient.CustomResourceDefinitions().Create(ctx, migrationsCRDV1(), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create migrations crd")
 		}

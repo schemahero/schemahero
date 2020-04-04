@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"context"
 	"strings"
 
 	"github.com/blang/semver"
@@ -102,6 +103,9 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise boo
 }
 
 func InstallOperator(isEnterprise bool, namespace string) error {
+	// todo create and pass this from higher
+	ctx := context.Background()
+
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to get kubernetes config")
@@ -113,39 +117,39 @@ func InstallOperator(isEnterprise bool, namespace string) error {
 	}
 
 	useExtensionsV1Beta1 := shouldUseExtensionsV1Beta1(client)
-	if err := ensureDatabasesCRD(cfg, useExtensionsV1Beta1); err != nil {
+	if err := ensureDatabasesCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
 		return errors.Wrap(err, "failed to create databases crd")
 	}
 
-	if err := ensureTablesCRD(cfg, useExtensionsV1Beta1); err != nil {
+	if err := ensureTablesCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
 		return errors.Wrap(err, "failed to create tables crd")
 	}
 
-	if err := ensureMigrationsCRD(cfg, useExtensionsV1Beta1); err != nil {
+	if err := ensureMigrationsCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
 		return errors.Wrap(err, "failed to create migrations crd")
 	}
 
-	if err := ensureClusterRole(client); err != nil {
+	if err := ensureClusterRole(ctx, client); err != nil {
 		return errors.Wrap(err, "failed to create cluster role")
 	}
 
-	if err := ensureClusterRoleBinding(client, namespace); err != nil {
+	if err := ensureClusterRoleBinding(ctx, client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create cluster role binding")
 	}
 
-	if err := ensureNamespace(client, namespace); err != nil {
+	if err := ensureNamespace(ctx, client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create namespace")
 	}
 
-	if err := ensureService(client, namespace); err != nil {
+	if err := ensureService(ctx, client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create service")
 	}
 
-	if err := ensureSecret(client, namespace); err != nil {
+	if err := ensureSecret(ctx, client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create secret")
 	}
 
-	if err := ensureManager(client, isEnterprise, namespace); err != nil {
+	if err := ensureManager(ctx, client, isEnterprise, namespace); err != nil {
 		return errors.Wrap(err, "failed to create manager")
 	}
 

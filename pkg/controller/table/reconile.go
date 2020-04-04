@@ -16,13 +16,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileTable) reconcileInstance(instance *schemasv1alpha3.Table) (reconcile.Result, error) {
+func (r *ReconcileTable) reconcileInstance(ctx context.Context, instance *schemasv1alpha3.Table) (reconcile.Result, error) {
 	logger.Debug("reconciling table",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
 		zap.String("database", instance.Spec.Database))
 
-	database, err := r.getDatabaseSpec(instance.Namespace, instance.Spec.Database)
+	database, err := r.getDatabaseSpec(ctx, instance.Namespace, instance.Spec.Database)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get database spec")
 	}
@@ -89,7 +89,7 @@ func (r *ReconcileTable) getMigrationSpec(namespace string, name string) (*schem
 	return nil, nil
 }
 
-func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databasesv1alpha3.Database, error) {
+func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, name string) (*databasesv1alpha3.Database, error) {
 	logger.Debug("getting database spec",
 		zap.String("namespace", namespace),
 		zap.String("name", name))
@@ -103,7 +103,7 @@ func (r *ReconcileTable) getDatabaseSpec(namespace string, name string) (*databa
 		return nil, err
 	}
 
-	database, err := databasesClient.Databases(namespace).Get(name, metav1.GetOptions{})
+	database, err := databasesClient.Databases(namespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		// tables might be deployed before a database... if this is the case
 		// we don't want to crash, we want to re-reconcile later

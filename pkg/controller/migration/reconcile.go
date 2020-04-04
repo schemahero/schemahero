@@ -21,7 +21,7 @@ func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1a
 	return v1alpha3instance, nil
 }
 
-func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
+func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
 	logger.Debug("reconciling migration",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
@@ -36,11 +36,11 @@ func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migrati
 			return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
 		}
 
-		table, err := tableFromMigration(instance)
+		table, err := tableFromMigration(ctx, instance)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get table")
 		}
-		database, err := databaseFromTable(table)
+		database, err := databaseFromTable(ctx, table)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get database")
 		}

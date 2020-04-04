@@ -1,6 +1,7 @@
 package schemaherokubectlcli
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -27,6 +28,7 @@ func DescribeMigrationCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
+			ctx := context.Background()
 			migrationName := args[0]
 
 			cfg, err := config.GetConfig()
@@ -47,7 +49,7 @@ func DescribeMigrationCmd() *cobra.Command {
 			namespaceNames := []string{}
 
 			if viper.GetBool("all-namespaces") {
-				namespaces, err := client.CoreV1().Namespaces().List(metav1.ListOptions{})
+				namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 				if err != nil {
 					return err
 				}
@@ -64,7 +66,7 @@ func DescribeMigrationCmd() *cobra.Command {
 			}
 
 			for _, namespaceName := range namespaceNames {
-				foundMigration, err := schemasClient.Migrations(namespaceName).Get(migrationName, metav1.GetOptions{})
+				foundMigration, err := schemasClient.Migrations(namespaceName).Get(ctx, migrationName, metav1.GetOptions{})
 				if kuberneteserrors.IsNotFound(err) {
 					// next namespace
 					continue

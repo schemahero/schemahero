@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v1
         with:
-          go-version: "1.12.14"
+          go-version: "1.14.1"
       - name: setup goenv
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
@@ -93,7 +93,7 @@ jobs:
         run: git fetch --prune --unshallow
       - uses: actions/setup-go@v1
         with:
-          go-version: "1.12.14"
+          go-version: "1.14.1"
       - uses: azure/docker-login@v1
         with:
           username: schemaherodeploy
