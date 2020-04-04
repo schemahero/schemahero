@@ -6,16 +6,29 @@ import (
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
+	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func getApplyConfigMap(migrationID string, namespace string, preparedStatement string) (*corev1.ConfigMap, error) {
+func configMapNameForMigration(databaseName string, tableName string, migrationID string) string {
+	configMapName := fmt.Sprintf("%s-%s-%s", databaseName, tableName, migrationID)
+	if len(apimachineryvalidation.NameIsDNSSubdomain(configMapName, false)) > 0 {
+		configMapName = fmt.Sprintf("%s-%s", tableName, migrationID)
+		if len(apimachineryvalidation.NameIsDNSSubdomain(configMapName, false)) > 0 {
+			configMapName = migrationID
+		}
+	}
+
+	return configMapName
+}
+
+func getApplyConfigMap(migrationID string, namespace string, preparedStatement string, tableName string, databaseName string) (*corev1.ConfigMap, error) {
 	data := make(map[string]string)
 	data["ddl.sql"] = preparedStatement
 
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      migrationID,
+			Name:      configMapNameForMigration(databaseName, tableName, migrationID),
 			Namespace: namespace,
 		},
 		TypeMeta: metav1.TypeMeta{
@@ -98,7 +111,7 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
-								Name: migrationID,
+								Name: configMapNameForMigration(database.Name, table.Name, migrationID),
 							},
 						},
 					},

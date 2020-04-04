@@ -17,7 +17,3 @@ spec:
           type: varchar(255)
         - name: description
           type: text
-        - name: someone
-          type: text[]
-        - name: it
-          type: int
