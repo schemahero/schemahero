@@ -1,6 +1,7 @@
 package schemaherokubectlcli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -25,6 +26,8 @@ func GetTablesCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
+			ctx := context.Background()
+
 			databaseNameFilter := v.GetString("database")
 
 			cfg, err := config.GetConfig()
@@ -42,7 +45,7 @@ func GetTablesCmd() *cobra.Command {
 				return err
 			}
 
-			namespaces, err := client.CoreV1().Namespaces().List(metav1.ListOptions{})
+			namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 			if err != nil {
 				return err
 			}
@@ -50,7 +53,7 @@ func GetTablesCmd() *cobra.Command {
 			matchingTables := []schemasv1alpha3.Table{}
 
 			for _, namespace := range namespaces.Items {
-				tables, err := schemasClient.Tables(namespace.Name).List(metav1.ListOptions{})
+				tables, err := schemasClient.Tables(namespace.Name).List(ctx, metav1.ListOptions{})
 				if err != nil {
 					return err
 				}

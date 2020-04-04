@@ -107,7 +107,7 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	// so this function is simply an entrypoint that executes the right reconcile loop
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
-		result, err := r.reconcileInstance(instance)
+		result, err := r.reconcileInstance(context.Background(), instance)
 		if err != nil {
 			logger.Error(err)
 		}

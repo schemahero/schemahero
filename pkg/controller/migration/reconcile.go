@@ -8,6 +8,8 @@ import (
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
+	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -21,42 +23,87 @@ func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1a
 	return v1alpha3instance, nil
 }
 
-func (r *ReconcileMigration) reconcileInstance(instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
+func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
 	logger.Debug("reconciling migration",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
 		zap.String("tableName", instance.Spec.TableName))
 
 	if instance.Status.ApprovedAt > 0 && instance.Status.ExecutedAt == 0 {
-		configMap, err := getApplyConfigMap(instance.Name, instance.Namespace, instance.Spec.GeneratedDDL)
-		if err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to get apply config map")
-		}
-		if err := r.Create(context.Background(), configMap); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
-		}
-
-		table, err := tableFromMigration(instance)
+		table, err := tableFromMigration(ctx, instance)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get table")
 		}
-		database, err := databaseFromTable(table)
+		database, err := databaseFromTable(ctx, table)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get database")
 		}
-
 		connectionURI, err := r.readConnectionURI(database)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get connection uri")
 		}
 
-		pod, err := getApplyPod(instance.Name, instance.Namespace, connectionURI, database, table)
+		desiredConfigMap, err := getApplyConfigMap(instance.Name, instance.Namespace, instance.Spec.GeneratedDDL, table.Name, database.Name)
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get apply config map")
+		}
+		var existingConfigMap corev1.ConfigMap
+		configMapChanged := false
+		err = r.Get(ctx, types.NamespacedName{
+			Name:      desiredConfigMap.Name,
+			Namespace: desiredConfigMap.Namespace,
+		}, &existingConfigMap)
+		if kuberneteserrors.IsNotFound(err) {
+			// create it
+			if err := r.Create(ctx, desiredConfigMap); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
+			}
+		} else if err == nil {
+			// update it
+			existingConfigMap.Data = map[string]string{}
+			for k, v := range desiredConfigMap.Data {
+				existingConfigMap.Data[k] = v
+			}
+
+			if err = r.Update(ctx, &existingConfigMap); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
+			}
+			configMapChanged = true
+		} else {
+			// something bad is happening here
+			return reconcile.Result{}, errors.Wrap(err, "failed to check if config map exists")
+		}
+
+		desiredPod, err := getApplyPod(instance.Name, instance.Namespace, connectionURI, database, table)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get apply pod")
 		}
+		var existingPod corev1.Pod
+		err = r.Get(ctx, types.NamespacedName{
+			Name:      desiredPod.Name,
+			Namespace: desiredPod.Namespace,
+		}, &existingPod)
+		if kuberneteserrors.IsNotFound(err) {
+			// create it
+			if err := r.Create(ctx, desiredPod); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to create apply pod")
+			}
+		} else if err == nil {
+			// maybe update it
+			if configMapChanged {
+				// restart the pod by deleting and recreating
+				logger.Debug("deleting apply pod because config map has changed",
+					zap.String("podName", existingPod.Name))
+				if err = r.Delete(ctx, &existingPod); err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to delete pod")
+				}
 
-		if err := r.Create(context.Background(), pod); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to create apply pod")
+				// This pod will be recreated later in another exceution of the reconcile loop
+				// we watch pods, and when that above delete completed, the reconcile will happen again
+			}
+		} else {
+			// again, something bad
+			return reconcile.Result{}, errors.Wrap(err, "failed to check if pod exists")
 		}
 
 		return reconcile.Result{}, nil

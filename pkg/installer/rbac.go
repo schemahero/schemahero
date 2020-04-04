@@ -2,6 +2,7 @@ package installer
 
 import (
 	"bytes"
+	"context"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
@@ -22,14 +23,14 @@ func clusterRoleYAML() ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureClusterRole(clientset *kubernetes.Clientset) error {
-	_, err := clientset.RbacV1().ClusterRoles().Get("schemahero-role", metav1.GetOptions{})
+func ensureClusterRole(ctx context.Context, clientset *kubernetes.Clientset) error {
+	_, err := clientset.RbacV1().ClusterRoles().Get(ctx, "schemahero-role", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get clusterrole")
 		}
 
-		_, err := clientset.RbacV1().ClusterRoles().Create(clusterRole())
+		_, err := clientset.RbacV1().ClusterRoles().Create(ctx, clusterRole(), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create cluster role")
 		}
@@ -119,14 +120,14 @@ func clusterRoleBindingYAML(namespace string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureClusterRoleBinding(clientset *kubernetes.Clientset, namespace string) error {
-	_, err := clientset.RbacV1().ClusterRoleBindings().Get("schemahero-rolebinding", metav1.GetOptions{})
+func ensureClusterRoleBinding(ctx context.Context, clientset *kubernetes.Clientset, namespace string) error {
+	_, err := clientset.RbacV1().ClusterRoleBindings().Get(ctx, "schemahero-rolebinding", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get clusterrolebinding")
 		}
 
-		_, err := clientset.RbacV1().ClusterRoleBindings().Create(clusterRoleBinding(namespace))
+		_, err := clientset.RbacV1().ClusterRoleBindings().Create(ctx, clusterRoleBinding(namespace), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create cluster rolebinding")
 		}

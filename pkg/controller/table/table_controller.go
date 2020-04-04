@@ -107,7 +107,7 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 	// so this function is simply an entrypoint that executes the right reconcile loop
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
-		result, err := r.reconcileInstance(instance)
+		result, err := r.reconcileInstance(context.Background(), instance)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -117,7 +117,7 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 	pod := &corev1.Pod{}
 	podErr := r.Get(context.Background(), request.NamespacedName, pod)
 	if podErr == nil {
-		result, err := r.reconcilePod(pod)
+		result, err := r.reconcilePod(context.Background(), pod)
 		if err != nil {
 			logger.Error(err)
 		}

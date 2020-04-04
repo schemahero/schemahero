@@ -23,7 +23,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error) {
+func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (reconcile.Result, error) {
 	podLabels := pod.GetObjectMeta().GetLabels()
 	role, ok := podLabels["schemahero-role"]
 	if !ok {
@@ -57,7 +57,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 
 	podLogOpts := corev1.PodLogOptions{}
 	req := client.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, &podLogOpts)
-	podLogs, err := req.Stream()
+	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to open log stream")
 	}
@@ -95,7 +95,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 		return reconcile.Result{}, errors.Wrap(err, "failed to create schema client")
 	}
 
-	table, err := schemasClient.Tables(tableNamespace).Get(tableName, metav1.GetOptions{})
+	table, err := schemasClient.Tables(tableNamespace).Get(ctx, tableName, metav1.GetOptions{})
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
 	}
@@ -104,7 +104,7 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 		return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
 	}
 
-	migration := schemasv1alpha3.Migration{
+	desiredMigration := schemasv1alpha3.Migration{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "schemas.schemahero.io/v1alpha3",
 			Kind:       "Migration",
@@ -129,21 +129,38 @@ func (r *ReconcileTable) reconcilePod(pod *corev1.Pod) (reconcile.Result, error)
 		return reconcile.Result{}, errors.Wrap(err, "Failed to create database client")
 	}
 
-	database, err := databasesClient.Databases(tableNamespace).Get(table.Spec.Database, metav1.GetOptions{})
+	database, err := databasesClient.Databases(tableNamespace).Get(ctx, table.Spec.Database, metav1.GetOptions{})
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get database")
 	}
 
 	if database.Spec.ImmediateDeploy {
-		migration.Status.ApprovedAt = time.Now().Unix()
+		desiredMigration.Status.ApprovedAt = time.Now().Unix()
 	}
 
-	if err := r.Create(context.Background(), &migration); err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to create migration resource")
+	var existingMigration schemasv1alpha3.Migration
+	err = r.Get(ctx, types.NamespacedName{
+		Name:      desiredMigration.Name,
+		Namespace: desiredMigration.Namespace,
+	}, &existingMigration)
+	if kuberneteserrors.IsNotFound(err) {
+		// create it
+		if err := r.Create(ctx, &desiredMigration); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to create migration resource")
+		}
+	} else if err == nil {
+		// update it
+		existingMigration.Status = desiredMigration.Status
+		existingMigration.Spec = desiredMigration.Spec
+		if err = r.Update(ctx, &existingMigration); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to update migration resource")
+		}
+	} else {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get existing migration")
 	}
 
 	// Delete the pod and config map
-	if err := r.Delete(context.Background(), pod); err != nil {
+	if err := r.Delete(ctx, pod); err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to delete pod from plan phase")
 	}
 

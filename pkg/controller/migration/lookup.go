@@ -1,6 +1,8 @@
 package migration
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
@@ -10,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func tableFromMigration(migration *schemasv1alpha3.Migration) (*schemasv1alpha3.Table, error) {
+func tableFromMigration(ctx context.Context, migration *schemasv1alpha3.Migration) (*schemasv1alpha3.Table, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get config")
@@ -21,7 +23,7 @@ func tableFromMigration(migration *schemasv1alpha3.Migration) (*schemasv1alpha3.
 		return nil, errors.Wrap(err, "failed to create schemas client")
 	}
 
-	table, err := schemasClient.Tables(migration.Spec.TableNamespace).Get(migration.Spec.TableName, metav1.GetOptions{})
+	table, err := schemasClient.Tables(migration.Spec.TableNamespace).Get(ctx, migration.Spec.TableName, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get table")
 	}
@@ -29,7 +31,7 @@ func tableFromMigration(migration *schemasv1alpha3.Migration) (*schemasv1alpha3.
 	return table, nil
 }
 
-func databaseFromTable(table *schemasv1alpha3.Table) (*databasesv1alpha3.Database, error) {
+func databaseFromTable(ctx context.Context, table *schemasv1alpha3.Table) (*databasesv1alpha3.Database, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get config")
@@ -40,7 +42,7 @@ func databaseFromTable(table *schemasv1alpha3.Table) (*databasesv1alpha3.Databas
 		return nil, errors.Wrap(err, "failed to create databases client")
 	}
 
-	database, err := databasesClient.Databases(table.Namespace).Get(table.Spec.Database, metav1.GetOptions{})
+	database, err := databasesClient.Databases(table.Namespace).Get(ctx, table.Spec.Database, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get database")
 	}

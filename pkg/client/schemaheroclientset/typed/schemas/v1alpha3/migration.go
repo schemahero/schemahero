@@ -18,6 +18,7 @@ limitations under the License.
 package v1alpha3
 
 import (
+	"context"
 	"time"
 
 	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
@@ -36,15 +37,15 @@ type MigrationsGetter interface {
 
 // MigrationInterface has methods to work with Migration resources.
 type MigrationInterface interface {
-	Create(*v1alpha3.Migration) (*v1alpha3.Migration, error)
-	Update(*v1alpha3.Migration) (*v1alpha3.Migration, error)
-	UpdateStatus(*v1alpha3.Migration) (*v1alpha3.Migration, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha3.Migration, error)
-	List(opts v1.ListOptions) (*v1alpha3.MigrationList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha3.Migration, err error)
+	Create(ctx context.Context, migration *v1alpha3.Migration, opts v1.CreateOptions) (*v1alpha3.Migration, error)
+	Update(ctx context.Context, migration *v1alpha3.Migration, opts v1.UpdateOptions) (*v1alpha3.Migration, error)
+	UpdateStatus(ctx context.Context, migration *v1alpha3.Migration, opts v1.UpdateOptions) (*v1alpha3.Migration, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha3.Migration, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha3.MigrationList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Migration, err error)
 	MigrationExpansion
 }
 
@@ -63,20 +64,20 @@ func newMigrations(c *SchemasV1alpha3Client, namespace string) *migrations {
 }
 
 // Get takes name of the migration, and returns the corresponding migration object, and an error if there is any.
-func (c *migrations) Get(name string, options v1.GetOptions) (result *v1alpha3.Migration, err error) {
+func (c *migrations) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Migration, err error) {
 	result = &v1alpha3.Migration{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("migrations").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of Migrations that match those selectors.
-func (c *migrations) List(opts v1.ListOptions) (result *v1alpha3.MigrationList, err error) {
+func (c *migrations) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.MigrationList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -87,13 +88,13 @@ func (c *migrations) List(opts v1.ListOptions) (result *v1alpha3.MigrationList, 
 		Resource("migrations").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested migrations.
-func (c *migrations) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *migrations) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -104,87 +105,90 @@ func (c *migrations) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("migrations").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a migration and creates it.  Returns the server's representation of the migration, and an error, if there is any.
-func (c *migrations) Create(migration *v1alpha3.Migration) (result *v1alpha3.Migration, err error) {
+func (c *migrations) Create(ctx context.Context, migration *v1alpha3.Migration, opts v1.CreateOptions) (result *v1alpha3.Migration, err error) {
 	result = &v1alpha3.Migration{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("migrations").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(migration).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a migration and updates it. Returns the server's representation of the migration, and an error, if there is any.
-func (c *migrations) Update(migration *v1alpha3.Migration) (result *v1alpha3.Migration, err error) {
+func (c *migrations) Update(ctx context.Context, migration *v1alpha3.Migration, opts v1.UpdateOptions) (result *v1alpha3.Migration, err error) {
 	result = &v1alpha3.Migration{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("migrations").
 		Name(migration.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(migration).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *migrations) UpdateStatus(migration *v1alpha3.Migration) (result *v1alpha3.Migration, err error) {
+func (c *migrations) UpdateStatus(ctx context.Context, migration *v1alpha3.Migration, opts v1.UpdateOptions) (result *v1alpha3.Migration, err error) {
 	result = &v1alpha3.Migration{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("migrations").
 		Name(migration.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(migration).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the migration and deletes it. Returns an error if one occurs.
-func (c *migrations) Delete(name string, options *v1.DeleteOptions) error {
+func (c *migrations) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("migrations").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *migrations) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *migrations) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("migrations").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched migration.
-func (c *migrations) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha3.Migration, err error) {
+func (c *migrations) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Migration, err error) {
 	result = &v1alpha3.Migration{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("migrations").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

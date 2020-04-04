@@ -1,6 +1,7 @@
 package schemaherokubectlcli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -26,6 +27,8 @@ func GetMigrationsCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
+			ctx := context.Background()
+
 			databaseNameFilter := v.GetString("database")
 
 			cfg, err := config.GetConfig()
@@ -46,7 +49,7 @@ func GetMigrationsCmd() *cobra.Command {
 			namespaceNames := []string{}
 
 			if viper.GetBool("all-namespaces") {
-				namespaces, err := client.CoreV1().Namespaces().List(metav1.ListOptions{})
+				namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 				if err != nil {
 					return err
 				}
@@ -64,7 +67,7 @@ func GetMigrationsCmd() *cobra.Command {
 
 			matchingMigrations := []schemasv1alpha3.Migration{}
 			for _, namespaceName := range namespaceNames {
-				migrations, err := schemasClient.Migrations(namespaceName).List(metav1.ListOptions{})
+				migrations, err := schemasClient.Migrations(namespaceName).List(ctx, metav1.ListOptions{})
 				if err != nil {
 					return err
 				}
@@ -75,7 +78,7 @@ func GetMigrationsCmd() *cobra.Command {
 						continue
 					}
 
-					table, err := schemasClient.Tables(migration.Spec.TableNamespace).Get(migration.Spec.TableName, metav1.GetOptions{})
+					table, err := schemasClient.Tables(migration.Spec.TableNamespace).Get(ctx, migration.Spec.TableName, metav1.GetOptions{})
 					if err != nil {
 						return err
 					}

@@ -1,6 +1,7 @@
 package schemaherokubectlcli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -24,6 +25,8 @@ func GetDatabasesCmd() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
+
 			cfg, err := config.GetConfig()
 			if err != nil {
 				return err
@@ -39,7 +42,7 @@ func GetDatabasesCmd() *cobra.Command {
 				return err
 			}
 
-			namespaces, err := client.CoreV1().Namespaces().List(metav1.ListOptions{})
+			namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 			if err != nil {
 				return err
 			}
@@ -47,7 +50,7 @@ func GetDatabasesCmd() *cobra.Command {
 			matchingDatabases := []databasesv1alpha3.Database{}
 
 			for _, namespace := range namespaces.Items {
-				databases, err := databasesClient.Databases(namespace.Name).List(metav1.ListOptions{})
+				databases, err := databasesClient.Databases(namespace.Name).List(ctx, metav1.ListOptions{})
 				if err != nil {
 					return err
 				}

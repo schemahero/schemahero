@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -13,7 +14,7 @@ type SchemaHeroDatabaseConnection interface {
 	DatabaseName() string
 	EngineVersion() string
 
-	CheckAlive(string, string) (bool, error)
+	CheckAlive(context.Context, string, string) (bool, error)
 
 	ListTables() ([]string, error)
 	ListTableForeignKeys(string, string) ([]*types.ForeignKey, error)
