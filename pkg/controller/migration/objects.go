@@ -41,6 +41,18 @@ func getApplyConfigMap(migrationID string, namespace string, preparedStatement s
 	return configMap, nil
 }
 
+func podNameForMigrationApply(databaseName string, tableName string, migrationID string) string {
+	podName := fmt.Sprintf("%s-%s-%s-apply", databaseName, tableName, migrationID)
+	if len(apimachineryvalidation.NameIsDNSSubdomain(podName, false)) > 0 {
+		podName = fmt.Sprintf("%s-%s-apply", tableName, migrationID)
+		if len(apimachineryvalidation.NameIsDNSSubdomain(podName, false)) > 0 {
+			podName = fmt.Sprintf("%s-apply", migrationID)
+		}
+	}
+
+	return podName
+}
+
 func getApplyPod(migrationID string, namespace string, connectionURI string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
@@ -57,8 +69,6 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 	labels["schemahero-name"] = table.Name
 	labels["schemahero-namespace"] = table.Namespace
 	labels["schemahero-role"] = "apply"
-
-	name := fmt.Sprintf("%s-apply", table.Name)
 
 	driver := ""
 	if database.Spec.Connection.Postgres != nil {
@@ -79,7 +89,7 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      podNameForMigrationApply(database.Name, table.Name, migrationID),
 			Namespace: database.Namespace,
 			Labels:    labels,
 		},
