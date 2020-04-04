@@ -1,3 +1,3 @@
 # SchemaHero Docs
 
-The SchemaHero documentation is at https://docs.schemahero.io
+The SchemaHero documentation is at https://schemahero.io/docs
