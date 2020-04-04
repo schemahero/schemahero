@@ -18,6 +18,8 @@ limitations under the License.
 package fake
 
 import (
+	"context"
+
 	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -38,7 +40,7 @@ var tablesResource = schema.GroupVersionResource{Group: "schemas.schemahero.io",
 var tablesKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha3", Kind: "Table"}
 
 // Get takes name of the table, and returns the corresponding table object, and an error if there is any.
-func (c *FakeTables) Get(name string, options v1.GetOptions) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Table, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(tablesResource, c.ns, name), &v1alpha3.Table{})
 
@@ -49,7 +51,7 @@ func (c *FakeTables) Get(name string, options v1.GetOptions) (result *v1alpha3.T
 }
 
 // List takes label and field selectors, and returns the list of Tables that match those selectors.
-func (c *FakeTables) List(opts v1.ListOptions) (result *v1alpha3.TableList, err error) {
+func (c *FakeTables) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.TableList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(tablesResource, tablesKind, c.ns, opts), &v1alpha3.TableList{})
 
@@ -71,14 +73,14 @@ func (c *FakeTables) List(opts v1.ListOptions) (result *v1alpha3.TableList, err 
 }
 
 // Watch returns a watch.Interface that watches the requested tables.
-func (c *FakeTables) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *FakeTables) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(tablesResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a table and creates it.  Returns the server's representation of the table, and an error, if there is any.
-func (c *FakeTables) Create(table *v1alpha3.Table) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Create(ctx context.Context, table *v1alpha3.Table, opts v1.CreateOptions) (result *v1alpha3.Table, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(tablesResource, c.ns, table), &v1alpha3.Table{})
 
@@ -89,7 +91,7 @@ func (c *FakeTables) Create(table *v1alpha3.Table) (result *v1alpha3.Table, err 
 }
 
 // Update takes the representation of a table and updates it. Returns the server's representation of the table, and an error, if there is any.
-func (c *FakeTables) Update(table *v1alpha3.Table) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Update(ctx context.Context, table *v1alpha3.Table, opts v1.UpdateOptions) (result *v1alpha3.Table, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateAction(tablesResource, c.ns, table), &v1alpha3.Table{})
 
@@ -101,7 +103,7 @@ func (c *FakeTables) Update(table *v1alpha3.Table) (result *v1alpha3.Table, err 
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeTables) UpdateStatus(table *v1alpha3.Table) (*v1alpha3.Table, error) {
+func (c *FakeTables) UpdateStatus(ctx context.Context, table *v1alpha3.Table, opts v1.UpdateOptions) (*v1alpha3.Table, error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewUpdateSubresourceAction(tablesResource, "status", c.ns, table), &v1alpha3.Table{})
 
@@ -112,7 +114,7 @@ func (c *FakeTables) UpdateStatus(table *v1alpha3.Table) (*v1alpha3.Table, error
 }
 
 // Delete takes name of the table and deletes it. Returns an error if one occurs.
-func (c *FakeTables) Delete(name string, options *v1.DeleteOptions) error {
+func (c *FakeTables) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
 		Invokes(testing.NewDeleteAction(tablesResource, c.ns, name), &v1alpha3.Table{})
 
@@ -120,15 +122,15 @@ func (c *FakeTables) Delete(name string, options *v1.DeleteOptions) error {
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeTables) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(tablesResource, c.ns, listOptions)
+func (c *FakeTables) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(tablesResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha3.TableList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched table.
-func (c *FakeTables) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Table, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(tablesResource, c.ns, name, pt, data, subresources...), &v1alpha3.Table{})
 

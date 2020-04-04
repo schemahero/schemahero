@@ -95,7 +95,7 @@ vet:
 generate: controller-gen client-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/apis/...
 	$(CLIENT_GEN) \
-		-output-package=github.com/schemahero/schemahero/pkg/client \
+		--output-package=github.com/schemahero/schemahero/pkg/client \
 		--clientset-name schemaheroclientset \
 		--input-base github.com/schemahero/schemahero/pkg/apis \
 		--input databases/v1alpha3 \
@@ -138,13 +138,13 @@ ifeq (, $(shell which controller-gen))
 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.8
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
-CONTROLLER_GEN=$(shell which controller-gen)
+CONTROLLER_GEN=$(shell which controller-mangwegen)
 endif
 
 .PHONY: client-gen
 client-gen:
 ifeq (, $(shell which client-gen))
-	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.16.4
+	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.18.0
 CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
 else
 CLIENT_GEN=$(shell which client-gen)
