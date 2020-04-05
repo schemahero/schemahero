@@ -64,7 +64,7 @@ func (r *ReconcileTable) reconcileInstance(ctx context.Context, instance *schema
 	}
 
 	// Deploy a pod to calculculate the plan
-	if err := r.plan(database, instance); err != nil {
+	if err := r.plan(ctx, database, instance); err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to schedule plan phase")
 	}
 
