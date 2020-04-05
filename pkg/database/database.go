@@ -1,13 +1,13 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
@@ -65,13 +65,12 @@ func (d *Database) CreateFixturesSync() error {
 		}
 
 		if spec.Schema == nil {
-			fmt.Printf("skipping file %s because there is no schema\n", info.Name())
 			return nil
 		}
 
 		if d.Viper.GetString("driver") == "postgres" {
 			if spec.Schema.Postgres == nil {
-				fmt.Printf("skipping file %s because there is no postgres spec\n", info.Name())
+				return nil
 			}
 
 			statement, err := postgres.CreateTableStatement(spec.Name, spec.Schema.Postgres)
@@ -82,7 +81,7 @@ func (d *Database) CreateFixturesSync() error {
 			statements = append(statements, statement)
 		} else if d.Viper.GetString("driver") == "mysql" {
 			if spec.Schema.Mysql == nil {
-				fmt.Printf("skipping file %s because there is no mysql spec\n", info.Name())
+				return nil
 			}
 
 			statement, err := mysql.CreateTableStatement(spec.Name, spec.Schema.Mysql)
@@ -118,10 +117,10 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) PlanSync(filename string) error {
+func (d *Database) PlanSync(filename string) ([]string, error) {
 	specContents, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to read file")
 	}
 
 	var spec *schemasv1alpha3.TableSpec
@@ -135,15 +134,14 @@ func (d *Database) PlanSync(filename string) error {
 	if spec == nil {
 		plainSpec := schemasv1alpha3.TableSpec{}
 		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
-			return err
+			return nil, errors.Wrap(err, "failed to unmarshal spec")
 		}
 
 		spec = &plainSpec
 	}
 
 	if spec.Schema == nil {
-		fmt.Printf("skipping file %s because there is no schema\n", filename)
-		return nil
+		return []string{}, nil
 	}
 
 	if d.Viper.GetString("driver") == "postgres" {
@@ -152,7 +150,7 @@ func (d *Database) PlanSync(filename string) error {
 		return mysql.PlanMysqlTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Mysql)
 	}
 
-	return errors.New("unknown database driver")
+	return nil, errors.New("unknown database driver")
 }
 
 func (d *Database) ApplySync(statements []string) error {

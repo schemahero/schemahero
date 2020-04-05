@@ -25,6 +25,10 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 				return "", nil
 			}
 
+			if column.Name == "org_ids" {
+				fmt.Printf("existingColumn = %#v\n", existingColumn)
+				fmt.Printf("column = %#v\n", column)
+			}
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
 				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))

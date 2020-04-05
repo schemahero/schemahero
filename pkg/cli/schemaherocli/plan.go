@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,9 +13,10 @@ import (
 
 func Plan() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "plan",
-		Short: "plan a spec application against a database",
-		Long:  `...`,
+		Use:          "plan",
+		Short:        "plan a spec application against a database",
+		Long:         `...`,
+		SilenceUsage: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
@@ -46,12 +48,38 @@ func Plan() *cobra.Command {
 				return err
 			}
 
+			if _, err = os.Stat(v.GetString("out")); err == nil {
+				return errors.Errorf("file %s already exists", v.GetString("out"))
+			}
+
+			var f *os.File
+			if v.GetString("out") != "" {
+				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					return err
+				}
+				defer f.Close()
+			}
+
 			db := database.NewDatabase()
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					if !info.IsDir() {
-						if err := db.PlanSync(path); err != nil {
+						statements, err := db.PlanSync(path)
+						if err != nil {
 							return err
+						}
+
+						if f != nil {
+							for _, statement := range statements {
+								if _, err := f.WriteString(fmt.Sprintf("%s;\n", statement)); err != nil {
+									return err
+								}
+							}
+						} else {
+							for _, statement := range statements {
+								fmt.Printf("%s;\n", statement)
+							}
 						}
 					}
 
@@ -60,7 +88,24 @@ func Plan() *cobra.Command {
 
 				return err
 			} else {
-				return db.PlanSync(v.GetString("spec-file"))
+				statements, err := db.PlanSync(v.GetString("spec-file"))
+				if err != nil {
+					return err
+				}
+
+				if f != nil {
+					for _, statement := range statements {
+						if _, err := f.WriteString(fmt.Sprintf("%s;\n", statement)); err != nil {
+							return err
+						}
+					}
+				} else {
+					for _, statement := range statements {
+						fmt.Printf("%s;\n", statement)
+					}
+				}
+
+				return nil
 			}
 		},
 	}
@@ -68,6 +113,7 @@ func Plan() *cobra.Command {
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
+	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 
 	return cmd
 }

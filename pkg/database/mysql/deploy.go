@@ -5,14 +5,15 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/pkg/errors"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) error {
+func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	m, err := Connect(uri)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to connect to mysql")
 	}
 	defer m.db.Close()
 
@@ -21,59 +22,50 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 	row := m.db.QueryRow(query, tableName, m.databaseName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to scan")
 	}
 
 	if tableExists == 0 {
 		// shortcut to just create it
 		query, err := CreateTableStatement(tableName, mysqlTableSchema)
 		if err != nil {
-			return err
+			return nil, errors.Wrap(err, "failed to create table statement")
 		}
 
-		fmt.Println(query)
-
-		return nil
+		return []string{query}, nil
 	}
+
+	statements := []string{}
 
 	// table needs to be altered?
 	columnStatements, err := buildColumnStatements(m, tableName, mysqlTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build column statements")
 	}
-	for _, columnStatement := range columnStatements {
-		fmt.Println(columnStatement)
-	}
+	statements = append(statements, columnStatements...)
 
 	// primary key changes
 	primaryKeyStatements, err := buildPrimaryKeyStatements(m, tableName, mysqlTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build primary key statements")
 	}
-	for _, primaryKeyStatement := range primaryKeyStatements {
-		fmt.Println(primaryKeyStatement)
-	}
+	statements = append(statements, primaryKeyStatements...)
 
 	// foreign key changes
 	foreignKeyStatements, err := buildForeignKeyStatements(m, tableName, mysqlTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build foreign key statements")
 	}
-	for _, foreignKeyStatement := range foreignKeyStatements {
-		fmt.Println(foreignKeyStatement)
-	}
+	statements = append(statements, foreignKeyStatements...)
 
 	// index changes
 	indexStatements, err := buildIndexStatements(m, tableName, mysqlTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build index statements")
 	}
-	for _, indexStatement := range indexStatements {
-		fmt.Println(indexStatement)
-	}
+	statements = append(statements, indexStatements...)
 
-	return nil
-
+	return statements, nil
 }
 
 func DeployMysqlStatements(uri string, statements []string) error {
@@ -107,12 +99,12 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 
 func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	query := `select
-		COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
-		from information_schema.COLUMNS
-		where TABLE_NAME = ?`
+COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+from information_schema.COLUMNS
+where TABLE_NAME = ?`
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query from information_schema")
 	}
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
@@ -122,7 +114,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 		var charMaxLength sql.NullInt64
 
 		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to scan")
 		}
 
 		if charMaxLength.Valid {
@@ -132,7 +124,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 		if isParameterizedColumnType(dataType) {
 			dataType, err = maybeParseParameterizedColumnType(dataType)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "failed to parse parameterized column type")
 			}
 		}
 
@@ -156,10 +148,12 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 
 		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to create alter column statement")
 		}
 
-		alterAndDropStatements = append(alterAndDropStatements, columnStatement)
+		if columnStatement != "" {
+			alterAndDropStatements = append(alterAndDropStatements, columnStatement)
+		}
 	}
 
 	for _, desiredColumn := range mysqlTableSchema.Columns {
@@ -173,7 +167,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 		if !isColumnPresent {
 			statement, err := InsertColumnStatement(tableName, desiredColumn)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "failed to create insert column statement")
 			}
 
 			alterAndDropStatements = append(alterAndDropStatements, statement)
