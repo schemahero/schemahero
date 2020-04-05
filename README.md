@@ -18,13 +18,7 @@ SchemaHero is a Kubernetes Operator for [Declarative Schema Management](https://
 
 ## Getting Started
 
-The recommended way to deploy SchemaHero is:
-
-```
-kubectl apply -f https://git.io/schemahero
-```
-
-[Additional installation options](https://git.io/schemahero) are available in the documentation.
+The recommended way to deploy SchemaHero is to use the kubectl plugin. Full instruction and other installation methods listed in the [documentation](https://schemahero.io/docs/installing/kubectl/).
 
 To get started, read the [tutorial](https://schemahero.io/tutorial/) and the [full documentation](https://schemahero.io/docs/)
 
