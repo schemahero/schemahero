@@ -20,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -145,6 +146,10 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 	}, &existingMigration)
 	if kuberneteserrors.IsNotFound(err) {
 		// create it
+		if err := controllerutil.SetControllerReference(table, &desiredMigration, r.scheme); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to set owner on miration")
+		}
+
 		if err := r.Create(ctx, &desiredMigration); err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to create migration resource")
 		}
@@ -183,7 +188,7 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
+func (r *ReconcileTable) plan(ctx context.Context, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
 	logger.Debug("deploying plan")
 
 	configMap, err := planConfigMap(database.Namespace, table.Name, table.Spec)
@@ -195,11 +200,11 @@ func (r *ReconcileTable) plan(database *databasesv1alpha3.Database, table *schem
 		return errors.Wrap(err, "failed to get pod for plan")
 	}
 
-	if err := r.ensureTableConfigMap(configMap); err != nil {
+	if err := r.ensureTableConfigMap(ctx, configMap); err != nil {
 		return errors.Wrap(err, "failed to create config map for plan")
 	}
 
-	if err := r.ensureTablePod(pod); err != nil {
+	if err := r.ensureTablePod(ctx, pod); err != nil {
 		return errors.Wrap(err, "failerd to create pod for plan")
 	}
 

@@ -137,11 +137,11 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 	return pod, nil
 }
 
-func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap) error {
+func (r *ReconcileTable) ensureTableConfigMap(ctx context.Context, desiredConfigMap *corev1.ConfigMap) error {
 	existingConfigMap := corev1.ConfigMap{}
-	if err := r.Get(context.Background(), types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
+	if err := r.Get(ctx, types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
-			err = r.Create(context.Background(), desiredConfigMap)
+			err = r.Create(ctx, desiredConfigMap)
 			if err != nil {
 				return errors.Wrap(err, "failed to create configmap")
 			}
@@ -153,11 +153,11 @@ func (r *ReconcileTable) ensureTableConfigMap(desiredConfigMap *corev1.ConfigMap
 	return nil
 }
 
-func (r *ReconcileTable) ensureTablePod(desiredPod *corev1.Pod) error {
+func (r *ReconcileTable) ensureTablePod(ctx context.Context, desiredPod *corev1.Pod) error {
 	existingPod := corev1.Pod{}
-	if err := r.Get(context.Background(), types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
+	if err := r.Get(ctx, types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
 		if kuberneteserrors.IsNotFound(err) {
-			err = r.Create(context.Background(), desiredPod)
+			err = r.Create(ctx, desiredPod)
 			if err != nil {
 				return errors.Wrap(err, "failed to create table migration pod")
 			}
