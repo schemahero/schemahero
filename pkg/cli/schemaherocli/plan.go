@@ -46,12 +46,34 @@ func Plan() *cobra.Command {
 				return err
 			}
 
+			var f *os.File
+			if v.GetString("out") != "" {
+				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					return err
+				}
+				defer f.Close()
+			}
+
 			db := database.NewDatabase()
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					if !info.IsDir() {
-						if err := db.PlanSync(path); err != nil {
+						statements, err := db.PlanSync(path)
+						if err != nil {
 							return err
+						}
+
+						if f != nil {
+							for _, statement := range statements {
+								if _, err := f.WriteString(statement); err != nil {
+									return err
+								}
+							}
+						} else {
+							for _, statement := range statements {
+								fmt.Println(statement)
+							}
 						}
 					}
 
@@ -60,7 +82,24 @@ func Plan() *cobra.Command {
 
 				return err
 			} else {
-				return db.PlanSync(v.GetString("spec-file"))
+				statements, err := db.PlanSync(v.GetString("spec-file"))
+				if err != nil {
+					return err
+				}
+
+				if f != nil {
+					for _, statement := range statements {
+						if _, err := f.WriteString(statement); err != nil {
+							return err
+						}
+					}
+				} else {
+					for _, statement := range statements {
+						fmt.Println(statement)
+					}
+				}
+
+				return nil
 			}
 		},
 	}
@@ -68,6 +107,7 @@ func Plan() *cobra.Command {
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
+	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 
 	return cmd
 }

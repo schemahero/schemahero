@@ -10,10 +10,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) error {
+func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	p, err := Connect(uri)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to connect to postgres")
 	}
 	defer p.db.Close()
 
@@ -22,58 +22,50 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	row := p.db.QueryRow(query, tableName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to scan")
 	}
 
 	if tableExists == 0 {
 		// shortcut to just create it
 		query, err := CreateTableStatement(tableName, postgresTableSchema)
 		if err != nil {
-			return err
+			return nil, errors.Wrap(err, "failed to create table statement")
 		}
 
-		fmt.Println(query)
-
-		return nil
+		return []string{query}, nil
 	}
+
+	statements := []string{}
 
 	// table needs to be altered?
 	columnStatements, err := buildColumnStatements(p, tableName, postgresTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build column statement")
 	}
-	for _, columnStatement := range columnStatements {
-		fmt.Println(columnStatement)
-	}
+	statements = append(statements, columnStatements...)
 
 	// primary key changes
 	primaryKeyStatements, err := buildPrimaryKeyStatements(p, tableName, postgresTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build primary key statements")
 	}
-	for _, primaryKeyStatement := range primaryKeyStatements {
-		fmt.Println(primaryKeyStatement)
-	}
+	statements = append(statements, primaryKeyStatements...)
 
 	// foreign key changes
 	foreignKeyStatements, err := buildForeignKeyStatements(p, tableName, postgresTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build foreign key statements")
 	}
-	for _, foreignKeyStatement := range foreignKeyStatements {
-		fmt.Println(foreignKeyStatement)
-	}
+	statements = append(statements, foreignKeyStatements...)
 
 	// index changes
 	indexStatements, err := buildIndexStatements(p, tableName, postgresTableSchema)
 	if err != nil {
-		return err
+		return nil, errors.Wrap(err, "failed to build index statements")
 	}
-	for _, indexStatement := range indexStatements {
-		fmt.Println(indexStatement)
-	}
+	statements = append(statements, indexStatements...)
 
-	return nil
+	return statements, nil
 }
 
 func DeployPostgresStatements(uri string, statements []string) error {
