@@ -1,1 +1,1 @@
-alter table `projects` modify column `icon_uri` varchar (255)
+alter table `projects` modify column `icon_uri` varchar (255);

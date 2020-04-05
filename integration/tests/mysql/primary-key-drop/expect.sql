@@ -1,1 +1,1 @@
-alter table `user_projects` drop primary key
+alter table `user_projects` drop primary key;
