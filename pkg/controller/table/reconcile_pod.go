@@ -31,16 +31,16 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		return reconcile.Result{}, nil
 	}
 
+	if role != "table" && role != "plan" {
+		// we want to avoid migration pods in this reconciler
+		return reconcile.Result{}, nil
+	}
+
 	logger.Debug("reconciling schemahero pod",
 		zap.String("kind", pod.Kind),
 		zap.String("name", pod.Name),
 		zap.String("role", role),
 		zap.String("podPhase", string(pod.Status.Phase)))
-
-	if role != "table" && role != "plan" {
-		// we want to avoid migration pods in this reconciler
-		return reconcile.Result{}, nil
-	}
 
 	if pod.Status.Phase != corev1.PodSucceeded {
 		return reconcile.Result{}, nil
@@ -186,29 +186,6 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 	}
 
 	return reconcile.Result{}, nil
-}
-
-func (r *ReconcileTable) plan(ctx context.Context, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) error {
-	logger.Debug("deploying plan")
-
-	configMap, err := planConfigMap(database.Namespace, table.Name, table.Spec)
-	if err != nil {
-		return errors.Wrap(err, "failed to get config map object for plan")
-	}
-	pod, err := r.planPod(database, table)
-	if err != nil {
-		return errors.Wrap(err, "failed to get pod for plan")
-	}
-
-	if err := r.ensureTableConfigMap(ctx, configMap); err != nil {
-		return errors.Wrap(err, "failed to create config map for plan")
-	}
-
-	if err := r.ensureTablePod(ctx, pod); err != nil {
-		return errors.Wrap(err, "failerd to create pod for plan")
-	}
-
-	return nil
 }
 
 func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {

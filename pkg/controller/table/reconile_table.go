@@ -10,23 +10,29 @@ import (
 	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
+	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileTable) reconcileInstance(ctx context.Context, instance *schemasv1alpha3.Table) (reconcile.Result, error) {
+func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1alpha3.Table) (reconcile.Result, error) {
 	logger.Debug("reconciling table",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
 		zap.String("database", instance.Spec.Database))
 
+	// get the full database spec from the api
 	database, err := r.getDatabaseSpec(ctx, instance.Namespace, instance.Spec.Database)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get database spec")
 	}
 
+	// the database object might not yet exist
+	// this can happen if the table was deployed at the same time or before the database object
 	if database == nil {
 		// TDOO add a status field with this state
 		logger.Debug("requeuing table reconcile request for 10 seconds because database instance was not present",
@@ -64,11 +70,7 @@ func (r *ReconcileTable) reconcileInstance(ctx context.Context, instance *schema
 	}
 
 	// Deploy a pod to calculculate the plan
-	if err := r.plan(ctx, database, instance); err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to schedule plan phase")
-	}
-
-	return reconcile.Result{}, nil
+	return r.deployMigrationPlanPhase(ctx, database, instance)
 }
 
 func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha3.Table, error) {
@@ -139,4 +141,88 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, 
 	}
 
 	return false
+}
+
+func (r *ReconcileTable) deployMigrationPlanPhase(ctx context.Context, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (reconcile.Result, error) {
+	logger.Debug("deploying plan phase of migration",
+		zap.String("databaseName", database.Name),
+		zap.String("tableName", table.Name))
+
+	desiredConfigMap, err := getPlanConfigMap(database, table)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get config map object for plan")
+	}
+	var existingConfigMap corev1.ConfigMap
+	configMapChanged := false
+	err = r.Get(ctx, types.NamespacedName{
+		Name:      desiredConfigMap.Name,
+		Namespace: desiredConfigMap.Namespace,
+	}, &existingConfigMap)
+	if kuberneteserrors.IsNotFound(err) {
+		// create it
+		if err := controllerutil.SetControllerReference(table, desiredConfigMap, r.scheme); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to set owner on configmap")
+		}
+		if err := r.Create(ctx, desiredConfigMap); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
+		}
+	} else if err == nil {
+		// update it
+		existingConfigMap.Data = map[string]string{}
+		for k, v := range desiredConfigMap.Data {
+			d, ok := existingConfigMap.Data[k]
+			if !ok || d != v {
+				existingConfigMap.Data[k] = v
+				configMapChanged = true
+			}
+		}
+		if configMapChanged {
+			if err := controllerutil.SetControllerReference(table, &existingConfigMap, r.scheme); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to update owner on configmap")
+			}
+			if err = r.Update(ctx, &existingConfigMap); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
+			}
+		}
+	} else {
+		// something bad is happening here
+		return reconcile.Result{}, errors.Wrap(err, "failed to check if config map exists")
+	}
+
+	desiredPod, err := r.getPlanPod(database, table)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get pod for plan")
+	}
+	var existingPod corev1.Pod
+	err = r.Get(ctx, types.NamespacedName{
+		Name:      desiredPod.Name,
+		Namespace: desiredPod.Namespace,
+	}, &existingPod)
+	if kuberneteserrors.IsNotFound(err) {
+		// create it
+		if err := r.Create(ctx, desiredPod); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to create plan pod")
+		}
+		if err := controllerutil.SetControllerReference(table, desiredPod, r.scheme); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to set owner on pod")
+		}
+	} else if err == nil {
+		// maybe update it
+		if configMapChanged {
+			// restart the pod by deleting and recreating
+			logger.Debug("deleting plan pod because config map has changed",
+				zap.String("podName", existingPod.Name))
+			if err = r.Delete(ctx, &existingPod); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to delete pod")
+			}
+
+			// This pod will be recreated later in another exceution of the reconcile loop
+			// we watch pods, and when that above delete completed, the reconcile will happen again
+		}
+	} else {
+		// again, something bad
+		return reconcile.Result{}, errors.Wrap(err, "failed to check if pod exists")
+	}
+
+	return reconcile.Result{}, nil
 }

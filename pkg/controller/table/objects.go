@@ -1,7 +1,7 @@
 package table
 
 import (
-	"context"
+	"crypto/sha256"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -9,13 +9,54 @@ import (
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
-	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
+	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
-func planConfigMap(namespace string, tableName string, tableSpec schemasv1alpha3.TableSpec) (*corev1.ConfigMap, error) {
-	b, err := yaml.Marshal(tableSpec)
+func configMapNameForPlan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) string {
+	shortID, err := getShortIDForTableSpec(table)
+	if err != nil {
+		return table.Name
+	}
+	configMapName := fmt.Sprintf("%s-%s-%s-plan", database.Name, table.Name, shortID)
+	if len(apimachineryvalidation.NameIsDNSSubdomain(configMapName, false)) > 0 {
+		configMapName = fmt.Sprintf("%s-%s-plan", table.Name, shortID)
+		if len(apimachineryvalidation.NameIsDNSSubdomain(configMapName, false)) > 0 {
+			configMapName = fmt.Sprintf("%s-plan", shortID)
+		}
+	}
+
+	return configMapName
+}
+
+func podNameForPlan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) string {
+	shortID, err := getShortIDForTableSpec(table)
+	if err != nil {
+		return table.Name
+	}
+	podName := fmt.Sprintf("%s-%s-%s-plan", database.Name, table.Name, shortID)
+	if len(apimachineryvalidation.NameIsDNSSubdomain(podName, false)) > 0 {
+		podName = fmt.Sprintf("%s-%s-plan", table.Name, shortID)
+		if len(apimachineryvalidation.NameIsDNSSubdomain(podName, false)) > 0 {
+			podName = fmt.Sprintf("%s-plan", shortID)
+		}
+	}
+
+	return podName
+}
+
+func getShortIDForTableSpec(table *schemasv1alpha3.Table) (string, error) {
+	b, err := yaml.Marshal(table.Spec)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to marshal yaml spec")
+	}
+
+	sum := sha256.Sum256(b)
+	return fmt.Sprintf("%x", sum)[:7], nil
+}
+
+func getPlanConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.ConfigMap, error) {
+	b, err := yaml.Marshal(table.Spec)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal yaml spec")
 	}
@@ -23,11 +64,10 @@ func planConfigMap(namespace string, tableName string, tableSpec schemasv1alpha3
 	tableData := make(map[string]string)
 	tableData["table.yaml"] = string(b)
 
-	name := tableName
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			Name:      configMapNameForPlan(database, table),
+			Namespace: table.Namespace,
 		},
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -39,7 +79,7 @@ func planConfigMap(namespace string, tableName string, tableSpec schemasv1alpha3
 	return configMap, nil
 }
 
-func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	nodeSelector := make(map[string]string)
 	driver := ""
@@ -78,9 +118,6 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 	labels["schemahero-namespace"] = table.Namespace
 	labels["schemahero-role"] = "plan"
 
-	name := fmt.Sprintf("%s-plan", table.Name)
-	configMapName := table.Name
-
 	args := []string{
 		"plan",
 		"--driver",
@@ -93,7 +130,7 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      podNameForPlan(database, table),
 			Namespace: database.Namespace,
 			Labels:    labels,
 		},
@@ -125,7 +162,7 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 					VolumeSource: corev1.VolumeSource{
 						ConfigMap: &corev1.ConfigMapVolumeSource{
 							LocalObjectReference: corev1.LocalObjectReference{
-								Name: configMapName,
+								Name: configMapNameForPlan(database, table),
 							},
 						},
 					},
@@ -135,38 +172,4 @@ func (r *ReconcileTable) planPod(database *databasesv1alpha3.Database, table *sc
 	}
 
 	return pod, nil
-}
-
-func (r *ReconcileTable) ensureTableConfigMap(ctx context.Context, desiredConfigMap *corev1.ConfigMap) error {
-	existingConfigMap := corev1.ConfigMap{}
-	if err := r.Get(ctx, types.NamespacedName{Name: desiredConfigMap.Name, Namespace: desiredConfigMap.Namespace}, &existingConfigMap); err != nil {
-		if kuberneteserrors.IsNotFound(err) {
-			err = r.Create(ctx, desiredConfigMap)
-			if err != nil {
-				return errors.Wrap(err, "failed to create configmap")
-			}
-		}
-
-		return errors.Wrap(err, "failed to get existing configmap")
-	}
-
-	return nil
-}
-
-func (r *ReconcileTable) ensureTablePod(ctx context.Context, desiredPod *corev1.Pod) error {
-	existingPod := corev1.Pod{}
-	if err := r.Get(ctx, types.NamespacedName{Name: desiredPod.Name, Namespace: desiredPod.Namespace}, &existingPod); err != nil {
-		if kuberneteserrors.IsNotFound(err) {
-			err = r.Create(ctx, desiredPod)
-			if err != nil {
-				return errors.Wrap(err, "failed to create table migration pod")
-			}
-
-			return nil
-		}
-
-		return errors.Wrap(err, "failed to get existing pod object")
-	}
-
-	return nil
 }

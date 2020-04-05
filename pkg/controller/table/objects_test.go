@@ -3,31 +3,38 @@ package table
 import (
 	"testing"
 
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	corev1 "k8s.io/api/core/v1"
 )
 
 func Test_planConfigMap(t *testing.T) {
 	tests := []struct {
-		name      string
-		namespace string
-		tableName string
-		tableSpec schemasv1alpha3.TableSpec
-		expect    corev1.ConfigMap
+		name     string
+		table    schemasv1alpha3.Table
+		database databasesv1alpha3.Database
+		expect   string
 	}{
 		{
-			name:      "basic test",
-			namespace: "foo",
-			tableName: "name",
-			tableSpec: schemasv1alpha3.TableSpec{
-				Database: "db",
-				Name:     "name",
-				Schema: &schemasv1alpha3.TableSchema{
-					Postgres: &schemasv1alpha3.SQLTableSchema{},
+			name: "basic test",
+			table: schemasv1alpha3.Table{
+				Spec: schemasv1alpha3.TableSpec{
+					Database: "db",
+					Name:     "name",
+					Schema: &schemasv1alpha3.TableSchema{
+						Postgres: &schemasv1alpha3.SQLTableSchema{},
+					},
 				},
 			},
+			database: databasesv1alpha3.Database{},
+			expect: `database: db
+name: name
+schema:
+  postgres:
+    primaryKey: []
+    columns: []
+`,
 		},
 	}
 
@@ -35,13 +42,11 @@ func Test_planConfigMap(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			actual, err := planConfigMap(test.namespace, test.tableName, test.tableSpec)
+			actual, err := getPlanConfigMap(&test.database, &test.table)
 			req.NoError(err)
 
 			// check some of the fields on the config map
-			assert.Equal(t, test.tableName, actual.Name)
-			assert.Len(t, actual.Data, 1)
-			assert.NotNil(t, actual.Data["table.yaml"], actual.Data["table.yaml"])
+			assert.Equal(t, actual.Data["table.yaml"], test.expect)
 		})
 	}
 }
