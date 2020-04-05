@@ -107,7 +107,7 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 	// so this function is simply an entrypoint that executes the right reconcile loop
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
-		result, err := r.reconcileInstance(context.Background(), instance)
+		result, err := r.reconcileTable(context.Background(), instance)
 		if err != nil {
 			logger.Error(err)
 		}
