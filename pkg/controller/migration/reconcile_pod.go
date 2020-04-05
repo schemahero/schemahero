@@ -7,6 +7,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -30,6 +31,28 @@ func (r *ReconcileMigration) reconcilePod(ctx context.Context, pod *corev1.Pod) 
 
 	if pod.Status.Phase != corev1.PodSucceeded {
 		return reconcile.Result{}, nil
+	}
+
+	// delete related configmaps
+	// we don't have owner refs on this because we create them in the wrong order
+	// it would be better and more reliable to change this so that the config map
+	// has an owner ref set to the pod on creation
+	for _, vol := range pod.Spec.Volumes {
+		if vol.Name == "input" {
+			configMapVolumeSource := vol.VolumeSource.ConfigMap
+			if configMapVolumeSource != nil {
+				var configMap corev1.ConfigMap
+				err := r.Get(ctx, types.NamespacedName{
+					Name:      configMapVolumeSource.Name,
+					Namespace: pod.Namespace,
+				}, &configMap)
+				if err == nil {
+					if err := r.Delete(ctx, &configMap); err != nil {
+						return reconcile.Result{}, errors.Wrap(err, "failed to delete apply config map")
+					}
+				}
+			}
+		}
 	}
 
 	// delete it
