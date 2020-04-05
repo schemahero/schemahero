@@ -31,16 +31,16 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		return reconcile.Result{}, nil
 	}
 
+	if role != "table" && role != "plan" {
+		// we want to avoid migration pods in this reconciler
+		return reconcile.Result{}, nil
+	}
+
 	logger.Debug("reconciling schemahero pod",
 		zap.String("kind", pod.Kind),
 		zap.String("name", pod.Name),
 		zap.String("role", role),
 		zap.String("podPhase", string(pod.Status.Phase)))
-
-	if role != "table" && role != "plan" {
-		// we want to avoid migration pods in this reconciler
-		return reconcile.Result{}, nil
-	}
 
 	if pod.Status.Phase != corev1.PodSucceeded {
 		return reconcile.Result{}, nil

@@ -14,17 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1alpha3.Migration, error) {
-	v1alpha3instance := &schemasv1alpha3.Migration{}
-	err := r.Get(context.Background(), request.NamespacedName, v1alpha3instance)
-	if err != nil {
-		return nil, err // don't wrap
-	}
-
-	return v1alpha3instance, nil
-}
-
-func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
+func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
 	logger.Debug("reconciling migration",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
@@ -119,16 +109,6 @@ func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *sc
 
 		return reconcile.Result{}, nil
 	}
-
-	return reconcile.Result{}, nil
-}
-
-func (r *ReconcileMigration) reconcilePod(pod *corev1.Pod) (reconcile.Result, error) {
-	// podLabels := pod.GetObjectMeta().GetLabels()
-	// role, ok := podLabels["schemahero-role"]
-	// if !ok {
-	// 	return reconcile.Result{}, nil
-	// }
 
 	return reconcile.Result{}, nil
 }

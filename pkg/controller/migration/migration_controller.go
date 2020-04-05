@@ -107,7 +107,7 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	// so this function is simply an entrypoint that executes the right reconcile loop
 	instance, instanceErr := r.getInstance(request)
 	if instanceErr == nil {
-		result, err := r.reconcileInstance(context.Background(), instance)
+		result, err := r.reconcileMigration(context.Background(), instance)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -117,7 +117,7 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	pod := &corev1.Pod{}
 	podErr := r.Get(context.Background(), request.NamespacedName, pod)
 	if podErr == nil {
-		result, err := r.reconcilePod(pod)
+		result, err := r.reconcilePod(context.Background(), pod)
 		if err != nil {
 			logger.Error(err)
 		}
@@ -125,6 +125,16 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	}
 
 	return reconcile.Result{}, errors.New("unknown error in migration reconciler")
+}
+
+func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1alpha3.Migration, error) {
+	v1alpha3instance := &schemasv1alpha3.Migration{}
+	err := r.Get(context.Background(), request.NamespacedName, v1alpha3instance)
+	if err != nil {
+		return nil, err // don't wrap
+	}
+
+	return v1alpha3instance, nil
 }
 
 func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha3.Database) (string, error) {
