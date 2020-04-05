@@ -10,6 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -58,6 +59,10 @@ func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *sc
 			if err := r.Create(ctx, desiredConfigMap); err != nil {
 				return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
 			}
+
+			if err := controllerutil.SetControllerReference(instance, desiredConfigMap, r.scheme); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to set owner on configmap")
+			}
 		} else if err == nil {
 			// update it
 			existingConfigMap.Data = map[string]string{}
@@ -67,6 +72,9 @@ func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *sc
 
 			if err = r.Update(ctx, &existingConfigMap); err != nil {
 				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
+			}
+			if err := controllerutil.SetControllerReference(instance, &existingConfigMap, r.scheme); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to update owner on configmap")
 			}
 			configMapChanged = true
 		} else {
@@ -87,6 +95,9 @@ func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *sc
 			// create it
 			if err := r.Create(ctx, desiredPod); err != nil {
 				return reconcile.Result{}, errors.Wrap(err, "failed to create apply pod")
+			}
+			if err := controllerutil.SetControllerReference(instance, desiredPod, r.scheme); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to set owner on pod")
 			}
 		} else if err == nil {
 			// maybe update it
