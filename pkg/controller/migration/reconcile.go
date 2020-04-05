@@ -56,26 +56,26 @@ func (r *ReconcileMigration) reconcileInstance(ctx context.Context, instance *sc
 		}, &existingConfigMap)
 		if kuberneteserrors.IsNotFound(err) {
 			// create it
+			if err := controllerutil.SetControllerReference(instance, desiredConfigMap, r.scheme); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to set owner on configmap")
+			}
 			if err := r.Create(ctx, desiredConfigMap); err != nil {
 				return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
 			}
 
-			if err := controllerutil.SetControllerReference(instance, desiredConfigMap, r.scheme); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to set owner on configmap")
-			}
 		} else if err == nil {
 			// update it
 			existingConfigMap.Data = map[string]string{}
 			for k, v := range desiredConfigMap.Data {
 				existingConfigMap.Data[k] = v
 			}
-
-			if err = r.Update(ctx, &existingConfigMap); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
-			}
 			if err := controllerutil.SetControllerReference(instance, &existingConfigMap, r.scheme); err != nil {
 				return reconcile.Result{}, errors.Wrap(err, "failed to update owner on configmap")
 			}
+			if err = r.Update(ctx, &existingConfigMap); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
+			}
+
 			configMapChanged = true
 		} else {
 			// something bad is happening here
