@@ -65,13 +65,12 @@ func (d *Database) CreateFixturesSync() error {
 		}
 
 		if spec.Schema == nil {
-			fmt.Printf("skipping file %s because there is no schema\n", info.Name())
 			return nil
 		}
 
 		if d.Viper.GetString("driver") == "postgres" {
 			if spec.Schema.Postgres == nil {
-				fmt.Printf("skipping file %s because there is no postgres spec\n", info.Name())
+				return nil
 			}
 
 			statement, err := postgres.CreateTableStatement(spec.Name, spec.Schema.Postgres)
@@ -82,7 +81,7 @@ func (d *Database) CreateFixturesSync() error {
 			statements = append(statements, statement)
 		} else if d.Viper.GetString("driver") == "mysql" {
 			if spec.Schema.Mysql == nil {
-				fmt.Printf("skipping file %s because there is no mysql spec\n", info.Name())
+				return nil
 			}
 
 			statement, err := mysql.CreateTableStatement(spec.Name, spec.Schema.Mysql)
@@ -142,7 +141,6 @@ func (d *Database) PlanSync(filename string) ([]string, error) {
 	}
 
 	if spec.Schema == nil {
-		fmt.Printf("skipping file %s because there is no schema\n", filename)
 		return []string{}, nil
 	}
 

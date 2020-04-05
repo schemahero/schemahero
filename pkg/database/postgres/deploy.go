@@ -99,23 +99,23 @@ func executeStatements(p *PostgresConnection, statements []string) error {
 
 func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	query := `select
-		column_name, column_default, is_nullable, data_type, character_maximum_length
-		from information_schema.columns
-		where table_name = $1`
+column_name, column_default, is_nullable, data_type, udt_name, character_maximum_length
+from information_schema.columns
+where table_name = $1`
 	rows, err := p.db.Query(query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to select from information_schema")
 	}
 
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
 	for rows.Next() {
-		var columnName, dataType, isNullable string
+		var columnName, dataType, udtName, isNullable string
 		var columnDefault sql.NullString
 		var charMaxLength sql.NullInt64
 
-		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
-			return nil, err
+		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &udtName, &charMaxLength); err != nil {
+			return nil, errors.Wrap(err, "failed to scan")
 		}
 
 		foundColumnNames = append(foundColumnNames, columnName)
@@ -124,6 +124,11 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 			Name:        columnName,
 			DataType:    dataType,
 			Constraints: &types.ColumnConstraints{},
+		}
+
+		if dataType == "ARRAY" {
+			existingColumn.IsArray = true
+			existingColumn.DataType = UDTNameToDataType(udtName)
 		}
 
 		if isNullable == "NO" {
@@ -142,10 +147,12 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 
 		columnStatement, err := AlterColumnStatement(tableName, postgresTableSchema.PrimaryKey, postgresTableSchema.Columns, &existingColumn)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to create alter column statement")
 		}
 
-		alterAndDropStatements = append(alterAndDropStatements, columnStatement)
+		if columnStatement != "" {
+			alterAndDropStatements = append(alterAndDropStatements, columnStatement)
+		}
 	}
 
 	for _, desiredColumn := range postgresTableSchema.Columns {
@@ -159,7 +166,7 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 		if !isColumnPresent {
 			statement, err := InsertColumnStatement(tableName, desiredColumn)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "failed to create insert column statement")
 			}
 
 			alterAndDropStatements = append(alterAndDropStatements, statement)

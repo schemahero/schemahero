@@ -99,12 +99,12 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 
 func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha3.SQLTableSchema) ([]string, error) {
 	query := `select
-		COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
-		from information_schema.COLUMNS
-		where TABLE_NAME = ?`
+COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+from information_schema.COLUMNS
+where TABLE_NAME = ?`
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query from information_schema")
 	}
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
@@ -114,7 +114,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 		var charMaxLength sql.NullInt64
 
 		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to scan")
 		}
 
 		if charMaxLength.Valid {
@@ -124,7 +124,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 		if isParameterizedColumnType(dataType) {
 			dataType, err = maybeParseParameterizedColumnType(dataType)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "failed to parse parameterized column type")
 			}
 		}
 
@@ -148,10 +148,12 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 
 		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to create alter column statement")
 		}
 
-		alterAndDropStatements = append(alterAndDropStatements, columnStatement)
+		if columnStatement != "" {
+			alterAndDropStatements = append(alterAndDropStatements, columnStatement)
+		}
 	}
 
 	for _, desiredColumn := range mysqlTableSchema.Columns {
@@ -165,7 +167,7 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 		if !isColumnPresent {
 			statement, err := InsertColumnStatement(tableName, desiredColumn)
 			if err != nil {
-				return nil, err
+				return nil, errors.Wrap(err, "failed to create insert column statement")
 			}
 
 			alterAndDropStatements = append(alterAndDropStatements, statement)
