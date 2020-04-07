@@ -21,11 +21,11 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 		zap.String("tableName", instance.Spec.TableName))
 
 	if instance.Status.ApprovedAt > 0 && instance.Status.ExecutedAt == 0 {
-		table, err := tableFromMigration(ctx, instance)
+		table, err := TableFromMigration(ctx, instance)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get table")
 		}
-		database, err := databaseFromTable(ctx, table)
+		database, err := DatabaseFromTable(ctx, table)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to get database")
 		}
