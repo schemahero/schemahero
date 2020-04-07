@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-func tableFromMigration(ctx context.Context, migration *schemasv1alpha3.Migration) (*schemasv1alpha3.Table, error) {
+func TableFromMigration(ctx context.Context, migration *schemasv1alpha3.Migration) (*schemasv1alpha3.Table, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get config")
@@ -31,7 +31,7 @@ func tableFromMigration(ctx context.Context, migration *schemasv1alpha3.Migratio
 	return table, nil
 }
 
-func databaseFromTable(ctx context.Context, table *schemasv1alpha3.Table) (*databasesv1alpha3.Database, error) {
+func DatabaseFromTable(ctx context.Context, table *schemasv1alpha3.Table) (*databasesv1alpha3.Database, error) {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get config")

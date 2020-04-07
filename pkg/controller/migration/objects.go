@@ -66,7 +66,7 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 	}
 
 	labels := make(map[string]string)
-	labels["schemahero-name"] = table.Name
+	labels["schemahero-name"] = migrationID
 	labels["schemahero-namespace"] = table.Namespace
 	labels["schemahero-role"] = "apply"
 

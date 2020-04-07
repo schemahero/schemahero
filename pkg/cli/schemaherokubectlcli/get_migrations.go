@@ -9,6 +9,7 @@ import (
 
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
+	"github.com/schemahero/schemahero/pkg/controller/migration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -72,19 +73,19 @@ func GetMigrationsCmd() *cobra.Command {
 					return err
 				}
 
-				for _, migration := range migrations.Items {
+				for _, m := range migrations.Items {
 					if databaseNameFilter == "" {
-						matchingMigrations = append(matchingMigrations, migration)
+						matchingMigrations = append(matchingMigrations, m)
 						continue
 					}
 
-					table, err := schemasClient.Tables(migration.Spec.TableNamespace).Get(ctx, migration.Spec.TableName, metav1.GetOptions{})
+					table, err := schemasClient.Tables(m.Spec.TableNamespace).Get(ctx, m.Spec.TableName, metav1.GetOptions{})
 					if err != nil {
 						return err
 					}
 
 					if table.Spec.Database == databaseNameFilter {
-						matchingMigrations = append(matchingMigrations, migration)
+						matchingMigrations = append(matchingMigrations, m)
 					}
 				}
 			}
@@ -95,27 +96,37 @@ func GetMigrationsCmd() *cobra.Command {
 			}
 
 			rows := [][]string{}
-			for _, migration := range matchingMigrations {
-				// TODO should we show these?
-				if migration.Status.ExecutedAt > 0 {
-					continue
-				}
-				if migration.Status.RejectedAt > 0 {
-					continue
-				}
-				if migration.Status.ApprovedAt > 0 {
-					continue
+			for _, m := range matchingMigrations {
+				table, err := migration.TableFromMigration(context.Background(), &m)
+				if err != nil {
+					return err
 				}
 
-				rows = append(rows, []string{
-					migration.Name,
-					"<Database Unknown>",
-					migration.Spec.TableName,
-					timestampToAge(migration.Status.PlannedAt),
-					timestampToAge(migration.Status.ExecutedAt),
-					timestampToAge(migration.Status.ApprovedAt),
-					timestampToAge(migration.Status.RejectedAt),
-				})
+				database, err := migration.DatabaseFromTable(context.Background(), table)
+				if err != nil {
+					return err
+				}
+
+				isIncluded := true
+				// if m.Status.ExecutedAt > 0 {
+				// 	continue
+				// } else if m.Status.RejectedAt > 0 {
+				// 	continue
+				// } else if m.Status.ApprovedAt > 0 {
+				// 	continue
+				// }
+
+				if isIncluded {
+					rows = append(rows, []string{
+						m.Name,
+						database.Name,
+						table.Name,
+						timestampToAge(m.Status.PlannedAt),
+						timestampToAge(m.Status.ExecutedAt),
+						timestampToAge(m.Status.ApprovedAt),
+						timestampToAge(m.Status.RejectedAt),
+					})
+				}
 			}
 
 			if len(rows) == 0 {

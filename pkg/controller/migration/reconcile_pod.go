@@ -2,8 +2,10 @@ package migration
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -14,6 +16,11 @@ import (
 func (r *ReconcileMigration) reconcilePod(ctx context.Context, pod *corev1.Pod) (reconcile.Result, error) {
 	podLabels := pod.GetObjectMeta().GetLabels()
 	role, ok := podLabels["schemahero-role"]
+	if !ok {
+		return reconcile.Result{}, nil
+	}
+
+	migrationID, ok := podLabels["schemahero-name"]
 	if !ok {
 		return reconcile.Result{}, nil
 	}
@@ -31,6 +38,21 @@ func (r *ReconcileMigration) reconcilePod(ctx context.Context, pod *corev1.Pod) 
 
 	if pod.Status.Phase != corev1.PodSucceeded {
 		return reconcile.Result{}, nil
+	}
+
+	// the migration has completed
+	// so lets store the executed at timestamp on the status
+	var instance schemasv1alpha3.Migration
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      migrationID,
+		Namespace: pod.Namespace,
+	}, &instance)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get migration")
+	}
+	instance.Status.ExecutedAt = time.Now().Unix()
+	if err := r.Update(ctx, &instance); err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to update migration")
 	}
 
 	// delete related configmaps
