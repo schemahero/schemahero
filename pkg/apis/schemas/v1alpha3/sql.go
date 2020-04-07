@@ -47,9 +47,9 @@ type SQLTableColumn struct {
 }
 
 type SQLTableSchema struct {
-	PrimaryKey  []string              `json:"primaryKey" yaml:"primaryKey"`
+	PrimaryKey  []string              `json:"primaryKey,omitempty" yaml:"primaryKey,omitempty"`
 	ForeignKeys []*SQLTableForeignKey `json:"foreignKeys,omitempty" yaml:"foreignKeys,omitempty"`
 	Indexes     []*SQLTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
-	Columns     []*SQLTableColumn     `json:"columns,omitempty" yaml:"columns"`
+	Columns     []*SQLTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                  `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 }

@@ -36,7 +36,7 @@ type TableSpec struct {
 	Name     string   `json:"name" yaml:"name"`
 	Requires []string `json:"requires,omitempty" yaml:"requires,omitempty"`
 
-	Schema *TableSchema `json:"schema" yaml:"schema"`
+	Schema *TableSchema `json:"schema,omitempty" yaml:"schema,omitempty"`
 }
 
 // TableStatus defines the observed state of Table
