@@ -98,7 +98,13 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 
 	table, err := schemasClient.Tables(tableNamespace).Get(ctx, tableName, metav1.GetOptions{})
 	if err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to get existing table")
+		// this isn't an error condition, the table could have been deleted before
+		// the table pod reconciled
+		// there's no reason to log something here, the correct behavior is to do nothing
+		logger.Info("table not found while reconiling pod",
+			zap.String("namespace", tableNamespace),
+			zap.String("name", tableName))
+		return reconcile.Result{}, nil
 	}
 	tableSHA, err := table.GetSHA()
 	if err != nil {
@@ -176,12 +182,12 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		}
 	}
 	configMap := corev1.ConfigMap{}
-	err = r.Get(context.Background(), types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
+	err = r.Get(ctx, types.NamespacedName{Name: configMapName, Namespace: pod.Namespace}, &configMap)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get config map from plan phase")
 	}
 
-	if err := r.Delete(context.Background(), &configMap); err != nil {
+	if err := r.Delete(ctx, &configMap); err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to delete config map from plan phase")
 	}
 

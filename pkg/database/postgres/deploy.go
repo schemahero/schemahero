@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -23,6 +24,14 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
 		return nil, errors.Wrap(err, "failed to scan")
+	}
+
+	if tableExists == 0 && postgresTableSchema.IsDeleted {
+		return []string{}, nil
+	} else if tableExists > 0 && postgresTableSchema.IsDeleted {
+		return []string{
+			fmt.Sprintf(`drop table %s`, pq.QuoteIdentifier(tableName)),
+		}, nil
 	}
 
 	if tableExists == 0 {

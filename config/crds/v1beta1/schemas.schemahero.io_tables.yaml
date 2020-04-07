@@ -116,8 +116,6 @@ spec:
                       items:
                         type: string
                       type: array
-                  required:
-                  - primaryKey
                   type: object
                 postgres:
                   properties:
@@ -191,14 +189,11 @@ spec:
                       items:
                         type: string
                       type: array
-                  required:
-                  - primaryKey
                   type: object
               type: object
           required:
           - database
           - name
-          - schema
           type: object
         status:
           description: TableStatus defines the observed state of Table

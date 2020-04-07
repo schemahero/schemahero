@@ -57,16 +57,21 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 			// update it
 			existingConfigMap.Data = map[string]string{}
 			for k, v := range desiredConfigMap.Data {
-				existingConfigMap.Data[k] = v
-			}
-			if err := controllerutil.SetControllerReference(instance, &existingConfigMap, r.scheme); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to update owner on configmap")
-			}
-			if err = r.Update(ctx, &existingConfigMap); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
+				vv, ok := existingConfigMap.Data[k]
+				if !ok || vv != v {
+					existingConfigMap.Data[k] = v
+					configMapChanged = true
+				}
 			}
 
-			configMapChanged = true
+			if configMapChanged {
+				if err := controllerutil.SetControllerReference(instance, &existingConfigMap, r.scheme); err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to update owner on configmap")
+				}
+				if err = r.Update(ctx, &existingConfigMap); err != nil {
+					return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
+				}
+			}
 		} else {
 			// something bad is happening here
 			return reconcile.Result{}, errors.Wrap(err, "failed to check if config map exists")

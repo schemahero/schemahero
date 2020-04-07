@@ -25,6 +25,14 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 		return nil, errors.Wrap(err, "failed to scan")
 	}
 
+	if tableExists == 0 && mysqlTableSchema.IsDeleted {
+		return []string{}, nil
+	} else if tableExists > 0 && mysqlTableSchema.IsDeleted {
+		return []string{
+			fmt.Sprintf("drop table `%s`", tableName),
+		}, nil
+	}
+
 	if tableExists == 0 {
 		// shortcut to just create it
 		query, err := CreateTableStatement(tableName, mysqlTableSchema)
