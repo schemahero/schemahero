@@ -253,7 +253,7 @@ func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 					},
 					Containers: []corev1.Container{
 						{
-							Image:           "schemahero/schemahero-manager:0.8.0-alpha.2",
+							Image:           schemaHeroImage,
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
 							Command:         []string{"/manager"},
