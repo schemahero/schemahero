@@ -196,6 +196,7 @@ func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 		schemaheroTag = strings.TrimPrefix(schemaheroTag, "v")
 	}
 	schemaHeroImage := fmt.Sprintf("schemahero/schemahero:%s", schemaheroTag)
+	schemaHeroManagerImage := fmt.Sprintf("schemahero/schemahero-manager:%s", schemaheroTag)
 
 	if isEnterprise {
 		env = append(env, corev1.EnvVar{
@@ -253,7 +254,7 @@ func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 					},
 					Containers: []corev1.Container{
 						{
-							Image:           schemaHeroImage,
+							Image:           schemaHeroManagerImage,
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
 							Command:         []string{"/manager"},
