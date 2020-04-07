@@ -3,6 +3,7 @@ package table
 import (
 	"crypto/sha256"
 	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
@@ -81,6 +82,10 @@ func getPlanConfigMap(database *databasesv1alpha3.Database, table *schemasv1alph
 
 func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
+	if os.Getenv("SCHEMAHERO_IMAGE_NAME") != "" {
+		imageName = os.Getenv("SCHEMAHERO_IMAGE_NAME")
+	}
+
 	nodeSelector := make(map[string]string)
 	driver := ""
 	connectionURI := ""
