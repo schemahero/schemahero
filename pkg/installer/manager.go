@@ -3,9 +3,12 @@ package installer
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
+	"github.com/schemahero/schemahero/pkg/version"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -188,15 +191,26 @@ func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 		},
 	}
 
+	schemaheroTag := version.Version()
+	if strings.HasPrefix(schemaheroTag, "v") {
+		schemaheroTag = strings.TrimPrefix(schemaheroTag, "v")
+	}
+	schemaHeroImage := fmt.Sprintf("schemahero/schemahero:%s", schemaheroTag)
+
 	if isEnterprise {
 		env = append(env, corev1.EnvVar{
 			Name:  "SCHEMAHERO_IMAGE_NAME",
-			Value: `repl{{ LocalImageName "schemahero/schemahero:0.8.0"}}`,
+			Value: fmt.Sprintf(`repl{{ LocalImageName "%s"}}`, schemaHeroImage),
 		})
 
 		env = append(env, corev1.EnvVar{
 			Name:  "SCHEMAHERO_IMAGE_PULLSECRET",
 			Value: `repl{{ LocalRegistryImagePullSecret }}`,
+		})
+	} else {
+		env = append(env, corev1.EnvVar{
+			Name:  "SCHEMAHERO_IMAGE_NAME",
+			Value: schemaHeroImage,
 		})
 	}
 

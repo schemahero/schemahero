@@ -2,6 +2,7 @@ package migration
 
 import (
 	"fmt"
+	"os"
 
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
@@ -55,6 +56,10 @@ func podNameForMigrationApply(databaseName string, tableName string, migrationID
 
 func getApplyPod(migrationID string, namespace string, connectionURI string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
+	if os.Getenv("SCHEMAHERO_IMAGE_NAME") != "" {
+		imageName = os.Getenv("SCHEMAHERO_IMAGE_NAME")
+	}
+
 	nodeSelector := make(map[string]string)
 
 	if database.Spec.SchemaHero != nil {
