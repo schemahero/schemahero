@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: action/checkout@master
+      - uses: actions/checkout@master
       - name: Download schemahero binary
         uses: actions/download-artifact@v1
         with:
