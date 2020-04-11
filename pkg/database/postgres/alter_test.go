@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_AlterColumnStatment(t *testing.T) {
+func Test_AlterColumnStatments(t *testing.T) {
 	defaultEleven := "11"
 	defaultEmpty := ""
 
@@ -96,7 +96,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "add not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -246,6 +246,29 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType: "character varying (32)",
 			},
 			expectedStatements: []string{`alter table "t" alter column "a" set default ''`},
+		},
+		{
+			name:      "add null and default",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+				{
+					Name:    "a",
+					Type:    "varchar (32)",
+					Default: &defaultEleven,
+					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "character varying (32)",
+			},
+			expectedStatements: []string{
+				`alter table "t" alter column "a" set default '11'`,
+				`update "t" set "a"='11' where "a" is null`,
+				`alter table "t" alter column "a" set not null`,
+			},
 		},
 	}
 

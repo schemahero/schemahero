@@ -25,10 +25,57 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				return []string{}, nil
 			}
 
-			if column.Name == "org_ids" {
-				fmt.Printf("existingColumn = %#v\n", existingColumn)
-				fmt.Printf("column = %#v\n", column)
+			// If the request is to modify a column to add a not null contraint to an existing column
+			// handle that part here
+			if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
+				isAddingNotNull := false
+				if existingColumn.Constraints == nil {
+					isAddingNotNull = true
+				} else if existingColumn.Constraints.NotNull == nil {
+					isAddingNotNull = true
+				} else if *existingColumn.Constraints.NotNull == false {
+					isAddingNotNull = true
+				}
+
+				if isAddingNotNull {
+					// the best plan here is:
+					//   1. add default
+					//   2. update values with default
+					//   3. set not null
+
+					statements := []string{}
+
+					// add default
+					if column.ColumnDefault != nil {
+						if existingColumn.ColumnDefault == nil || *existingColumn.ColumnDefault != *column.ColumnDefault {
+							localStatement := fmt.Sprintf("alter table %s alter column %s set default '%s'",
+								pq.QuoteIdentifier(tableName),
+								pq.QuoteIdentifier(existingColumn.Name),
+								*column.ColumnDefault)
+							statements = append(statements, localStatement)
+						}
+					}
+
+					// update existing values
+					if column.ColumnDefault != nil {
+						localStatement := fmt.Sprintf("update %s set %s='%s' where %s is null",
+							pq.QuoteIdentifier(tableName),
+							pq.QuoteIdentifier(existingColumn.Name),
+							*column.ColumnDefault,
+							pq.QuoteIdentifier(existingColumn.Name))
+						statements = append(statements, localStatement)
+					}
+
+					// set not null
+					localStatement := fmt.Sprintf("alter table %s alter column %s set not null",
+						pq.QuoteIdentifier(tableName),
+						pq.QuoteIdentifier(existingColumn.Name))
+					statements = append(statements, localStatement)
+
+					return statements, nil
+				}
 			}
+
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
 				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
@@ -48,14 +95,24 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 
 			// too much complexity below!
 			if column.Constraints != nil || existingColumn.Constraints != nil {
-				// Add not null
-				if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
-					if existingColumn.Constraints != nil || existingColumn.Constraints.NotNull != nil {
-						if *existingColumn.Constraints.NotNull == false {
-							changes = append(changes, fmt.Sprintf("%s set not null", alterStatement))
-						}
-					}
-				}
+				// // Add not null
+				// if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
+				// 	// Ensure that there is a not null constraint on this column
+
+				// 	if existingColumn.Constraints == nil {
+				// 		existingColumn.Constraints = &types.ColumnConstraints{}
+				// 	}
+
+				// 	if existingColumn.Constraints.NotNull != nil {
+				// 		// Change the constraint
+				// 		if *existingColumn.Constraints.NotNull == false {
+				// 			changes = append(changes, fmt.Sprintf("%s set not null", alterStatement))
+				// 		}
+				// 	} else {
+				// 		// Add the constraint
+
+				// 	}
+				// }
 
 				isPrimaryKey := false
 				for _, primaryKey := range primaryKeys {
@@ -65,7 +122,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				}
 
 				if !isPrimaryKey {
-					if existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
+					if existingColumn.Constraints != nil && existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
 						if column.Constraints == nil || column.Constraints.NotNull == nil || *column.Constraints.NotNull == false {
 							changes = append(changes, fmt.Sprintf("%s drop not null", alterStatement))
 						}
