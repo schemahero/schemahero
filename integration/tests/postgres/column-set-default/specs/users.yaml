@@ -13,11 +13,7 @@ schema:
           notNull: true
       - name: account_type
         type: varchar(10)
-        constraints:
-          notNull: true
         default: trial
       - name: num_seats
         type: integer
-        constraints:
-          notNull: true
         default: "5"
