@@ -40,14 +40,23 @@ mysql:
 
 .PHONY: cockroach
 cockroach:
-	make -C tests/cockroach/column-set-default run
-	make -C tests/cockroach/column-unset-default run
-	make -C tests/cockroach/create-table run
-	make -C tests/cockroach/foreign-key-create run
-	make -C tests/cockroach/foreign-key-action run
-	make -C tests/cockroach/foreign-key-drop run
-	make -C tests/cockroach/foreign-key-alter run
-	make -C tests/cockroach/not-null run
-	make -C tests/cockroach/index-create run
-	make -C tests/cockroach/primary-key-add run
-	make -C tests/cockroach/primary-key-drop run
+	make -C tests/cockroach run TEST_NAME=column-set-default
+	make -C tests/cockroach run TEST_NAME=column-unset-default
+	make -C tests/cockroach run TEST_NAME=create-table
+	make -C tests/cockroach run TEST_NAME=foreign-key-create
+	make -C tests/cockroach run TEST_NAME=foreign-key-action
+	make -C tests/cockroach run TEST_NAME=foreign-key-drop
+	make -C tests/cockroach run TEST_NAME=foreign-key-alter
+	make -C tests/cockroach run TEST_NAME=not-null
+	make -C tests/cockroach run TEST_NAME=index-create
+	make -C tests/cockroach run TEST_NAME=primary-key-add
+	make -C tests/cockroach run TEST_NAME=primary-key-drop
+
+.PHONY: build
+build: docker-build
+	docker push $(IMAGE)
+
+.PHONY: docker-build
+docker-build:
+	docker build -t $(IMAGE) -f ../Dockerfile.schemahero ..
+	@echo "export IMAGE=$(IMAGE)"
