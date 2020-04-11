@@ -81,6 +81,30 @@ jobs:
       - run: make -C integration/tests/mysql/primary-key-add run
       - run: make -C integration/tests/mysql/primary-key-drop run
 
+  ## We list each here so that they all show up in the output of github checks
+  test-cockroach:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: action/checkout@master
+      - name: Download schemahero binary
+        uses: actions/download-artifact@v1
+        with:
+          name: schemahero
+          path: bin/
+      - run: chmod +x bin/schemahero
+      - run: make -C integration/tests/cockroach run TEST_NAME=column-set-default
+      - run: make -C integration/tests/cockroach run TEST_NAME=column-unset-default
+      - run: make -C integration/tests/cockroach run TEST_NAME=create-table
+      - run: make -C integration/tests/cockroach run TEST_NAME=foreign-key-create
+      - run: make -C integration/tests/cockroach run TEST_NAME=foreign-key-action
+      - run: make -C integration/tests/cockroach run TEST_NAME=foreign-key-drop
+      - run: make -C integration/tests/cockroach run TEST_NAME=foreign-key-alter
+      - run: make -C integration/tests/cockroach run TEST_NAME=not-null
+      - run: make -C integration/tests/cockroach run TEST_NAME=index-create
+      - run: make -C integration/tests/cockroach run TEST_NAME=primary-key-add
+      - run: make -C integration/tests/cockroach run TEST_NAME=primary-key-drop
+
   goreleaser:
     runs-on: ubuntu-latest
     needs:
