@@ -95,25 +95,6 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 
 			// too much complexity below!
 			if column.Constraints != nil || existingColumn.Constraints != nil {
-				// // Add not null
-				// if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
-				// 	// Ensure that there is a not null constraint on this column
-
-				// 	if existingColumn.Constraints == nil {
-				// 		existingColumn.Constraints = &types.ColumnConstraints{}
-				// 	}
-
-				// 	if existingColumn.Constraints.NotNull != nil {
-				// 		// Change the constraint
-				// 		if *existingColumn.Constraints.NotNull == false {
-				// 			changes = append(changes, fmt.Sprintf("%s set not null", alterStatement))
-				// 		}
-				// 	} else {
-				// 		// Add the constraint
-
-				// 	}
-				// }
-
 				isPrimaryKey := false
 				for _, primaryKey := range primaryKeys {
 					if column.Name == primaryKey {
