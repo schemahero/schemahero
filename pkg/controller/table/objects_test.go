@@ -31,9 +31,7 @@ func Test_planConfigMap(t *testing.T) {
 			expect: `database: db
 name: name
 schema:
-  postgres:
-    primaryKey: []
-    columns: []
+  postgres: {}
 `,
 		},
 	}

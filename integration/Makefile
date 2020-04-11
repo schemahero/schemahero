@@ -17,6 +17,7 @@ postgres:
 	make -C tests/postgres/foreign-key-drop run
 	make -C tests/postgres/foreign-key-alter run
 	make -C tests/postgres/not-null run
+	make -C tests/postgres/not-null-with-default run
 	make -C tests/postgres/index-create run
 	make -C tests/postgres/primary-key-add run
 	make -C tests/postgres/primary-key-drop run

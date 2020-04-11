@@ -17,3 +17,6 @@ spec:
           type: varchar(255)
         - name: description
           type: text
+          default: "nothing"
+          constraints:
+            notNull: true

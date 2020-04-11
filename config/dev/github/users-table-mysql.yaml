@@ -1,13 +1,10 @@
-apiVersion: schemas.schemahero.io/v1alpha2
+apiVersion: schemas.schemahero.io/v1alpha3
 kind: Table
 metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
   name: users
 spec:
   database: testdb
   name: users
-  requires: []
   schema:
     mysql:
       primaryKey: [id]
@@ -18,3 +15,8 @@ spec:
           type: varchar(255)
         - name: name
           type: varchar(255)
+        - name: description
+          type: varchar(255)
+          default: "unset"
+          constraints:
+            notNull: true

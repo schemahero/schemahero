@@ -154,14 +154,12 @@ where TABLE_NAME = ?`
 			existingColumn.ColumnDefault = &columnDefault.String
 		}
 
-		columnStatement, err := AlterColumnStatement(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
+		columnStatement, err := AlterColumnStatements(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create alter column statement")
 		}
 
-		if columnStatement != "" {
-			alterAndDropStatements = append(alterAndDropStatements, columnStatement)
-		}
+		alterAndDropStatements = append(alterAndDropStatements, columnStatement...)
 	}
 
 	for _, desiredColumn := range mysqlTableSchema.Columns {

@@ -15,21 +15,21 @@ func Test_AlterColumnStatment(t *testing.T) {
 	defaultEmpty := ""
 
 	tests := []struct {
-		name              string
-		tableName         string
-		desiredColumns    []*schemasv1alpha3.SQLTableColumn
-		existingColumn    *types.Column
-		expectedStatement string
+		name               string
+		tableName          string
+		desiredColumns     []*schemasv1alpha3.SQLTableColumn
+		existingColumn     *types.Column
+		expectedStatements []string
 	}{
 		{
 			name:      "no change",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "b",
 					Type: "integer",
 				},
@@ -39,17 +39,17 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType:      "int (11)",
 				ColumnDefault: nil,
 			},
-			expectedStatement: "",
+			expectedStatements: []string{},
 		},
 		{
 			name:      "change data type",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "b",
 					Type: "integer",
 				},
@@ -59,13 +59,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType:      "varchar(255)",
 				ColumnDefault: nil,
 			},
-			expectedStatement: "alter table `t` modify column `b` int (11)",
+			expectedStatements: []string{"alter table `t` modify column `b` int (11)"},
 		},
 		{
 			name:      "drop column",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
@@ -75,13 +75,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType:      "varchar (255)",
 				ColumnDefault: nil,
 			},
-			expectedStatement: "alter table `t` drop column `b`",
+			expectedStatements: []string{"alter table `t` drop column `b`"},
 		},
 		{
 			name:      "add not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -97,13 +97,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 					NotNull: &falseValue,
 				},
 			},
-			expectedStatement: "alter table `t` modify column `a` int (11) not null",
+			expectedStatements: []string{"alter table `t` modify column `a` int (11) not null"},
 		},
 		{
 			name:      "drop not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -119,13 +119,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 					NotNull: &trueValue,
 				},
 			},
-			expectedStatement: "alter table `t` modify column `a` int (11) null",
+			expectedStatements: []string{"alter table `t` modify column `a` int (11) null"},
 		},
 		{
 			name:      "no change to not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "t",
 					Type: "text",
 				},
@@ -138,13 +138,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 					NotNull: &falseValue,
 				},
 			},
-			expectedStatement: "",
+			expectedStatements: []string{},
 		},
 		{
 			name:      "type change, constraint no change",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -160,13 +160,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 					NotNull: &trueValue,
 				},
 			},
-			expectedStatement: "alter table `t` modify column `a` int (11) not null",
+			expectedStatements: []string{"alter table `t` modify column `a` int (11) not null"},
 		},
 		{
 			name:      "default set",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name:    "a",
 					Type:    "integer",
 					Default: &defaultEleven,
@@ -176,13 +176,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 				Name:     "a",
 				DataType: "integer",
 			},
-			expectedStatement: "alter table `t` modify column `a` int (11) default \"11\"",
+			expectedStatements: []string{"alter table `t` modify column `a` int (11) default \"11\""},
 		},
 		{
 			name:      "default unset",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
@@ -192,13 +192,13 @@ func Test_AlterColumnStatment(t *testing.T) {
 				DataType:      "integer",
 				ColumnDefault: &defaultEleven,
 			},
-			expectedStatement: "alter table `t` modify column `a` int (11)",
+			expectedStatements: []string{"alter table `t` modify column `a` int (11)"},
 		},
 		{
 			name:      "default empty string",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name:    "a",
 					Type:    "varchar (32)",
 					Default: &defaultEmpty,
@@ -208,8 +208,9 @@ func Test_AlterColumnStatment(t *testing.T) {
 				Name:     "a",
 				DataType: "varchar (32)",
 			},
-			expectedStatement: "alter table `t` modify column `a` varchar (32) default \"\"",
+			expectedStatements: []string{"alter table `t` modify column `a` varchar (32) default \"\""},
 		},
+
 		// {
 		// 	name:      "no change to not nullable timestamp using short column type",
 		// 	tableName: "ts",
@@ -254,15 +255,38 @@ func Test_AlterColumnStatment(t *testing.T) {
 		// 	},
 		// 	expectedStatement: "",
 		// },
+		{
+			name:      "add null and default",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+				{
+					Name:    "a",
+					Type:    "varchar (255)",
+					Default: &defaultEleven,
+					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "varchar (255)",
+			},
+			expectedStatements: []string{
+				"alter table `t` modify column `a` varchar (255) default \"11\"",
+				"update `t` set `a`=\"11\" where `a` is null",
+				"alter table `t` modify column `a` varchar (255) not null default \"11\"",
+			},
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			generatedStatement, err := AlterColumnStatement(test.tableName, []string{}, test.desiredColumns, test.existingColumn)
+			generatedStatements, err := AlterColumnStatements(test.tableName, []string{}, test.desiredColumns, test.existingColumn)
 			req.NoError(err)
-			assert.Equal(t, test.expectedStatement, generatedStatement)
+			assert.Equal(t, test.expectedStatements, generatedStatements)
 		})
 	}
 }
