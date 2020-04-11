@@ -149,12 +149,3 @@ CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
 else
 CLIENT_GEN=$(shell which client-gen)
 endif
-
-.PHONY: kubebuilder
-kubebuilder:
-ifeq (, $(shell which kubebuilder))
-	curl -L -O "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v1.0.8/kubebuilder_1.0.8_darwin_amd64.tar.gz"
-	tar -zxvf kubebuilder_1.0.8_darwin_amd64.tar.gz
-	mv kubebuilder_1.0.8_darwin_amd64 kubebuilder && sudo mv kubebuilder /usr/local/
-	echo "export PATH=\$PATH:/usr/local/kubebuilder/bin" | sudo tee -a /etc/profile > /dev/null
-endif

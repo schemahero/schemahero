@@ -16,10 +16,7 @@ jobs:
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
       - uses: actions/checkout@master
-      - name: setup kubebuilder
-        run: |
-          echo "::add-path::/usr/local/kubebuilder/bin"
-      - run: make kubebuilder all
+      - run: make all
       - uses: actions/upload-artifact@v1
         with:
           name: schemahero
