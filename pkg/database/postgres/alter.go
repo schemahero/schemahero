@@ -10,7 +10,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha3.SQLTableColumn, existingColumn *types.Column) (string, error) {
+func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha3.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
 	alterStatement := fmt.Sprintf("alter column %s", pq.QuoteIdentifier(existingColumn.Name))
 
 	// this could be an alter or a drop column command
@@ -18,11 +18,11 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 		if desiredColumn.Name == existingColumn.Name {
 			column, err := schemaColumnToColumn(desiredColumn)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
 
 			if columnsMatch(existingColumn, column) {
-				return "", nil
+				return []string{}, nil
 			}
 
 			if column.Name == "org_ids" {
@@ -75,14 +75,14 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 
 			if len(changes) == 0 {
 				// no changes
-				return "", nil
+				return []string{}, nil
 			}
 
-			return fmt.Sprintf(`alter table %s %s`, pq.QuoteIdentifier(tableName), strings.Join(changes, ", ")), nil
+			return []string{fmt.Sprintf(`alter table %s %s`, pq.QuoteIdentifier(tableName), strings.Join(changes, ", "))}, nil
 		}
 	}
 
-	return fmt.Sprintf(`alter table %s drop column %s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name)), nil
+	return []string{fmt.Sprintf(`alter table %s drop column %s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name))}, nil
 }
 
 func columnsMatch(col1 *types.Column, col2 *types.Column) bool {

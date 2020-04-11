@@ -154,14 +154,12 @@ where table_name = $1`
 			existingColumn.DataType = fmt.Sprintf("%s (%d)", existingColumn.DataType, charMaxLength.Int64)
 		}
 
-		columnStatement, err := AlterColumnStatement(tableName, postgresTableSchema.PrimaryKey, postgresTableSchema.Columns, &existingColumn)
+		columnStatement, err := AlterColumnStatements(tableName, postgresTableSchema.PrimaryKey, postgresTableSchema.Columns, &existingColumn)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create alter column statement")
 		}
 
-		if columnStatement != "" {
-			alterAndDropStatements = append(alterAndDropStatements, columnStatement)
-		}
+		alterAndDropStatements = append(alterAndDropStatements, columnStatement...)
 	}
 
 	for _, desiredColumn := range postgresTableSchema.Columns {

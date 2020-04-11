@@ -5,13 +5,13 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha3.SQLTableColumn, existingColumn *types.Column) (string, error) {
+func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha3.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
 	// this could be an alter or a drop column command
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
 			column, err := schemaColumnToColumn(desiredColumn)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
 
 			isPrimaryKey := false
@@ -27,21 +27,21 @@ func AlterColumnStatement(tableName string, primaryKeys []string, desiredColumns
 			}
 
 			if columnsMatch(existingColumn, column) {
-				return "", nil
+				return []string{}, nil
 			}
 
-			return AlterModifyColumnStatement{
+			return []string{AlterModifyColumnStatement{
 				TableName: tableName,
 				Column:    *column,
-			}.String(), nil
+			}.String()}, nil
 		}
 	}
 
 	// wasn't found as a desired column, so drop
-	return AlterDropColumnStatement{
+	return []string{AlterDropColumnStatement{
 		TableName: tableName,
 		Column:    types.Column{Name: existingColumn.Name},
-	}.String(), nil
+	}.String()}, nil
 }
 
 func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
