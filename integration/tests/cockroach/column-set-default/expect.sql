@@ -1,0 +1,1 @@
+create table "users" ("id" integer, "email" character varying (255) not null, "account_type" character varying (10) not null default 'trial', "num_seats" integer not null default '5', primary key ("id"));
