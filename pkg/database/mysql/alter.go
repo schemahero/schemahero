@@ -30,18 +30,19 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				return []string{}, nil
 			}
 
-			return []string{AlterModifyColumnStatement{
-				TableName: tableName,
-				Column:    *column,
-			}.String()}, nil
+			return AlterModifyColumnStatement{
+				TableName:      tableName,
+				ExistingColumn: *existingColumn,
+				Column:         *column,
+			}.DDL(), nil
 		}
 	}
 
 	// wasn't found as a desired column, so drop
-	return []string{AlterDropColumnStatement{
+	return AlterDropColumnStatement{
 		TableName: tableName,
 		Column:    types.Column{Name: existingColumn.Name},
-	}.String()}, nil
+	}.DDL(), nil
 }
 
 func columnsMatch(col1 *types.Column, col2 *types.Column) bool {

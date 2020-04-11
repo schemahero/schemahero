@@ -25,11 +25,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "no change",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "b",
 					Type: "integer",
 				},
@@ -45,11 +45,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "change data type",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "b",
 					Type: "integer",
 				},
@@ -65,7 +65,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "drop column",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
@@ -81,7 +81,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "add not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -103,7 +103,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "drop not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -125,7 +125,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "no change to not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "t",
 					Type: "text",
 				},
@@ -144,7 +144,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "type change, constraint no change",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
@@ -166,7 +166,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "default set",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name:    "a",
 					Type:    "integer",
 					Default: &defaultEleven,
@@ -182,7 +182,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "default unset",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
@@ -198,7 +198,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			name:      "default empty string",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-				&schemasv1alpha3.SQLTableColumn{
+				{
 					Name:    "a",
 					Type:    "varchar (32)",
 					Default: &defaultEmpty,
@@ -210,6 +210,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 			},
 			expectedStatements: []string{"alter table `t` modify column `a` varchar (32) default \"\""},
 		},
+
 		// {
 		// 	name:      "no change to not nullable timestamp using short column type",
 		// 	tableName: "ts",
@@ -254,6 +255,29 @@ func Test_AlterColumnStatment(t *testing.T) {
 		// 	},
 		// 	expectedStatement: "",
 		// },
+		{
+			name:      "add null and default",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+				{
+					Name:    "a",
+					Type:    "varchar (255)",
+					Default: &defaultEleven,
+					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "varchar (255)",
+			},
+			expectedStatements: []string{
+				"alter table `t` modify column `a` varchar (255) default \"11\"",
+				"update `t` set `a`=\"11\" where `a` is null",
+				"alter table `t` modify column `a` varchar (255) not null default \"11\"",
+			},
+		},
 	}
 
 	for _, test := range tests {
