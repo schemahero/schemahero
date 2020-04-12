@@ -75,10 +75,27 @@ func GetTablesCmd() *cobra.Command {
 			}
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "NAME\tDATABASE\tSTATUS")
+			fmt.Fprintln(w, "NAME\tDATABASE\tPENDING")
 
 			for _, table := range matchingTables {
-				status := "Current"
+				migrations, err := schemasClient.Migrations(table.Namespace).List(context.Background(), metav1.ListOptions{})
+				if err != nil {
+					return err
+				}
+
+				pendingMigrations := 0
+				for _, migration := range migrations.Items {
+					if migration.Status.ExecutedAt == int64(0) && migration.Status.RejectedAt == int64(0) {
+						pendingMigrations++
+					}
+				}
+
+				status := "0"
+				if pendingMigrations == 1 {
+					status = "1"
+				} else if pendingMigrations > 1 {
+					status = fmt.Sprintf("%d", pendingMigrations)
+				}
 
 				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", table.Name, table.Spec.Database, status))
 			}
