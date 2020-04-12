@@ -80,6 +80,8 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 		driver = "postgres"
 	} else if database.Spec.Connection.Mysql != nil {
 		driver = "mysql"
+	} else if database.Spec.Connection.CockroachDB != nil {
+		driver = "cockroachdb"
 	}
 
 	args := []string{

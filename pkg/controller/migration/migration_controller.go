@@ -144,6 +144,8 @@ func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha3.Datab
 		valueOrValueFrom = &database.Spec.Connection.Postgres.URI
 	} else if database.Spec.Connection.Mysql != nil {
 		valueOrValueFrom = &database.Spec.Connection.Mysql.URI
+	} else if database.Spec.Connection.CockroachDB != nil {
+		valueOrValueFrom = &database.Spec.Connection.CockroachDB.URI
 	}
 
 	if valueOrValueFrom == nil {
