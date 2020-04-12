@@ -128,6 +128,11 @@ func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, 
 		if err != nil {
 			return nil, nil
 		}
+	} else if database.Spec.Connection.CockroachDB != nil {
+		_, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.CockroachDB.URI)
+		if err != nil {
+			return nil, nil
+		}
 	}
 
 	return database, nil
@@ -138,6 +143,8 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, 
 		return tableSchema.Postgres != nil
 	} else if connection.Mysql != nil {
 		return tableSchema.Mysql != nil
+	} else if connection.CockroachDB != nil {
+		return tableSchema.CockroachDB != nil
 	}
 
 	return false

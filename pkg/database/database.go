@@ -90,6 +90,17 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, statement)
+		} else if d.Viper.GetString("driver") == "cockroachdb" {
+			if spec.Schema.CockroachDB == nil {
+				return nil
+			}
+
+			statement, err := postgres.CreateTableStatement(spec.Name, spec.Schema.CockroachDB)
+			if err != nil {
+				return err
+			}
+
+			statements = append(statements, statement)
 		}
 
 		return nil
@@ -148,6 +159,8 @@ func (d *Database) PlanSync(filename string) ([]string, error) {
 		return postgres.PlanPostgresTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Postgres)
 	} else if d.Viper.GetString("driver") == "mysql" {
 		return mysql.PlanMysqlTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Mysql)
+	} else if d.Viper.GetString("driver") == "cockroachdb" {
+		return postgres.PlanPostgresTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.CockroachDB)
 	}
 
 	return nil, errors.New("unknown database driver")
@@ -158,6 +171,8 @@ func (d *Database) ApplySync(statements []string) error {
 		return postgres.DeployPostgresStatements(d.Viper.GetString("uri"), statements)
 	} else if d.Viper.GetString("driver") == "mysql" {
 		return mysql.DeployMysqlStatements(d.Viper.GetString("uri"), statements)
+	} else if d.Viper.GetString("driver") == "cockroachdb" {
+		return postgres.DeployPostgresStatements(d.Viper.GetString("uri"), statements)
 	}
 
 	return errors.New("unknown database driver")

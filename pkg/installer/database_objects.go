@@ -41,6 +41,27 @@ spec:
               description: DatabaseConnection defines connection parameters for the
                 database driver
               properties:
+                cockroachdb:
+                  properties:
+                    uri:
+                      properties:
+                        value:
+                          type: string
+                        valueFrom:
+                          properties:
+                            secretKeyRef:
+                              properties:
+                                key:
+                                  type: string
+                                name:
+                                  type: string
+                              required:
+                              - key
+                              - name
+                              type: object
+                          type: object
+                      type: object
+                  type: object
                 mysql:
                   properties:
                     uri:
@@ -163,6 +184,27 @@ spec:
                 description: DatabaseConnection defines connection parameters for
                   the database driver
                 properties:
+                  cockroachdb:
+                    properties:
+                      uri:
+                        properties:
+                          value:
+                            type: string
+                          valueFrom:
+                            properties:
+                              secretKeyRef:
+                                properties:
+                                  key:
+                                    type: string
+                                  name:
+                                    type: string
+                                required:
+                                - key
+                                - name
+                                type: object
+                            type: object
+                        type: object
+                    type: object
                   mysql:
                     properties:
                       uri:

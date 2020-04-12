@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 DATABASE_IMAGE_NAME := schemahero/database
 DATABASE_CONTAINER_NAME := schemahero-database
-DRIVER := postgres
+DRIVER := cockroachdb
 URI := postgres://schemahero@127.0.0.1:26257/schemahero?sslmode=disable
 
 .PHONY: run

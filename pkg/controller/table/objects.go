@@ -112,6 +112,13 @@ func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table 
 			return nil, errors.Wrap(err, "failed to read mysql connection uri")
 		}
 		connectionURI = uri
+	} else if database.Spec.Connection.CockroachDB != nil {
+		driver = "cockroachdb"
+		uri, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.CockroachDB.URI)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to read cockroachdb connection uri")
+		}
+		connectionURI = uri
 	}
 
 	if driver == "" {
