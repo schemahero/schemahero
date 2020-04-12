@@ -1,0 +1,23 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: email
+        type: varchar(255)
+        constraints:
+          notNull: true
+      - name: account_type
+        type: varchar(10)
+        constraints:
+          notNull: true
+        default: trial
+      - name: num_seats
+        type: integer
+        constraints:
+          notNull: true
+        default: "5"

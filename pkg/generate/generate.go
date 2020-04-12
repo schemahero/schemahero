@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pkg/errors"
 	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
 	"github.com/schemahero/schemahero/pkg/database/interfaces"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
@@ -32,47 +33,42 @@ func (g *Generator) RunSync() error {
 	if g.Viper.GetString("driver") == "postgres" {
 		pgDb, err := postgres.Connect(g.Viper.GetString("uri"))
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to connect to postgres")
 		}
 		db = pgDb
 	} else if g.Viper.GetString("driver") == "mysql" {
 		mysqlDb, err := mysql.Connect(g.Viper.GetString("uri"))
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to connect to mysql")
 		}
 		db = mysqlDb
 	}
 
 	tableNames, err := db.ListTables()
 	if err != nil {
-		fmt.Printf("%#v\n", err)
-		return err
+		return errors.Wrap(err, "failed to list tables")
 	}
 
 	filesWritten := make([]string, 0, 0)
 	for _, tableName := range tableNames {
 		primaryKey, err := db.GetTablePrimaryKey(tableName)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
-			return err
+			return errors.Wrap(err, "failed to get table primary key")
 		}
 
 		foreignKeys, err := db.ListTableForeignKeys(g.Viper.GetString("dbname"), tableName)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
-			return err
+			return errors.Wrap(err, "failed to list table foreign keys")
 		}
 
 		indexes, err := db.ListTableIndexes(g.Viper.GetString("dbname"), tableName)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
-			return err
+			return errors.Wrap(err, "failed to list table indexes")
 		}
 
 		columns, err := db.GetTableSchema(tableName)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
-			return err
+			return errors.Wrap(err, "failed to get table schema")
 		}
 
 		var primaryKeyColumns []string
@@ -81,8 +77,7 @@ func (g *Generator) RunSync() error {
 		}
 		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKeyColumns, foreignKeys, indexes, columns)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
-			return err
+			return errors.Wrap(err, "failed to generate table yaml")
 		}
 
 		// If there was a outputdir set, write it, else print it
