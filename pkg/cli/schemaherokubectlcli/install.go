@@ -52,6 +52,14 @@ func InstallCmd() *cobra.Command {
 					}
 				} else {
 					// Write to stdout
+
+					// write the namespace first
+					if namespace, ok := manifests["namespace.yaml"]; ok {
+						fmt.Printf("%s---\n", namespace)
+					}
+
+					delete(manifests, "namespace.yaml")
+
 					multiDocResult := [][]byte{}
 					for _, manifest := range manifests {
 						multiDocResult = append(multiDocResult, manifest)
