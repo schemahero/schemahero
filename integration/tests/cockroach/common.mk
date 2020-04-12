@@ -6,16 +6,12 @@ URI := postgres://schemahero@127.0.0.1:26257/schemahero?sslmode=disable
 
 .PHONY: run
 run:
-	@rm -rf ./out
-	@mkdir ./out
-	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
-	@-docker rm -f $(TEST_CONTAINER_NAME) > /dev/null 2>&1 ||:
-
 	# Fixtures
 	docker pull cockroachdb/cockroach:v19.2.5
+	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run -p 26257:26257 --rm -d \
 		--name $(DATABASE_CONTAINER_NAME) \
-		-v `pwd`/$(TEST_NAME)/fixtures.sql:/docker-entrypoint-initdb.d/ \
+		-v `pwd`/fixtures.sql:/docker-entrypoint-initdb.d/ \
 		$(DATABASE_IMAGE_NAME)
 	@sleep 5
 	while ! docker exec -it $(DATABASE_CONTAINER_NAME) /cockroach/cockroach sql --insecure --execute "SELECT 1;"; do sleep 1; done
