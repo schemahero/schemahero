@@ -61,6 +61,21 @@ func clusterRole() *rbacv1.ClusterRole {
 			},
 			{
 				APIGroups: []string{""},
+				Resources: []string{"pods"},
+				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+			},
+			{
+				APIGroups: []string{""},
+				Resources: []string{"pods/log"},
+				Verbs:     metav1.Verbs{"get"},
+			},
+			{
+				APIGroups: []string{""},
+				Resources: []string{"configmaps"},
+				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+			},
+			{
+				APIGroups: []string{""},
 				Resources: []string{"secrets"},
 				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
 			},
