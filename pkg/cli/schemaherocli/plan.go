@@ -49,7 +49,14 @@ func Plan() *cobra.Command {
 			}
 
 			if _, err = os.Stat(v.GetString("out")); err == nil {
-				return errors.Errorf("file %s already exists", v.GetString("out"))
+				if !v.GetBool("overwrite") {
+					return errors.Errorf("file %s already exists", v.GetString("out"))
+				}
+
+				err = os.RemoveAll(v.GetString("out"))
+				if err != nil {
+					return errors.Wrap(err, "failed remove existing file")
+				}
 			}
 
 			var f *os.File
@@ -114,6 +121,7 @@ func Plan() *cobra.Command {
 	cmd.Flags().String("uri", "", "connection string uri to use")
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
+	cmd.Flags().Bool("overwrite", false, "when set, will overwrite the out file, if it already exists")
 
 	return cmd
 }
