@@ -1,6 +1,6 @@
 on:
   schedule:
-    - cron:  "0 0 * * *"
+    - cron:  "/5 * * * *"
 
 jobs:
   run-proaction:
@@ -8,12 +8,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: proactionhq/proaction/action@v0.3.4
+      - uses: proactionhq/proaction/action@master
         with:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        
+          github-token: ${{secrets.GITHUB_TOKEN}}
+
       - uses: peter-evans/create-pull-request@v2
         with:
           commit-message: "[proaction] updating workflow"
           title: Updating workflow from Proaction
-          token: ${{secrets.PROACTION_TOKEN}} 
+          token: ${{secrets.PROACTION_TOKEN}}
