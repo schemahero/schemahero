@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v1
+      - uses: actions/setup-go@v1.1.2
         with:
           go-version: "1.14.1"
       - name: setup goenv
@@ -16,7 +16,7 @@ jobs:
           echo "::set-env name=GOPATH::$(go env GOPATH)"
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - run: make all
       - uses: actions/upload-artifact@v1
         with:
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Download schemahero binary
         uses: actions/download-artifact@v1
         with:
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Download schemahero binary
         uses: actions/download-artifact@v1
         with:
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Download schemahero binary
         uses: actions/download-artifact@v1
         with:
@@ -137,7 +137,7 @@ jobs:
 
       - name: Create the release
         id: test-action
-        uses: replicatedhq/action-kots-release@v0.2.0
+        uses: replicatedhq/action-kots-release@v0.3.0
         with:
           replicated-app: "schemahero-enterprise"
           replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
