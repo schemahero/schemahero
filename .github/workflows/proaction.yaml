@@ -12,7 +12,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: peter-evans/create-pull-request@46ba7bd
+      - uses: peter-evans/create-pull-request@d93f2b4
         with:
           commit-message: "[proaction] updating workflow"
           title: Updating workflow from Proaction
