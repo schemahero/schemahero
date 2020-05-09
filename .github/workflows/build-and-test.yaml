@@ -129,7 +129,7 @@ jobs:
 
       - name: Lint the release
         id: lint-action
-        uses: replicatedhq/action-kots-lint@v0.1.0
+        uses: replicatedhq/action-kots-lint@v0.2.0
         with:
           replicated-app: "schemahero-enterprise"
           replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
