@@ -120,7 +120,7 @@ jobs:
           username: schemaherodeploy
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1.5.0
+        uses: goreleaser/goreleaser-action@v1.5.1
         with:
           version: latest
           args: release --rm-dist --config deploy/.goreleaser.yaml
