@@ -8,7 +8,7 @@ URI := postgres://schemahero@127.0.0.1:26257/schemahero?sslmode=disable
 run:
 	# Fixtures
 	docker pull cockroachdb/cockroach:v19.2.5
-  docker tag cockroachdb/cockroach:v19.2.5 $(DATABASE_IMAGE_NAME)
+    docker tag cockroachdb/cockroach:v19.2.5 $(DATABASE_IMAGE_NAME)
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run -p 26257:26257 --rm -d \
 		--name $(DATABASE_CONTAINER_NAME) \

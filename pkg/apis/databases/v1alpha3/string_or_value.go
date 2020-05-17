@@ -43,9 +43,15 @@ type InlineOrRef struct {
 
 type ValueFrom struct {
 	SecretKeyRef *SecretKeyRef `json:"secretKeyRef,omitempty" yaml:"secretKeyRef,omitempty"`
+	Vault        *Vault        `json:"vault,omitempty" yaml:"vault,omitempty"`
 }
 
 type SecretKeyRef struct {
 	Name string `json:"name" yaml:"name"`
 	Key  string `json:"key" yaml:"key"`
+}
+
+type Vault struct {
+	Secret string `json:"secret" yaml:"secret"`
+	Role   string `json:"role" yaml:"role"`
 }

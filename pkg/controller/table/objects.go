@@ -80,6 +80,23 @@ func getPlanConfigMap(database *databasesv1alpha3.Database, table *schemasv1alph
 	return configMap, nil
 }
 
+func getPlanServiceAccount(database *databasesv1alpha3.Database) *corev1.ServiceAccount {
+	b := true
+	sa := &corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      database.Name,
+			Namespace: database.Namespace,
+		},
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ServiceAccount",
+		},
+		AutomountServiceAccountToken: &b,
+	}
+
+	return sa
+}
+
 func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	if os.Getenv("SCHEMAHERO_IMAGE_NAME") != "" {
@@ -132,19 +149,30 @@ func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table 
 
 	args := []string{
 		"plan",
-		"--driver",
-		driver,
-		"--uri",
-		connectionURI,
-		"--spec-file",
-		"/specs/table.yaml",
+		"--driver", driver,
+		"--spec-file", "/specs/table.yaml",
 	}
 
+	var vaultAnnotations map[string]string
+	if database.UsingVault() {
+		a, err := database.GetVaultAnnotations()
+		if err != nil {
+			return nil, err
+		}
+		vaultAnnotations = a
+
+		args = append(args, "--vault-uri-ref", "/vault/secrets/schemaherouri")
+	} else {
+		args = append(args, "--uri", connectionURI)
+	}
+
+	// Add serviceAccount
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      podNameForPlan(database, table),
-			Namespace: database.Namespace,
-			Labels:    labels,
+			Name:        podNameForPlan(database, table),
+			Namespace:   database.Namespace,
+			Labels:      labels,
+			Annotations: vaultAnnotations,
 		},
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",

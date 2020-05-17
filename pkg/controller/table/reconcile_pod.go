@@ -221,5 +221,11 @@ func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom da
 		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
 	}
 
+	if valueOrValueFrom.ValueFrom.Vault != nil {
+		// this feels wrong, but also doesn't make sense to return a
+		// a URI ref as a connection URI?
+		return "", nil
+	}
+
 	return "", errors.New("unable to find supported valueFrom")
 }

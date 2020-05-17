@@ -25,19 +25,20 @@ func Plan() *cobra.Command {
 
 			// to support automaticenv, we can't use cobra required flags
 			driver := v.GetString("driver")
-			uri := v.GetString("uri")
 			specFile := v.GetString("spec-file")
+			uri := v.GetString("uri")
+			vaultUriRef := v.GetString("vault-uri-ref")
 
-			if driver == "" || uri == "" || specFile == "" {
+			if driver == "" || specFile == "" || (uri == "" && vaultUriRef == "") {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")
 				}
-				if uri == "" {
-					missing = append(missing, "uri")
-				}
 				if specFile == "" {
 					missing = append(missing, "spec-file")
+				}
+				if uri == "" && vaultUriRef == "" {
+					missing = append(missing, "uri or vault-uri-ref")
 				}
 
 				return fmt.Errorf("missing required params: %v", missing)
@@ -119,6 +120,7 @@ func Plan() *cobra.Command {
 
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
+	cmd.Flags().String("vault-uri-ref", "", "URI-reference to Vault-injected connection URI")
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 	cmd.Flags().Bool("overwrite", false, "when set, will overwrite the out file, if it already exists")

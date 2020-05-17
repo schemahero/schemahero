@@ -155,8 +155,13 @@ func (d *Database) PlanSync(filename string) ([]string, error) {
 		return []string{}, nil
 	}
 
+	uri, err := getURI(d)
+	if err != nil {
+		return nil, err
+	}
+
 	if d.Viper.GetString("driver") == "postgres" {
-		return postgres.PlanPostgresTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Postgres)
+		return postgres.PlanPostgresTable(uri, spec.Name, spec.Schema.Postgres)
 	} else if d.Viper.GetString("driver") == "mysql" {
 		return mysql.PlanMysqlTable(d.Viper.GetString("uri"), spec.Name, spec.Schema.Mysql)
 	} else if d.Viper.GetString("driver") == "cockroachdb" {
@@ -166,13 +171,31 @@ func (d *Database) PlanSync(filename string) ([]string, error) {
 	return nil, errors.New("unknown database driver")
 }
 
+func getURI(d *Database) (string, error) {
+	if uriRef := d.Viper.GetString("vault-uri-ref"); uriRef != "" {
+		b, err := ioutil.ReadFile(uriRef)
+		if err != nil {
+			return "", err
+		}
+		return string(b), nil
+	}
+
+	return d.Viper.GetString("uri"), nil
+}
+
 func (d *Database) ApplySync(statements []string) error {
+	uri, err := getURI(d)
+	fmt.Printf("URI is: %s\n", uri)
+	if err != nil {
+		return err
+	}
+
 	if d.Viper.GetString("driver") == "postgres" {
-		return postgres.DeployPostgresStatements(d.Viper.GetString("uri"), statements)
+		return postgres.DeployPostgresStatements(uri, statements)
 	} else if d.Viper.GetString("driver") == "mysql" {
-		return mysql.DeployMysqlStatements(d.Viper.GetString("uri"), statements)
+		return mysql.DeployMysqlStatements(uri, statements)
 	} else if d.Viper.GetString("driver") == "cockroachdb" {
-		return postgres.DeployPostgresStatements(d.Viper.GetString("uri"), statements)
+		return postgres.DeployPostgresStatements(uri, statements)
 	}
 
 	return errors.New("unknown database driver")
