@@ -119,6 +119,10 @@ func (d *Database) getDbType() (string, error) {
 // is misconfigured for Vault
 func (d *Database) GetVaultAnnotations() (map[string]string, error) {
 	v, err := d.getVaultDetails()
+	if err != nil {
+		return nil, err
+	}
+
 	t, err := d.getDbType()
 	if err != nil {
 		return nil, err

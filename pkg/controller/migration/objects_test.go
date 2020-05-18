@@ -1,7 +1,6 @@
 package migration
 
 import (
-	"reflect"
 	"testing"
 
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
@@ -61,11 +60,11 @@ func Test_vaultAnnotations(t *testing.T) {
 postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{- end }}`,
 			},
 			expectedArgs: []string{
-				"plan",
+				"apply",
 				"--driver",
 				"postgres",
-				"--spec-file",
-				"/specs/table.yaml",
+				"--ddl",
+				"/input/ddl.sql",
 				"--vault-uri-ref",
 				"/vault/secrets/schemaherouri",
 			},
@@ -123,13 +122,13 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 			name:                "Configures correctly when not using vault",
 			expectedAnnotations: nil,
 			expectedArgs: []string{
-				"plan",
+				"apply",
 				"--driver",
 				"postgres",
-				"--spec-file",
-				"/specs/table.yaml",
+				"--ddl",
+				"/input/ddl.sql",
 				"--uri",
-				"postgres://user:password@postgres:5432/my-database",
+				"",
 			},
 			database: &databasesv1alpha3.Database{
 				TypeMeta:   v1.TypeMeta{APIVersion: "databases.schemahero.io/v1alpha3", Kind: "Database"},
@@ -184,15 +183,13 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 			t.Parallel()
 
 			actual, err := getApplyPod("", "", "", test.database, test.table)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.NoError(t, err)
 
 			actualAnnotations := actual.ObjectMeta.Annotations
+			actualArgs := actual.Spec.Containers[0].Args
 
-			if !reflect.DeepEqual(actualAnnotations, test.expectedAnnotations) {
-				t.Fatalf("Expected:\n%s\ngot:\n%s\n", test.expectedAnnotations, actualAnnotations)
-			}
+			assert.Equal(t, test.expectedAnnotations, actualAnnotations)
+			assert.Equal(t, test.expectedArgs, actualArgs)
 		})
 	}
 }

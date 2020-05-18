@@ -1,7 +1,6 @@
 package table
 
 import (
-	"reflect"
 	"testing"
 
 	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
@@ -194,20 +193,13 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 
 			r := &ReconcileTable{}
 			actual, err := r.getPlanPod(test.database, test.table)
-			if err != nil {
-				t.Fatal(err)
-			}
+			assert.NoError(t, err)
 
 			actualAnnotations := actual.ObjectMeta.Annotations
 			actualArgs := actual.Spec.Containers[0].Args
 
-			if !reflect.DeepEqual(test.expectedAnnotations, actualAnnotations) {
-				t.Fatalf("Expected:\n%s\ngot:\n%s\n", test.expectedAnnotations, actualAnnotations)
-			}
-
-			if !reflect.DeepEqual(test.expectedArgs, actualArgs) {
-				t.Fatalf("Expected:\n%s\ngot:\n%s\n", test.expectedArgs, actualArgs)
-			}
+			assert.Equal(t, test.expectedAnnotations, actualAnnotations)
+			assert.Equal(t, test.expectedArgs, actualArgs)
 		})
 	}
 }
