@@ -59,6 +59,16 @@ spec:
                               - key
                               - name
                               type: object
+                            vault:
+                              properties:
+                                role:
+                                  type: string
+                                secret:
+                                  type: string
+                              required:
+                              - role
+                              - secret
+                              type: object
                           type: object
                       type: object
                   type: object
@@ -80,6 +90,16 @@ spec:
                               - key
                               - name
                               type: object
+                            vault:
+                              properties:
+                                role:
+                                  type: string
+                                secret:
+                                  type: string
+                              required:
+                              - role
+                              - secret
+                              type: object
                           type: object
                       type: object
                   type: object
@@ -100,6 +120,16 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            vault:
+                              properties:
+                                role:
+                                  type: string
+                                secret:
+                                  type: string
+                              required:
+                              - role
+                              - secret
                               type: object
                           type: object
                       type: object
@@ -202,6 +232,16 @@ spec:
                                 - key
                                 - name
                                 type: object
+                              vault:
+                                properties:
+                                  role:
+                                    type: string
+                                  secret:
+                                    type: string
+                                required:
+                                - role
+                                - secret
+                                type: object
                             type: object
                         type: object
                     type: object
@@ -223,6 +263,16 @@ spec:
                                 - key
                                 - name
                                 type: object
+                              vault:
+                                properties:
+                                  role:
+                                    type: string
+                                  secret:
+                                    type: string
+                                required:
+                                - role
+                                - secret
+                                type: object
                             type: object
                         type: object
                     type: object
@@ -243,6 +293,16 @@ spec:
                                 required:
                                 - key
                                 - name
+                                type: object
+                              vault:
+                                properties:
+                                  role:
+                                    type: string
+                                  secret:
+                                    type: string
+                                required:
+                                - role
+                                - secret
                                 type: object
                             type: object
                         type: object

@@ -86,19 +86,29 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 
 	args := []string{
 		"apply",
-		"--driver",
-		driver,
-		"--uri",
-		connectionURI,
-		"--ddl",
-		"/input/ddl.sql",
+		"--driver", driver,
+		"--ddl", "/input/ddl.sql",
+	}
+
+	var vaultAnnotations map[string]string
+	if database.UsingVault() {
+		a, err := database.GetVaultAnnotations()
+		if err != nil {
+			return nil, err
+		}
+		vaultAnnotations = a
+
+		args = append(args, "--vault-uri-ref", "/vault/secrets/schemaherouri")
+	} else {
+		args = append(args, "--uri", connectionURI)
 	}
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      podNameForMigrationApply(database.Name, table.Name, migrationID),
-			Namespace: database.Namespace,
-			Labels:    labels,
+			Name:        podNameForMigrationApply(database.Name, table.Name, migrationID),
+			Namespace:   database.Namespace,
+			Labels:      labels,
+			Annotations: vaultAnnotations,
 		},
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",

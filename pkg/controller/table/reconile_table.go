@@ -196,6 +196,28 @@ func (r *ReconcileTable) deployMigrationPlanPhase(ctx context.Context, database 
 		return reconcile.Result{}, errors.Wrap(err, "failed to check if config map exists")
 	}
 
+	if database.UsingVault() {
+		desiredServiceAccount := getPlanServiceAccount(database)
+
+		var sa corev1.ServiceAccount
+		err = r.Get(ctx, types.NamespacedName{
+			Name:      desiredServiceAccount.Name,
+			Namespace: desiredServiceAccount.Namespace,
+		}, &sa)
+		if kuberneteserrors.IsNotFound(err) {
+			// create it
+			if err := r.Create(ctx, desiredServiceAccount); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to create plan service account")
+			}
+			if err := controllerutil.SetControllerReference(table, desiredServiceAccount, r.scheme); err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to set owner on service account")
+			}
+		} else if err != nil {
+			// again, something bad
+			return reconcile.Result{}, errors.Wrap(err, "failed to check if service account exists")
+		}
+	}
+
 	desiredPod, err := r.getPlanPod(database, table)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get pod for plan")

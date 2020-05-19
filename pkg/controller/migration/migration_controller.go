@@ -178,5 +178,11 @@ func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha3.Datab
 		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
 	}
 
+	if database.UsingVault() {
+		// this feels wrong, but also doesn't make sense to return a
+		// a URI ref as a connection URI?
+		return "", nil
+	}
+
 	return "", errors.New("unable to find supported valueFrom")
 }

@@ -64,6 +64,10 @@ run: generate fmt vet bin/schemahero
 install: manifests generate microk8s
 	kubectl apply -f config/crds/v1
 
+.PHONY: install-kind
+install-kind: manifests generate kind
+	kubectl apply -f config/crds/v1
+
 .PHONY: deploy
 deploy: manifests
 	kubectl apply -f config/crds/v1
@@ -126,6 +130,12 @@ microk8s: bin/schemahero bin/kubectl-schemahero manager
 	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
 	docker push localhost:32000/schemahero/schemahero:latest
 
+.PHONY: kind
+kind: bin/schemahero bin/kubectl-schemahero manager
+	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
+	docker tag schemahero/schemahero localhost:5000/schemahero/schemahero:latest
+	docker push localhost:5000/schemahero/schemahero:latest
+
 .PHONY: kotsimages
 kotsimages: bin/schemahero bin/kubectl-schemahero manager
 	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
@@ -138,7 +148,7 @@ ifeq (, $(shell which controller-gen))
 	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.8
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
-CONTROLLER_GEN=$(shell which controller-mangwegen)
+CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
 .PHONY: client-gen

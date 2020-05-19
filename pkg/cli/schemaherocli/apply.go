@@ -24,19 +24,20 @@ func Apply() *cobra.Command {
 
 			// to support automaticenv, we can't use cobra required flags
 			driver := v.GetString("driver")
-			uri := v.GetString("uri")
 			ddl := v.GetString("ddl")
+			uri := v.GetString("uri")
+			vaultUriRef := v.GetString("vault-uri-ref")
 
-			if driver == "" || uri == "" || ddl == "" {
+			if driver == "" || ddl == "" || (uri == "" && vaultUriRef == "") {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")
 				}
-				if uri == "" {
-					missing = append(missing, "uri")
-				}
 				if ddl == "" {
 					missing = append(missing, "ddl")
+				}
+				if uri == "" && vaultUriRef == "" {
+					missing = append(missing, "uri or vault-uri-ref")
 				}
 
 				return fmt.Errorf("missing required params: %v", missing)
@@ -107,6 +108,7 @@ func Apply() *cobra.Command {
 
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
+	cmd.Flags().String("vault-uri-ref", "", "URI-reference to Vault-injected connection URI")
 	cmd.Flags().String("ddl", "", "filename or directory name containing the rendered DDL commands to execute")
 
 	return cmd
