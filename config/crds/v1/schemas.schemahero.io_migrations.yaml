@@ -16,7 +16,7 @@ spec:
     singular: migration
   scope: Namespaced
   versions:
-  - name: v1alpha3
+  - name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Migration is the Schema for the migrations API

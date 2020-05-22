@@ -1,7 +1,7 @@
 package types
 
 import (
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
 type ColumnConstraints struct {

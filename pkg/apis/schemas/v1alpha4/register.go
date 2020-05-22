@@ -16,13 +16,13 @@ limitations under the License.
 
 // NOTE: Boilerplate only.  Ignore this file.
 
-// Package v1alpha3 contains API Schema definitions for the schemas v1alpha3 API group
+// package v1alpha4 contains API Schema definitions for the schemas v1alpha3 API group
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
 // +k8s:conversion-gen=github.com/schemahero/schemahero/pkg/apis/schemas
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=schemas.schemahero.io
-package v1alpha3
+package v1alpha4
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"

@@ -19,7 +19,7 @@ limitations under the License.
 package v1alpha3
 
 import (
-	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
 	rest "k8s.io/client-go/rest"
 )

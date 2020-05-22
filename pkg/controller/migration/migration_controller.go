@@ -21,8 +21,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"

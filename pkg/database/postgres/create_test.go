@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

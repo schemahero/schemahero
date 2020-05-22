@@ -20,10 +20,10 @@ package fake
 
 import (
 	clientset "github.com/schemahero/schemahero/pkg/client/schemaheroclientset"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3"
-	fakedatabasesv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha3/fake"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3"
-	fakeschemasv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha3/fake"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	fakedatabasesv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4/fake"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	fakeschemasv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -78,12 +78,12 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// DatabasesV1alpha3 retrieves the DatabasesV1alpha3Client
-func (c *Clientset) DatabasesV1alpha3() databasesv1alpha3.DatabasesV1alpha3Interface {
-	return &fakedatabasesv1alpha3.FakeDatabasesV1alpha3{Fake: &c.Fake}
+// DatabasesV1alpha4 retrieves the DatabasesV1alpha4Client
+func (c *Clientset) DatabasesV1alpha4() databasesv1alpha4.DatabasesV1alpha4Interface {
+	return &fakedatabasesv1alpha4.FakeDatabasesV1alpha4{Fake: &c.Fake}
 }
 
-// SchemasV1alpha3 retrieves the SchemasV1alpha3Client
-func (c *Clientset) SchemasV1alpha3() schemasv1alpha3.SchemasV1alpha3Interface {
-	return &fakeschemasv1alpha3.FakeSchemasV1alpha3{Fake: &c.Fake}
+// SchemasV1alpha4 retrieves the SchemasV1alpha4Client
+func (c *Clientset) SchemasV1alpha4() schemasv1alpha4.SchemasV1alpha4Interface {
+	return &fakeschemasv1alpha4.FakeSchemasV1alpha4{Fake: &c.Fake}
 }
