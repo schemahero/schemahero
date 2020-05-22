@@ -22,7 +22,7 @@ import (
 	"context"
 	"time"
 
-	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
+	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	scheme "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"

@@ -274,9 +274,9 @@ spec:
           description: TableStatus defines the observed state of Table
           type: object
       type: object
-  version: v1alpha3
+  version: v1alpha4
   versions:
-  - name: v1alpha3
+  - name: v1alpha4
     served: true
     storage: true
 status:
@@ -304,7 +304,7 @@ spec:
     singular: table
   scope: Namespaced
   versions:
-  - name: v1alpha3
+  - name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Table is the Schema for the tables API

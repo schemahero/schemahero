@@ -102,8 +102,8 @@ generate: controller-gen client-gen
 		--output-package=github.com/schemahero/schemahero/pkg/client \
 		--clientset-name schemaheroclientset \
 		--input-base github.com/schemahero/schemahero/pkg/apis \
-		--input databases/v1alpha3 \
-		--input schemas/v1alpha3 \
+		--input databases/v1alpha4 \
+		--input schemas/v1alpha4 \
 		-h ./hack/boilerplate.go.txt
 
 .PHONY: bin/schemahero

@@ -19,8 +19,8 @@ limitations under the License.
 package scheme
 
 import (
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,8 +32,8 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	databasesv1alpha3.AddToScheme,
-	schemasv1alpha3.AddToScheme,
+	databasesv1alpha4.AddToScheme,
+	schemasv1alpha4.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

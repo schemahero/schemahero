@@ -16,7 +16,7 @@ spec:
     singular: table
   scope: Namespaced
   versions:
-  - name: v1alpha3
+  - name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Table is the Schema for the tables API

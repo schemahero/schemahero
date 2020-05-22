@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha3"
+	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

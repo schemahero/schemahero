@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha3"
+	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
 func CreateTableStatement(tableName string, tableSchema *schemasv1alpha3.SQLTableSchema) (string, error) {
