@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,7 +54,7 @@ func podNameForMigrationApply(databaseName string, tableName string, migrationID
 	return podName
 }
 
-func getApplyPod(migrationID string, namespace string, connectionURI string, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func getApplyPod(migrationID string, namespace string, connectionURI string, database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	if os.Getenv("SCHEMAHERO_IMAGE_NAME") != "" {
 		imageName = os.Getenv("SCHEMAHERO_IMAGE_NAME")
@@ -115,9 +115,8 @@ func getApplyPod(migrationID string, namespace string, connectionURI string, dat
 			Kind:       "Pod",
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector:       nodeSelector,
-			ServiceAccountName: database.Name,
-			RestartPolicy:      corev1.RestartPolicyOnFailure,
+			NodeSelector:  nodeSelector,
+			RestartPolicy: corev1.RestartPolicyOnFailure,
 			Containers: []corev1.Container{
 				{
 					Image:           imageName,

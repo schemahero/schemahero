@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,22 +17,22 @@ import (
 func TestReadConnectionURI(t *testing.T) {
 	tests := []struct {
 		name     string
-		value    databasesv1alpha3.ValueOrValueFrom
+		value    databasesv1alpha4.ValueOrValueFrom
 		secret   *corev1.Secret
 		expected string
 	}{
 		{
 			name: "Gets URI string",
-			value: databasesv1alpha3.ValueOrValueFrom{
+			value: databasesv1alpha4.ValueOrValueFrom{
 				Value: "postgresql://username:password@postgrs:5433/database",
 			},
 			expected: "postgresql://username:password@postgrs:5433/database",
 		},
 		{
 			name: "Gets URI from k8s secret",
-			value: databasesv1alpha3.ValueOrValueFrom{
-				ValueFrom: &databasesv1alpha3.ValueFrom{
-					SecretKeyRef: &databasesv1alpha3.SecretKeyRef{
+			value: databasesv1alpha4.ValueOrValueFrom{
+				ValueFrom: &databasesv1alpha4.ValueFrom{
+					SecretKeyRef: &databasesv1alpha4.SecretKeyRef{
 						Name: "postgresql-secret",
 						Key:  "uri",
 					},
@@ -48,9 +48,9 @@ func TestReadConnectionURI(t *testing.T) {
 		},
 		{
 			name: "Gets URI from Vault volume",
-			value: databasesv1alpha3.ValueOrValueFrom{
-				ValueFrom: &databasesv1alpha3.ValueFrom{
-					Vault: &databasesv1alpha3.Vault{
+			value: databasesv1alpha4.ValueOrValueFrom{
+				ValueFrom: &databasesv1alpha4.ValueFrom{
+					Vault: &databasesv1alpha4.Vault{
 						Secret: "/vault/creds/schemahero",
 						Role:   "databaseName",
 					},

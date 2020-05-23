@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	KubernetesConfigFlags *genericclioptions.ConfigFlags
+	kubernetesConfigFlags *genericclioptions.ConfigFlags
 )
 
 func RootCmd() *cobra.Command {
@@ -30,17 +30,20 @@ func RootCmd() *cobra.Command {
 
 	cobra.OnInitialize(initConfig)
 
+	kubernetesConfigFlags = genericclioptions.NewConfigFlags(false)
+	kubernetesConfigFlags.AddFlags(cmd.PersistentFlags())
+
 	cmd.AddCommand(Version())
 	cmd.AddCommand(InstallCmd())
+	cmd.AddCommand(ShellCmd())
 	cmd.AddCommand(GetCmd())
 	cmd.AddCommand(DescribeCmd())
 	cmd.AddCommand(UpdateCmd())
 	cmd.AddCommand(ApproveCmd())
 
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.BindPFlags(cmd.Flags())
 
-	KubernetesConfigFlags = genericclioptions.NewConfigFlags(true)
-	KubernetesConfigFlags.AddFlags(cmd.PersistentFlags())
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 
 	return cmd
 }

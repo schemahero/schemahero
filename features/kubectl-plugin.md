@@ -16,7 +16,7 @@ Some grouping and ordering can be achieved if manually deploying changes using k
 
 This is the current plan of action; it's based on product feedback received so far since launching SchemaHero.
 
-- Bump the Table and Database CRD versions to v1alpha3
+- Bump the Table and Database CRD versions to v1alpha4
 - Add a top level boolean attribute to the Database kind named `automaticallyDeployMigrations`
 - When a table migration is deployed, if `automaticallyDeployMigrations` is not enabled, the controller should only generate the desired YAML
 - The desired YAML should be stored in the Status field of the Table object

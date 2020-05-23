@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -55,7 +55,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Table
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Table{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &schemasv1alpha4.Table{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start watch on tables")
 	}

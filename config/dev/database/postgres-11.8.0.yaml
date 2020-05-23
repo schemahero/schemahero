@@ -1,0 +1,171 @@
+---
+# Source: postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-8.10.0
+    release: "postgresql"
+    heritage: "Helm"
+type: Opaque
+data:
+  postgresql-password: "cGFzc3dvcmQ="
+  uri: cG9zdGdyZXM6Ly90ZXN0dXNlcjpwYXNzd29yZEBwb3N0Z3Jlc3FsOjU0MzIvdGVzdGRiP3NzbG1vZGU9ZGlzYWJsZQ==
+
+---
+# Source: postgresql/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-headless
+  labels:
+    app: postgresql
+    chart: postgresql-8.10.0
+    release: "postgresql"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app: postgresql
+    release: "postgresql"
+---
+# Source: postgresql/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-8.10.0
+    release: "postgresql"
+    heritage: "Helm"
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app: postgresql
+    release: "postgresql"
+    role: master
+---
+# Source: postgresql/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-postgresql
+  labels:
+    app: postgresql
+    chart: postgresql-8.10.0
+    release: "postgresql"
+    heritage: "Helm"
+  annotations:
+spec:
+  serviceName: postgresql-headless
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: postgresql
+      release: "postgresql"
+      role: master
+  template:
+    metadata:
+      name: postgresql
+      labels:
+        app: postgresql
+        chart: postgresql-8.10.0
+        release: "postgresql"
+        heritage: "Helm"
+        role: master
+    spec:      
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: postgresql
+          image: docker.io/bitnami/postgresql:11.8.0-debian-10-r5
+          imagePullPolicy: "IfNotPresent"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            runAsUser: 1001
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            - name: POSTGRES_USER
+              value: "testuser"
+            - name: POSTGRES_DB
+              value: testdb
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: postgresql-password
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+              subPath: 
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"

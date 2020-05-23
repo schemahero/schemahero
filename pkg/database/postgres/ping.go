@@ -5,7 +5,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -15,7 +15,7 @@ func (p *PostgresConnection) CheckAlive(ctx context.Context, namespace string, i
 	if err != nil {
 		return false, err
 	}
-	databasesClient, err := databasesclientv1alpha3.NewForConfig(cfg)
+	databasesClient, err := databasesclientv1alpha4.NewForConfig(cfg)
 	if err != nil {
 		return false, err
 	}

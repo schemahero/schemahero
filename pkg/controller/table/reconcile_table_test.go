@@ -3,71 +3,71 @@ package table
 import (
 	"testing"
 
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_checkDatabaseTypeMatches(t *testing.T) {
 	tests := []struct {
 		name        string
-		connection  databasesv1alpha3.DatabaseConnection
-		tableSchema schemasv1alpha3.TableSchema
+		connection  databasesv1alpha4.DatabaseConnection
+		tableSchema schemasv1alpha4.TableSchema
 		expect      bool
 	}{
 		{
 			name: "is postgres",
-			connection: databasesv1alpha3.DatabaseConnection{
-				Postgres: &databasesv1alpha3.PostgresConnection{
-					URI: databasesv1alpha3.ValueOrValueFrom{
+			connection: databasesv1alpha4.DatabaseConnection{
+				Postgres: &databasesv1alpha4.PostgresConnection{
+					URI: databasesv1alpha4.ValueOrValueFrom{
 						Value: "test",
 					},
 				},
 			},
-			tableSchema: schemasv1alpha3.TableSchema{
-				Postgres: &schemasv1alpha3.SQLTableSchema{},
+			tableSchema: schemasv1alpha4.TableSchema{
+				Postgres: &schemasv1alpha4.SQLTableSchema{},
 			},
 			expect: true,
 		},
 		{
 			name: "is mysql",
-			connection: databasesv1alpha3.DatabaseConnection{
-				Mysql: &databasesv1alpha3.MysqlConnection{
-					URI: databasesv1alpha3.ValueOrValueFrom{
+			connection: databasesv1alpha4.DatabaseConnection{
+				Mysql: &databasesv1alpha4.MysqlConnection{
+					URI: databasesv1alpha4.ValueOrValueFrom{
 						Value: "test",
 					},
 				},
 			},
-			tableSchema: schemasv1alpha3.TableSchema{
-				Mysql: &schemasv1alpha3.SQLTableSchema{},
+			tableSchema: schemasv1alpha4.TableSchema{
+				Mysql: &schemasv1alpha4.SQLTableSchema{},
 			},
 			expect: true,
 		},
 		{
 			name: "is mysql, expect postgres",
-			connection: databasesv1alpha3.DatabaseConnection{
-				Mysql: &databasesv1alpha3.MysqlConnection{
-					URI: databasesv1alpha3.ValueOrValueFrom{
+			connection: databasesv1alpha4.DatabaseConnection{
+				Mysql: &databasesv1alpha4.MysqlConnection{
+					URI: databasesv1alpha4.ValueOrValueFrom{
 						Value: "test",
 					},
 				},
 			},
-			tableSchema: schemasv1alpha3.TableSchema{
-				Postgres: &schemasv1alpha3.SQLTableSchema{},
+			tableSchema: schemasv1alpha4.TableSchema{
+				Postgres: &schemasv1alpha4.SQLTableSchema{},
 			},
 			expect: false,
 		},
 		{
 			name: "is postgres, expect mysql",
-			connection: databasesv1alpha3.DatabaseConnection{
-				Postgres: &databasesv1alpha3.PostgresConnection{
-					URI: databasesv1alpha3.ValueOrValueFrom{
+			connection: databasesv1alpha4.DatabaseConnection{
+				Postgres: &databasesv1alpha4.PostgresConnection{
+					URI: databasesv1alpha4.ValueOrValueFrom{
 						Value: "test",
 					},
 				},
 			},
-			tableSchema: schemasv1alpha3.TableSchema{
-				Mysql: &schemasv1alpha3.SQLTableSchema{},
+			tableSchema: schemasv1alpha4.TableSchema{
+				Mysql: &schemasv1alpha4.SQLTableSchema{},
 			},
 			expect: false,
 		},

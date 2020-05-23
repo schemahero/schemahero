@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,29 +32,29 @@ import (
 
 // FakeMigrations implements MigrationInterface
 type FakeMigrations struct {
-	Fake *FakeSchemasV1alpha3
+	Fake *FakeSchemasv1alpha4
 	ns   string
 }
 
-var migrationsResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha3", Resource: "migrations"}
+var migrationsResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha4", Resource: "migrations"}
 
-var migrationsKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha3", Kind: "Migration"}
+var migrationsKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha4", Kind: "Migration"}
 
 // Get takes name of the migration, and returns the corresponding migration object, and an error if there is any.
-func (c *FakeMigrations) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Migration, err error) {
+func (c *FakeMigrations) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.Migration, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(migrationsResource, c.ns, name), &v1alpha3.Migration{})
+		Invokes(testing.NewGetAction(migrationsResource, c.ns, name), &v1alpha4.Migration{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Migration), err
+	return obj.(*v1alpha4.Migration), err
 }
 
 // List takes label and field selectors, and returns the list of Migrations that match those selectors.
-func (c *FakeMigrations) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.MigrationList, err error) {
+func (c *FakeMigrations) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha4.MigrationList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(migrationsResource, migrationsKind, c.ns, opts), &v1alpha3.MigrationList{})
+		Invokes(testing.NewListAction(migrationsResource, migrationsKind, c.ns, opts), &v1alpha4.MigrationList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *FakeMigrations) List(ctx context.Context, opts v1.ListOptions) (result 
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha3.MigrationList{ListMeta: obj.(*v1alpha3.MigrationList).ListMeta}
-	for _, item := range obj.(*v1alpha3.MigrationList).Items {
+	list := &v1alpha4.MigrationList{ListMeta: obj.(*v1alpha4.MigrationList).ListMeta}
+	for _, item := range obj.(*v1alpha4.MigrationList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -81,43 +81,43 @@ func (c *FakeMigrations) Watch(ctx context.Context, opts v1.ListOptions) (watch.
 }
 
 // Create takes the representation of a migration and creates it.  Returns the server's representation of the migration, and an error, if there is any.
-func (c *FakeMigrations) Create(ctx context.Context, migration *v1alpha3.Migration, opts v1.CreateOptions) (result *v1alpha3.Migration, err error) {
+func (c *FakeMigrations) Create(ctx context.Context, migration *v1alpha4.Migration, opts v1.CreateOptions) (result *v1alpha4.Migration, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(migrationsResource, c.ns, migration), &v1alpha3.Migration{})
+		Invokes(testing.NewCreateAction(migrationsResource, c.ns, migration), &v1alpha4.Migration{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Migration), err
+	return obj.(*v1alpha4.Migration), err
 }
 
 // Update takes the representation of a migration and updates it. Returns the server's representation of the migration, and an error, if there is any.
-func (c *FakeMigrations) Update(ctx context.Context, migration *v1alpha3.Migration, opts v1.UpdateOptions) (result *v1alpha3.Migration, err error) {
+func (c *FakeMigrations) Update(ctx context.Context, migration *v1alpha4.Migration, opts v1.UpdateOptions) (result *v1alpha4.Migration, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(migrationsResource, c.ns, migration), &v1alpha3.Migration{})
+		Invokes(testing.NewUpdateAction(migrationsResource, c.ns, migration), &v1alpha4.Migration{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Migration), err
+	return obj.(*v1alpha4.Migration), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeMigrations) UpdateStatus(ctx context.Context, migration *v1alpha3.Migration, opts v1.UpdateOptions) (*v1alpha3.Migration, error) {
+func (c *FakeMigrations) UpdateStatus(ctx context.Context, migration *v1alpha4.Migration, opts v1.UpdateOptions) (*v1alpha4.Migration, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(migrationsResource, "status", c.ns, migration), &v1alpha3.Migration{})
+		Invokes(testing.NewUpdateSubresourceAction(migrationsResource, "status", c.ns, migration), &v1alpha4.Migration{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Migration), err
+	return obj.(*v1alpha4.Migration), err
 }
 
 // Delete takes name of the migration and deletes it. Returns an error if one occurs.
 func (c *FakeMigrations) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(migrationsResource, c.ns, name), &v1alpha3.Migration{})
+		Invokes(testing.NewDeleteAction(migrationsResource, c.ns, name), &v1alpha4.Migration{})
 
 	return err
 }
@@ -126,17 +126,17 @@ func (c *FakeMigrations) Delete(ctx context.Context, name string, opts v1.Delete
 func (c *FakeMigrations) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(migrationsResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1alpha3.MigrationList{})
+	_, err := c.Fake.Invokes(action, &v1alpha4.MigrationList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched migration.
-func (c *FakeMigrations) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Migration, err error) {
+func (c *FakeMigrations) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha4.Migration, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(migrationsResource, c.ns, name, pt, data, subresources...), &v1alpha3.Migration{})
+		Invokes(testing.NewPatchSubresourceAction(migrationsResource, c.ns, name, pt, data, subresources...), &v1alpha4.Migration{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Migration), err
+	return obj.(*v1alpha4.Migration), err
 }

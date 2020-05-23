@@ -1,4 +1,4 @@
-apiVersion: databases.schemahero.io/v1alpha3
+apiVersion: databases.schemahero.io/v1alpha4
 kind: Database
 metadata:
   name: testdb
@@ -11,5 +11,5 @@ spec:
       uri:
         valueFrom:
           secretKeyRef:
-            name: postgresql-secret
+            name: postgresql
             key: uri

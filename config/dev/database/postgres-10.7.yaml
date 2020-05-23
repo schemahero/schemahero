@@ -4,7 +4,7 @@ data:
   uri: cG9zdGdyZXM6Ly90ZXN0dXNlcjpwYXNzd29yZEBwb3N0Z3Jlc3FsOjU0MzIvdGVzdGRiP3NzbG1vZGU9ZGlzYWJsZQ==
 kind: Secret
 metadata:
-  name: postgresql-secret
+  name: postgresql
 type: Opaque
 ---
 apiVersion: v1

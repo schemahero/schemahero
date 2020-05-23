@@ -3,7 +3,7 @@ package postgres
 import (
 	"testing"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,17 +12,17 @@ func Test_AddForeignKeyStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
-		schemaForeignKey  *schemasv1alpha3.SQLTableForeignKey
+		schemaForeignKey  *schemasv1alpha4.SQLTableForeignKey
 		expectedStatement string
 	}{
 		{
 			name:      "no name, one column, no on delete",
 			tableName: "t2",
-			schemaForeignKey: &schemasv1alpha3.SQLTableForeignKey{
+			schemaForeignKey: &schemasv1alpha4.SQLTableForeignKey{
 				Columns: []string{
 					"c2",
 				},
-				References: schemasv1alpha3.SQLTableForeignKeyReferences{
+				References: schemasv1alpha4.SQLTableForeignKeyReferences{
 					Table: "t1",
 					Columns: []string{
 						"c1",
@@ -34,12 +34,12 @@ func Test_AddForeignKeyStatement(t *testing.T) {
 		{
 			name:      "named, one column, no on delete",
 			tableName: "t2",
-			schemaForeignKey: &schemasv1alpha3.SQLTableForeignKey{
+			schemaForeignKey: &schemasv1alpha4.SQLTableForeignKey{
 				Name: "hi_i_am_a_fkey",
 				Columns: []string{
 					"c2",
 				},
-				References: schemasv1alpha3.SQLTableForeignKeyReferences{
+				References: schemasv1alpha4.SQLTableForeignKeyReferences{
 					Table: "t1",
 					Columns: []string{
 						"c1",
@@ -51,12 +51,12 @@ func Test_AddForeignKeyStatement(t *testing.T) {
 		{
 			name:      "no name, two columns, no on delete",
 			tableName: "t2",
-			schemaForeignKey: &schemasv1alpha3.SQLTableForeignKey{
+			schemaForeignKey: &schemasv1alpha4.SQLTableForeignKey{
 				Columns: []string{
 					"c2",
 					"c22",
 				},
-				References: schemasv1alpha3.SQLTableForeignKeyReferences{
+				References: schemasv1alpha4.SQLTableForeignKeyReferences{
 					Table: "t1",
 					Columns: []string{
 						"c1",
@@ -69,12 +69,12 @@ func Test_AddForeignKeyStatement(t *testing.T) {
 		{
 			name:      "no name, one column, on delete cascade",
 			tableName: "t2",
-			schemaForeignKey: &schemasv1alpha3.SQLTableForeignKey{
+			schemaForeignKey: &schemasv1alpha4.SQLTableForeignKey{
 				OnDelete: "cascade",
 				Columns: []string{
 					"c2",
 				},
-				References: schemasv1alpha3.SQLTableForeignKeyReferences{
+				References: schemasv1alpha4.SQLTableForeignKeyReferences{
 					Table: "t1",
 					Columns: []string{
 						"c1",

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
-	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -19,7 +19,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1alpha3.Table) (reconcile.Result, error) {
+func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1alpha4.Table) (reconcile.Result, error) {
 	logger.Debug("reconciling table",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
@@ -73,17 +73,17 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	return r.deployMigrationPlanPhase(ctx, database, instance)
 }
 
-func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha3.Table, error) {
-	v1alpha3instance := &schemasv1alpha3.Table{}
-	err := r.Get(context.Background(), request.NamespacedName, v1alpha3instance)
+func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha4.Table, error) {
+	v1alpha4instance := &schemasv1alpha4.Table{}
+	err := r.Get(context.Background(), request.NamespacedName, v1alpha4instance)
 	if err != nil {
 		return nil, err // don't wrap
 	}
 
-	return v1alpha3instance, nil
+	return v1alpha4instance, nil
 }
 
-func (r *ReconcileTable) getMigrationSpec(namespace string, name string) (*schemasv1alpha3.Migration, error) {
+func (r *ReconcileTable) getMigrationSpec(namespace string, name string) (*schemasv1alpha4.Migration, error) {
 	logger.Debug("getting migration spec",
 		zap.String("namespace", namespace),
 		zap.String("name", name))
@@ -91,18 +91,18 @@ func (r *ReconcileTable) getMigrationSpec(namespace string, name string) (*schem
 	return nil, nil
 }
 
-func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, name string) (*databasesv1alpha3.Database, error) {
+func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, name string) (*databasesv1alpha4.Database, error) {
 	logger.Debug("getting database spec",
 		zap.String("namespace", namespace),
 		zap.String("name", name))
 
 	cfg, err := config.GetConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get config")
 	}
-	databasesClient, err := databasesclientv1alpha3.NewForConfig(cfg)
+	databasesClient, err := databasesclientv1alpha4.NewForConfig(cfg)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get databasesclient")
 	}
 
 	database, err := databasesClient.Databases(namespace).Get(ctx, name, metav1.GetOptions{})
@@ -112,7 +112,8 @@ func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, 
 		if kuberneteserrors.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, err
+
+		return nil, errors.Wrap(err, "failed to get database object")
 	}
 
 	// try to parse the secret too, the database may be deployed, but that doesn't mean it's ready
@@ -138,7 +139,7 @@ func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, 
 	return database, nil
 }
 
-func checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, tableSchema *schemasv1alpha3.TableSchema) bool {
+func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, tableSchema *schemasv1alpha4.TableSchema) bool {
 	if connection.Postgres != nil {
 		return tableSchema.Postgres != nil
 	} else if connection.Mysql != nil {
@@ -150,7 +151,7 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha3.DatabaseConnection, 
 	return false
 }
 
-func (r *ReconcileTable) deployMigrationPlanPhase(ctx context.Context, database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (reconcile.Result, error) {
+func (r *ReconcileTable) deployMigrationPlanPhase(ctx context.Context, database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) (reconcile.Result, error) {
 	logger.Debug("deploying plan phase of migration",
 		zap.String("databaseName", database.Name),
 		zap.String("tableName", table.Name))

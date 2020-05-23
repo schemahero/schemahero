@@ -130,6 +130,28 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 		} else if len(withoutPrecisionMatchGroups) == 1 {
 			columnType = "timestamp"
 		}
+	} else if strings.HasPrefix(requestedType, "time") {
+		columnType = "time"
+
+		withPrecisionWithoutTimeZone := regexp.MustCompile(`time\s*\(\s*(?P<precision>.*)\s*\)\s*without time zone`)
+		withPrecision := regexp.MustCompile(`time\s*\(\s*(?P<precision>.*)\s*\)`)
+		withoutPrecisionWithoutTimeZone := regexp.MustCompile(`time\s*without time zone`)
+		withoutPrecision := regexp.MustCompile(`time\s*`)
+
+		withPrecisionMatchGroups := withPrecision.FindStringSubmatch(requestedType)
+		withPrecisionWithoutTimeZoneMatchGroups := withPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+		withoutPrecisionMatchGroups := withoutPrecision.FindStringSubmatch(requestedType)
+		withoutPrecisionWithoutTimeZoneMatchGroups := withoutPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+
+		if len(withPrecisionWithoutTimeZoneMatchGroups) == 2 {
+			columnType = fmt.Sprintf("time (%s) without time zone", withPrecisionWithoutTimeZoneMatchGroups[1])
+		} else if len(withoutPrecisionWithoutTimeZoneMatchGroups) == 1 {
+			columnType = "time without time zone"
+		} else if len(withPrecisionMatchGroups) == 2 {
+			columnType = fmt.Sprintf("time (%s)", withPrecisionMatchGroups[1])
+		} else if len(withoutPrecisionMatchGroups) == 1 {
+			columnType = "time"
+		}
 	} else if strings.HasPrefix(requestedType, "numeric") {
 		columnType = "numeric"
 

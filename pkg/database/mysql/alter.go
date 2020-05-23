@@ -1,11 +1,11 @@
 package mysql
 
 import (
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha3.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
+func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
 	// this could be an alter or a drop column command
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {

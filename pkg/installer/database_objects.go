@@ -135,6 +135,8 @@ spec:
                       type: object
                   type: object
               type: object
+            disableShellCommand:
+              type: boolean
             immediateDeploy:
               type: boolean
             schemahero:
@@ -161,9 +163,9 @@ spec:
       required:
       - spec
       type: object
-  version: v1alpha3
+  version: v1alpha4
   versions:
-  - name: v1alpha3
+  - name: v1alpha4
     served: true
     storage: true
 status:
@@ -191,7 +193,7 @@ spec:
     singular: database
   scope: Namespaced
   versions:
-  - name: v1alpha3
+  - name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Database is the Schema for the databases API
@@ -308,6 +310,8 @@ spec:
                         type: object
                     type: object
                 type: object
+              disableShellCommand:
+                type: boolean
               immediateDeploy:
                 type: boolean
               schemahero:
