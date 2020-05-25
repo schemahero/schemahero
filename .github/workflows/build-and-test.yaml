@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v1.1.2
         with:
-          go-version: "1.14.1"
+          go-version: "1.14.2"
       - name: setup goenv
         run: |
           echo "::set-env name=GOPATH::$(go env GOPATH)"
