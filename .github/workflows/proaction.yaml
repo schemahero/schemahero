@@ -8,11 +8,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: proactionhq/proaction/action@v0.3.5
+      - uses: proactionhq/proaction/action@v0.4.0
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
 
-      - uses: peter-evans/create-pull-request@v2
+      - uses: peter-evans/create-pull-request@58fb221
         with:
           commit-message: "[proaction] updating workflow"
           title: Updating workflow from Proaction
