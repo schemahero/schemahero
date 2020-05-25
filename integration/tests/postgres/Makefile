@@ -5,7 +5,7 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 10.7 11.8 12.3
+run: 10.13 11.8 12.3
 
 .PHONY: 10.13
 10.13: export PG_VERSION = 10.13
