@@ -16,13 +16,13 @@ limitations under the License.
 
 // NOTE: Boilerplate only.  Ignore this file.
 
-// Package v1alpha3 contains API Schema definitions for the databases v1alpha3 API group
+// package v1alpha4 contains API Schema definitions for the databases v1alpha4 API group
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
 // +k8s:conversion-gen=github.com/schemahero/schemahero/pkg/apis/databases
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=databases.schemahero.io
-package v1alpha3
+package v1alpha4
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,7 +31,7 @@ import (
 
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: "databases.schemahero.io", Version: "v1alpha3"}
+	SchemeGroupVersion = schema.GroupVersion{Group: "databases.schemahero.io", Version: "v1alpha4"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}

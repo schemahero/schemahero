@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *schemasv1alpha3.Migration) (reconcile.Result, error) {
+func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *schemasv1alpha4.Migration) (reconcile.Result, error) {
 	logger.Debug("reconciling migration",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),

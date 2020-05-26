@@ -7,7 +7,7 @@ URI := postgres://schemahero:password@127.0.0.1:15432/schemahero?sslmode=disable
 .PHONY: run
 run:
 	# Fixtures
-	docker pull postgres:10.7
+	docker pull postgres:$(PG_VERSION)
 	docker build -t $(DATABASE_IMAGE_NAME) .
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 ||:
 	docker run -p 15432:5432 --rm -d --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)

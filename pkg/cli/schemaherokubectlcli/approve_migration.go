@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -41,7 +41,7 @@ func ApproveMigrationCmd() *cobra.Command {
 				return err
 			}
 
-			schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
+			schemasClient, err := schemasclientv1alpha4.NewForConfig(cfg)
 			if err != nil {
 				return err
 			}

@@ -6,8 +6,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +37,7 @@ func GetDatabasesCmd() *cobra.Command {
 				return err
 			}
 
-			databasesClient, err := databasesclientv1alpha3.NewForConfig(cfg)
+			databasesClient, err := databasesclientv1alpha4.NewForConfig(cfg)
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func GetDatabasesCmd() *cobra.Command {
 				return err
 			}
 
-			matchingDatabases := []databasesv1alpha3.Database{}
+			matchingDatabases := []databasesv1alpha4.Database{}
 
 			for _, namespace := range namespaces.Items {
 				databases, err := databasesClient.Databases(namespace.Name).List(ctx, metav1.ListOptions{})

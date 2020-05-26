@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,29 +32,29 @@ import (
 
 // FakeTables implements TableInterface
 type FakeTables struct {
-	Fake *FakeSchemasV1alpha3
+	Fake *FakeSchemasv1alpha4
 	ns   string
 }
 
-var tablesResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha3", Resource: "tables"}
+var tablesResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha4", Resource: "tables"}
 
-var tablesKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha3", Kind: "Table"}
+var tablesKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha4", Kind: "Table"}
 
 // Get takes name of the table, and returns the corresponding table object, and an error if there is any.
-func (c *FakeTables) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.Table, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(tablesResource, c.ns, name), &v1alpha3.Table{})
+		Invokes(testing.NewGetAction(tablesResource, c.ns, name), &v1alpha4.Table{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Table), err
+	return obj.(*v1alpha4.Table), err
 }
 
 // List takes label and field selectors, and returns the list of Tables that match those selectors.
-func (c *FakeTables) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.TableList, err error) {
+func (c *FakeTables) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha4.TableList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(tablesResource, tablesKind, c.ns, opts), &v1alpha3.TableList{})
+		Invokes(testing.NewListAction(tablesResource, tablesKind, c.ns, opts), &v1alpha4.TableList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *FakeTables) List(ctx context.Context, opts v1.ListOptions) (result *v1a
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha3.TableList{ListMeta: obj.(*v1alpha3.TableList).ListMeta}
-	for _, item := range obj.(*v1alpha3.TableList).Items {
+	list := &v1alpha4.TableList{ListMeta: obj.(*v1alpha4.TableList).ListMeta}
+	for _, item := range obj.(*v1alpha4.TableList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -81,43 +81,43 @@ func (c *FakeTables) Watch(ctx context.Context, opts v1.ListOptions) (watch.Inte
 }
 
 // Create takes the representation of a table and creates it.  Returns the server's representation of the table, and an error, if there is any.
-func (c *FakeTables) Create(ctx context.Context, table *v1alpha3.Table, opts v1.CreateOptions) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Create(ctx context.Context, table *v1alpha4.Table, opts v1.CreateOptions) (result *v1alpha4.Table, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(tablesResource, c.ns, table), &v1alpha3.Table{})
+		Invokes(testing.NewCreateAction(tablesResource, c.ns, table), &v1alpha4.Table{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Table), err
+	return obj.(*v1alpha4.Table), err
 }
 
 // Update takes the representation of a table and updates it. Returns the server's representation of the table, and an error, if there is any.
-func (c *FakeTables) Update(ctx context.Context, table *v1alpha3.Table, opts v1.UpdateOptions) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Update(ctx context.Context, table *v1alpha4.Table, opts v1.UpdateOptions) (result *v1alpha4.Table, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(tablesResource, c.ns, table), &v1alpha3.Table{})
+		Invokes(testing.NewUpdateAction(tablesResource, c.ns, table), &v1alpha4.Table{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Table), err
+	return obj.(*v1alpha4.Table), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeTables) UpdateStatus(ctx context.Context, table *v1alpha3.Table, opts v1.UpdateOptions) (*v1alpha3.Table, error) {
+func (c *FakeTables) UpdateStatus(ctx context.Context, table *v1alpha4.Table, opts v1.UpdateOptions) (*v1alpha4.Table, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(tablesResource, "status", c.ns, table), &v1alpha3.Table{})
+		Invokes(testing.NewUpdateSubresourceAction(tablesResource, "status", c.ns, table), &v1alpha4.Table{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Table), err
+	return obj.(*v1alpha4.Table), err
 }
 
 // Delete takes name of the table and deletes it. Returns an error if one occurs.
 func (c *FakeTables) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(tablesResource, c.ns, name), &v1alpha3.Table{})
+		Invokes(testing.NewDeleteAction(tablesResource, c.ns, name), &v1alpha4.Table{})
 
 	return err
 }
@@ -126,17 +126,17 @@ func (c *FakeTables) Delete(ctx context.Context, name string, opts v1.DeleteOpti
 func (c *FakeTables) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(tablesResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1alpha3.TableList{})
+	_, err := c.Fake.Invokes(action, &v1alpha4.TableList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched table.
-func (c *FakeTables) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Table, err error) {
+func (c *FakeTables) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha4.Table, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(tablesResource, c.ns, name, pt, data, subresources...), &v1alpha3.Table{})
+		Invokes(testing.NewPatchSubresourceAction(tablesResource, c.ns, name, pt, data, subresources...), &v1alpha4.Table{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Table), err
+	return obj.(*v1alpha4.Table), err
 }

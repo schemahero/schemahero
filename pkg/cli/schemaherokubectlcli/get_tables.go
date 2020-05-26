@@ -6,8 +6,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
-	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +40,7 @@ func GetTablesCmd() *cobra.Command {
 				return err
 			}
 
-			schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
+			schemasClient, err := schemasclientv1alpha4.NewForConfig(cfg)
 			if err != nil {
 				return err
 			}
@@ -50,7 +50,7 @@ func GetTablesCmd() *cobra.Command {
 				return err
 			}
 
-			matchingTables := []schemasv1alpha3.Table{}
+			matchingTables := []schemasv1alpha4.Table{}
 
 			for _, namespace := range namespaces.Items {
 				tables, err := schemasClient.Tables(namespace.Name).List(ctx, metav1.ListOptions{})

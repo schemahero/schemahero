@@ -7,8 +7,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
-	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/controller/migration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,7 +42,7 @@ func GetMigrationsCmd() *cobra.Command {
 				return err
 			}
 
-			schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
+			schemasClient, err := schemasclientv1alpha4.NewForConfig(cfg)
 			if err != nil {
 				return err
 			}
@@ -66,7 +66,7 @@ func GetMigrationsCmd() *cobra.Command {
 				}
 			}
 
-			matchingMigrations := []schemasv1alpha3.Migration{}
+			matchingMigrations := []schemasv1alpha4.Migration{}
 			for _, namespaceName := range namespaceNames {
 				migrations, err := schemasClient.Migrations(namespaceName).List(ctx, metav1.ListOptions{})
 				if err != nil {

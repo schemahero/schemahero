@@ -3,8 +3,8 @@ package table
 import (
 	"testing"
 
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,22 +13,22 @@ import (
 func Test_planConfigMap(t *testing.T) {
 	tests := []struct {
 		name     string
-		table    schemasv1alpha3.Table
-		database databasesv1alpha3.Database
+		table    schemasv1alpha4.Table
+		database databasesv1alpha4.Database
 		expect   string
 	}{
 		{
 			name: "basic test",
-			table: schemasv1alpha3.Table{
-				Spec: schemasv1alpha3.TableSpec{
+			table: schemasv1alpha4.Table{
+				Spec: schemasv1alpha4.TableSpec{
 					Database: "db",
 					Name:     "name",
-					Schema: &schemasv1alpha3.TableSchema{
-						Postgres: &schemasv1alpha3.SQLTableSchema{},
+					Schema: &schemasv1alpha4.TableSchema{
+						Postgres: &schemasv1alpha4.SQLTableSchema{},
 					},
 				},
 			},
-			database: databasesv1alpha3.Database{},
+			database: databasesv1alpha4.Database{},
 			expect: `database: db
 name: name
 schema:
@@ -55,8 +55,8 @@ func Test_vaultAnnotations(t *testing.T) {
 		name                string
 		expectedAnnotations map[string]string
 		expectedArgs        []string
-		database            *databasesv1alpha3.Database
-		table               *schemasv1alpha3.Table
+		database            *databasesv1alpha4.Database
+		table               *schemasv1alpha4.Table
 	}{
 		{
 			name: "Configures correctly when using Vault",
@@ -77,15 +77,15 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 				"--vault-uri-ref",
 				"/vault/secrets/schemaherouri",
 			},
-			database: &databasesv1alpha3.Database{
-				TypeMeta:   v1.TypeMeta{APIVersion: "databases.schemahero.io/v1alpha3", Kind: "Database"},
+			database: &databasesv1alpha4.Database{
+				TypeMeta:   v1.TypeMeta{APIVersion: "databases.schemahero.io/v1alpha4", Kind: "Database"},
 				ObjectMeta: v1.ObjectMeta{Name: "my-database"},
-				Spec: databasesv1alpha3.DatabaseSpec{
-					Connection: databasesv1alpha3.DatabaseConnection{
-						Postgres: &databasesv1alpha3.PostgresConnection{
-							URI: databasesv1alpha3.ValueOrValueFrom{
-								ValueFrom: &databasesv1alpha3.ValueFrom{
-									Vault: &databasesv1alpha3.Vault{
+				Spec: databasesv1alpha4.DatabaseSpec{
+					Connection: databasesv1alpha4.DatabaseConnection{
+						Postgres: &databasesv1alpha4.PostgresConnection{
+							URI: databasesv1alpha4.ValueOrValueFrom{
+								ValueFrom: &databasesv1alpha4.ValueFrom{
+									Vault: &databasesv1alpha4.Vault{
 										Secret: "database/creds/schemahero",
 										Role:   "schemahero-plan",
 									},
@@ -94,29 +94,29 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 						},
 					},
 				},
-				Status: databasesv1alpha3.DatabaseStatus{},
+				Status: databasesv1alpha4.DatabaseStatus{},
 			},
-			table: &schemasv1alpha3.Table{
-				TypeMeta:   v1.TypeMeta{APIVersion: "schemas.schemahero.io/v1alpha3", Kind: "Table"},
+			table: &schemasv1alpha4.Table{
+				TypeMeta:   v1.TypeMeta{APIVersion: "schemas.schemahero.io/v1alpha4", Kind: "Table"},
 				ObjectMeta: v1.ObjectMeta{Name: "my-table"},
-				Spec: schemasv1alpha3.TableSpec{
+				Spec: schemasv1alpha4.TableSpec{
 					Database: "my-database",
 					Name:     "my-table",
-					Schema: &schemasv1alpha3.TableSchema{
-						Postgres: &schemasv1alpha3.SQLTableSchema{
+					Schema: &schemasv1alpha4.TableSchema{
+						Postgres: &schemasv1alpha4.SQLTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha3.SQLTableColumn{
+							Columns: []*schemasv1alpha4.SQLTableColumn{
 								{
 									Name: "id",
 									Type: "text",
-									Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+									Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 										NotNull: new(bool),
 									},
 								},
 								{
 									Name: "name",
 									Type: "text",
-									Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+									Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 										NotNull: new(bool),
 									},
 								},
@@ -124,7 +124,7 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 						},
 					},
 				},
-				Status: schemasv1alpha3.TableStatus{},
+				Status: schemasv1alpha4.TableStatus{},
 			},
 		},
 		{
@@ -139,41 +139,41 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 				"--uri",
 				"postgres://user:password@postgres:5432/my-database",
 			},
-			database: &databasesv1alpha3.Database{
-				TypeMeta:   v1.TypeMeta{APIVersion: "databases.schemahero.io/v1alpha3", Kind: "Database"},
+			database: &databasesv1alpha4.Database{
+				TypeMeta:   v1.TypeMeta{APIVersion: "databases.schemahero.io/v1alpha4", Kind: "Database"},
 				ObjectMeta: v1.ObjectMeta{Name: "my-database"},
-				Spec: databasesv1alpha3.DatabaseSpec{
-					Connection: databasesv1alpha3.DatabaseConnection{
-						Postgres: &databasesv1alpha3.PostgresConnection{
-							URI: databasesv1alpha3.ValueOrValueFrom{
+				Spec: databasesv1alpha4.DatabaseSpec{
+					Connection: databasesv1alpha4.DatabaseConnection{
+						Postgres: &databasesv1alpha4.PostgresConnection{
+							URI: databasesv1alpha4.ValueOrValueFrom{
 								Value: "postgres://user:password@postgres:5432/my-database",
 							},
 						},
 					},
 				},
-				Status: databasesv1alpha3.DatabaseStatus{},
+				Status: databasesv1alpha4.DatabaseStatus{},
 			},
-			table: &schemasv1alpha3.Table{
-				TypeMeta:   v1.TypeMeta{APIVersion: "schemas.schemahero.io/v1alpha3", Kind: "Table"},
+			table: &schemasv1alpha4.Table{
+				TypeMeta:   v1.TypeMeta{APIVersion: "schemas.schemahero.io/v1alpha4", Kind: "Table"},
 				ObjectMeta: v1.ObjectMeta{Name: "my-table"},
-				Spec: schemasv1alpha3.TableSpec{
+				Spec: schemasv1alpha4.TableSpec{
 					Database: "my-database",
 					Name:     "my-table",
-					Schema: &schemasv1alpha3.TableSchema{
-						Postgres: &schemasv1alpha3.SQLTableSchema{
+					Schema: &schemasv1alpha4.TableSchema{
+						Postgres: &schemasv1alpha4.SQLTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha3.SQLTableColumn{
+							Columns: []*schemasv1alpha4.SQLTableColumn{
 								{
 									Name: "id",
 									Type: "text",
-									Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+									Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 										NotNull: new(bool),
 									},
 								},
 								{
 									Name: "name",
 									Type: "text",
-									Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+									Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 										NotNull: new(bool),
 									},
 								},
@@ -181,7 +181,7 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/my-database{{
 						},
 					},
 				},
-				Status: schemasv1alpha3.TableStatus{},
+				Status: schemasv1alpha4.TableStatus{},
 			},
 		},
 	}

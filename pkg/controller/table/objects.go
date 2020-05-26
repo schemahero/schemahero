@@ -6,15 +6,15 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func configMapNameForPlan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) string {
+func configMapNameForPlan(database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) string {
 	shortID, err := getShortIDForTableSpec(table)
 	if err != nil {
 		return table.Name
@@ -30,7 +30,7 @@ func configMapNameForPlan(database *databasesv1alpha3.Database, table *schemasv1
 	return configMapName
 }
 
-func podNameForPlan(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) string {
+func podNameForPlan(database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) string {
 	shortID, err := getShortIDForTableSpec(table)
 	if err != nil {
 		return table.Name
@@ -46,7 +46,7 @@ func podNameForPlan(database *databasesv1alpha3.Database, table *schemasv1alpha3
 	return podName
 }
 
-func getShortIDForTableSpec(table *schemasv1alpha3.Table) (string, error) {
+func getShortIDForTableSpec(table *schemasv1alpha4.Table) (string, error) {
 	b, err := yaml.Marshal(table.Spec)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to marshal yaml spec")
@@ -56,7 +56,7 @@ func getShortIDForTableSpec(table *schemasv1alpha3.Table) (string, error) {
 	return fmt.Sprintf("%x", sum)[:7], nil
 }
 
-func getPlanConfigMap(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.ConfigMap, error) {
+func getPlanConfigMap(database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) (*corev1.ConfigMap, error) {
 	b, err := yaml.Marshal(table.Spec)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal yaml spec")
@@ -80,7 +80,7 @@ func getPlanConfigMap(database *databasesv1alpha3.Database, table *schemasv1alph
 	return configMap, nil
 }
 
-func getPlanServiceAccount(database *databasesv1alpha3.Database) *corev1.ServiceAccount {
+func getPlanServiceAccount(database *databasesv1alpha4.Database) *corev1.ServiceAccount {
 	b := true
 	sa := &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -97,7 +97,7 @@ func getPlanServiceAccount(database *databasesv1alpha3.Database) *corev1.Service
 	return sa
 }
 
-func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table *schemasv1alpha3.Table) (*corev1.Pod, error) {
+func (r *ReconcileTable) getPlanPod(database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) (*corev1.Pod, error) {
 	imageName := "schemahero/schemahero:alpha"
 	if os.Getenv("SCHEMAHERO_IMAGE_NAME") != "" {
 		imageName = os.Getenv("SCHEMAHERO_IMAGE_NAME")
@@ -179,9 +179,8 @@ func (r *ReconcileTable) getPlanPod(database *databasesv1alpha3.Database, table 
 			Kind:       "Pod",
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector:       nodeSelector,
-			ServiceAccountName: database.Name,
-			RestartPolicy:      corev1.RestartPolicyOnFailure,
+			NodeSelector:  nodeSelector,
+			RestartPolicy: corev1.RestartPolicyOnFailure,
 			Containers: []corev1.Container{
 				{
 					Image:           imageName,

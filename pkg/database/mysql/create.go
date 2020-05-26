@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
-func CreateTableStatement(tableName string, tableSchema *schemasv1alpha3.SQLTableSchema) (string, error) {
+func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTableSchema) (string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := mysqlColumnAsInsert(desiredColumn)

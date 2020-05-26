@@ -19,22 +19,22 @@ limitations under the License.
 package fake
 
 import (
-	v1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	v1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeDatabasesV1alpha3 struct {
+type FakeDatabasesv1alpha4 struct {
 	*testing.Fake
 }
 
-func (c *FakeDatabasesV1alpha3) Databases(namespace string) v1alpha3.DatabaseInterface {
+func (c *FakeDatabasesv1alpha4) Databases(namespace string) v1alpha4.DatabaseInterface {
 	return &FakeDatabases{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeDatabasesV1alpha3) RESTClient() rest.Interface {
+func (c *FakeDatabasesv1alpha4) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

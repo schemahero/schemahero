@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	v1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,29 +32,29 @@ import (
 
 // FakeDatabases implements DatabaseInterface
 type FakeDatabases struct {
-	Fake *FakeDatabasesV1alpha3
+	Fake *FakeDatabasesv1alpha4
 	ns   string
 }
 
-var databasesResource = schema.GroupVersionResource{Group: "databases.schemahero.io", Version: "v1alpha3", Resource: "databases"}
+var databasesResource = schema.GroupVersionResource{Group: "databases.schemahero.io", Version: "v1alpha4", Resource: "databases"}
 
-var databasesKind = schema.GroupVersionKind{Group: "databases.schemahero.io", Version: "v1alpha3", Kind: "Database"}
+var databasesKind = schema.GroupVersionKind{Group: "databases.schemahero.io", Version: "v1alpha4", Kind: "Database"}
 
 // Get takes name of the database, and returns the corresponding database object, and an error if there is any.
-func (c *FakeDatabases) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha3.Database, err error) {
+func (c *FakeDatabases) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.Database, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(databasesResource, c.ns, name), &v1alpha3.Database{})
+		Invokes(testing.NewGetAction(databasesResource, c.ns, name), &v1alpha4.Database{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Database), err
+	return obj.(*v1alpha4.Database), err
 }
 
 // List takes label and field selectors, and returns the list of Databases that match those selectors.
-func (c *FakeDatabases) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha3.DatabaseList, err error) {
+func (c *FakeDatabases) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha4.DatabaseList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(databasesResource, databasesKind, c.ns, opts), &v1alpha3.DatabaseList{})
+		Invokes(testing.NewListAction(databasesResource, databasesKind, c.ns, opts), &v1alpha4.DatabaseList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *FakeDatabases) List(ctx context.Context, opts v1.ListOptions) (result *
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha3.DatabaseList{ListMeta: obj.(*v1alpha3.DatabaseList).ListMeta}
-	for _, item := range obj.(*v1alpha3.DatabaseList).Items {
+	list := &v1alpha4.DatabaseList{ListMeta: obj.(*v1alpha4.DatabaseList).ListMeta}
+	for _, item := range obj.(*v1alpha4.DatabaseList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -81,43 +81,43 @@ func (c *FakeDatabases) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 }
 
 // Create takes the representation of a database and creates it.  Returns the server's representation of the database, and an error, if there is any.
-func (c *FakeDatabases) Create(ctx context.Context, database *v1alpha3.Database, opts v1.CreateOptions) (result *v1alpha3.Database, err error) {
+func (c *FakeDatabases) Create(ctx context.Context, database *v1alpha4.Database, opts v1.CreateOptions) (result *v1alpha4.Database, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(databasesResource, c.ns, database), &v1alpha3.Database{})
+		Invokes(testing.NewCreateAction(databasesResource, c.ns, database), &v1alpha4.Database{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Database), err
+	return obj.(*v1alpha4.Database), err
 }
 
 // Update takes the representation of a database and updates it. Returns the server's representation of the database, and an error, if there is any.
-func (c *FakeDatabases) Update(ctx context.Context, database *v1alpha3.Database, opts v1.UpdateOptions) (result *v1alpha3.Database, err error) {
+func (c *FakeDatabases) Update(ctx context.Context, database *v1alpha4.Database, opts v1.UpdateOptions) (result *v1alpha4.Database, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(databasesResource, c.ns, database), &v1alpha3.Database{})
+		Invokes(testing.NewUpdateAction(databasesResource, c.ns, database), &v1alpha4.Database{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Database), err
+	return obj.(*v1alpha4.Database), err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeDatabases) UpdateStatus(ctx context.Context, database *v1alpha3.Database, opts v1.UpdateOptions) (*v1alpha3.Database, error) {
+func (c *FakeDatabases) UpdateStatus(ctx context.Context, database *v1alpha4.Database, opts v1.UpdateOptions) (*v1alpha4.Database, error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(databasesResource, "status", c.ns, database), &v1alpha3.Database{})
+		Invokes(testing.NewUpdateSubresourceAction(databasesResource, "status", c.ns, database), &v1alpha4.Database{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Database), err
+	return obj.(*v1alpha4.Database), err
 }
 
 // Delete takes name of the database and deletes it. Returns an error if one occurs.
 func (c *FakeDatabases) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(databasesResource, c.ns, name), &v1alpha3.Database{})
+		Invokes(testing.NewDeleteAction(databasesResource, c.ns, name), &v1alpha4.Database{})
 
 	return err
 }
@@ -126,17 +126,17 @@ func (c *FakeDatabases) Delete(ctx context.Context, name string, opts v1.DeleteO
 func (c *FakeDatabases) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(databasesResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1alpha3.DatabaseList{})
+	_, err := c.Fake.Invokes(action, &v1alpha4.DatabaseList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched database.
-func (c *FakeDatabases) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha3.Database, err error) {
+func (c *FakeDatabases) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha4.Database, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(databasesResource, c.ns, name, pt, data, subresources...), &v1alpha3.Database{})
+		Invokes(testing.NewPatchSubresourceAction(databasesResource, c.ns, name, pt, data, subresources...), &v1alpha4.Database{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha3.Database), err
+	return obj.(*v1alpha4.Database), err
 }

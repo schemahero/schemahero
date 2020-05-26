@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -42,7 +42,7 @@ func (r *ReconcileMigration) reconcilePod(ctx context.Context, pod *corev1.Pod) 
 
 	// the migration has completed
 	// so lets store the executed at timestamp on the status
-	var instance schemasv1alpha3.Migration
+	var instance schemasv1alpha4.Migration
 	err := r.Get(ctx, types.NamespacedName{
 		Name:      migrationID,
 		Namespace: pod.Namespace,

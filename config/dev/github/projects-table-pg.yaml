@@ -1,4 +1,4 @@
-apiVersion: schemas.schemahero.io/v1alpha3
+apiVersion: schemas.schemahero.io/v1alpha4
 kind: Table
 metadata:
   name: projects

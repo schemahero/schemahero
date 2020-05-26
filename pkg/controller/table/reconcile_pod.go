@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
-	databasesclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
-	schemasclientv1alpha3 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -91,7 +91,7 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		return reconcile.Result{}, nil
 	}
 
-	schemasClient, err := schemasclientv1alpha3.NewForConfig(cfg)
+	schemasClient, err := schemasclientv1alpha4.NewForConfig(cfg)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to create schema client")
 	}
@@ -111,27 +111,27 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
 	}
 
-	desiredMigration := schemasv1alpha3.Migration{
+	desiredMigration := schemasv1alpha4.Migration{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "schemas.schemahero.io/v1alpha3",
+			APIVersion: "schemas.schemahero.io/v1alpha4",
 			Kind:       "Migration",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      tableSHA,
 			Namespace: table.Namespace,
 		},
-		Spec: schemasv1alpha3.MigrationSpec{
+		Spec: schemasv1alpha4.MigrationSpec{
 			GeneratedDDL:   out,
 			TableName:      table.Name,
 			TableNamespace: table.Namespace,
 		},
-		Status: schemasv1alpha3.MigrationStatus{
+		Status: schemasv1alpha4.MigrationStatus{
 			PlannedAt: time.Now().Unix(),
 		},
 	}
 
 	// If the database is set to immediate deploy, then set it as approved also
-	databasesClient, err := databasesclientv1alpha3.NewForConfig(cfg)
+	databasesClient, err := databasesclientv1alpha4.NewForConfig(cfg)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "Failed to create database client")
 	}
@@ -145,7 +145,7 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		desiredMigration.Status.ApprovedAt = time.Now().Unix()
 	}
 
-	var existingMigration schemasv1alpha3.Migration
+	var existingMigration schemasv1alpha4.Migration
 	err = r.Get(ctx, types.NamespacedName{
 		Name:      desiredMigration.Name,
 		Namespace: desiredMigration.Namespace,
@@ -194,7 +194,7 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 	return reconcile.Result{}, nil
 }
 
-func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha3.ValueOrValueFrom) (string, error) {
+func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha4.ValueOrValueFrom) (string, error) {
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}

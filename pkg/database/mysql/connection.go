@@ -2,9 +2,11 @@ package mysql
 
 import (
 	"database/sql"
+	"strings"
 
 	// import the mysql driver
 	mysqldriver "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 )
 
 type MysqlConnection struct {
@@ -59,8 +61,37 @@ func Connect(uri string) (*MysqlConnection, error) {
 func DatabaseNameFromURI(uri string) (string, error) {
 	cfg, err := mysqldriver.ParseDSN(uri)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to parse database uri")
 	}
 
 	return cfg.DBName, nil
+}
+
+func UsernameFromURI(uri string) (string, error) {
+	cfg, err := mysqldriver.ParseDSN(uri)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse database uri")
+	}
+
+	return cfg.User, nil
+}
+
+func PasswordFromURI(uri string) (string, error) {
+	cfg, err := mysqldriver.ParseDSN(uri)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse database uri")
+	}
+
+	return cfg.Passwd, nil
+}
+
+func HostnameFromURI(uri string) (string, error) {
+	cfg, err := mysqldriver.ParseDSN(uri)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse database uri")
+	}
+
+	// TODO this is very happy path
+	addrAndPort := strings.Split(cfg.Addr, ":")
+	return addrAndPort[0], nil
 }

@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha3 contains API Schema definitions for the databases v1alpha3 API group
+// package v1alpha4 contains API Schema definitions for the databases v1alpha4 API group
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
 // +k8s:conversion-gen=github.com/schemahero/schemahero/pkg/apis/databases
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=databases.schemahero.io
-package v1alpha3
+package v1alpha4

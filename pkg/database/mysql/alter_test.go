@@ -3,7 +3,7 @@ package mysql
 import (
 	"testing"
 
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
@@ -17,14 +17,14 @@ func Test_AlterColumnStatment(t *testing.T) {
 	tests := []struct {
 		name               string
 		tableName          string
-		desiredColumns     []*schemasv1alpha3.SQLTableColumn
+		desiredColumns     []*schemasv1alpha4.SQLTableColumn
 		existingColumn     *types.Column
 		expectedStatements []string
 	}{
 		{
 			name:      "no change",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
@@ -44,7 +44,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "change data type",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
@@ -64,7 +64,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "drop column",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
@@ -80,11 +80,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "add not null constraint",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
-					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+					Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 						NotNull: &trueValue,
 					},
 				},
@@ -102,11 +102,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "drop not null constraint",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
-					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+					Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 						NotNull: &falseValue,
 					},
 				},
@@ -124,7 +124,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "no change to not null constraint",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "t",
 					Type: "text",
@@ -143,11 +143,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "type change, constraint no change",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
-					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+					Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 						NotNull: &trueValue,
 					},
 				},
@@ -165,7 +165,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "default set",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name:    "a",
 					Type:    "integer",
@@ -181,7 +181,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "default unset",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name: "a",
 					Type: "integer",
@@ -197,7 +197,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "default empty string",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name:    "a",
 					Type:    "varchar (32)",
@@ -214,11 +214,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		// {
 		// 	name:      "no change to not nullable timestamp using short column type",
 		// 	tableName: "ts",
-		// 	desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-		// 		&schemasv1alpha3.SQLTableColumn{
+		// 	desiredColumns: []*schemasv1alpha4.SQLTableColumn{
+		// 		&schemasv1alpha4.SQLTableColumn{
 		// 			Name: "ts",
 		// 			Type: "timestamp",
-		// 			Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+		// 			Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 		// 				NotNull: &trueValue,
 		// 			},
 		// 		},
@@ -236,11 +236,11 @@ func Test_AlterColumnStatment(t *testing.T) {
 		// {
 		// 	name:      "no change to not nullable timestamp",
 		// 	tableName: "ts",
-		// 	desiredColumns: []*schemasv1alpha3.SQLTableColumn{
-		// 		&schemasv1alpha3.SQLTableColumn{
+		// 	desiredColumns: []*schemasv1alpha4.SQLTableColumn{
+		// 		&schemasv1alpha4.SQLTableColumn{
 		// 			Name: "ts",
 		// 			Type: "timestamp with time zone",
-		// 			Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+		// 			Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 		// 				NotNull: &trueValue,
 		// 			},
 		// 		},
@@ -258,12 +258,12 @@ func Test_AlterColumnStatment(t *testing.T) {
 		{
 			name:      "add null and default",
 			tableName: "t",
-			desiredColumns: []*schemasv1alpha3.SQLTableColumn{
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
 				{
 					Name:    "a",
 					Type:    "varchar (255)",
 					Default: &defaultEleven,
-					Constraints: &schemasv1alpha3.SQLTableColumnConstraints{
+					Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
 						NotNull: &trueValue,
 					},
 				},

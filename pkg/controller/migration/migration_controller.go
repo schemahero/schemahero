@@ -21,8 +21,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	databasesv1alpha3 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
-	schemasv1alpha3 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -58,7 +58,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Migration
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha3.Migration{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{Type: &schemasv1alpha4.Migration{}}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start watch on migrations")
 	}
@@ -127,18 +127,18 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	return reconcile.Result{}, errors.New("unknown error in migration reconciler")
 }
 
-func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1alpha3.Migration, error) {
-	v1alpha3instance := &schemasv1alpha3.Migration{}
-	err := r.Get(context.Background(), request.NamespacedName, v1alpha3instance)
+func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1alpha4.Migration, error) {
+	v1alpha4instance := &schemasv1alpha4.Migration{}
+	err := r.Get(context.Background(), request.NamespacedName, v1alpha4instance)
 	if err != nil {
 		return nil, err // don't wrap
 	}
 
-	return v1alpha3instance, nil
+	return v1alpha4instance, nil
 }
 
-func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha3.Database) (string, error) {
-	var valueOrValueFrom *databasesv1alpha3.ValueOrValueFrom
+func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha4.Database) (string, error) {
+	var valueOrValueFrom *databasesv1alpha4.ValueOrValueFrom
 
 	if database.Spec.Connection.Postgres != nil {
 		valueOrValueFrom = &database.Spec.Connection.Postgres.URI
