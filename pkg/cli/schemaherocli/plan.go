@@ -123,7 +123,7 @@ func Plan() *cobra.Command {
 	cmd.Flags().String("vault-uri-ref", "", "URI-reference to Vault-injected connection URI")
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
-	cmd.Flags().Bool("overwrite", false, "when set, will overwrite the out file, if it already exists")
+	cmd.Flags().Bool("overwrite", true, "when set, will overwrite the out file, if it already exists")
 
 	return cmd
 }
