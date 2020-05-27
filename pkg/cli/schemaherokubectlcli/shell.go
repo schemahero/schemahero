@@ -68,7 +68,7 @@ func ShellCmd() *cobra.Command {
 				return err
 			}
 
-			if database.Spec.DisableShellCommand {
+			if !database.Spec.EnableShellCommand {
 				return fmt.Errorf("shell command is not allowed for database %q", databaseName)
 			}
 
