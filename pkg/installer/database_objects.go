@@ -135,7 +135,7 @@ spec:
                       type: object
                   type: object
               type: object
-            disableShellCommand:
+            enableShellCommand:
               type: boolean
             immediateDeploy:
               type: boolean
@@ -310,7 +310,7 @@ spec:
                         type: object
                     type: object
                 type: object
-              disableShellCommand:
+              enableShellCommand:
                 type: boolean
               immediateDeploy:
                 type: boolean
