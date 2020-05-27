@@ -36,7 +36,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        postgres_version: [10.13, 11.8, 12.3]
+        postgres_version: ["10.13", "11.8", "12.3"]
     steps:
       - uses: actions/checkout@v2
       - name: Download schemahero binary
@@ -52,7 +52,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        mysql_version: [5.6, 5.7, 8.0]
+        mysql_version: ["5.6", "5.7", "8.0"]
     steps:
       - uses: actions/checkout@v2
       - name: Download schemahero binary
@@ -68,7 +68,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        cockroachdb_version: [v19.2.7, v20.1.0]
+        cockroachdb_version: ["v19.2.7", "v20.1.0"]
     steps:
       - uses: actions/checkout@v2
       - name: Download schemahero binary
