@@ -33,6 +33,9 @@ jobs:
   test-postgres:
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        postgres_version: [10.13, 11.8, 12.3]
     steps:
       - uses: actions/checkout@v2
       - name: Download schemahero binary
@@ -41,11 +44,14 @@ jobs:
           name: schemahero
           path: bin/
       - run: chmod +x bin/schemahero
-      - run: make -C integration/tests/postgres run
+      - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
   test-mysql:
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        mysql_version: [5.6, 5.7, 8.0]
     steps:
       - uses: actions/checkout@v2
       - name: Download schemahero binary
@@ -54,11 +60,14 @@ jobs:
           name: schemahero
           path: bin/
       - run: chmod +x bin/schemahero
-      - run: make -C integration/tests/mysql run
+      - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
   test-cockroach:
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        cockroachdb_version: [v19.2.7, v20.1.0]
     steps:
       - uses: actions/checkout@v2
       - name: Download schemahero binary
@@ -67,8 +76,8 @@ jobs:
           name: schemahero
           path: bin/
       - run: chmod +x bin/schemahero
-      - run: make -C integration/tests/cockroach run
-
+      - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
+      
   goreleaser:
     runs-on: ubuntu-latest
     needs:
