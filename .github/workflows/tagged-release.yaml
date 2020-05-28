@@ -95,6 +95,10 @@ jobs:
         with:
           username: schemaherodeploy
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: set previous release tag for goreleaser
+        shell: bash
+        run: |
+          echo ::set-env name=GORELEASER_PREVIOUS_TAG::$(curl --silent "https://api.github.com/repos/schemahero/schemahero/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v1.5.1
         with:
