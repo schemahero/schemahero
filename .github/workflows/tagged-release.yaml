@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v1.1.2
+      - uses: actions/setup-go@v2.0.3
         with:
           go-version: "1.14.3"
       - name: setup goenv
@@ -15,17 +15,17 @@ jobs:
           echo "::set-env name=GOPATH::$(go env GOPATH)"
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.2.0
       - run: make all
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2.0.1
         with:
           name: schemahero
           path: bin/schemahero
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2.0.1
         with:
           name: manager
           path: bin/manager
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2.0.1
         with:
           name: kubectl-schemahero
           path: bin/kubectl-schemahero
@@ -37,9 +37,9 @@ jobs:
       matrix:
         postgres_version: ["10.13", "11.8", "12.3"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.2.0
       - name: Download schemahero binary
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0
         with:
           name: schemahero
           path: bin/
@@ -53,9 +53,9 @@ jobs:
       matrix:
         mysql_version: ["5.6", "5.7", "8.0"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.2.0
       - name: Download schemahero binary
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0
         with:
           name: schemahero
           path: bin/
@@ -69,9 +69,9 @@ jobs:
       matrix:
         cockroachdb_version: ["v19.2.7", "v20.1.0"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.2.0
       - name: Download schemahero binary
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v2.0
         with:
           name: schemahero
           path: bin/
@@ -85,10 +85,10 @@ jobs:
       - test-mysql
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.2.0
       - name: Unshallow
         run: git fetch --prune --unshallow
-      - uses: actions/setup-go@v1.1.2
+      - uses: actions/setup-go@v2.0.3
         with:
           go-version: "1.14.3"
       - uses: azure/docker-login@v1
@@ -100,7 +100,7 @@ jobs:
         run: |
           echo ::set-env name=GORELEASER_PREVIOUS_TAG::$(curl --silent "https://api.github.com/repos/schemahero/schemahero/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1.5.1
+        uses: goreleaser/goreleaser-action@v2.0.2
         with:
           version: latest
           args: release --rm-dist --config deploy/.goreleaser.yaml
