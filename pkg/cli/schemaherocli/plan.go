@@ -69,7 +69,14 @@ func Plan() *cobra.Command {
 				defer f.Close()
 			}
 
-			db := database.NewDatabase()
+			db := database.Database{
+				InputDir:    v.GetString("input-dir"),
+				OutputDir:   v.GetString("output-dir"),
+				Driver:      v.GetString("driver"),
+				URI:         v.GetString("uri"),
+				VaultURIRef: v.GetString("vault-uri-ref"),
+			}
+
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					if !info.IsDir() {

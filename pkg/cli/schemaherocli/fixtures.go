@@ -16,7 +16,16 @@ func Fixtures() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			db := database.NewDatabase()
+			v := viper.GetViper()
+
+			db := database.Database{
+				InputDir:    v.GetString("input-dir"),
+				OutputDir:   v.GetString("output-dir"),
+				Driver:      v.GetString("driver"),
+				URI:         v.GetString("uri"),
+				VaultURIRef: v.GetString("vault-uri-ref"),
+			}
+
 			return db.CreateFixturesSync()
 		},
 	}

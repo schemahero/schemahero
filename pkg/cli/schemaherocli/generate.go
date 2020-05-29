@@ -16,7 +16,14 @@ func Generate() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			g := generate.NewGenerator()
+			v := viper.GetViper()
+
+			g := generate.Generator{
+				Driver:    v.GetString("driver"),
+				URI:       v.GetString("uri"),
+				DBName:    v.GetString("dbname"),
+				OutputDir: v.GetString("output-dir"),
+			}
 			return g.RunSync()
 		},
 	}
