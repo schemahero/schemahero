@@ -12,32 +12,28 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/database/types"
-	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
 type Generator struct {
-	Viper *viper.Viper
-}
-
-func NewGenerator() *Generator {
-	return &Generator{
-		Viper: viper.GetViper(),
-	}
+	Driver    string
+	URI       string
+	DBName    string
+	OutputDir string
 }
 
 func (g *Generator) RunSync() error {
-	fmt.Printf("connecting to %s\n", g.Viper.GetString("uri"))
+	fmt.Printf("connecting to %s\n", g.URI)
 
 	var db interfaces.SchemaHeroDatabaseConnection
-	if g.Viper.GetString("driver") == "postgres" {
-		pgDb, err := postgres.Connect(g.Viper.GetString("uri"))
+	if g.Driver == "postgres" {
+		pgDb, err := postgres.Connect(g.URI)
 		if err != nil {
 			return errors.Wrap(err, "failed to connect to postgres")
 		}
 		db = pgDb
-	} else if g.Viper.GetString("driver") == "mysql" {
-		mysqlDb, err := mysql.Connect(g.Viper.GetString("uri"))
+	} else if g.Driver == "mysql" {
+		mysqlDb, err := mysql.Connect(g.URI)
 		if err != nil {
 			return errors.Wrap(err, "failed to connect to mysql")
 		}
@@ -56,12 +52,12 @@ func (g *Generator) RunSync() error {
 			return errors.Wrap(err, "failed to get table primary key")
 		}
 
-		foreignKeys, err := db.ListTableForeignKeys(g.Viper.GetString("dbname"), tableName)
+		foreignKeys, err := db.ListTableForeignKeys(g.DBName, tableName)
 		if err != nil {
 			return errors.Wrap(err, "failed to list table foreign keys")
 		}
 
-		indexes, err := db.ListTableIndexes(g.Viper.GetString("dbname"), tableName)
+		indexes, err := db.ListTableIndexes(g.DBName, tableName)
 		if err != nil {
 			return errors.Wrap(err, "failed to list table indexes")
 		}
@@ -75,14 +71,14 @@ func (g *Generator) RunSync() error {
 		if primaryKey != nil {
 			primaryKeyColumns = primaryKey.Columns
 		}
-		tableYAML, err := generateTableYAML(g.Viper.GetString("driver"), g.Viper.GetString("dbname"), tableName, primaryKeyColumns, foreignKeys, indexes, columns)
+		tableYAML, err := generateTableYAML(g.Driver, g.DBName, tableName, primaryKeyColumns, foreignKeys, indexes, columns)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate table yaml")
 		}
 
 		// If there was a outputdir set, write it, else print it
-		if g.Viper.GetString("output-dir") != "" {
-			if err := ioutil.WriteFile(filepath.Join(g.Viper.GetString("output-dir"), fmt.Sprintf("%s.yaml", sanitizeName(tableName))), []byte(tableYAML), 0644); err != nil {
+		if g.OutputDir != "" {
+			if err := ioutil.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(tableName))), []byte(tableYAML), 0644); err != nil {
 				return err
 			}
 
@@ -95,7 +91,7 @@ func (g *Generator) RunSync() error {
 	}
 
 	// If there was an output-dir, write a kustomization.yaml too -- this should be optional
-	if g.Viper.GetString("output-dir") != "" {
+	if g.OutputDir != "" {
 		kustomization := struct {
 			Resources []string `yaml:"resources"`
 		}{
@@ -107,7 +103,7 @@ func (g *Generator) RunSync() error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(g.Viper.GetString("output-dir"), "kustomization.yaml"), kustomizeDoc, 0644); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(g.OutputDir, "kustomization.yaml"), kustomizeDoc, 0644); err != nil {
 			return err
 		}
 	}
