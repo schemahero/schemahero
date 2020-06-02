@@ -42,6 +42,11 @@ type TableSpec struct {
 
 // TableStatus defines the observed state of Table
 type TableStatus struct {
+	// We store the SHA of the table spec from the last time we executed a plan to
+	// make startup less noisy by skipping re-planning objects that have been planned
+	// we cannot use the resourceVersion or generation fields because updating them
+	// would cause the object to be modified again
+	LastPlannedTableSpecSHA string `json:"lastPlannedTableSpecSHA,omitempty" yaml:"lastPlannedTableSpecSHA,omitempty"`
 }
 
 // +genclient
@@ -71,7 +76,7 @@ func (t Table) GetSHA() (string, error) {
 	}
 
 	sum := sha256.Sum256(b)
-	return fmt.Sprintf("%x", sum)[:7], nil
+	return fmt.Sprintf("%x", sum), nil
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
