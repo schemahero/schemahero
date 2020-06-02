@@ -111,6 +111,8 @@ func (r *ReconcileTable) reconcilePod(ctx context.Context, pod *corev1.Pod) (rec
 		return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
 	}
 
+	tableSHA = tableSHA[:7]
+
 	desiredMigration := schemasv1alpha4.Migration{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "schemas.schemahero.io/v1alpha4",

@@ -23,7 +23,17 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	logger.Debug("reconciling table",
 		zap.String("kind", instance.Kind),
 		zap.String("name", instance.Name),
-		zap.String("database", instance.Spec.Database))
+		zap.String("database", instance.Spec.Database),
+		zap.String("lastPlannedTableSpecSHA", instance.Status.LastPlannedTableSpecSHA))
+
+	// early exit if the sha of the spec hasn't changed
+	currentTableSpecSHA, err := instance.GetSHA()
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get instance sha")
+	}
+	if instance.Status.LastPlannedTableSpecSHA == currentTableSpecSHA {
+		return reconcile.Result{}, nil
+	}
 
 	// get the full database spec from the api
 	database, err := r.getDatabaseSpec(ctx, instance.Namespace, instance.Spec.Database)
@@ -56,6 +66,8 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get table sha")
 	}
+
+	tableSHA = tableSHA[:7]
 
 	migration, err := r.getMigrationSpec(instance.Namespace, tableSHA)
 	if err != nil {
@@ -252,6 +264,17 @@ func (r *ReconcileTable) deployMigrationPlanPhase(ctx context.Context, database 
 	} else {
 		// again, something bad
 		return reconcile.Result{}, errors.Wrap(err, "failed to check if pod exists")
+	}
+
+	// update the status with this plan so we don't reconcile it again
+	newTableSpecSHA, err := table.GetSHA()
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get sha")
+	}
+	table.Status.LastPlannedTableSpecSHA = newTableSpecSHA
+
+	if err := r.Update(ctx, table); err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to update status")
 	}
 
 	return reconcile.Result{}, nil
