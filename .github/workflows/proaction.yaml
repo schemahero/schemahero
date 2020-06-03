@@ -6,7 +6,7 @@ jobs:
   run-proaction:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2.2.0
+      - uses: actions/checkout@v2
 
       - uses: proactionhq/proaction/action@v0.4.5
         with:
