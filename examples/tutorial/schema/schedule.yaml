@@ -2,7 +2,7 @@ apiVersion: schemas.schemahero.io/v1alpha4
 kind: Table
 metadata:
   name: schedule
-  namespace: airline-demo
+  namespace: schemahero-tutorial
 spec:
   database: airlinedb
   name: schedule
