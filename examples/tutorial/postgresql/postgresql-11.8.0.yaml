@@ -18,8 +18,8 @@ metadata:
     heritage: "Helm"
 type: Opaque
 stringData:
-  postgresql-password: "airlinedb-password"
-  uri: postgres://airlinedb-user:airlinedb-password@postgresql:5432/airlinedb?sslmode=disable
+  postgresql-password: "password"
+  uri: postgres://airlinedb-user:password@postgresql:5432/airlinedb?sslmode=disable
 
 ---
 # Source: postgresql/templates/svc-headless.yaml
