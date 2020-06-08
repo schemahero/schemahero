@@ -9,6 +9,7 @@ import (
 	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -75,6 +76,11 @@ func DescribeMigrationCmd() *cobra.Command {
 					return err
 				}
 
+				baseCommand := "kubectl schemahero"
+				if namespaceName != corev1.NamespaceDefault {
+					baseCommand = fmt.Sprintf("%s -n %s", baseCommand, namespaceName)
+				}
+
 				fmt.Printf("\nMigration Name: %s\n\n", foundMigration.Name)
 				fmt.Printf("Generated DDL Statement (generated at %s): \n  %s\n",
 					time.Unix(foundMigration.Status.PlannedAt, 0).Format(time.RFC3339),
@@ -82,17 +88,17 @@ func DescribeMigrationCmd() *cobra.Command {
 
 				fmt.Println("")
 				fmt.Println("To apply this migration:")
-				fmt.Printf(`  kubectl schemahero approve migration %s`, foundMigration.Name)
+				fmt.Printf(`  %s approve migration %s`, baseCommand, foundMigration.Name)
 				fmt.Println("")
 
 				fmt.Println("")
 				fmt.Println("To recalculate this migration against the current schema:")
-				fmt.Printf(`  kubectl schemahero recalculate migration %s`, foundMigration.Name)
+				fmt.Printf(`  %s recalculate migration %s`, baseCommand, foundMigration.Name)
 				fmt.Println("")
 
 				fmt.Println("")
 				fmt.Println("To deny and cancel this migration:")
-				fmt.Printf(`  kubectl schemahero reject migration %s`, foundMigration.Name)
+				fmt.Printf(`  %s reject migration %s`, baseCommand, foundMigration.Name)
 				fmt.Println("")
 
 				return nil
