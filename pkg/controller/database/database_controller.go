@@ -18,6 +18,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
@@ -99,5 +100,6 @@ func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1
 		return nil, errors.Wrap(err, "failed to get databasesv1alpha4 instance")
 	}
 
+	fmt.Printf("[debug] %#v\n", instance)
 	return instance, nil
 }

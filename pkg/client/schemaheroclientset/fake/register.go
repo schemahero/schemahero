@@ -20,6 +20,7 @@ package fake
 
 import (
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	databasesv1alpha5 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha5"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -33,6 +34,7 @@ var codecs = serializer.NewCodecFactory(scheme)
 var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
 	databasesv1alpha4.AddToScheme,
+	databasesv1alpha5.AddToScheme,
 	schemasv1alpha4.AddToScheme,
 }
 

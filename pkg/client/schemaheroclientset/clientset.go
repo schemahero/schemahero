@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	databasesv1alpha5 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha5"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -31,6 +32,7 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	DatabasesV1alpha4() databasesv1alpha4.DatabasesV1alpha4Interface
+	DatabasesV1alpha5() databasesv1alpha5.DatabasesV1alpha5Interface
 	SchemasV1alpha4() schemasv1alpha4.SchemasV1alpha4Interface
 }
 
@@ -39,12 +41,18 @@ type Interface interface {
 type Clientset struct {
 	*discovery.DiscoveryClient
 	databasesV1alpha4 *databasesv1alpha4.DatabasesV1alpha4Client
+	databasesV1alpha5 *databasesv1alpha5.DatabasesV1alpha5Client
 	schemasV1alpha4   *schemasv1alpha4.SchemasV1alpha4Client
 }
 
 // DatabasesV1alpha4 retrieves the DatabasesV1alpha4Client
 func (c *Clientset) DatabasesV1alpha4() databasesv1alpha4.DatabasesV1alpha4Interface {
 	return c.databasesV1alpha4
+}
+
+// DatabasesV1alpha5 retrieves the DatabasesV1alpha5Client
+func (c *Clientset) DatabasesV1alpha5() databasesv1alpha5.DatabasesV1alpha5Interface {
+	return c.databasesV1alpha5
 }
 
 // SchemasV1alpha4 retrieves the SchemasV1alpha4Client
@@ -77,6 +85,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.databasesV1alpha5, err = databasesv1alpha5.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 	cs.schemasV1alpha4, err = schemasv1alpha4.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
@@ -94,6 +106,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.databasesV1alpha4 = databasesv1alpha4.NewForConfigOrDie(c)
+	cs.databasesV1alpha5 = databasesv1alpha5.NewForConfigOrDie(c)
 	cs.schemasV1alpha4 = schemasv1alpha4.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
@@ -104,6 +117,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.databasesV1alpha4 = databasesv1alpha4.New(c)
+	cs.databasesV1alpha5 = databasesv1alpha5.New(c)
 	cs.schemasV1alpha4 = schemasv1alpha4.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

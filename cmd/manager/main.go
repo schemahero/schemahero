@@ -21,10 +21,10 @@ import (
 	"os"
 
 	"github.com/schemahero/schemahero/pkg/apis"
+	// databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/controller"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/schemahero/schemahero/pkg/version"
-	"github.com/schemahero/schemahero/pkg/webhook"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -64,10 +64,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := webhook.AddToManager(mgr); err != nil {
-		logger.Error(err)
-		os.Exit(1)
-	}
+	// Add webhooks for API conversion
+	// if err = (&databasesv1alpha4.Database{}).SetupWebhookWithManager(mgr); err != nil {
+	// 	logger.Error(err)
+	// 	os.Exit(1)
+	// }
 
 	// Start the Cmd
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {

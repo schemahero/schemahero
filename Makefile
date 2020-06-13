@@ -103,6 +103,7 @@ generate: controller-gen client-gen
 		--clientset-name schemaheroclientset \
 		--input-base github.com/schemahero/schemahero/pkg/apis \
 		--input databases/v1alpha4 \
+		--input databases/v1alpha5 \
 		--input schemas/v1alpha4 \
 		-h ./hack/boilerplate.go.txt
 

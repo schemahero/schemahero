@@ -22,6 +22,8 @@ import (
 	clientset "github.com/schemahero/schemahero/pkg/client/schemaheroclientset"
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	fakedatabasesv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4/fake"
+	databasesv1alpha5 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha5"
+	fakedatabasesv1alpha5 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha5/fake"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	fakeschemasv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4/fake"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -81,6 +83,11 @@ var _ clientset.Interface = &Clientset{}
 // DatabasesV1alpha4 retrieves the DatabasesV1alpha4Client
 func (c *Clientset) DatabasesV1alpha4() databasesv1alpha4.DatabasesV1alpha4Interface {
 	return &fakedatabasesv1alpha4.FakeDatabasesV1alpha4{Fake: &c.Fake}
+}
+
+// DatabasesV1alpha5 retrieves the DatabasesV1alpha5Client
+func (c *Clientset) DatabasesV1alpha5() databasesv1alpha5.DatabasesV1alpha5Interface {
+	return &fakedatabasesv1alpha5.FakeDatabasesV1alpha5{Fake: &c.Fake}
 }
 
 // SchemasV1alpha4 retrieves the SchemasV1alpha4Client

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha4
+package v1alpha5
 
 import (
 	"fmt"
@@ -29,16 +29,22 @@ type DatabaseConnection struct {
 	CockroachDB *CockroachDBConnection `json:"cockroachdb,omitempty"`
 }
 
-type SchemaHero struct {
-	Image        string            `json:"image,omitempty"`
+type DatabaseConnectFrom struct {
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
+type SchemaHero struct {
+	Image string `json:"image,omitempty"`
+}
+
 type DatabaseSpec struct {
-	Connection         DatabaseConnection `json:"connection,omitempty"`
-	EnableShellCommand bool               `json:"enableShellCommand,omitempty"`
-	ImmediateDeploy    bool               `json:"immediateDeploy,omitempty"`
-	SchemaHero         *SchemaHero        `json:"schemahero,omitempty"`
+	Connection  DatabaseConnection  `json:"connection,omitempty"`
+	ConnectFrom DatabaseConnectFrom `json:"connectFrom,omitempty"`
+
+	SchemaHero *SchemaHero `json:"schemahero,omitempty"`
+
+	EnableShellCommand bool `json:"enableShellCommand,omitempty"`
+	ImmediateDeploy    bool `json:"immediateDeploy,omitempty"`
 }
 
 // DatabaseStatus defines the observed state of Database
@@ -51,8 +57,7 @@ type DatabaseStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Database is the Schema for the databases API
-// +k8s:openapi-gen=true\
-// +kubebuilder:storageversion
+// +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 type Database struct {
 	metav1.TypeMeta   `json:",inline"`

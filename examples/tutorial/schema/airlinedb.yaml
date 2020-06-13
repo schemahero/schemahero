@@ -1,9 +1,12 @@
-apiVersion: databases.schemahero.io/v1alpha4
+apiVersion: databases.schemahero.io/v1alpha5
 kind: Database
 metadata:
   name: airlinedb
   namespace: schemahero-tutorial
 spec:
+  connectFrom:
+    nodeSelector:
+      "test": "a"
   connection:
     postgres:
       uri:
