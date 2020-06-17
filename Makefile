@@ -57,8 +57,8 @@ bin/manager:
 		./cmd/manager
 
 .PHONY: run
-run: generate fmt vet bin/schemahero
-	go run ./cmd/manager/main.go
+run: generate fmt vet bin/schemahero bin/manager
+	./bin/manager run
 
 .PHONY: install
 install: manifests generate microk8s
