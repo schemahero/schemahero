@@ -15,7 +15,7 @@ jobs:
           echo "::set-env name=GOPATH::$(go env GOPATH)"
           echo "::add-path::$(go env GOPATH)/bin"
         shell: bash
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.0
       - run: make all
       - uses: actions/upload-artifact@v2.0.1
         with:
@@ -37,7 +37,7 @@ jobs:
       matrix:
         postgres_version: ["10.13", "11.8", "12.3"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.0
       - name: Download schemahero binary
         uses: actions/download-artifact@v2.0
         with:
@@ -53,7 +53,7 @@ jobs:
       matrix:
         mysql_version: ["5.6", "5.7", "8.0"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.0
       - name: Download schemahero binary
         uses: actions/download-artifact@v2.0
         with:
@@ -69,7 +69,7 @@ jobs:
       matrix:
         cockroachdb_version: ["v19.2.7", "v20.1.0"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2.3.0
       - name: Download schemahero binary
         uses: actions/download-artifact@v2.0
         with:
@@ -85,7 +85,7 @@ jobs:
       - test-mysql
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.3.0
       - name: Unshallow
         run: git fetch --prune --unshallow
       - uses: actions/setup-go@v2.0.3
