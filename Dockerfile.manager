@@ -24,4 +24,4 @@ RUN useradd -c 'schemahero-manager user' -m -d /home/schemahero-manager -s /bin/
 USER schemahero-manager
 ENV HOME /home/schemahero-manager
 
-ENTRYPOINT ["/manager"]
+ENTRYPOINT ["/manager", "run"]
