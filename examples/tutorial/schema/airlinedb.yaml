@@ -4,10 +4,11 @@ metadata:
   name: airlinedb
   namespace: schemahero-tutorial
 spec:
+  schemahero:
+    image: "localhost:32000/schemahero/schemahero"
+  immediateDeploy: true
   connection:
     postgres:
       uri:
-        valueFrom:
-          secretKeyRef:
-            name: postgresql
-            key: uri
+        value: postgres://airlinedb-user:password@10.43.185.18:5432/airlinedb?sslmode=disable
+

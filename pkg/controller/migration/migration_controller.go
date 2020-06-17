@@ -40,13 +40,17 @@ import (
 
 // Add creates a new Migration Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+func Add(mgr manager.Manager, databaseNames []string) error {
+	return add(mgr, newReconciler(databaseNames, mgr))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileMigration{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(databaseNames []string, mgr manager.Manager) reconcile.Reconciler {
+	return &ReconcileMigration{
+		Client:        mgr.GetClient(),
+		scheme:        mgr.GetScheme(),
+		databaseNames: databaseNames,
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -58,12 +62,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Migration
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha4.Migration{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{
+		Type: &schemasv1alpha4.Migration{},
+	}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start watch on migrations")
 	}
 
-	// Migrations are executed as pods, so we should also watch pod lifecycle
 	generatedClient := kubernetes.NewForConfigOrDie(mgr.GetConfig())
 	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Minute)
 	err = mgr.Add(manager.RunnableFunc(func(s <-chan struct{}) error {
@@ -75,13 +80,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	err = c.Watch(&source.Informer{
-		Informer: generatedInformers.Core().V1().Pods().Informer(),
-	}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return errors.Wrap(err, "failed to start watch on pods")
-	}
-
 	return nil
 }
 
@@ -90,7 +88,8 @@ var _ reconcile.Reconciler = &ReconcileMigration{}
 // ReconcileMigration reconciles a Migration object
 type ReconcileMigration struct {
 	client.Client
-	scheme *runtime.Scheme
+	scheme        *runtime.Scheme
+	databaseNames []string
 }
 
 // Reconcile reads that state of the cluster for a Migration object and makes changes based on the state read
@@ -105,26 +104,16 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 	// because of the informer that we have set up
 	// The behavior here is pretty different depending on the type
 	// so this function is simply an entrypoint that executes the right reconcile loop
-	instance, instanceErr := r.getInstance(request)
-	if instanceErr == nil {
-		result, err := r.reconcileMigration(context.Background(), instance)
-		if err != nil {
-			logger.Error(err)
-		}
-		return result, err
+	instance, err := r.getInstance(request)
+	if err != nil {
+		return reconcile.Result{}, err
 	}
 
-	pod := &corev1.Pod{}
-	podErr := r.Get(context.Background(), request.NamespacedName, pod)
-	if podErr == nil {
-		result, err := r.reconcilePod(context.Background(), pod)
-		if err != nil {
-			logger.Error(err)
-		}
-		return result, err
+	result, err := r.reconcileMigration(context.Background(), instance)
+	if err != nil {
+		logger.Error(err)
 	}
-
-	return reconcile.Result{}, errors.New("unknown error in migration reconciler")
+	return result, err
 }
 
 func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1alpha4.Migration, error) {
@@ -137,21 +126,7 @@ func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1a
 	return v1alpha4instance, nil
 }
 
-func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha4.Database) (string, error) {
-	var valueOrValueFrom *databasesv1alpha4.ValueOrValueFrom
-
-	if database.Spec.Connection.Postgres != nil {
-		valueOrValueFrom = &database.Spec.Connection.Postgres.URI
-	} else if database.Spec.Connection.Mysql != nil {
-		valueOrValueFrom = &database.Spec.Connection.Mysql.URI
-	} else if database.Spec.Connection.CockroachDB != nil {
-		valueOrValueFrom = &database.Spec.Connection.CockroachDB.URI
-	}
-
-	if valueOrValueFrom == nil {
-		return "", errors.New("cannnot get value from unknown type")
-	}
-
+func (r *ReconcileMigration) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha4.ValueOrValueFrom) (string, error) {
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
 	}
@@ -164,7 +139,7 @@ func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha4.Datab
 		secret := &corev1.Secret{}
 		secretNamespacedName := types.NamespacedName{
 			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
-			Namespace: database.Namespace,
+			Namespace: namespace,
 		}
 
 		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
@@ -178,7 +153,7 @@ func (r *ReconcileMigration) readConnectionURI(database *databasesv1alpha4.Datab
 		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
 	}
 
-	if database.UsingVault() {
+	if valueOrValueFrom.ValueFrom.Vault != nil {
 		// this feels wrong, but also doesn't make sense to return a
 		// a URI ref as a connection URI?
 		return "", nil

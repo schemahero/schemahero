@@ -4,7 +4,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: postgresql
-  namespace: schemahero-tutorial
+  namespace: schemahero-vault
   labels:
     app: postgresql
     chart: postgresql-8.10.0
@@ -18,7 +18,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgresql-headless
-  namespace: schemahero-tutorial
+  namespace: schemahero-vault
   labels:
     app: postgresql
     chart: postgresql-8.10.0
@@ -37,7 +37,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgresql
-  namespace: schemahero-tutorial
+  namespace: schemahero-vault
   labels:
     app: postgresql
     chart: postgresql-8.10.0
@@ -57,7 +57,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: postgresql
-  namespace: schemahero-tutorial
+  namespace: schemahero-vault
   labels:
     app: postgresql
     chart: postgresql-8.10.0

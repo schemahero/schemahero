@@ -2,15 +2,16 @@ package table
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -19,6 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
+// reconcileTable is called after filtering events that are not relevant to this
+// controller. this function is the main reconcile loop for the table type
 func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1alpha4.Table) (reconcile.Result, error) {
 	logger.Debug("reconciling table",
 		zap.String("kind", instance.Kind),
@@ -36,7 +39,7 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	}
 
 	// get the full database spec from the api
-	database, err := r.getDatabaseSpec(ctx, instance.Namespace, instance.Spec.Database)
+	database, err := r.getDatabaseInstance(ctx, instance.Namespace, instance.Spec.Database)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get database spec")
 	}
@@ -81,8 +84,8 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 		return reconcile.Result{}, nil
 	}
 
-	// Deploy a pod to calculculate the plan
-	return r.deployMigrationPlanPhase(ctx, database, instance)
+	// at this point, we need to execute a plan
+	return r.plan(ctx, database, instance)
 }
 
 func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha4.Table, error) {
@@ -95,15 +98,18 @@ func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha
 	return v1alpha4instance, nil
 }
 
-func (r *ReconcileTable) getMigrationSpec(namespace string, name string) (*schemasv1alpha4.Migration, error) {
+// getMigrationSpec will find a migration spec fot this exact table object
+func (r *ReconcileTable) getMigrationSpec(namespace string, tableSHA string) (*schemasv1alpha4.Migration, error) {
 	logger.Debug("getting migration spec",
 		zap.String("namespace", namespace),
-		zap.String("name", name))
+		zap.String("tableSHA", tableSHA))
+
+	// TODO
 
 	return nil, nil
 }
 
-func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, name string) (*databasesv1alpha4.Database, error) {
+func (r *ReconcileTable) getDatabaseInstance(ctx context.Context, namespace string, name string) (*databasesv1alpha4.Database, error) {
 	logger.Debug("getting database spec",
 		zap.String("namespace", namespace),
 		zap.String("name", name))
@@ -128,26 +134,6 @@ func (r *ReconcileTable) getDatabaseSpec(ctx context.Context, namespace string, 
 		return nil, errors.Wrap(err, "failed to get database object")
 	}
 
-	// try to parse the secret too, the database may be deployed, but that doesn't mean it's ready
-	// TODO this would be better as a status field on the database object, instead of this leaky
-	// interface
-	if database.Spec.Connection.Postgres != nil {
-		_, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Postgres.URI)
-		if err != nil {
-			return nil, nil
-		}
-	} else if database.Spec.Connection.Mysql != nil {
-		_, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.Mysql.URI)
-		if err != nil {
-			return nil, nil
-		}
-	} else if database.Spec.Connection.CockroachDB != nil {
-		_, err := r.readConnectionURI(database.Namespace, database.Spec.Connection.CockroachDB.URI)
-		if err != nil {
-			return nil, nil
-		}
-	}
-
 	return database, nil
 }
 
@@ -163,118 +149,84 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, 
 	return false
 }
 
-func (r *ReconcileTable) deployMigrationPlanPhase(ctx context.Context, database *databasesv1alpha4.Database, table *schemasv1alpha4.Table) (reconcile.Result, error) {
-	logger.Debug("deploying plan phase of migration",
-		zap.String("databaseName", database.Name),
-		zap.String("tableName", table.Name))
+// plan will connect to the database and generate a migration spec, deploying the
+// migration object
+func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1alpha4.Database, tableInstance *schemasv1alpha4.Table) (reconcile.Result, error) {
+	logger.Debug("planning migration",
+		zap.String("databaseName", databaseInstance.Name),
+		zap.String("tableName", tableInstance.Name))
 
-	desiredConfigMap, err := getPlanConfigMap(database, table)
+	driver, connectionURI, err := databaseInstance.GetConnection(ctx)
 	if err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to get config map object for plan")
+		return reconcile.Result{}, errors.Wrap(err, "failed to get connection details for database")
 	}
-	var existingConfigMap corev1.ConfigMap
-	configMapChanged := false
+
+	db := database.Database{
+		Driver: driver,
+		URI:    connectionURI,
+	}
+
+	statements, err := db.PlanSyncTableSpec(&tableInstance.Spec)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to plan sync")
+	}
+
+	tableSHA, err := tableInstance.GetSHA()
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
+	}
+
+	tableSHA = tableSHA[:7]
+
+	generatedDDL := strings.Join(statements, ";\n")
+
+	migration := schemasv1alpha4.Migration{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "schemas.schemahero.io/v1alpha4",
+			Kind:       "Migration",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      tableSHA,
+			Namespace: tableInstance.Namespace,
+		},
+		Spec: schemasv1alpha4.MigrationSpec{
+			GeneratedDDL:   generatedDDL,
+			TableName:      tableInstance.Name,
+			TableNamespace: tableInstance.Namespace,
+		},
+		Status: schemasv1alpha4.MigrationStatus{
+			PlannedAt: time.Now().Unix(),
+		},
+	}
+
+	if databaseInstance.Spec.ImmediateDeploy {
+		migration.Status.ApprovedAt = time.Now().Unix()
+	}
+
+	var existingMigration schemasv1alpha4.Migration
 	err = r.Get(ctx, types.NamespacedName{
-		Name:      desiredConfigMap.Name,
-		Namespace: desiredConfigMap.Namespace,
-	}, &existingConfigMap)
+		Name:      migration.Name,
+		Namespace: migration.Namespace,
+	}, &existingMigration)
+
 	if kuberneteserrors.IsNotFound(err) {
 		// create it
-		if err := controllerutil.SetControllerReference(table, desiredConfigMap, r.scheme); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to set owner on configmap")
+		if err := controllerutil.SetControllerReference(tableInstance, &migration, r.scheme); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to set owner on miration")
 		}
-		if err := r.Create(ctx, desiredConfigMap); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to create config map")
+
+		if err := r.Create(ctx, &migration); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to create migration resource")
 		}
 	} else if err == nil {
 		// update it
-		existingConfigMap.Data = map[string]string{}
-		for k, v := range desiredConfigMap.Data {
-			d, ok := existingConfigMap.Data[k]
-			if !ok || d != v {
-				existingConfigMap.Data[k] = v
-				configMapChanged = true
-			}
-		}
-		if configMapChanged {
-			if err := controllerutil.SetControllerReference(table, &existingConfigMap, r.scheme); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to update owner on configmap")
-			}
-			if err = r.Update(ctx, &existingConfigMap); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to update config map")
-			}
+		existingMigration.Status = migration.Status
+		existingMigration.Spec = migration.Spec
+		if err = r.Update(ctx, &existingMigration); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to update migration resource")
 		}
 	} else {
-		// something bad is happening here
-		return reconcile.Result{}, errors.Wrap(err, "failed to check if config map exists")
-	}
-
-	if database.UsingVault() {
-		desiredServiceAccount := getPlanServiceAccount(database)
-
-		var sa corev1.ServiceAccount
-		err = r.Get(ctx, types.NamespacedName{
-			Name:      desiredServiceAccount.Name,
-			Namespace: desiredServiceAccount.Namespace,
-		}, &sa)
-		if kuberneteserrors.IsNotFound(err) {
-			// create it
-			if err := r.Create(ctx, desiredServiceAccount); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to create plan service account")
-			}
-			if err := controllerutil.SetControllerReference(table, desiredServiceAccount, r.scheme); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to set owner on service account")
-			}
-		} else if err != nil {
-			// again, something bad
-			return reconcile.Result{}, errors.Wrap(err, "failed to check if service account exists")
-		}
-	}
-
-	desiredPod, err := r.getPlanPod(database, table)
-	if err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to get pod for plan")
-	}
-	var existingPod corev1.Pod
-	err = r.Get(ctx, types.NamespacedName{
-		Name:      desiredPod.Name,
-		Namespace: desiredPod.Namespace,
-	}, &existingPod)
-	if kuberneteserrors.IsNotFound(err) {
-		// create it
-		if err := r.Create(ctx, desiredPod); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to create plan pod")
-		}
-		if err := controllerutil.SetControllerReference(table, desiredPod, r.scheme); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to set owner on pod")
-		}
-	} else if err == nil {
-		// maybe update it
-		if configMapChanged {
-			// restart the pod by deleting and recreating
-			logger.Debug("deleting plan pod because config map has changed",
-				zap.String("podName", existingPod.Name))
-			if err = r.Delete(ctx, &existingPod); err != nil {
-				return reconcile.Result{}, errors.Wrap(err, "failed to delete pod")
-			}
-
-			// This pod will be recreated later in another exceution of the reconcile loop
-			// we watch pods, and when that above delete completed, the reconcile will happen again
-		}
-	} else {
-		// again, something bad
-		return reconcile.Result{}, errors.Wrap(err, "failed to check if pod exists")
-	}
-
-	// update the status with this plan so we don't reconcile it again
-	newTableSpecSHA, err := table.GetSHA()
-	if err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to get sha")
-	}
-	table.Status.LastPlannedTableSpecSHA = newTableSpecSHA
-
-	if err := r.Update(ctx, table); err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to update status")
+		return reconcile.Result{}, errors.Wrap(err, "failed to get existing migration")
 	}
 
 	return reconcile.Result{}, nil

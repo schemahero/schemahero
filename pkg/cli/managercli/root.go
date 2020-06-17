@@ -33,6 +33,8 @@ func RootCmd() *cobra.Command {
 	kubernetesConfigFlags = genericclioptions.NewConfigFlags(false)
 	kubernetesConfigFlags.AddFlags(cmd.PersistentFlags())
 
+	cmd.Flags().String("log-level", "info", "set the log level")
+
 	cmd.AddCommand(Version())
 	cmd.AddCommand(RunCmd())
 

@@ -26,9 +26,8 @@ func Apply() *cobra.Command {
 			driver := v.GetString("driver")
 			ddl := v.GetString("ddl")
 			uri := v.GetString("uri")
-			vaultUriRef := v.GetString("vault-uri-ref")
 
-			if driver == "" || ddl == "" || (uri == "" && vaultUriRef == "") {
+			if driver == "" || ddl == "" || uri == "" {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")
@@ -36,8 +35,8 @@ func Apply() *cobra.Command {
 				if ddl == "" {
 					missing = append(missing, "ddl")
 				}
-				if uri == "" && vaultUriRef == "" {
-					missing = append(missing, "uri or vault-uri-ref")
+				if uri == "" {
+					missing = append(missing, "uri")
 				}
 
 				return fmt.Errorf("missing required params: %v", missing)
@@ -49,11 +48,10 @@ func Apply() *cobra.Command {
 			}
 
 			db := database.Database{
-				InputDir:    v.GetString("input-dir"),
-				OutputDir:   v.GetString("output-dir"),
-				Driver:      v.GetString("driver"),
-				URI:         v.GetString("uri"),
-				VaultURIRef: v.GetString("vault-uri-ref"),
+				InputDir:  v.GetString("input-dir"),
+				OutputDir: v.GetString("output-dir"),
+				Driver:    v.GetString("driver"),
+				URI:       v.GetString("uri"),
 			}
 
 			if fi.Mode().IsDir() {
@@ -115,7 +113,6 @@ func Apply() *cobra.Command {
 
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
-	cmd.Flags().String("vault-uri-ref", "", "URI-reference to Vault-injected connection URI")
 	cmd.Flags().String("ddl", "", "filename or directory name containing the rendered DDL commands to execute")
 
 	return cmd

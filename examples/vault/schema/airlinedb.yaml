@@ -1,0 +1,20 @@
+apiVersion: databases.schemahero.io/v1alpha4
+kind: Database
+metadata:
+  name: airlinedb
+  namespace: schemahero-vault
+spec:
+  connection:
+    postgres:
+      uri:
+        valueFrom:
+          vault:
+            # endpoint: http://10.43.233.4:8200
+            # serviceAccount: schemahero-vault
+            # serviceAccountNamespace: schemahero-vault
+            secret: airlinedb
+            role: schemahero
+            agentInject: true
+
+
+            
