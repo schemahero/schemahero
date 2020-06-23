@@ -128,6 +128,10 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return "", "", errors.Errorf("unexpected response from vault login: %d", resp.StatusCode)
+	}
+
 	type LoginResponseAuth struct {
 		ClientToken string `json:"client_token"`
 	}
@@ -157,6 +161,10 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return "", "", errors.Errorf("unexpected response code from database/creds vault request: %d", resp.StatusCode)
+	}
+
 	credsResponse := struct {
 		LeaseDuration int                    `json:"lease_duration"`
 		Data          map[string]interface{} `json:"data"`
@@ -184,6 +192,10 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 		return "", "", errors.Wrap(err, "failed to execute request")
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", "", errors.Errorf("unexpected response from vault reading config: %d", resp.StatusCode)
+	}
 
 	type ConnectionDetails struct {
 		ConnectionURL string `json:"connection_url"`

@@ -21,6 +21,7 @@ import (
 
 	"github.com/pkg/errors"
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/logger"
 	rbacv1 "k8s.io/api/rbac/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -82,6 +83,7 @@ func (r *ReconcileDatabase) reconcileRBACRoleBinding(ctx context.Context, databa
 		return errors.Wrap(err, "failed to check rolebinding")
 	} else {
 		// update
+		logger.Error(errors.New("updating rolebinding is not implemented"))
 	}
 
 	return nil
@@ -154,6 +156,7 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 		return errors.Wrap(err, "failed to get existing role")
 	} else {
 		// update
+		logger.Error(errors.New("updating role is not implemented"))
 	}
 
 	return nil
