@@ -1,4 +1,4 @@
-package schemaherocli
+package schemaherokubectlcli
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Plan() *cobra.Command {
+func PlanCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "plan",
 		Short:        "plan a spec application against a database",

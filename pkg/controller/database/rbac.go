@@ -111,28 +111,6 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 					Verbs:     metav1.Verbs{"get"},
 				},
 				{
-					APIGroups:     []string{"rbac.authorization.k8s.io"},
-					Resources:     []string{"roles"},
-					ResourceNames: []string{"schemahero-role"},
-					Verbs:         metav1.Verbs{"get", "list", "patch"},
-				},
-				{
-					APIGroups: []string{"rbac.authorization.k8s.io"},
-					Resources: []string{"roles"},
-					Verbs:     metav1.Verbs{"list"},
-				},
-				{
-					APIGroups:     []string{"rbac.authorization.k8s.io"},
-					Resources:     []string{"rolebindings"},
-					ResourceNames: []string{"schemahero-rolebinding"},
-					Verbs:         metav1.Verbs{"get", "list", "patch"},
-				},
-				{
-					APIGroups: []string{"rbac.authorization.k8s.io"},
-					Resources: []string{"rolebindings"},
-					Verbs:     metav1.Verbs{"list"},
-				},
-				{
 					APIGroups: []string{"databases.schemahero.io"},
 					Resources: []string{"databases"},
 					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
