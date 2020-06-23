@@ -19,10 +19,6 @@ jobs:
       - run: make all
       - uses: actions/upload-artifact@v2.0.1
         with:
-          name: schemahero
-          path: bin/schemahero
-      - uses: actions/upload-artifact@v2.0.1
-        with:
           name: manager
           path: bin/manager
       - uses: actions/upload-artifact@v2.0.1
@@ -37,13 +33,13 @@ jobs:
       matrix:
         postgres_version: ["10.13", "11.8", "12.3"]
     steps:
-      - uses: actions/checkout@v2.3.0
-      - name: Download schemahero binary
+      - uses: actions/checkout@v2
+      - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v2.0
         with:
-          name: schemahero
+          name: kubectl-schemahero
           path: bin/
-      - run: chmod +x bin/schemahero
+      - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
   test-mysql:
@@ -53,13 +49,13 @@ jobs:
       matrix:
         mysql_version: ["5.6", "5.7", "8.0"]
     steps:
-      - uses: actions/checkout@v2.3.0
-      - name: Download schemahero binary
+      - uses: actions/checkout@v2
+      - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v2.0
         with:
-          name: schemahero
+          name: kubecbtl-schemahero
           path: bin/
-      - run: chmod +x bin/schemahero
+      - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
   test-cockroach:
@@ -69,13 +65,13 @@ jobs:
       matrix:
         cockroachdb_version: ["v19.2.7", "v20.1.0"]
     steps:
-      - uses: actions/checkout@v2.3.0
-      - name: Download schemahero binary
+      - uses: actions/checkout@v2
+      - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v2.0
         with:
-          name: schemahero
+          name: kubectl-schemahero
           path: bin/
-      - run: chmod +x bin/schemahero
+      - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
   goreleaser:
