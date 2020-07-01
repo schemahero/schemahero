@@ -257,7 +257,7 @@ func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 							Image:           schemaHeroManagerImage,
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
-							Command:         []string{"/manager"},
+							Command:         []string{"/manager", "run"},
 							Env:             env,
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
