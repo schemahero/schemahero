@@ -22,41 +22,6 @@ metadata:
     app.kubernetes.io/instance: vault
     app.kubernetes.io/managed-by: Helm
 ---
-# Source: vault/templates/server-config-configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: vault-config
-  namespace: schemahero-vault
-  labels:
-    helm.sh/chart: vault-0.6.0
-    app.kubernetes.io/name: vault
-    app.kubernetes.io/instance: vault
-    app.kubernetes.io/managed-by: Helm
-data:
-  extraconfig-from-values.hcl: |-
-    disable_mlock = true
-    ui = true
-    
-    listener "tcp" {
-      tls_disable = 1
-      address = "[::]:8200"
-      cluster_address = "[::]:8201"
-    }
-    storage "file" {
-      path = "/vault/data"
-    }
-    
-    # Example configuration for using auto-unseal, using Google Cloud KMS. The
-    # GKMS keys must already exist, and the cluster must have a service account
-    # that is authorized to access GCP KMS.
-    #seal "gcpckms" {
-    #   project     = "vault-helm-dev"
-    #   region      = "global"
-    #   key_ring    = "vault-helm-unseal-kr"
-    #   crypto_key  = "vault-helm-unseal-key"
-    #}
----
 # Source: vault/templates/injector-clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -309,16 +274,6 @@ spec:
         component: server
     spec:
       
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: vault
-                  app.kubernetes.io/instance: "vault"
-                  component: server
-              topologyKey: kubernetes.io/hostname
-  
       
       
       terminationGracePeriodSeconds: 10
@@ -331,10 +286,6 @@ spec:
         fsGroup: 1000
       volumes:
         
-        - name: config
-          configMap:
-            name: vault-config
-  
         - name: home
           emptyDir: {}
       containers:
@@ -343,15 +294,7 @@ spec:
           image: vault:1.4.2
           imagePullPolicy: IfNotPresent
           command: 
-          - "/bin/sh"
-          - "-ec"
-  
           args: 
-          - |
-            sed -E "s/HOST_IP/${HOST_IP?}/g" /vault/config/extraconfig-from-values.hcl > /tmp/storageconfig.hcl;
-            sed -Ei "s/POD_IP/${POD_IP?}/g" /tmp/storageconfig.hcl;
-            /usr/local/bin/docker-entrypoint.sh vault server -config=/tmp/storageconfig.hcl 
-  
           env:
             - name: HOST_IP
               valueFrom:
@@ -386,19 +329,14 @@ spec:
             - name: HOME
               value: "/home/vault"
             
+            - name: VAULT_DEV_ROOT_TOKEN_ID
+              value: "root"
+  
             
             
           volumeMounts:
           
   
-    
-            - name: data
-              mountPath: /vault/data
-    
-  
-  
-            - name: config
-              mountPath: /vault/config
   
             - name: home
               mountPath: /home/vault
@@ -436,16 +374,6 @@ spec:
                   # to this pod while it's terminating
                   "sleep 5 && kill -SIGTERM $(pidof vault)",
                 ]
-  
-  volumeClaimTemplates:
-    - metadata:
-        name: data
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
 ---
 # Source: vault/templates/injector-mutating-webhook.yaml
 apiVersion: admissionregistration.k8s.io/v1beta1

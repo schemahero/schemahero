@@ -5,7 +5,8 @@ The files in this directory are an example of using SchemaHero to manage a Postg
 ### Deploy Postgres and Vault
 
 Deploy a PostgreSQL and Vault instance to a new namespace. 
-The following manifests were taken from the PostgreSQL and Vault Helm Charts:
+The following manifests were taken from the PostgreSQL and Vault Helm Charts.
+The vault chart is in dev mode and should be used for this tutorial only -- do not use for production.
 
 ```
 kubectl create ns schemahero-vault
