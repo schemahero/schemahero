@@ -4,25 +4,6 @@ release:
     owner: schemahero
     name: schemahero
 builds:
-  - id: schemahero
-    goos:
-      - linux
-      - windows
-      - darwin
-    goarch:
-      - amd64
-      - "386"
-    env:
-      - CGO_ENABLED=0
-    main: cmd/schemahero/main.go
-    ldflags: -s -w
-      -X github.com/schemahero/schemahero/pkg/version.version={{.Version}}
-      -X github.com/schemahero/schemahero/pkg/version.gitSHA={{.Commit}}
-      -X github.com/schemahero/schemahero/pkg/version.buildTime={{.Date}}
-      -extldflags "-static"
-    flags: -tags netgo -installsuffix netgo
-    binary: schemahero
-    hooks: {}
   - id: kubectl-schemahero
     goos:
       - linux
