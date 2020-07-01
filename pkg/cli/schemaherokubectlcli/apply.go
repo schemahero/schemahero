@@ -1,4 +1,4 @@
-package schemaherocli
+package schemaherokubectlcli
 
 import (
 	"bufio"
@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Apply() *cobra.Command {
+func ApplyCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "apply",
 		Short: "apply a spec to a database",

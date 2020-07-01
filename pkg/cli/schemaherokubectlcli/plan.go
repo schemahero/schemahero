@@ -1,4 +1,4 @@
-package schemaherocli
+package schemaherokubectlcli
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Plan() *cobra.Command {
+func PlanCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "plan",
 		Short:        "plan a spec application against a database",
@@ -27,9 +27,8 @@ func Plan() *cobra.Command {
 			driver := v.GetString("driver")
 			specFile := v.GetString("spec-file")
 			uri := v.GetString("uri")
-			vaultUriRef := v.GetString("vault-uri-ref")
 
-			if driver == "" || specFile == "" || (uri == "" && vaultUriRef == "") {
+			if driver == "" || specFile == "" || uri == "" {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")
@@ -37,8 +36,8 @@ func Plan() *cobra.Command {
 				if specFile == "" {
 					missing = append(missing, "spec-file")
 				}
-				if uri == "" && vaultUriRef == "" {
-					missing = append(missing, "uri or vault-uri-ref")
+				if uri == "" {
+					missing = append(missing, "uri")
 				}
 
 				return fmt.Errorf("missing required params: %v", missing)
@@ -70,17 +69,16 @@ func Plan() *cobra.Command {
 			}
 
 			db := database.Database{
-				InputDir:    v.GetString("input-dir"),
-				OutputDir:   v.GetString("output-dir"),
-				Driver:      v.GetString("driver"),
-				URI:         v.GetString("uri"),
-				VaultURIRef: v.GetString("vault-uri-ref"),
+				InputDir:  v.GetString("input-dir"),
+				OutputDir: v.GetString("output-dir"),
+				Driver:    v.GetString("driver"),
+				URI:       v.GetString("uri"),
 			}
 
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					if !info.IsDir() {
-						statements, err := db.PlanSync(path)
+						statements, err := db.PlanSyncFromFile(path)
 						if err != nil {
 							return err
 						}
@@ -103,7 +101,7 @@ func Plan() *cobra.Command {
 
 				return err
 			} else {
-				statements, err := db.PlanSync(v.GetString("spec-file"))
+				statements, err := db.PlanSyncFromFile(v.GetString("spec-file"))
 				if err != nil {
 					return err
 				}
@@ -127,7 +125,6 @@ func Plan() *cobra.Command {
 
 	cmd.Flags().String("driver", "", "name of the database driver to use")
 	cmd.Flags().String("uri", "", "connection string uri to use")
-	cmd.Flags().String("vault-uri-ref", "", "URI-reference to Vault-injected connection URI")
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 	cmd.Flags().Bool("overwrite", true, "when set, will overwrite the out file, if it already exists")

@@ -88,11 +88,6 @@ archives:
       - changelog*
       - CHANGELOG*
 dockers:
-  - dockerfile: ./deploy/Dockerfile.schemahero
-    image_templates:
-      - "schemahero/schemahero:{{.Version}}"
-    binaries:
-      - schemahero
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates:
       - "schemahero/schemahero-manager:{{.Version}}"

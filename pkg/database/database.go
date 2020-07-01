@@ -17,11 +17,10 @@ import (
 )
 
 type Database struct {
-	InputDir    string
-	OutputDir   string
-	Driver      string
-	URI         string
-	VaultURIRef string
+	InputDir  string
+	OutputDir string
+	Driver    string
+	URI       string
 }
 
 func (d *Database) CreateFixturesSync() error {
@@ -125,12 +124,16 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) PlanSync(filename string) ([]string, error) {
+func (d *Database) PlanSyncFromFile(filename string) ([]string, error) {
 	specContents, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read file")
 	}
 
+	return d.PlanSync(specContents)
+}
+
+func (d *Database) PlanSync(specContents []byte) ([]string, error) {
 	var spec *schemasv1alpha4.TableSpec
 	parsedK8sObject := schemasv1alpha4.Table{}
 	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
@@ -148,51 +151,32 @@ func (d *Database) PlanSync(filename string) ([]string, error) {
 		spec = &plainSpec
 	}
 
+	return d.PlanSyncTableSpec(spec)
+}
+
+func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
 	if spec.Schema == nil {
 		return []string{}, nil
 	}
 
-	uri, err := getURI(d)
-	if err != nil {
-		return nil, err
-	}
-
 	if d.Driver == "postgres" {
-		return postgres.PlanPostgresTable(uri, spec.Name, spec.Schema.Postgres)
+		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres)
 	} else if d.Driver == "mysql" {
-		return mysql.PlanMysqlTable(uri, spec.Name, spec.Schema.Mysql)
+		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql)
 	} else if d.Driver == "cockroachdb" {
-		return postgres.PlanPostgresTable(uri, spec.Name, spec.Schema.CockroachDB)
+		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB)
 	}
 
 	return nil, errors.New("unknown database driver")
 }
 
-func getURI(d *Database) (string, error) {
-	if d.VaultURIRef != "" {
-		b, err := ioutil.ReadFile(d.VaultURIRef)
-		if err != nil {
-			return "", errors.Wrap(err, "failed to read vault uri file")
-		}
-		return string(b), nil
-	}
-
-	return d.URI, nil
-}
-
 func (d *Database) ApplySync(statements []string) error {
-	uri, err := getURI(d)
-	fmt.Printf("URI is: %s\n", uri)
-	if err != nil {
-		return err
-	}
-
 	if d.Driver == "postgres" {
-		return postgres.DeployPostgresStatements(uri, statements)
+		return postgres.DeployPostgresStatements(d.URI, statements)
 	} else if d.Driver == "mysql" {
-		return mysql.DeployMysqlStatements(uri, statements)
+		return mysql.DeployMysqlStatements(d.URI, statements)
 	} else if d.Driver == "cockroachdb" {
-		return postgres.DeployPostgresStatements(uri, statements)
+		return postgres.DeployPostgresStatements(d.URI, statements)
 	}
 
 	return errors.New("unknown database driver")

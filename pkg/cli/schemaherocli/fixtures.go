@@ -19,12 +19,10 @@ func Fixtures() *cobra.Command {
 			v := viper.GetViper()
 
 			db := database.Database{
-				InputDir:    v.GetString("input-dir"),
-				OutputDir:   v.GetString("output-dir"),
-				Driver:      v.GetString("driver"),
-				URI:         v.GetString("uri"),
-				VaultURIRef: v.GetString("vault-uri-ref"),
-			}
+				InputDir:  v.GetString("input-dir"),
+				OutputDir: v.GetString("output-dir"),
+				Driver:    v.GetString("driver"),
+				URI:       v.GetString("uri")}
 
 			return db.CreateFixturesSync()
 		},

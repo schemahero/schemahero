@@ -1,0 +1,28 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: reservation
+  namespace: schemahero-vault
+spec:
+  database: airlinedb
+  name: reservation
+  schema:
+    postgres:
+      primaryKey: [id]
+      columns:
+        - name: id
+          type: char(8)
+        - name: created_at
+          type: timestamp
+          constraints:
+            notNull: true
+        - name: first_name
+          type: varchar(40)
+        - name: last_name
+          type: varchar(40)
+        - name: flight_number
+          type: char(4)
+        - name: flight_date
+          type: timestamp
+          constraints:
+            notNull: true

@@ -52,6 +52,11 @@ type SecretKeyRef struct {
 }
 
 type Vault struct {
-	Secret string `json:"secret" yaml:"secret"`
-	Role   string `json:"role" yaml:"role"`
+	AgentInject bool   `json:"agentInject,omitempty" yaml:"agentInject,omitempty"`
+	Secret      string `json:"secret" yaml:"secret"`
+	Role        string `json:"role" yaml:"role"`
+
+	Endpoint                string `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
+	ServiceAccount          string `json:"serviceAccount,omitempty" yaml:"serviceAccount,omitempty"`
+	ServiceAccountNamespace string `json:"serviceAccountNamespace,omitempty" yaml:"serviceAccountNamespace,omitempty"`
 }

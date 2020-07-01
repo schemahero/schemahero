@@ -31,7 +31,7 @@ endef
 export GO111MODULE=on
 # export GOPROXY=https://proxy.golang.org
 
-all: generate fmt vet manifests bin/schemahero bin/kubectl-schemahero manager
+all: generate fmt vet manifests bin/kubectl-schemahero manager
 
 .PHONY: clean-and-tidy
 clean-and-tidy:
@@ -57,8 +57,15 @@ bin/manager:
 		./cmd/manager
 
 .PHONY: run
-run: generate fmt vet bin/schemahero bin/manager
-	./bin/manager run
+run: generate fmt vet bin/manager
+	./bin/manager run --enable-database-controller --database-name="*"
+
+.PHONY: run-database
+run-database: generate fmt vet bin/manager
+	./bin/manager run \
+	--enable-database-controller \
+	--manager-image localhost:32000/schemahero/schemahero-manager \
+	--manager-tag latest
 
 .PHONY: install
 install: manifests generate microk8s
@@ -106,15 +113,6 @@ generate: controller-gen client-gen
 		--input schemas/v1alpha4 \
 		-h ./hack/boilerplate.go.txt
 
-.PHONY: bin/schemahero
-bin/schemahero:
-	go build \
-		${LDFLAGS} \
-		-i \
-		-o bin/schemahero \
-		./cmd/schemahero
-	@echo "built bin/schemahero"
-
 .PHONY: bin/kubectl-schemahero
 bin/kubectl-schemahero:
 	go build \
@@ -125,22 +123,16 @@ bin/kubectl-schemahero:
 	@echo "built bin/kubectl-schemahero"
 
 .PHONY: microk8s
-microk8s: bin/schemahero bin/kubectl-schemahero manager
-	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
-	docker tag schemahero/schemahero localhost:32000/schemahero/schemahero:latest
-	docker push localhost:32000/schemahero/schemahero:latest
+microk8s: bin/kubectl-schemahero manager
+	docker build -t schemahero/schemahero-manager -f ./Dockerfile.manager .
+	docker tag schemahero/schemahero-manager localhost:32000/schemahero/schemahero-manager:latest
+	docker push localhost:32000/schemahero/schemahero-manager:latest
 
 .PHONY: kind
-kind: bin/schemahero bin/kubectl-schemahero manager
-	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
-	docker tag schemahero/schemahero localhost:5000/schemahero/schemahero:latest
-	docker push localhost:5000/schemahero/schemahero:latest
+kind: bin/kubectl-schemahero manager
 
 .PHONY: kotsimages
-kotsimages: bin/schemahero bin/kubectl-schemahero manager
-	docker build -t schemahero/schemahero -f ./Dockerfile.schemahero .
-	docker tag schemahero/schemahero registry.replicated.com/schemahero-enterprise/schemahero:$${GITHUB_SHA}
-	docker push registry.replicated.com/schemahero-enterprise/schemahero:$${GITHUB_SHA}
+kotsimages: bin/kubectl-schemahero manager
 
 .PHONY: contoller-gen
 controller-gen:

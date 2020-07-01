@@ -23,7 +23,7 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
-	corev1 "k8s.io/api/core/v1"
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -37,13 +37,17 @@ import (
 
 // Add creates a new Table Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager) error {
-	return add(mgr, newReconciler(mgr))
+func Add(mgr manager.Manager, databaseNames []string) error {
+	return add(mgr, newReconciler(databaseNames, mgr))
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileTable{Client: mgr.GetClient(), scheme: mgr.GetScheme()}
+func newReconciler(databaseNames []string, mgr manager.Manager) reconcile.Reconciler {
+	return &ReconcileTable{
+		Client:        mgr.GetClient(),
+		scheme:        mgr.GetScheme(),
+		databaseNames: databaseNames,
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -55,7 +59,9 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Table
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha4.Table{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{
+		Type: &schemasv1alpha4.Table{},
+	}, &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start watch on tables")
 	}
@@ -73,15 +79,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// watch for pods because pods are how schemahero deploys, and the lifecycle of a pod is important
-	// to ensure that we are deployed
-	err = c.Watch(&source.Informer{
-		Informer: generatedInformers.Core().V1().Pods().Informer(),
-	}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return errors.Wrap(err, "failed to start watch on pods")
-	}
-
 	return nil
 }
 
@@ -90,7 +87,8 @@ var _ reconcile.Reconciler = &ReconcileTable{}
 // ReconcileTable reconciles a Table object
 type ReconcileTable struct {
 	client.Client
-	scheme *runtime.Scheme
+	scheme        *runtime.Scheme
+	databaseNames []string
 }
 
 // Reconcile reads that state of the cluster for a Table object and makes changes based on the state read
@@ -105,24 +103,43 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 	// because of the informer that we have set up
 	// The behavior here is pretty different depending on the type
 	// so this function is simply an entrypoint that executes the right reconcile loop
-	instance, instanceErr := r.getInstance(request)
-	if instanceErr == nil {
-		result, err := r.reconcileTable(context.Background(), instance)
-		if err != nil {
-			logger.Error(err)
-		}
-		return result, err
+	instance, err := r.getInstance(request)
+	if err != nil {
+		return reconcile.Result{}, err
 	}
 
-	pod := &corev1.Pod{}
-	podErr := r.Get(context.Background(), request.NamespacedName, pod)
-	if podErr == nil {
-		result, err := r.reconcilePod(context.Background(), pod)
-		if err != nil {
-			logger.Error(err)
-		}
-		return result, err
+	isThisController, err := r.isTableManagedByThisController(instance)
+	if err != nil {
+		return reconcile.Result{}, err
 	}
 
-	return reconcile.Result{}, errors.New("unknown error in table reconciler")
+	if !isThisController {
+		logger.Debug("table instance is not managed by this controller",
+			zap.String("table", instance.Name),
+			zap.Strings("databaseNames", r.databaseNames))
+		return reconcile.Result{}, nil
+	}
+
+	result, err := r.reconcileTable(context.Background(), instance)
+	if err != nil {
+		logger.Error(err)
+	}
+
+	return result, err
+}
+
+func (r *ReconcileTable) isTableManagedByThisController(instance *schemasv1alpha4.Table) (bool, error) {
+	databaseName := instance.Spec.Database
+
+	for _, managedDatabaseName := range r.databaseNames {
+		if managedDatabaseName == databaseName {
+			return true, nil
+		}
+
+		if managedDatabaseName == "*" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

@@ -1,27 +1,15 @@
-# Build the manager binary
-FROM golang:1.12 as builder
-
-# Copy in the go src
-WORKDIR /go/src/github.com/schemahero/schemahero
-COPY pkg/    pkg/
-COPY cmd/    cmd/
-COPY go.mod  ./
-COPY go.sum ./
-COPY Makefile ./
-
-ENV GO111MODULE=on
-
-# Build
-RUN make bin/manager
-
-# Copy the controller-manager into a thin image
-FROM ubuntu:latest
+# Copy schemahero into a thin image
+FROM debian:buster
 WORKDIR /
-COPY --from=builder /go/src/github.com/schemahero/schemahero/bin/manager .
-RUN chmod a+x /manager
 
-RUN useradd -c 'schemahero-manager user' -m -d /home/schemahero-manager -s /bin/bash -u 1001 schemahero-manager
-USER schemahero-manager
-ENV HOME /home/schemahero-manager
+RUN apt-get update \
+ && apt-get -y install \
+    ca-certificates
+
+ADD ./bin/manager /manager
+
+RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 schemahero
+USER schemahero
+ENV HOME /home/schemahero
 
 ENTRYPOINT ["/manager", "run"]

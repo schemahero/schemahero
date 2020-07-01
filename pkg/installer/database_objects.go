@@ -61,9 +61,17 @@ spec:
                               type: object
                             vault:
                               properties:
+                                agentInject:
+                                  type: boolean
+                                endpoint:
+                                  type: string
                                 role:
                                   type: string
                                 secret:
+                                  type: string
+                                serviceAccount:
+                                  type: string
+                                serviceAccountNamespace:
                                   type: string
                               required:
                               - role
@@ -92,9 +100,17 @@ spec:
                               type: object
                             vault:
                               properties:
+                                agentInject:
+                                  type: boolean
+                                endpoint:
+                                  type: string
                                 role:
                                   type: string
                                 secret:
+                                  type: string
+                                serviceAccount:
+                                  type: string
+                                serviceAccountNamespace:
                                   type: string
                               required:
                               - role
@@ -123,9 +139,17 @@ spec:
                               type: object
                             vault:
                               properties:
+                                agentInject:
+                                  type: boolean
+                                endpoint:
+                                  type: string
                                 role:
                                   type: string
                                 secret:
+                                  type: string
+                                serviceAccount:
+                                  type: string
+                                serviceAccountNamespace:
                                   type: string
                               required:
                               - role
@@ -236,9 +260,17 @@ spec:
                                 type: object
                               vault:
                                 properties:
+                                  agentInject:
+                                    type: boolean
+                                  endpoint:
+                                    type: string
                                   role:
                                     type: string
                                   secret:
+                                    type: string
+                                  serviceAccount:
+                                    type: string
+                                  serviceAccountNamespace:
                                     type: string
                                 required:
                                 - role
@@ -267,9 +299,17 @@ spec:
                                 type: object
                               vault:
                                 properties:
+                                  agentInject:
+                                    type: boolean
+                                  endpoint:
+                                    type: string
                                   role:
                                     type: string
                                   secret:
+                                    type: string
+                                  serviceAccount:
+                                    type: string
+                                  serviceAccountNamespace:
                                     type: string
                                 required:
                                 - role
@@ -298,9 +338,17 @@ spec:
                                 type: object
                               vault:
                                 properties:
+                                  agentInject:
+                                    type: boolean
+                                  endpoint:
+                                    type: string
                                   role:
                                     type: string
                                   secret:
+                                    type: string
+                                  serviceAccount:
+                                    type: string
+                                  serviceAccountNamespace:
                                     type: string
                                 required:
                                 - role

@@ -18,7 +18,7 @@ run:
 	while ! docker exec -it $(DATABASE_CONTAINER_NAME) /cockroach/cockroach sql --insecure --execute "SELECT 1;"; do sleep 1; done
 
 	# Plan
-	../../../../bin/schemahero plan --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
+	../../../../bin/kubectl-schemahero plan --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)

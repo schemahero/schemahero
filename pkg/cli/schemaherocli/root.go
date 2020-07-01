@@ -25,9 +25,7 @@ func RootCmd() *cobra.Command {
 
 	cobra.OnInitialize(initConfig)
 
-	// cmd.AddCommand(Watch())
 	cmd.AddCommand(Apply())
-	cmd.AddCommand(Plan())
 
 	cmd.AddCommand(Generate())
 	cmd.AddCommand(Fixtures())
