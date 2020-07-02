@@ -14,6 +14,16 @@ func unaliasUnparameterizedColumnType(requestedType string) string {
 		return "tinyint (1)"
 	}
 
+	// mysql gives us the length of these text types, but it won't
+	// accept them as create table arguments...
+	if requestedType == "tinytext (255)" {
+		requestedType = "tinytext"
+	} else if requestedType == "mediumtext (16777215)" {
+		requestedType = "mediumtext"
+	} else if requestedType == "longtext (4294967295)" {
+		requestedType = "longtext"
+	}
+
 	for _, unparameterizedColumnType := range unparameterizedColumnTypes {
 		if unparameterizedColumnType == requestedType {
 			return requestedType
@@ -46,6 +56,10 @@ func unaliasParameterizedColumnType(requestedType string) string {
 		return fmt.Sprintf("int (%s)", matchGroups[1])
 	}
 	if strings.HasPrefix(requestedType, "dec") {
+		if strings.Contains(requestedType, "decimal") {
+			requestedType = strings.Replace(requestedType, "decimal", "dec", -1)
+		}
+
 		precisionAndScale := regexp.MustCompile(`dec\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d*)\s*\)`)
 		precisionOnly := regexp.MustCompile(`dec\s*\(\s*(?P<precision>\d*)\s*\)`)
 
@@ -64,7 +78,6 @@ func unaliasParameterizedColumnType(requestedType string) string {
 		precisionAndScale := regexp.MustCompile(`double precision\s*\(\s*(?P<precision>\d*),\s*(?P<scale>\d*)\s*\)`)
 		precisionAndScaleMatchGroups := precisionAndScale.FindStringSubmatch(requestedType)
 
-		fmt.Printf("%#v\n", precisionAndScaleMatchGroups)
 		if len(precisionAndScaleMatchGroups) == 3 {
 			return fmt.Sprintf("double (%s, %s)", precisionAndScaleMatchGroups[1], precisionAndScaleMatchGroups[2])
 		}

@@ -12,6 +12,7 @@ var unparameterizedColumnTypes = []string{
 	"datetime",
 	"timestamp",
 	"tinyblob",
+	"tinytext",
 	"mediumblob",
 	"mediumtext",
 	"longblob",
@@ -50,9 +51,14 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 	} else if strings.HasPrefix(requestedType, "char") {
 		columnType = "char"
 
+		if strings.Contains(requestedType, "character") {
+			requestedType = strings.Replace(requestedType, "character", "char", -1)
+		}
+
 		r := regexp.MustCompile(`char\s*\((?P<max>\d*)\)`)
 
 		matchGroups := r.FindStringSubmatch(requestedType)
+
 		if len(matchGroups) == 0 {
 			columnType = "char (11)"
 		} else {
@@ -158,54 +164,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 				return "", err
 			}
 			columnType = fmt.Sprintf("bigint (%d)", max)
-		}
-	} else if strings.HasPrefix(requestedType, "tinytext") {
-		columnType = "tinytext"
-
-		r := regexp.MustCompile(`tinytext\s*\((?P<max>\d*)\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			columnType = "tinytext (255)"
-		} else {
-			maxStr := matchGroups[1]
-			max, err := strconv.Atoi(maxStr)
-			if err != nil {
-				return "", err
-			}
-			columnType = fmt.Sprintf("tinytext (%d)", max)
-		}
-	} else if strings.HasPrefix(requestedType, "mediumtext") {
-		columnType = "mediumtext"
-
-		r := regexp.MustCompile(`mediumtext\s*\((?P<max>\d*)\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			columnType = "mediumtext (16777215)"
-		} else {
-			maxStr := matchGroups[1]
-			max, err := strconv.Atoi(maxStr)
-			if err != nil {
-				return "", err
-			}
-			columnType = fmt.Sprintf("mediumtext (%d)", max)
-		}
-	} else if strings.HasPrefix(requestedType, "longtext") {
-		columnType = "longtext"
-
-		r := regexp.MustCompile(`longtext\s*\((?P<max>\d*)\)`)
-
-		matchGroups := r.FindStringSubmatch(requestedType)
-		if len(matchGroups) == 0 {
-			columnType = "longtext (4294967295)"
-		} else {
-			maxStr := matchGroups[1]
-			max, err := strconv.Atoi(maxStr)
-			if err != nil {
-				return "", err
-			}
-			columnType = fmt.Sprintf("longtext (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "decimal") {
 		columnType = "decimal"
