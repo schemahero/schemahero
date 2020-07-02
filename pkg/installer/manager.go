@@ -77,7 +77,7 @@ func ensureService(ctx context.Context, clientset *kubernetes.Clientset, namespa
 			return errors.Wrap(err, "failed to get service")
 		}
 
-		_, err := clientset.CoreV1().Secrets(namespace).Create(ctx, secret(namespace), metav1.CreateOptions{})
+		_, err := clientset.CoreV1().Services(namespace).Create(ctx, service(namespace), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create service")
 		}
@@ -93,7 +93,7 @@ func service(namespace string) *corev1.Service {
 			Kind:       "Service",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "controller-webhook-server",
+			Name:      "controller-manager-service",
 			Namespace: namespace,
 		},
 		Spec: corev1.ServiceSpec{
