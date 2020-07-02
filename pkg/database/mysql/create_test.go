@@ -33,6 +33,27 @@ func Test_CreateTableStatement(t *testing.T) {
 			expectedStatement: "create table `simple` (`id` int (11), primary key (`id`))",
 		},
 		{
+			name: "varchar composite primary key",
+			tableSchema: &schemasv1alpha4.SQLTableSchema{
+				PrimaryKey: []string{
+					"col_a",
+					"col_b",
+				},
+				Columns: []*schemasv1alpha4.SQLTableColumn{
+					&schemasv1alpha4.SQLTableColumn{
+						Name: "col_a",
+						Type: "char (36)",
+					},
+					&schemasv1alpha4.SQLTableColumn{
+						Name: "col_b",
+						Type: "varchar (255)",
+					},
+				},
+			},
+			tableName:         "table_b",
+			expectedStatement: "create table `table_b` (`col_a` char (36), `col_b` varchar (255), primary key (`col_a`, `col_b`))",
+		},
+		{
 			name: "composite primary key",
 			tableSchema: &schemasv1alpha4.SQLTableSchema{
 				PrimaryKey: []string{

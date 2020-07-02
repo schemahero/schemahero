@@ -153,6 +153,11 @@ func Test_maybeParseParameterizedColumnType(t *testing.T) {
 			requestedType:      "blob",
 			expectedColumnType: "blob",
 		},
+		{
+			name:               "char (36)",
+			requestedType:      "char (36)",
+			expectedColumnType: "char (36)",
+		},
 	}
 
 	for _, test := range tests {
