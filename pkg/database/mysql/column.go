@@ -65,7 +65,17 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.SQLTableColumn) (string, error)
 	}
 
 	if mysqlColumn.ColumnDefault != nil {
-		formatted = fmt.Sprintf("%s default '%s'", formatted, *mysqlColumn.ColumnDefault)
+		quoteDefaultValue := true
+
+		if *mysqlColumn.ColumnDefault == "CURRENT_TIMESTAMP" {
+			quoteDefaultValue = false
+		}
+
+		if quoteDefaultValue {
+			formatted = fmt.Sprintf("%s default '%s'", formatted, *mysqlColumn.ColumnDefault)
+		} else {
+			formatted = fmt.Sprintf("%s default %s", formatted, *mysqlColumn.ColumnDefault)
+		}
 	}
 
 	return formatted, nil

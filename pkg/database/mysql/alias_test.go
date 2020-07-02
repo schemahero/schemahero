@@ -41,6 +41,36 @@ func Test_unaliasUnparameterizedColumnType(t *testing.T) {
 			requestedType:         "boolean",
 			expectedUnaliasedType: "tinyint (1)",
 		},
+		{
+			name:                  "tinytext",
+			requestedType:         "tinytext",
+			expectedUnaliasedType: "tinytext",
+		},
+		{
+			name:                  "tinytext",
+			requestedType:         "tinytext (255)",
+			expectedUnaliasedType: "tinytext",
+		},
+		{
+			name:                  "mediumtext",
+			requestedType:         "mediumtext",
+			expectedUnaliasedType: "mediumtext",
+		},
+		{
+			name:                  "mediumtext",
+			requestedType:         "mediumtext (16777215)",
+			expectedUnaliasedType: "mediumtext",
+		},
+		{
+			name:                  "longtext",
+			requestedType:         "longtext",
+			expectedUnaliasedType: "longtext",
+		},
+		{
+			name:                  "longtext (4294967295)",
+			requestedType:         "longtext (4294967295)",
+			expectedUnaliasedType: "longtext",
+		},
 	}
 
 	for _, test := range tests {
