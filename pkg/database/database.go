@@ -24,7 +24,7 @@ type Database struct {
 }
 
 func (d *Database) CreateFixturesSync() error {
-	logger.Infof("generating fixtures",
+	logger.Info("generating fixtures",
 		zap.String("input-dir", d.InputDir))
 
 	statements := []string{}

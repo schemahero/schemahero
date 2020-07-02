@@ -1,7 +1,6 @@
 package schemaherokubectlcli
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -22,14 +21,6 @@ func GenerateCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
 
-			if v.GetString("database") != "" {
-				// use a deployed database object
-				// and create a pod in the cluster to access it
-
-				// TODO
-				return errors.New("not implemented")
-			}
-
 			g := generate.Generator{
 				Driver:    v.GetString("driver"),
 				URI:       v.GetString("uri"),
@@ -46,8 +37,6 @@ func GenerateCmd() *cobra.Command {
 		fmt.Printf("unable to get workdir: %s\n", err.Error())
 		cwd = "."
 	}
-
-	cmd.Flags().String("database", "", "database name to generate table yaml for")
 
 	cmd.Flags().String("uri", "", "connection string uri")
 	cmd.Flags().String("driver", "", "name of the database driver to run")

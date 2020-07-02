@@ -1,4 +1,4 @@
-package schemaherocli
+package schemaherokubectlcli
 
 import (
 	"github.com/schemahero/schemahero/pkg/database"
@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Fixtures() *cobra.Command {
+func FixturesCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "fixtures",
 		Short: "fixtures creates sql statements from a schemahero definition",
