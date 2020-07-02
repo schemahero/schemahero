@@ -130,6 +130,7 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	}
 
 	// TODO detect k8s version and use appsv1 or appsv1beta
+
 	existingStatefulset := appsv1.StatefulSet{}
 	err = r.Get(ctx, types.NamespacedName{
 		Namespace: databaseInstance.Namespace,
