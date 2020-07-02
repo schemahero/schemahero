@@ -165,7 +165,10 @@ order by c.ORDINAL_POSITION`
 }
 
 func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
-	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH from information_schema.COLUMNS where TABLE_NAME = ? order by ORDINAL_POSITION`
+	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE 
+from information_schema.COLUMNS 
+where TABLE_NAME = ? 
+order by ORDINAL_POSITION`
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
 		return nil, err
@@ -179,8 +182,10 @@ func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, err
 		var maxLength sql.NullInt64
 		var isNullable string
 		var columnDefault sql.NullString
+		var numericPrecision sql.NullInt64
+		var numericScale sql.NullInt64
 
-		if err := rows.Scan(&column.Name, &columnDefault, &isNullable, &column.DataType, &maxLength); err != nil {
+		if err := rows.Scan(&column.Name, &columnDefault, &isNullable, &column.DataType, &maxLength, &numericPrecision, &numericScale); err != nil {
 			return nil, err
 		}
 
@@ -201,6 +206,11 @@ func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, err
 		if maxLength.Valid {
 			column.DataType = fmt.Sprintf("%s (%d)", column.DataType, maxLength.Int64)
 		}
+
+		if numericPrecision.Valid && numericScale.Valid {
+			column.DataType = fmt.Sprintf("%s (%d, %d)", column.DataType, numericPrecision.Int64, numericScale.Int64)
+		}
+
 		columns = append(columns, &column)
 	}
 

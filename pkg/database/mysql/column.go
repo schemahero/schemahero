@@ -67,8 +67,10 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.SQLTableColumn) (string, error)
 	if mysqlColumn.ColumnDefault != nil {
 		quoteDefaultValue := true
 
-		if *mysqlColumn.ColumnDefault == "CURRENT_TIMESTAMP" {
-			quoteDefaultValue = false
+		if mysqlColumn.DataType == "datetime" || mysqlColumn.DataType == "timestamp" {
+			if *mysqlColumn.ColumnDefault == "CURRENT_TIMESTAMP" {
+				quoteDefaultValue = false
+			}
 		}
 
 		if quoteDefaultValue {

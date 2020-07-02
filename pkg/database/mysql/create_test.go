@@ -78,6 +78,26 @@ func Test_CreateTableStatement(t *testing.T) {
 			tableName:         "composite_primary_key",
 			expectedStatement: "create table `composite_primary_key` (`one` int (11), `two` int (11), `three` varchar (255), primary key (`one`, `two`))",
 		},
+		{
+			name: "decimal (8, 2) column",
+			tableSchema: &schemasv1alpha4.SQLTableSchema{
+				PrimaryKey: []string{
+					"one",
+				},
+				Columns: []*schemasv1alpha4.SQLTableColumn{
+					&schemasv1alpha4.SQLTableColumn{
+						Name: "one",
+						Type: "integer",
+					},
+					&schemasv1alpha4.SQLTableColumn{
+						Name: "bee",
+						Type: "decimal (8, 2)",
+					},
+				},
+			},
+			tableName:         "decimal_8_2",
+			expectedStatement: "create table `decimal_8_2` (`one` int (11), `bee` decimal (8, 2), primary key (`one`))",
+		},
 	}
 
 	for _, test := range tests {
