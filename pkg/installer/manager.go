@@ -103,7 +103,7 @@ func service(namespace string) *corev1.Service {
 			Ports: []corev1.ServicePort{
 				{
 					Port:       443,
-					TargetPort: intstr.FromInt(9443),
+					TargetPort: intstr.FromInt(9876),
 				},
 			},
 		},
