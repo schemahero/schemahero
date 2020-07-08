@@ -51,12 +51,12 @@ func clusterRole() *rbacv1.ClusterRole {
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"apps"},
-				Resources: []string{"deployments"},
+				Resources: []string{"deployments", "statefulsets"},
 				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
 			},
 			{
 				APIGroups: []string{"apps"},
-				Resources: []string{"deployments/status"},
+				Resources: []string{"deployments/status", "statefulset/status"},
 				Verbs:     metav1.Verbs{"get", "update", "patch"},
 			},
 			{
@@ -71,18 +71,18 @@ func clusterRole() *rbacv1.ClusterRole {
 			},
 			{
 				APIGroups: []string{""},
-				Resources: []string{"configmaps"},
-				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-			},
-			{
-				APIGroups: []string{""},
 				Resources: []string{"secrets"},
 				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
 			},
 			{
 				APIGroups: []string{""},
-				Resources: []string{"services"},
-				Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+				Resources: []string{"serviceaccounts"},
+				Verbs:     metav1.Verbs{"get", "list", "create", "update", "delete", "watch"},
+			},
+			{
+				APIGroups: []string{"rbac.authorization.k8s.io"},
+				Resources: []string{"roles", "rolebindings"},
+				Verbs:     metav1.Verbs{"get", "list", "create", "update", "delete", "watch"},
 			},
 			{
 				APIGroups: []string{"admissionregistration.k8s.io"},
