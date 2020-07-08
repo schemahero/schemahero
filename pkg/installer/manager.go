@@ -195,25 +195,7 @@ func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
 	if strings.HasPrefix(schemaheroTag, "v") {
 		schemaheroTag = strings.TrimPrefix(schemaheroTag, "v")
 	}
-	schemaHeroImage := fmt.Sprintf("schemahero/schemahero:%s", schemaheroTag)
 	schemaHeroManagerImage := fmt.Sprintf("schemahero/schemahero-manager:%s", schemaheroTag)
-
-	if isEnterprise {
-		env = append(env, corev1.EnvVar{
-			Name:  "SCHEMAHERO_IMAGE_NAME",
-			Value: fmt.Sprintf(`repl{{ LocalImageName "%s"}}`, schemaHeroImage),
-		})
-
-		env = append(env, corev1.EnvVar{
-			Name:  "SCHEMAHERO_IMAGE_PULLSECRET",
-			Value: `repl{{ LocalRegistryImagePullSecret }}`,
-		})
-	} else {
-		env = append(env, corev1.EnvVar{
-			Name:  "SCHEMAHERO_IMAGE_NAME",
-			Value: schemaHeroImage,
-		})
-	}
 
 	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{

@@ -18,10 +18,12 @@ package database
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
+	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,13 +40,21 @@ func (r *ReconcileDatabase) reconcileRBAC(ctx context.Context, databaseInstance 
 		return errors.Wrap(err, "failed to reconcile rolebinding")
 	}
 
+	if err := r.reconcileServiceAccount(ctx, databaseInstance); err != nil {
+		return errors.Wrap(err, "failed to reconcile serviceaccount")
+	}
+
 	return nil
 }
 
 func (r *ReconcileDatabase) reconcileRBACRoleBinding(ctx context.Context, databaseInstance *databasesv1alpha4.Database) error {
+	roleBindingName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+	roleName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+	serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+
 	existingRoleBinding := rbacv1.RoleBinding{}
 	err := r.Get(ctx, types.NamespacedName{
-		Name:      "schemahero-rolebinding",
+		Name:      roleBindingName,
 		Namespace: databaseInstance.Namespace,
 	}, &existingRoleBinding)
 	if kuberneteserrors.IsNotFound(err) {
@@ -55,20 +65,20 @@ func (r *ReconcileDatabase) reconcileRBACRoleBinding(ctx context.Context, databa
 				Kind:       "RoleBinding",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "schemahero-rolebinding",
+				Name:      roleBindingName,
 				Namespace: databaseInstance.Namespace,
 			},
 			Subjects: []rbacv1.Subject{
 				{
 					Kind:      "ServiceAccount",
-					Name:      "schemahero",
+					Name:      serviceAccountName,
 					Namespace: databaseInstance.Namespace,
 				},
 			},
 			RoleRef: rbacv1.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "Role",
-				Name:     "schemahero-role",
+				Name:     roleName,
 			},
 		}
 
@@ -90,9 +100,11 @@ func (r *ReconcileDatabase) reconcileRBACRoleBinding(ctx context.Context, databa
 }
 
 func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInstance *databasesv1alpha4.Database) error {
+	roleName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+
 	existingRole := rbacv1.Role{}
 	err := r.Get(ctx, types.NamespacedName{
-		Name:      "schemahero-role",
+		Name:      roleName,
 		Namespace: databaseInstance.Namespace,
 	}, &existingRole)
 	if kuberneteserrors.IsNotFound(err) {
@@ -103,7 +115,7 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 				Kind:       "Role",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "schemahero-role",
+				Name:      roleName,
 				Namespace: databaseInstance.Namespace,
 			},
 			Rules: []rbacv1.PolicyRule{
@@ -157,6 +169,44 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 	} else {
 		// update
 		logger.Error(errors.New("updating role is not implemented"))
+	}
+
+	return nil
+}
+
+func (r *ReconcileDatabase) reconcileServiceAccount(ctx context.Context, databaseInstance *databasesv1alpha4.Database) error {
+	serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+
+	existingServiceAccount := corev1.ServiceAccount{}
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      serviceAccountName,
+		Namespace: databaseInstance.Namespace,
+	}, &existingServiceAccount)
+	if kuberneteserrors.IsNotFound(err) {
+		// create the service account
+		serviceAccount := corev1.ServiceAccount{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "ServiceAccount",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      serviceAccountName,
+				Namespace: databaseInstance.Namespace,
+			},
+		}
+
+		if err := controllerutil.SetControllerReference(databaseInstance, &serviceAccount, r.scheme); err != nil {
+			return errors.Wrap(err, "failed to set owner ref on service account")
+		}
+
+		if err := r.Create(ctx, &serviceAccount); err != nil {
+			return errors.Wrap(err, "failed to create service account")
+		}
+	} else if err != nil {
+		return errors.Wrap(err, "failed to get existing service account")
+	} else {
+		// update
+		logger.Error(errors.New("updating serviceaccount is not implemented"))
 	}
 
 	return nil

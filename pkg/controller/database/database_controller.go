@@ -138,6 +138,9 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	}, &existingStatefulset)
 	if kuberneteserrors.IsNotFound(err) {
 		// create
+
+		serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+
 		statefulSet := appsv1.StatefulSet{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "apps/v1",
@@ -168,7 +171,7 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 					},
 					Spec: corev1.PodSpec{
 						TerminationGracePeriodSeconds: &tenSeconds,
-						ServiceAccountName:            "schemahero",
+						ServiceAccountName:            serviceAccountName,
 						Containers: []corev1.Container{
 							{
 								Image:           schemaHeroManagerImage,
