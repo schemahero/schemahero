@@ -1,0 +1,22 @@
+apiVersion: databases.schemahero.io/v1alpha4
+kind: Database
+metadata:
+  name: airlinedb
+  namespace: schemahero-tutorial
+spec:
+  schemahero:
+    image: "localhost:32000/schemahero/schemahero"
+  immediateDeploy: true
+  connection:
+    postgres:
+      uri:
+        valueFrom:
+          ssm:
+            name: "/schemahero/demo"
+            withDecryption: true
+            region: "us-east-1"
+            accessKeyId:
+              value: "---"
+            secretAccessKey:
+              value: "---"
+

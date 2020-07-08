@@ -59,6 +59,57 @@ spec:
                               - key
                               - name
                               type: object
+                            ssm:
+                              properties:
+                                accessKeyId:
+                                  properties:
+                                    value:
+                                      type: string
+                                    valueFrom:
+                                      properties:
+                                        secretKeyRef:
+                                          properties:
+                                            key:
+                                              type: string
+                                            name:
+                                              type: string
+                                          required:
+                                          - key
+                                          - name
+                                          type: object
+                                      type: object
+                                  required:
+                                  - value
+                                  type: object
+                                name:
+                                  type: string
+                                region:
+                                  type: string
+                                secretAccessKey:
+                                  properties:
+                                    value:
+                                      type: string
+                                    valueFrom:
+                                      properties:
+                                        secretKeyRef:
+                                          properties:
+                                            key:
+                                              type: string
+                                            name:
+                                              type: string
+                                          required:
+                                          - key
+                                          - name
+                                          type: object
+                                      type: object
+                                  required:
+                                  - value
+                                  type: object
+                                withDecryption:
+                                  type: boolean
+                              required:
+                              - name
+                              type: object
                             vault:
                               properties:
                                 agentInject:
@@ -98,6 +149,57 @@ spec:
                               - key
                               - name
                               type: object
+                            ssm:
+                              properties:
+                                accessKeyId:
+                                  properties:
+                                    value:
+                                      type: string
+                                    valueFrom:
+                                      properties:
+                                        secretKeyRef:
+                                          properties:
+                                            key:
+                                              type: string
+                                            name:
+                                              type: string
+                                          required:
+                                          - key
+                                          - name
+                                          type: object
+                                      type: object
+                                  required:
+                                  - value
+                                  type: object
+                                name:
+                                  type: string
+                                region:
+                                  type: string
+                                secretAccessKey:
+                                  properties:
+                                    value:
+                                      type: string
+                                    valueFrom:
+                                      properties:
+                                        secretKeyRef:
+                                          properties:
+                                            key:
+                                              type: string
+                                            name:
+                                              type: string
+                                          required:
+                                          - key
+                                          - name
+                                          type: object
+                                      type: object
+                                  required:
+                                  - value
+                                  type: object
+                                withDecryption:
+                                  type: boolean
+                              required:
+                              - name
+                              type: object
                             vault:
                               properties:
                                 agentInject:
@@ -135,6 +237,57 @@ spec:
                                   type: string
                               required:
                               - key
+                              - name
+                              type: object
+                            ssm:
+                              properties:
+                                accessKeyId:
+                                  properties:
+                                    value:
+                                      type: string
+                                    valueFrom:
+                                      properties:
+                                        secretKeyRef:
+                                          properties:
+                                            key:
+                                              type: string
+                                            name:
+                                              type: string
+                                          required:
+                                          - key
+                                          - name
+                                          type: object
+                                      type: object
+                                  required:
+                                  - value
+                                  type: object
+                                name:
+                                  type: string
+                                region:
+                                  type: string
+                                secretAccessKey:
+                                  properties:
+                                    value:
+                                      type: string
+                                    valueFrom:
+                                      properties:
+                                        secretKeyRef:
+                                          properties:
+                                            key:
+                                              type: string
+                                            name:
+                                              type: string
+                                          required:
+                                          - key
+                                          - name
+                                          type: object
+                                      type: object
+                                  required:
+                                  - value
+                                  type: object
+                                withDecryption:
+                                  type: boolean
+                              required:
                               - name
                               type: object
                             vault:
@@ -258,6 +411,57 @@ spec:
                                 - key
                                 - name
                                 type: object
+                              ssm:
+                                properties:
+                                  accessKeyId:
+                                    properties:
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                type: string
+                                            required:
+                                            - key
+                                            - name
+                                            type: object
+                                        type: object
+                                    required:
+                                    - value
+                                    type: object
+                                  name:
+                                    type: string
+                                  region:
+                                    type: string
+                                  secretAccessKey:
+                                    properties:
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                type: string
+                                            required:
+                                            - key
+                                            - name
+                                            type: object
+                                        type: object
+                                    required:
+                                    - value
+                                    type: object
+                                  withDecryption:
+                                    type: boolean
+                                required:
+                                - name
+                                type: object
                               vault:
                                 properties:
                                   agentInject:
@@ -297,6 +501,57 @@ spec:
                                 - key
                                 - name
                                 type: object
+                              ssm:
+                                properties:
+                                  accessKeyId:
+                                    properties:
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                type: string
+                                            required:
+                                            - key
+                                            - name
+                                            type: object
+                                        type: object
+                                    required:
+                                    - value
+                                    type: object
+                                  name:
+                                    type: string
+                                  region:
+                                    type: string
+                                  secretAccessKey:
+                                    properties:
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                type: string
+                                            required:
+                                            - key
+                                            - name
+                                            type: object
+                                        type: object
+                                    required:
+                                    - value
+                                    type: object
+                                  withDecryption:
+                                    type: boolean
+                                required:
+                                - name
+                                type: object
                               vault:
                                 properties:
                                   agentInject:
@@ -334,6 +589,57 @@ spec:
                                     type: string
                                 required:
                                 - key
+                                - name
+                                type: object
+                              ssm:
+                                properties:
+                                  accessKeyId:
+                                    properties:
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                type: string
+                                            required:
+                                            - key
+                                            - name
+                                            type: object
+                                        type: object
+                                    required:
+                                    - value
+                                    type: object
+                                  name:
+                                    type: string
+                                  region:
+                                    type: string
+                                  secretAccessKey:
+                                    properties:
+                                      value:
+                                        type: string
+                                      valueFrom:
+                                        properties:
+                                          secretKeyRef:
+                                            properties:
+                                              key:
+                                                type: string
+                                              name:
+                                                type: string
+                                            required:
+                                            - key
+                                            - name
+                                            type: object
+                                        type: object
+                                    required:
+                                    - value
+                                    type: object
+                                  withDecryption:
+                                    type: boolean
+                                required:
                                 - name
                                 type: object
                               vault:

@@ -1,0 +1,16 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: airport
+  namespace: schemahero-tutorial
+spec:
+  database: airlinedb
+  name: airport
+  schema:
+    postgres:
+      primaryKey: [code]
+      columns:
+        - name: code
+          type: char(4)
+        - name: name
+          type: varchar(255)
