@@ -33,14 +33,13 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 		region = "us-east-1"
 	}
 
-	var cfg *aws.Config
+	cfg, err := external.LoadDefaultAWSConfig()
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to create aws config")
+	}
+	cfg.Region = region
 
 	if valueOrValueFrom.ValueFrom.SSM.AccessKeyID != nil && valueOrValueFrom.ValueFrom.SSM.SecretAccessKey != nil {
-		staticCfg, err := external.LoadDefaultAWSConfig()
-		if err != nil {
-			return "", "", errors.Wrap(err, "failed to create aws config with static credentials")
-		}
-
 		accessKeyID := ""
 		if valueOrValueFrom.ValueFrom.SSM.AccessKeyID.Value != "" {
 			accessKeyID = valueOrValueFrom.ValueFrom.SSM.AccessKeyID.Value
@@ -63,14 +62,10 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 			accessKeyID = string(secret.Data[valueOrValueFrom.ValueFrom.SSM.SecretAccessKey.ValueFrom.SecretKeyRef.Key])
 		}
 
-		staticCfg.Credentials = aws.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
-		cfg = &staticCfg
-	} else {
-		cfg = aws.NewConfig()
-		cfg.Region = region
+		cfg.Credentials = aws.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
 	}
 
-	client := ssm.New(*cfg)
+	client := ssm.New(cfg)
 
 	params := ssm.GetParameterInput{
 		WithDecryption: aws.Bool(valueOrValueFrom.ValueFrom.SSM.WithDecryption),
