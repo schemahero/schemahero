@@ -58,7 +58,9 @@ bin/manager:
 
 .PHONY: run
 run: generate fmt vet bin/manager
-	./bin/manager run --enable-database-controller --database-name="*"
+	./bin/manager run \
+	--log-level debug \
+	--database-name="*"
 
 .PHONY: run-database
 run-database: generate fmt vet bin/manager

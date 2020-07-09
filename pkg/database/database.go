@@ -167,7 +167,7 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB)
 	}
 
-	return nil, errors.New("unknown database driver")
+	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
 }
 
 func (d *Database) ApplySync(statements []string) error {
@@ -179,5 +179,5 @@ func (d *Database) ApplySync(statements []string) error {
 		return postgres.DeployPostgresStatements(d.URI, statements)
 	}
 
-	return errors.New("unknown database driver")
+	return errors.Errorf("unknown database driver: %q", d.Driver)
 }
