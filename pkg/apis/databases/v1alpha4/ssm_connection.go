@@ -18,7 +18,6 @@ package v1alpha4
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/aws/external"
@@ -29,7 +28,6 @@ import (
 )
 
 func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.Clientset, driver string, valueOrValueFrom ValueOrValueFrom) (string, string, error) {
-	fmt.Printf("driver = %s\n\n", driver)
 	region := valueOrValueFrom.ValueFrom.SSM.Region
 	if region == "" {
 		region = "us-east-1"
@@ -80,9 +78,9 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 	}
 	req := client.GetParameterRequest(&params)
 	resp, err := req.Send(ctx)
-	if err == nil {
+	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get ssm parameter")
 	}
 
-	return driver, resp.String(), nil
+	return driver, *resp.Parameter.Value, nil
 }
