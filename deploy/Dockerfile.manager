@@ -1,4 +1,7 @@
 FROM ubuntu:latest
+
+RUN apt-get update -y && apt-get install -y ca-certificates
+
 WORKDIR /
 COPY manager /manager
 RUN chmod a+x /manager
