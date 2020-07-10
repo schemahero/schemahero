@@ -3,6 +3,7 @@ package generate
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -74,6 +75,18 @@ func (g *Generator) RunSync() error {
 		tableYAML, err := generateTableYAML(g.Driver, g.DBName, tableName, primaryKeyColumns, foreignKeys, indexes, columns)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate table yaml")
+		}
+
+		// ensure that outputdir exists
+		fi, err := os.Stat(g.OutputDir)
+		if os.IsNotExist(err) {
+			if err := os.MkdirAll(g.OutputDir, 0755); err != nil {
+				return errors.Wrap(err, "failed to create output dir")
+			}
+		} else if err != nil {
+			return errors.Wrap(err, "failed to check if output dir exists")
+		} else if !fi.IsDir() {
+			return errors.New("output dir already exists and is not a directory")
 		}
 
 		// If there was a outputdir set, write it, else print it
