@@ -171,6 +171,10 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 		return reconcile.Result{}, errors.Wrap(err, "failed to plan sync")
 	}
 
+	if len(statements) == 0 {
+		return reconcile.Result{}, nil
+	}
+
 	tableSHA, err := tableInstance.GetSHA()
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
