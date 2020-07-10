@@ -203,7 +203,17 @@ order by ORDINAL_POSITION`
 			column.ColumnDefault = &columnDefault.String
 		}
 
-		if maxLength.Valid {
+		// max length should not be written for all types
+		ignoreMaxLength := false
+		if column.DataType == "tinytext" {
+			ignoreMaxLength = true
+		} else if column.DataType == "mediumtext" {
+			ignoreMaxLength = true
+		} else if column.DataType == "longtext" {
+			ignoreMaxLength = true
+		}
+
+		if maxLength.Valid && !ignoreMaxLength {
 			column.DataType = fmt.Sprintf("%s (%d)", column.DataType, maxLength.Int64)
 		}
 
