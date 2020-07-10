@@ -77,16 +77,32 @@ func GetTablesCmd() *cobra.Command {
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(w, "NAME\tDATABASE\tPENDING")
 
+			namespaceNames := map[string]struct{}{}
 			for _, table := range matchingTables {
-				migrations, err := schemasClient.Migrations(table.Namespace).List(context.Background(), metav1.ListOptions{})
+				namespaceNames[table.Namespace] = struct{}{}
+			}
+
+			migrations := []schemasv1alpha4.Migration{}
+
+			for namespaceName := range namespaceNames {
+				namespaceMigrations, err := schemasClient.Migrations(namespaceName).List(context.Background(), metav1.ListOptions{})
 				if err != nil {
 					return err
 				}
 
+				migrations = append(migrations, namespaceMigrations.Items...)
+			}
+
+			for _, table := range matchingTables {
 				pendingMigrations := 0
-				for _, migration := range migrations.Items {
-					if migration.Status.ExecutedAt == int64(0) && migration.Status.RejectedAt == int64(0) {
-						pendingMigrations++
+
+				for _, migration := range migrations {
+					if migration.Namespace == table.Namespace {
+						if migration.Spec.TableName == table.Name {
+							if migration.Status.ExecutedAt == int64(0) && migration.Status.RejectedAt == int64(0) {
+								pendingMigrations++
+							}
+						}
 					}
 				}
 
