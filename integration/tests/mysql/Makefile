@@ -10,6 +10,7 @@ run: 5.6 5.7 8.0
 .PHONY: 5.6
 5.6: export MYSQL_VERSION = 5.6
 5.6:
+	make -C medium-text run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -25,6 +26,7 @@ run: 5.6 5.7 8.0
 .PHONY: 5.7
 5.7: export MYSQL_VERSION = 5.7
 5.7:
+	make -C medium-text run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -40,6 +42,7 @@ run: 5.6 5.7 8.0
 .PHONY: 8.0
 8.0: export MYSQL_VERSION = 8.0
 8.0:
+	make -C medium-text run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -56,6 +59,7 @@ run: 5.6 5.7 8.0
 .PHONY: 8.0
 8.0: export MYSQL_VERSION = 8.0
 8.0:
+	make -C medium-text run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run

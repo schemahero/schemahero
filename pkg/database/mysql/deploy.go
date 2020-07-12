@@ -125,7 +125,12 @@ where TABLE_NAME = ?`
 			return nil, errors.Wrap(err, "failed to scan")
 		}
 
-		if charMaxLength.Valid {
+		ignoreMaxLength := false
+		if dataType == "tinytext" || dataType == "mediumtext" || dataType == "longtext" {
+			ignoreMaxLength = true
+		}
+
+		if charMaxLength.Valid && !ignoreMaxLength {
 			dataType = fmt.Sprintf("%s (%d)", dataType, charMaxLength.Int64)
 		}
 
