@@ -107,7 +107,7 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 
 func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
 	query := `select
-COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH
 from information_schema.COLUMNS
 where TABLE_NAME = ?`
 	rows, err := m.db.Query(query, tableName)
@@ -125,8 +125,9 @@ where TABLE_NAME = ?`
 			return nil, errors.Wrap(err, "failed to scan")
 		}
 
-		if charMaxLength.Valid {
-			dataType = fmt.Sprintf("%s (%d)", dataType, charMaxLength.Int64)
+		ignoreMaxLength := false
+		if dataType == "tinytext" || dataType == "mediumtext" || dataType == "longtext" {
+			ignoreMaxLength = true
 		}
 
 		if isParameterizedColumnType(dataType) {
@@ -134,6 +135,8 @@ where TABLE_NAME = ?`
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to parse parameterized column type")
 			}
+		} else if charMaxLength.Valid && !ignoreMaxLength {
+			dataType = fmt.Sprintf("%s (%d)", dataType, charMaxLength.Int64)
 		}
 
 		foundColumnNames = append(foundColumnNames, columnName)

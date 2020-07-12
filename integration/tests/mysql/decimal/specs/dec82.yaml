@@ -1,0 +1,11 @@
+database: schemahero
+name: dec82
+requires: []
+schema:
+  mysql:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: column_a
+        type: decimal (8, 2)
