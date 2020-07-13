@@ -16,7 +16,9 @@ func unaliasUnparameterizedColumnType(requestedType string) string {
 
 	// mysql gives us the length of these text types, but it won't
 	// accept them as create table arguments...
-	if requestedType == "tinytext (255)" {
+	if requestedType == "text (65535)" {
+		requestedType = "text"
+	} else if requestedType == "tinytext (255)" {
 		requestedType = "tinytext"
 	} else if requestedType == "mediumtext (16777215)" {
 		requestedType = "mediumtext"

@@ -205,7 +205,9 @@ order by ORDINAL_POSITION`
 
 		// max length should not be written for all types
 		ignoreMaxLength := false
-		if column.DataType == "tinytext" {
+		if column.DataType == "text" {
+			ignoreMaxLength = true
+		} else if column.DataType == "tinytext" {
 			ignoreMaxLength = true
 		} else if column.DataType == "mediumtext" {
 			ignoreMaxLength = true

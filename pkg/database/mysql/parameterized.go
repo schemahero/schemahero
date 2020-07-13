@@ -17,6 +17,7 @@ var unparameterizedColumnTypes = []string{
 	"mediumtext",
 	"longblob",
 	"longtext",
+	"text",
 }
 
 func isParameterizedColumnType(requestedType string) bool {
