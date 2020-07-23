@@ -137,7 +137,7 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset *kubernetes
 		return "", "", errors.Wrap(err, "failed to unmarshal response")
 	}
 
-	req, err = http.NewRequest("GET", fmt.Sprintf("%s/v1/database/config/%s", valueOrValueFrom.ValueFrom.Vault.Endpoint, valueOrValueFrom.ValueFrom.Vault.Secret), nil)
+	req, err = http.NewRequest("GET", fmt.Sprintf("%s/v1/database/config/%s", valueOrValueFrom.ValueFrom.Vault.Endpoint, d.Name), nil)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to create request")
 	}
