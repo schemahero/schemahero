@@ -18,4 +18,10 @@ package v1alpha4
 
 type CockroachDBConnection struct {
 	URI ValueOrValueFrom `json:"uri,omitempty"`
+
+	Host     ValueOrValueFrom `json:"host,omitempty"`
+	Port     ValueOrValueFrom `json:"port,omitempty"`
+	User     ValueOrValueFrom `json:"user,omitempty"`
+	Password ValueOrValueFrom `json:"password,omitempty"`
+	DBName   ValueOrValueFrom `json:"dbname,omitempty"`
 }

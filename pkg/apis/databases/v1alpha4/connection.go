@@ -18,6 +18,7 @@ package v1alpha4
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,10 +26,137 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
-// GetConnection will return a valid connection string for the database. This
+func (d Database) GetConnection(ctx context.Context) (string, string, error) {
+	isParamBased := false
+
+	// if the connection parameters are not supplied via URI, assume parameter based
+	driver, err := d.getDbType()
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to get database type")
+	}
+
+	if driver == "postgres" {
+		isParamBased = d.Spec.Connection.Postgres.URI.IsEmpty()
+	} else if driver == "cockroachdb" {
+		isParamBased = d.Spec.Connection.CockroachDB.URI.IsEmpty()
+	} else if driver == "mysql" {
+		isParamBased = d.Spec.Connection.Mysql.URI.IsEmpty()
+	}
+
+	if isParamBased {
+		return d.getConnectionFromParams(ctx)
+	}
+
+	return d.getConnectionFromURI(ctx)
+}
+
+func (d Database) getConnectionFromParams(ctx context.Context) (string, string, error) {
+	driver, err := d.getDbType()
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to get database type")
+	}
+
+	cfg, err := config.GetConfig()
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to get config")
+	}
+
+	clientset, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to get clientset")
+	}
+
+	uri := ""
+	if driver == "postgres" {
+		hostname, err := d.Spec.Connection.Postgres.Host.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read postgres hostname")
+		}
+
+		port, err := d.Spec.Connection.Postgres.Port.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read postgres port")
+		}
+
+		user, err := d.Spec.Connection.Postgres.User.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read postgres user")
+		}
+
+		password, err := d.Spec.Connection.Postgres.Password.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read postgres password")
+		}
+
+		dbname, err := d.Spec.Connection.Postgres.DBName.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read postgres dbname")
+		}
+
+		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, hostname, port, dbname)
+	} else if driver == "cockroachdb" {
+		hostname, err := d.Spec.Connection.CockroachDB.Host.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read cockroachdb hostname")
+		}
+
+		port, err := d.Spec.Connection.CockroachDB.Port.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read cockroachdb port")
+		}
+
+		user, err := d.Spec.Connection.CockroachDB.User.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read cockroachdb user")
+		}
+
+		password, err := d.Spec.Connection.CockroachDB.Password.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read cockroachdb password")
+		}
+
+		dbname, err := d.Spec.Connection.CockroachDB.DBName.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read cockroachdb dbname")
+		}
+
+		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, hostname, port, dbname)
+	} else if driver == "mysql" {
+		hostname, err := d.Spec.Connection.Mysql.Host.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read mysql hostname")
+		}
+
+		port, err := d.Spec.Connection.Mysql.Port.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read mysql port")
+		}
+
+		user, err := d.Spec.Connection.Mysql.User.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read mysql user")
+		}
+
+		password, err := d.Spec.Connection.Mysql.Password.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read mysql password")
+		}
+
+		dbname, err := d.Spec.Connection.Mysql.DBName.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read mysql dbname")
+		}
+
+		uri = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?tls=false", user, password, hostname, port, dbname)
+	}
+
+	return driver, uri, nil
+}
+
+// getConnectionFromURI will return a valid connection string for the database. This
 // is compatible with any way that the uri was set.
 // TODO refactor this to be shorter, simpler and more testable
-func (d Database) GetConnection(ctx context.Context) (string, string, error) {
+func (d Database) getConnectionFromURI(ctx context.Context) (string, string, error) {
 	driver, err := d.getDbType()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")
