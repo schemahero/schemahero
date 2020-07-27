@@ -93,7 +93,14 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			return "", "", errors.Wrap(err, "failed to read postgres dbname")
 		}
 
-		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, hostname, port, dbname)
+		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
+		if !d.Spec.Connection.Postgres.SSLMode.IsEmpty() {
+			sslMode, err := d.Spec.Connection.Postgres.SSLMode.Read(clientset, d.Namespace)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read postgres ssl mode")
+			}
+			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
+		}
 	} else if driver == "cockroachdb" {
 		hostname, err := d.Spec.Connection.CockroachDB.Host.Read(clientset, d.Namespace)
 		if err != nil {
@@ -120,7 +127,14 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			return "", "", errors.Wrap(err, "failed to read cockroachdb dbname")
 		}
 
-		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, hostname, port, dbname)
+		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
+		if !d.Spec.Connection.CockroachDB.SSLMode.IsEmpty() {
+			sslMode, err := d.Spec.Connection.CockroachDB.SSLMode.Read(clientset, d.Namespace)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read cockroachdb ssl mode")
+			}
+			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
+		}
 	} else if driver == "mysql" {
 		hostname, err := d.Spec.Connection.Mysql.Host.Read(clientset, d.Namespace)
 		if err != nil {
@@ -147,7 +161,10 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			return "", "", errors.Wrap(err, "failed to read mysql dbname")
 		}
 
-		uri = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?tls=false", user, password, hostname, port, dbname)
+		uri = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", user, password, hostname, port, dbname)
+		if d.Spec.Connection.Mysql.DisableTLS {
+			uri = fmt.Sprintf("%s?tls=false", uri)
+		}
 	}
 
 	return driver, uri, nil
