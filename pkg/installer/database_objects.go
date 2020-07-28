@@ -391,7 +391,7 @@ spec:
                               type: object
                           type: object
                       type: object
-                    sslMode:
+                    sslmode:
                       properties:
                         value:
                           type: string
@@ -1532,7 +1532,7 @@ spec:
                               type: object
                           type: object
                       type: object
-                    sslMode:
+                    sslmode:
                       properties:
                         value:
                           type: string
@@ -2226,7 +2226,7 @@ spec:
                                 type: object
                             type: object
                         type: object
-                      sslMode:
+                      sslmode:
                         properties:
                           value:
                             type: string
@@ -3367,7 +3367,7 @@ spec:
                                 type: object
                             type: object
                         type: object
-                      sslMode:
+                      sslmode:
                         properties:
                           value:
                             type: string

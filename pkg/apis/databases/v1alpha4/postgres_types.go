@@ -24,5 +24,5 @@ type PostgresConnection struct {
 	User     ValueOrValueFrom `json:"user,omitempty"`
 	Password ValueOrValueFrom `json:"password,omitempty"`
 	DBName   ValueOrValueFrom `json:"dbname,omitempty"`
-	SSLMode  ValueOrValueFrom `json:"sslMode,omitempty"`
+	SSLMode  ValueOrValueFrom `json:"sslmode,omitempty"`
 }
