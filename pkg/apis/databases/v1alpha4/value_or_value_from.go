@@ -13,6 +13,19 @@ type ValueOrValueFrom struct {
 	ValueFrom *ValueFrom `json:"valueFrom,omitempty" yaml:"valueFrom,omitempty"`
 }
 
+// IsEmpty returns true if there is not a value in value and valuefrom
+func (v *ValueOrValueFrom) IsEmpty() bool {
+	if v.Value != "" {
+		return false
+	}
+
+	if v.ValueFrom != nil {
+		return false
+	}
+
+	return true
+}
+
 // HasVaultSecret returns true if the ValueOrValueFrom
 // contains a Vault stanza
 func (v *ValueOrValueFrom) HasVaultSecret() bool {
