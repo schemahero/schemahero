@@ -1179,8 +1179,6 @@ spec:
                               type: object
                           type: object
                       type: object
-                  required:
-                  - disableTLS
                   type: object
                 postgres:
                   properties:
@@ -3014,8 +3012,6 @@ spec:
                                 type: object
                             type: object
                         type: object
-                    required:
-                    - disableTLS
                     type: object
                   postgres:
                     properties:
