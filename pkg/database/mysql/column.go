@@ -19,6 +19,12 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha4.SQLTableColumn) (*types.
 		}
 	}
 
+	if schemaColumn.Attributes != nil {
+		column.Attributes = &types.ColumnAttributes{
+			AutoIncrement: schemaColumn.Attributes.AutoIncrement,
+		}
+	}
+
 	requestedType := schemaColumn.Type
 	unaliasedColumnType := unaliasUnparameterizedColumnType(requestedType)
 	if unaliasedColumnType != "" {
@@ -62,6 +68,10 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.SQLTableColumn) (string, error)
 		} else {
 			formatted = fmt.Sprintf("%s null", formatted)
 		}
+	}
+
+	if mysqlColumn.Attributes != nil && mysqlColumn.Attributes.AutoIncrement != nil && *mysqlColumn.Attributes.AutoIncrement {
+		formatted = fmt.Sprintf("%s auto_increment", formatted)
 	}
 
 	if mysqlColumn.ColumnDefault != nil {

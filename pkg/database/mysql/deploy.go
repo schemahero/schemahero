@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
@@ -107,7 +108,7 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 
 func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
 	query := `select
-COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH
+COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH
 from information_schema.COLUMNS
 where TABLE_NAME = ?`
 	rows, err := m.db.Query(query, tableName)
@@ -117,11 +118,11 @@ where TABLE_NAME = ?`
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
 	for rows.Next() {
-		var columnName, dataType, isNullable string
+		var columnName, dataType, isNullable, extra string
 		var columnDefault sql.NullString
 		var charMaxLength sql.NullInt64
 
-		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &charMaxLength); err != nil {
+		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &extra, &dataType, &charMaxLength); err != nil {
 			return nil, errors.Wrap(err, "failed to scan")
 		}
 
@@ -145,12 +146,19 @@ where TABLE_NAME = ?`
 			Name:        columnName,
 			DataType:    dataType,
 			Constraints: &types.ColumnConstraints{},
+			Attributes:  &types.ColumnAttributes{},
 		}
 
 		if isNullable == "NO" {
 			existingColumn.Constraints.NotNull = &trueValue
 		} else {
 			existingColumn.Constraints.NotNull = &falseValue
+		}
+
+		if strings.Contains(extra, "auto_increment") {
+			existingColumn.Attributes.AutoIncrement = &trueValue
+		} else {
+			existingColumn.Attributes.AutoIncrement = &falseValue
 		}
 
 		if columnDefault.Valid {

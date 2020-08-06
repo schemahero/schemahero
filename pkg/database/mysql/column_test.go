@@ -29,6 +29,20 @@ func Test_mysqlColumnAsInsert(t *testing.T) {
 			},
 			expectedStatement: "`c` int (11) not null default '11'",
 		},
+		{
+			name: "auto_increment",
+			column: &schemasv1alpha4.SQLTableColumn{
+				Name: "c",
+				Type: "integer",
+				Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+				Attributes: &schemasv1alpha4.SQLTableColumnAttributes{
+					AutoIncrement: &trueValue,
+				},
+			},
+			expectedStatement: "`c` int (11) not null auto_increment",
+		},
 	}
 
 	for _, test := range tests {
@@ -82,6 +96,18 @@ func Test_InsertColumnStatement(t *testing.T) {
 			},
 			expectedStatement: "alter table `t` add column `a` int (11) null",
 		},
+		{
+			name:      "add auto_increment column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha4.SQLTableColumn{
+				Name: "a",
+				Type: "integer",
+				Attributes: &schemasv1alpha4.SQLTableColumnAttributes{
+					AutoIncrement: &trueValue,
+				},
+			},
+			expectedStatement: "alter table `t` add column `a` int (11) auto_increment",
+		},
 	}
 
 	for _, test := range tests {
@@ -123,6 +149,23 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 				Name:          "b",
 				DataType:      "tinyint (1)",
 				ColumnDefault: nil,
+			},
+		},
+		{
+			name: "auto_increment",
+			schemaColumn: &schemasv1alpha4.SQLTableColumn{
+				Name: "c",
+				Type: "integer (11)",
+				Attributes: &schemasv1alpha4.SQLTableColumnAttributes{
+					AutoIncrement: &trueValue,
+				},
+			},
+			expectedColumn: &types.Column{
+				Name:     "c",
+				DataType: "int (11)",
+				Attributes: &types.ColumnAttributes{
+					AutoIncrement: &trueValue,
+				},
 			},
 		},
 	}

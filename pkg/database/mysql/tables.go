@@ -165,7 +165,7 @@ order by c.ORDINAL_POSITION`
 }
 
 func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
-	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE 
+	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE
 from information_schema.COLUMNS 
 where TABLE_NAME = ? 
 order by ORDINAL_POSITION`
@@ -177,26 +177,31 @@ order by ORDINAL_POSITION`
 	columns := make([]*types.Column, 0, 0)
 
 	for rows.Next() {
-		column := types.Column{}
+		column := types.Column{
+			Constraints: &types.ColumnConstraints{},
+			Attributes:  &types.ColumnAttributes{},
+		}
 
 		var maxLength sql.NullInt64
-		var isNullable string
+		var isNullable, extra string
 		var columnDefault sql.NullString
 		var numericPrecision sql.NullInt64
 		var numericScale sql.NullInt64
 
-		if err := rows.Scan(&column.Name, &columnDefault, &isNullable, &column.DataType, &maxLength, &numericPrecision, &numericScale); err != nil {
+		if err := rows.Scan(&column.Name, &columnDefault, &isNullable, &extra, &column.DataType, &maxLength, &numericPrecision, &numericScale); err != nil {
 			return nil, err
 		}
 
 		if isNullable == "NO" {
-			column.Constraints = &types.ColumnConstraints{
-				NotNull: &trueValue,
-			}
+			column.Constraints.NotNull = &trueValue
 		} else {
-			column.Constraints = &types.ColumnConstraints{
-				NotNull: &falseValue,
-			}
+			column.Constraints.NotNull = &falseValue
+		}
+
+		if strings.Contains(extra, "auto_increment") {
+			column.Attributes.AutoIncrement = &trueValue
+		} else {
+			column.Attributes.AutoIncrement = &falseValue
 		}
 
 		if columnDefault.Valid {

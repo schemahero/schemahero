@@ -2,7 +2,7 @@ package types
 
 import "testing"
 
-func TestNotNullConstraintEquals(t *testing.T) {
+func TestBoolsEqual(t *testing.T) {
 	falseValue := false
 	trueValue := true
 	tests := []struct {
@@ -68,8 +68,8 @@ func TestNotNullConstraintEquals(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NotNullConstraintEquals(tt.a, tt.b); got != tt.want {
-				t.Errorf("NotNullConstraintEquals() = %v, want %v", got, tt.want)
+			if got := BoolsEqual(tt.a, tt.b); got != tt.want {
+				t.Errorf("BoolsEqual() = %v, want %v", got, tt.want)
 			}
 		})
 	}

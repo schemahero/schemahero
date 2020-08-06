@@ -23,6 +23,9 @@ run: 5.6 5.7 8.0
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C auto-increment-create run
+	make -C auto-increment-add run
+	make -C auto-increment-drop run
 
 .PHONY: 5.7
 5.7: export MYSQL_VERSION = 5.7
@@ -40,6 +43,9 @@ run: 5.6 5.7 8.0
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C auto-increment-create run
+	make -C auto-increment-add run
+	make -C auto-increment-drop run
 
 .PHONY: 8.0
 8.0: export MYSQL_VERSION = 8.0
@@ -57,6 +63,9 @@ run: 5.6 5.7 8.0
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C auto-increment-create run
+	make -C auto-increment-add run
+	make -C auto-increment-drop run
 
 
 .PHONY: 8.0
@@ -75,6 +84,9 @@ run: 5.6 5.7 8.0
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C auto-increment-create run
+	make -C auto-increment-add run
+	make -C auto-increment-drop run
 
 .PHONY: build
 build: docker-build

@@ -8,11 +8,15 @@ type ColumnConstraints struct {
 	NotNull *bool
 }
 
-func NotNullConstraintEquals(a, b *bool) bool {
-	if a == nil || bool(*a) == false {
-		return b == nil || bool(*b) == false
+type ColumnAttributes struct {
+	AutoIncrement *bool
+}
+
+func BoolsEqual(a, b *bool) bool {
+	if a == nil || *a == false {
+		return b == nil || *b == false
 	}
-	return b != nil && bool(*b) == true
+	return b != nil && *b == true
 }
 
 type Column struct {
@@ -20,6 +24,7 @@ type Column struct {
 	DataType      string
 	ColumnDefault *string
 	Constraints   *ColumnConstraints
+	Attributes    *ColumnAttributes
 	IsArray       bool
 }
 
@@ -32,6 +37,12 @@ func ColumnToSchemaColumn(column *Column) (*schemasv1alpha4.SQLTableColumn, erro
 	if column.Constraints != nil {
 		schemaColumn.Constraints = &schemasv1alpha4.SQLTableColumnConstraints{
 			NotNull: column.Constraints.NotNull,
+		}
+	}
+
+	if column.Attributes != nil {
+		schemaColumn.Attributes = &schemasv1alpha4.SQLTableColumnAttributes{
+			AutoIncrement: column.Attributes.AutoIncrement,
 		}
 	}
 

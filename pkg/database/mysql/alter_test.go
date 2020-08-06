@@ -278,6 +278,59 @@ func Test_AlterColumnStatment(t *testing.T) {
 				"alter table `t` modify column `a` varchar (255) not null default \"11\"",
 			},
 		},
+		{
+			name:      "add auto_increment attibute",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
+				{
+					Name: "c",
+					Type: "integer",
+					Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+					Attributes: &schemasv1alpha4.SQLTableColumnAttributes{
+						AutoIncrement: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "c",
+				DataType: "integer",
+				Constraints: &types.ColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatements: []string{
+				"alter table `t` modify column `c` int (11) not null auto_increment",
+			},
+		},
+		// TODO: test dropping auto_increment
+		{
+			name:      "drop auto_increment attibute",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.SQLTableColumn{
+				{
+					Name: "c",
+					Type: "integer",
+					Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "c",
+				DataType: "integer",
+				Constraints: &types.ColumnConstraints{
+					NotNull: &trueValue,
+				},
+				Attributes: &types.ColumnAttributes{
+					AutoIncrement: &trueValue,
+				},
+			},
+			expectedStatements: []string{
+				"alter table `t` modify column `c` int (11) not null",
+			},
+		},
 	}
 
 	for _, test := range tests {

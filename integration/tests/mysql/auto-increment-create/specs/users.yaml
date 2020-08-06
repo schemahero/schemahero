@@ -1,0 +1,12 @@
+database: schemahero
+name: users
+schema:
+  mysql:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+        attributes:
+          autoIncrement: true
