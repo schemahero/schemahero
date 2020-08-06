@@ -24,6 +24,9 @@ run:
 	@echo Verifying results for $(TEST_NAME)
 	diff -B expect.sql out.sql
 
+	# Apply
+	../../../../bin/kubectl-schemahero apply --driver=$(DRIVER) --uri="$(URI)" --ddl out.sql
+
 	# Cleanup
 	@-sleep 5
 	rm ./out.sql
