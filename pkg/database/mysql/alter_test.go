@@ -304,7 +304,6 @@ func Test_AlterColumnStatment(t *testing.T) {
 				"alter table `t` modify column `c` int (11) not null auto_increment",
 			},
 		},
-		// TODO: test dropping auto_increment
 		{
 			name:      "drop auto_increment attibute",
 			tableName: "t",

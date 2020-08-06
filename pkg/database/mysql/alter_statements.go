@@ -59,7 +59,6 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 		}
 	}
 
-	// TODO: test dropping auto_increment
 	if s.Column.Attributes != nil && s.Column.Attributes.AutoIncrement != nil && *s.Column.Attributes.AutoIncrement {
 		stmts = append(stmts, "auto_increment")
 	}
