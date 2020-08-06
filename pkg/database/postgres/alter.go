@@ -148,5 +148,5 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 		col2Constraints = &types.ColumnConstraints{}
 	}
 
-	return types.NotNullConstraintEquals(col1Constraints.NotNull, col2Constraints.NotNull)
+	return types.BoolsEqual(col1Constraints.NotNull, col2Constraints.NotNull)
 }

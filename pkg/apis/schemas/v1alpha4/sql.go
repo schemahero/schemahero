@@ -39,10 +39,15 @@ type SQLTableColumnConstraints struct {
 	NotNull *bool `json:"notNull,omitempty" yaml:"notNull,omitempty"`
 }
 
+type SQLTableColumnAttributes struct {
+	AutoIncrement *bool `json:"autoIncrement,omitempty" yaml:"autoIncrement,omitempty"`
+}
+
 type SQLTableColumn struct {
 	Name        string                     `json:"name" yaml:"name"`
 	Type        string                     `json:"type" yaml:"type"`
 	Constraints *SQLTableColumnConstraints `json:"constraints,omitempty" yaml:"constraints,omitempty"`
+	Attributes  *SQLTableColumnAttributes  `json:"attributes,omitempty" yaml:"attributes,omitempty"`
 	Default     *string                    `json:"default,omitempty" yaml:"default,omitempty"`
 }
 

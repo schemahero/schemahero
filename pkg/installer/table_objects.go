@@ -51,6 +51,11 @@ spec:
                     columns:
                       items:
                         properties:
+                          attributes:
+                            properties:
+                              autoIncrement:
+                                type: boolean
+                            type: object
                           constraints:
                             properties:
                               notNull:
@@ -124,6 +129,11 @@ spec:
                     columns:
                       items:
                         properties:
+                          attributes:
+                            properties:
+                              autoIncrement:
+                                type: boolean
+                            type: object
                           constraints:
                             properties:
                               notNull:
@@ -197,6 +207,11 @@ spec:
                     columns:
                       items:
                         properties:
+                          attributes:
+                            properties:
+                              autoIncrement:
+                                type: boolean
+                            type: object
                           constraints:
                             properties:
                               notNull:
@@ -347,6 +362,11 @@ spec:
                       columns:
                         items:
                           properties:
+                            attributes:
+                              properties:
+                                autoIncrement:
+                                  type: boolean
+                              type: object
                             constraints:
                               properties:
                                 notNull:
@@ -420,6 +440,11 @@ spec:
                       columns:
                         items:
                           properties:
+                            attributes:
+                              properties:
+                                autoIncrement:
+                                  type: boolean
+                              type: object
                             constraints:
                               properties:
                                 notNull:
@@ -493,6 +518,11 @@ spec:
                       columns:
                         items:
                           properties:
+                            attributes:
+                              properties:
+                                autoIncrement:
+                                  type: boolean
+                              type: object
                             constraints:
                               properties:
                                 notNull:

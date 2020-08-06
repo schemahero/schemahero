@@ -124,7 +124,7 @@ spec:
 			driver:      "postgres",
 			dbName:      "db",
 			tableName:   "simple",
-			primaryKey:  []string{"one"},
+			primaryKey:  []string{"id"},
 			foreignKeys: []*types.ForeignKey{},
 			indexes: []*types.Index{
 				&types.Index{
@@ -156,7 +156,7 @@ spec:
   schema:
     postgres:
       primaryKey:
-      - one
+      - id
       indexes:
       - columns:
         - other
@@ -169,6 +169,39 @@ spec:
         type: varchar (255)
         constraints:
           notNull: true
+`,
+		},
+		{
+			name:       "generating with auto_increment",
+			driver:     "mysql",
+			dbName:     "db",
+			tableName:  "simple",
+			primaryKey: []string{"id"},
+			columns: []*types.Column{
+				&types.Column{
+					Name:     "id",
+					DataType: "integer",
+					Attributes: &types.ColumnAttributes{
+						AutoIncrement: &trueValue,
+					},
+				},
+			},
+			expectedYAML: `apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: simple
+spec:
+  database: db
+  name: simple
+  schema:
+    mysql:
+      primaryKey:
+      - id
+      columns:
+      - name: id
+        type: integer
+        attributes:
+          autoIncrement: true
 `,
 		},
 	}

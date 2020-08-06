@@ -59,9 +59,14 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 		}
 	}
 
+	if s.Column.Attributes != nil && s.Column.Attributes.AutoIncrement != nil && *s.Column.Attributes.AutoIncrement {
+		stmts = append(stmts, "auto_increment")
+	}
+
 	if s.Column.ColumnDefault != nil {
 		stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
 	}
+
 	return []string{strings.Join(stmts, " ")}
 }
 

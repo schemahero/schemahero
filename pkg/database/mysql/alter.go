@@ -66,7 +66,23 @@ func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 		col2Constraints = &types.ColumnConstraints{}
 	}
 
-	return types.NotNullConstraintEquals(col1Constraints.NotNull, col2Constraints.NotNull)
+	if !types.BoolsEqual(col1Constraints.NotNull, col2Constraints.NotNull) {
+		return false
+	}
+
+	col1Attributes, col2Attributes := col1.Attributes, col2.Attributes
+	if col1Attributes == nil {
+		col1Attributes = &types.ColumnAttributes{}
+	}
+	if col2Attributes == nil {
+		col2Attributes = &types.ColumnAttributes{}
+	}
+
+	if !types.BoolsEqual(col1Attributes.AutoIncrement, col2Attributes.AutoIncrement) {
+		return false
+	}
+
+	return true
 }
 
 func ensureColumnConstraintsNotNullTrue(column *types.Column) {
