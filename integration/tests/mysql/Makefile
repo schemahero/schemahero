@@ -12,6 +12,7 @@ run: 5.6 5.7 8.0
 5.6:
 	make -C decimal run
 	make -C medium-text run
+	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -29,6 +30,7 @@ run: 5.6 5.7 8.0
 5.7:
 	make -C decimal run
 	make -C medium-text run
+	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -46,6 +48,7 @@ run: 5.6 5.7 8.0
 8.0:
 	make -C decimal run
 	make -C medium-text run
+	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -64,6 +67,7 @@ run: 5.6 5.7 8.0
 8.0:
 	make -C decimal run
 	make -C medium-text run
+	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run

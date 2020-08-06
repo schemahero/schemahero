@@ -71,6 +71,36 @@ func Test_unaliasUnparameterizedColumnType(t *testing.T) {
 			requestedType:         "longtext (4294967295)",
 			expectedUnaliasedType: "longtext",
 		},
+		{
+			name:                  "tinyblob",
+			requestedType:         "tinyblob",
+			expectedUnaliasedType: "tinyblob",
+		},
+		{
+			name:                  "tinyblob",
+			requestedType:         "tinyblob (255)",
+			expectedUnaliasedType: "tinyblob",
+		},
+		{
+			name:                  "mediumblob",
+			requestedType:         "mediumblob",
+			expectedUnaliasedType: "mediumblob",
+		},
+		{
+			name:                  "mediumblob",
+			requestedType:         "mediumblob (16777215)",
+			expectedUnaliasedType: "mediumblob",
+		},
+		{
+			name:                  "longblob",
+			requestedType:         "longblob",
+			expectedUnaliasedType: "longblob",
+		},
+		{
+			name:                  "longblob (4294967295)",
+			requestedType:         "longblob (4294967295)",
+			expectedUnaliasedType: "longblob",
+		},
 	}
 
 	for _, test := range tests {

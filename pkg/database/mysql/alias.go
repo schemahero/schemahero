@@ -24,6 +24,14 @@ func unaliasUnparameterizedColumnType(requestedType string) string {
 		requestedType = "mediumtext"
 	} else if requestedType == "longtext (4294967295)" {
 		requestedType = "longtext"
+	} else if requestedType == "blob (65535)" {
+		requestedType = "blob"
+	} else if requestedType == "tinyblob (255)" {
+		requestedType = "tinyblob"
+	} else if requestedType == "mediumblob (16777215)" {
+		requestedType = "mediumblob"
+	} else if requestedType == "longblob (4294967295)" {
+		requestedType = "longblob"
 	}
 
 	for _, unparameterizedColumnType := range unparameterizedColumnTypes {
