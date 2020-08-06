@@ -205,13 +205,9 @@ order by ORDINAL_POSITION`
 
 		// max length should not be written for all types
 		ignoreMaxLength := false
-		if column.DataType == "text" {
-			ignoreMaxLength = true
-		} else if column.DataType == "tinytext" {
-			ignoreMaxLength = true
-		} else if column.DataType == "mediumtext" {
-			ignoreMaxLength = true
-		} else if column.DataType == "longtext" {
+		if column.DataType == "text" || column.DataType == "tinytext" || column.DataType == "mediumtext" || column.DataType == "longtext" ||
+			column.DataType == "blob" || column.DataType == "tinyblob" || column.DataType == "mediumblob" || column.DataType == "longblob" {
+
 			ignoreMaxLength = true
 		}
 

@@ -126,7 +126,9 @@ where TABLE_NAME = ?`
 		}
 
 		ignoreMaxLength := false
-		if dataType == "text" || dataType == "tinytext" || dataType == "mediumtext" || dataType == "longtext" {
+		if dataType == "text" || dataType == "tinytext" || dataType == "mediumtext" || dataType == "longtext" ||
+			dataType == "blob" || dataType == "tinyblob" || dataType == "mediumblob" || dataType == "longblob" {
+
 			ignoreMaxLength = true
 		}
 
