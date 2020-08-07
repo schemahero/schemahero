@@ -22,6 +22,7 @@ run: 5.6 5.7 8.0
 	make -C foreign-key-alter run
 	make -C not-null run
 	make -C index-create run
+	make -C index-add run
 	make -C primary-key-add run
 	make -C primary-key-drop run
 	make -C auto-increment-create run
@@ -43,6 +44,7 @@ run: 5.6 5.7 8.0
 	make -C foreign-key-alter run
 	make -C not-null run
 	make -C index-create run
+	make -C index-add run
 	make -C primary-key-add run
 	make -C primary-key-drop run
 	make -C auto-increment-create run
@@ -64,6 +66,7 @@ run: 5.6 5.7 8.0
 	make -C foreign-key-alter run
 	make -C not-null run
 	make -C index-create run
+	make -C index-add run
 	make -C primary-key-add run
 	make -C primary-key-drop run
 	make -C auto-increment-create run
