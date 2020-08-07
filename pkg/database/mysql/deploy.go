@@ -286,41 +286,30 @@ func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema
 		return nil, err
 	}
 
-	for _, index := range mysqlTableSchema.Indexes {
-		var statement string
-		var matchedIndex *types.Index
-		for _, currentIndex := range currentIndexes {
-			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
-				goto Next
+	for _, currentIndex := range currentIndexes {
+		isMatch := false
+		for _, desiredIndex := range mysqlTableSchema.Indexes {
+			if currentIndex.Equals(types.SchemaIndexToIndex(desiredIndex)) {
+				isMatch = true
 			}
-
-			matchedIndex = currentIndex
 		}
 
-		// drop and readd?  mysql supports renaming indexes
-		if matchedIndex != nil {
-			statement = RemoveIndexStatement(tableName, matchedIndex)
-			indexStatements = append(indexStatements, statement)
+		if !isMatch {
+			indexStatements = append(indexStatements, RemoveIndexStatement(tableName, currentIndex))
 		}
-
-		statement = AddIndexStatement(tableName, index)
-		indexStatements = append(indexStatements, statement)
-
-	Next:
 	}
 
-	for _, currentIndex := range currentIndexes {
-		var statement string
-		for _, index := range mysqlTableSchema.Indexes {
-			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
-				goto NextCurrentIdx
+	for _, desiredIndex := range mysqlTableSchema.Indexes {
+		isMatch := false
+		for _, currentIndex := range currentIndexes {
+			if currentIndex.Equals(types.SchemaIndexToIndex(desiredIndex)) {
+				isMatch = true
 			}
 		}
 
-		statement = RemoveIndexStatement(tableName, currentIndex)
-		indexStatements = append(indexStatements, statement)
-
-	NextCurrentIdx:
+		if !isMatch {
+			indexStatements = append(indexStatements, AddIndexStatement(tableName, desiredIndex))
+		}
 	}
 
 	return indexStatements, nil
