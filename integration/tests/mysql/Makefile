@@ -5,11 +5,11 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 5.6 5.7 8.0
+run: 5.6.49 5.7.31 8.0.21
 
-.PHONY: 5.6
-5.6: export MYSQL_VERSION = 5.6
-5.6:
+.PHONY: 5.6.49
+5.6.49: export MYSQL_VERSION = 5.6.49
+5.6.49:
 	make -C decimal run
 	make -C medium-text run
 	make -C medium-blob run
@@ -29,9 +29,9 @@ run: 5.6 5.7 8.0
 	make -C auto-increment-add run
 	make -C auto-increment-drop run
 
-.PHONY: 5.7
-5.7: export MYSQL_VERSION = 5.7
-5.7:
+.PHONY: 5.7.31
+5.7.31: export MYSQL_VERSION = 5.7.31
+5.7.31:
 	make -C decimal run
 	make -C medium-text run
 	make -C medium-blob run
@@ -51,9 +51,9 @@ run: 5.6 5.7 8.0
 	make -C auto-increment-add run
 	make -C auto-increment-drop run
 
-.PHONY: 8.0
-8.0: export MYSQL_VERSION = 8.0
-8.0:
+.PHONY: 8.0.21
+8.0.21: export MYSQL_VERSION = 8.0.21
+8.0.21:
 	make -C decimal run
 	make -C medium-text run
 	make -C medium-blob run
