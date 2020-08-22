@@ -1,11 +1,11 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
 
-	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -18,7 +18,7 @@ var (
 func (p *PostgresConnection) ListTables() ([]string, error) {
 	query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
 
-	rows, err := p.db.Query(query, p.databaseName, "public")
+	rows, err := p.conn.Query(context.Background(), query, p.databaseName, "public")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list tables")
 	}
@@ -39,7 +39,7 @@ func (p *PostgresConnection) ListTables() ([]string, error) {
 func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName string) ([]string, error) {
 	query := `select constraint_name from information_schema.table_constraints
 		where table_catalog = $1 and table_name = $2`
-	rows, err := p.db.Query(query, databaseName, tableName)
+	rows, err := p.conn.Query(context.Background(), query, databaseName, tableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list constraints")
 	}
@@ -73,7 +73,7 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	join pg_am as am on i.relam = am.oid
 	where idx.indrelid = $1::regclass
 	and idx.indisprimary = false`
-	rows, err := p.db.Query(query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
        join information_schema.referential_constraints rc on
        rc.constraint_name = conname`
 
-	rows, err := p.db.Query(query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ join information_schema.columns as c on c.table_schema = tc.constraint_schema
 where constraint_type = 'PRIMARY KEY' and tc.table_name = $1
 order by c.ordinal_position`
 
-	rows, err := p.db.Query(query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ order by c.ordinal_position`
 func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
 	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1"
 
-	rows, err := p.db.Query(query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
 		return nil, err
 	}

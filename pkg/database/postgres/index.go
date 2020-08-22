@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func RemoveConstraintStatement(tableName string, index *types.Index) string {
-	return fmt.Sprintf("alter table %s drop constraint %s", pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(index.Name))
+	return fmt.Sprintf("alter table %s drop constraint %s", pgx.Identifier{tableName}.Sanitize(), pgx.Identifier{index.Name}.Sanitize())
 }
 
 func RemoveIndexStatement(tableName string, index *types.Index) string {
 	if index.IsUnique {
-		return fmt.Sprintf("drop index if exists %s", pq.QuoteIdentifier(index.Name))
+		return fmt.Sprintf("drop index if exists %s", pgx.Identifier{index.Name}.Sanitize())
 	}
-	return fmt.Sprintf("drop index %s", pq.QuoteIdentifier(index.Name))
+	return fmt.Sprintf("drop index %s", pgx.Identifier{index.Name}.Sanitize())
 }
 
 func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIndex) string {
@@ -39,5 +39,5 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIn
 }
 
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.SQLTableIndex) string {
-	return fmt.Sprintf("alter index %s rename to %s", pq.QuoteIdentifier(index.Name), pq.QuoteIdentifier(schemaIndex.Name))
+	return fmt.Sprintf("alter index %s rename to %s", pgx.Identifier{index.Name}.Sanitize(), pgx.Identifier{schemaIndex.Name}.Sanitize())
 }
