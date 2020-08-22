@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -82,15 +81,12 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	for rows.Next() {
 		var index types.Index
 		var method string
-		var columns []byte
+		var columns []string
 		if err := rows.Scan(&index.Name, &method, &index.IsUnique, &columns); err != nil {
 			return nil, err
 		}
 
-		// columns are selected as {col1,col2}
-		cleanedColumns := strings.Trim(string(columns), "{}")
-		columnNames := strings.Split(cleanedColumns, ",")
-		index.Columns = columnNames
+		index.Columns = columns
 
 		indexes = append(indexes, &index)
 	}
