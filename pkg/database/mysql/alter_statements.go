@@ -67,6 +67,10 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 		stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
 	}
 
+	if s.Column.Charset != s.ExistingColumn.Charset || s.Column.Collation != s.ExistingColumn.Collation {
+		stmts = append(stmts, fmt.Sprintf("character set %s collate %s", s.Column.Charset, s.Column.Collation))
+	}
+
 	return []string{strings.Join(stmts, " ")}
 }
 

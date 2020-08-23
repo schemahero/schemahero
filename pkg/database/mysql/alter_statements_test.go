@@ -4,7 +4,51 @@ import (
 	"testing"
 
 	"github.com/schemahero/schemahero/pkg/database/types"
+	"github.com/stretchr/testify/assert"
 )
+
+func TestAlterDDL(t *testing.T) {
+	tests := []struct {
+		name           string
+		tableName      string
+		existingColumn types.Column
+		column         types.Column
+		expect         []string
+	}{
+		{
+			name:      "change charset and collation only",
+			tableName: "t",
+			existingColumn: types.Column{
+				Name:      "col",
+				DataType:  "datatype",
+				Charset:   "charset",
+				Collation: "collation",
+			},
+			column: types.Column{
+				Name:      "col",
+				DataType:  "datatype",
+				Charset:   "charset_new",
+				Collation: "collation_new",
+			},
+			expect: []string{
+				"alter table `t` modify column `col` datatype character set charset_new collate collation_new",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := AlterModifyColumnStatement{
+				TableName:      tt.tableName,
+				Column:         tt.column,
+				ExistingColumn: tt.existingColumn,
+			}
+
+			actual := s.DDL()
+			assert.Equal(t, tt.expect, actual)
+		})
+	}
+}
 
 func TestAlterAddConstrantStatement_String(t *testing.T) {
 	tests := []struct {

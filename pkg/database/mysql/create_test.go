@@ -12,18 +12,18 @@ import (
 func Test_CreateTableStatement(t *testing.T) {
 	tests := []struct {
 		name              string
-		tableSchema       *schemasv1alpha4.SQLTableSchema
+		tableSchema       *schemasv1alpha4.MysqlSQLTableSchema
 		tableName         string
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			tableSchema: &schemasv1alpha4.SQLTableSchema{
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
 				PrimaryKey: []string{
 					"id",
 				},
-				Columns: []*schemasv1alpha4.SQLTableColumn{
-					&schemasv1alpha4.SQLTableColumn{
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
 						Name: "id",
 						Type: "integer",
 					},
@@ -34,17 +34,17 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "varchar composite primary key",
-			tableSchema: &schemasv1alpha4.SQLTableSchema{
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
 				PrimaryKey: []string{
 					"col_a",
 					"col_b",
 				},
-				Columns: []*schemasv1alpha4.SQLTableColumn{
-					&schemasv1alpha4.SQLTableColumn{
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
 						Name: "col_a",
 						Type: "char (36)",
 					},
-					&schemasv1alpha4.SQLTableColumn{
+					{
 						Name: "col_b",
 						Type: "varchar (255)",
 					},
@@ -55,21 +55,21 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "composite primary key",
-			tableSchema: &schemasv1alpha4.SQLTableSchema{
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
 				PrimaryKey: []string{
 					"one",
 					"two",
 				},
-				Columns: []*schemasv1alpha4.SQLTableColumn{
-					&schemasv1alpha4.SQLTableColumn{
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
 						Name: "one",
 						Type: "integer",
 					},
-					&schemasv1alpha4.SQLTableColumn{
+					{
 						Name: "two",
 						Type: "integer",
 					},
-					&schemasv1alpha4.SQLTableColumn{
+					{
 						Name: "three",
 						Type: "varchar(255)",
 					},
@@ -80,16 +80,16 @@ func Test_CreateTableStatement(t *testing.T) {
 		},
 		{
 			name: "decimal (8, 2) column",
-			tableSchema: &schemasv1alpha4.SQLTableSchema{
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
 				PrimaryKey: []string{
 					"one",
 				},
-				Columns: []*schemasv1alpha4.SQLTableColumn{
-					&schemasv1alpha4.SQLTableColumn{
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
 						Name: "one",
 						Type: "integer",
 					},
-					&schemasv1alpha4.SQLTableColumn{
+					{
 						Name: "bee",
 						Type: "decimal (8, 2)",
 					},
@@ -97,6 +97,58 @@ func Test_CreateTableStatement(t *testing.T) {
 			},
 			tableName:         "decimal_8_2",
 			expectedStatement: "create table `decimal_8_2` (`one` int (11), `bee` decimal (8, 2), primary key (`one`))",
+		},
+		{
+			name: "table with default charset and collate",
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+				},
+				DefaultCharset: "latin1",
+				Collation:      "latin1_german1_ci",
+			},
+			tableName:         "test",
+			expectedStatement: "create table `test` (`id` int (11), primary key (`id`)) default character set latin1 collate latin1_german1_ci",
+		},
+		{
+			name: "table with default charset without collate",
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+				},
+				DefaultCharset: "latin1",
+			},
+			tableName:         "test",
+			expectedStatement: "create table `test` (`id` int (11), primary key (`id`)) default character set latin1",
+		},
+		{
+			name: "table with collate and no default character set",
+			tableSchema: &schemasv1alpha4.MysqlSQLTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.MysqlSQLTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+				},
+				Collation: "latin1_german1_ci",
+			},
+			tableName:         "test",
+			expectedStatement: "create table `test` (`id` int (11), primary key (`id`)) collate latin1_german1_ci",
 		},
 	}
 

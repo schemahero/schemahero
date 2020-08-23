@@ -5,28 +5,54 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func (m *MysqlConnection) ListTables() ([]string, error) {
-	query := "select table_name from information_schema.TABLES where TABLE_SCHEMA = ?"
+func (m *MysqlConnection) ListTables() ([]*types.Table, error) {
+	query := "select default_character_set_name, default_collation_name from information_schema.schemata where schema_name = ?"
+	row := m.db.QueryRow(query, m.databaseName)
+
+	var databaseDefaultCharset, databaseDefaultCollation string
+	if err := row.Scan(&databaseDefaultCharset, &databaseDefaultCollation); err != nil {
+		return nil, errors.Wrap(err, "failed to select database default charset and collection")
+	}
+
+	query = `select 
+t.table_name,
+t.TABLE_COLLATION,
+c.character_set_name FROM information_schema.TABLES t,
+information_schema.COLLATION_CHARACTER_SET_APPLICABILITY c
+WHERE c.collation_name = t.table_collation
+AND t.table_schema = ?`
 
 	rows, err := m.db.Query(query, m.databaseName)
 	if err != nil {
 		return nil, err
 	}
 
-	tableNames := make([]string, 0, 0)
+	tables := []*types.Table{}
 	for rows.Next() {
-		tableName := ""
-		if err := rows.Scan(&tableName); err != nil {
+		var tableName, tableCollation, tableCharset string
+		if err := rows.Scan(&tableName, &tableCollation, &tableCharset); err != nil {
 			return nil, err
 		}
 
-		tableNames = append(tableNames, tableName)
+		table := types.Table{
+			Name: tableName,
+		}
+
+		if tableCollation != databaseDefaultCollation {
+			table.Collation = tableCollation
+		}
+		if tableCharset != databaseDefaultCharset {
+			table.Charset = tableCharset
+		}
+
+		tables = append(tables, &table)
 	}
 
-	return tableNames, nil
+	return tables, nil
 }
 
 func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {

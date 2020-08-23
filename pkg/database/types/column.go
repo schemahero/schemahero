@@ -26,6 +26,34 @@ type Column struct {
 	Constraints   *ColumnConstraints
 	Attributes    *ColumnAttributes
 	IsArray       bool
+	Charset       string
+	Collation     string
+}
+
+func ColumnToMysqlSchemaColumn(column *Column) (*schemasv1alpha4.MysqlSQLTableColumn, error) {
+	schemaColumn := &schemasv1alpha4.MysqlSQLTableColumn{
+		Name: column.Name,
+		Type: column.DataType,
+	}
+
+	if column.Constraints != nil {
+		schemaColumn.Constraints = &schemasv1alpha4.SQLTableColumnConstraints{
+			NotNull: column.Constraints.NotNull,
+		}
+	}
+
+	if column.Attributes != nil {
+		schemaColumn.Attributes = &schemasv1alpha4.SQLTableColumnAttributes{
+			AutoIncrement: column.Attributes.AutoIncrement,
+		}
+	}
+
+	schemaColumn.Default = column.ColumnDefault
+
+	schemaColumn.Charset = column.Charset
+	schemaColumn.Collation = column.Collation
+
+	return schemaColumn, nil
 }
 
 func ColumnToSchemaColumn(column *Column) (*schemasv1alpha4.SQLTableColumn, error) {

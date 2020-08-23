@@ -39,7 +39,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 				},
 			},
 			tableSchema: schemasv1alpha4.TableSchema{
-				Mysql: &schemasv1alpha4.SQLTableSchema{},
+				Mysql: &schemasv1alpha4.MysqlSQLTableSchema{},
 			},
 			expect: true,
 		},
@@ -67,7 +67,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 				},
 			},
 			tableSchema: schemasv1alpha4.TableSchema{
-				Mysql: &schemasv1alpha4.SQLTableSchema{},
+				Mysql: &schemasv1alpha4.MysqlSQLTableSchema{},
 			},
 			expect: false,
 		},

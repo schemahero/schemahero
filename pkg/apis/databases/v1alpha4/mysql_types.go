@@ -26,4 +26,7 @@ type MysqlConnection struct {
 	DBName   ValueOrValueFrom `json:"dbname,omitempty"`
 	// +kubebuilder:validation:Optional
 	DisableTLS bool `json:"disableTLS"`
+
+	DefaultCharset string `json:"defaultCharset,omitempty"`
+	Collation      string `json:"collation,omitempty"`
 }

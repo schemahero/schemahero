@@ -8,5 +8,6 @@ spec:
   immediateDeploy: true
   connection:
     mysql:
+      # defaultCharset: utf16
       uri:
-        value: testuser:password@tcp(mysql:3306)/testdb?tls=false
+        value: testuser:password@tcp(10.43.153.43:3306)/testdb?tls=false

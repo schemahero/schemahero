@@ -26,9 +26,9 @@ import (
 )
 
 type TableSchema struct {
-	Postgres    *SQLTableSchema `json:"postgres,omitempty" yaml:"postgres,omitempty"`
-	Mysql       *SQLTableSchema `json:"mysql,omitempty" yaml:"mysql,omitempty"`
-	CockroachDB *SQLTableSchema `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
+	Postgres    *SQLTableSchema      `json:"postgres,omitempty" yaml:"postgres,omitempty"`
+	Mysql       *MysqlSQLTableSchema `json:"mysql,omitempty" yaml:"mysql,omitempty"`
+	CockroachDB *SQLTableSchema      `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
 }
 
 // TableSpec defines the desired state of Table

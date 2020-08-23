@@ -655,6 +655,8 @@ spec:
                   type: object
                 mysql:
                   properties:
+                    collation:
+                      type: string
                     dbname:
                       properties:
                         value:
@@ -742,6 +744,8 @@ spec:
                               type: object
                           type: object
                       type: object
+                    defaultCharset:
+                      type: string
                     disableTLS:
                       type: boolean
                     host:
@@ -2488,6 +2492,8 @@ spec:
                     type: object
                   mysql:
                     properties:
+                      collation:
+                        type: string
                       dbname:
                         properties:
                           value:
@@ -2575,6 +2581,8 @@ spec:
                                 type: object
                             type: object
                         type: object
+                      defaultCharset:
+                        type: string
                       disableTLS:
                         type: boolean
                       host:
