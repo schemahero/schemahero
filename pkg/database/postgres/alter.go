@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
-
+	"github.com/jackc/pgx/v4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
-	alterStatement := fmt.Sprintf("alter column %s", pq.QuoteIdentifier(existingColumn.Name))
+	alterStatement := fmt.Sprintf("alter column %s", pgx.Identifier{existingColumn.Name}.Sanitize())
 
 	// this could be an alter or a drop column command
 	for _, desiredColumn := range desiredColumns {
@@ -49,8 +48,8 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 					if column.ColumnDefault != nil {
 						if existingColumn.ColumnDefault == nil || *existingColumn.ColumnDefault != *column.ColumnDefault {
 							localStatement := fmt.Sprintf("alter table %s alter column %s set default '%s'",
-								pq.QuoteIdentifier(tableName),
-								pq.QuoteIdentifier(existingColumn.Name),
+								pgx.Identifier{tableName}.Sanitize(),
+								pgx.Identifier{existingColumn.Name}.Sanitize(),
 								*column.ColumnDefault)
 							statements = append(statements, localStatement)
 						}
@@ -59,17 +58,17 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 					// update existing values
 					if column.ColumnDefault != nil {
 						localStatement := fmt.Sprintf("update %s set %s='%s' where %s is null",
-							pq.QuoteIdentifier(tableName),
-							pq.QuoteIdentifier(existingColumn.Name),
+							pgx.Identifier{tableName}.Sanitize(),
+							pgx.Identifier{existingColumn.Name}.Sanitize(),
 							*column.ColumnDefault,
-							pq.QuoteIdentifier(existingColumn.Name))
+							pgx.Identifier{existingColumn.Name}.Sanitize())
 						statements = append(statements, localStatement)
 					}
 
 					// set not null
 					localStatement := fmt.Sprintf("alter table %s alter column %s set not null",
-						pq.QuoteIdentifier(tableName),
-						pq.QuoteIdentifier(existingColumn.Name))
+						pgx.Identifier{tableName}.Sanitize(),
+						pgx.Identifier{existingColumn.Name}.Sanitize())
 					statements = append(statements, localStatement)
 
 					return statements, nil
@@ -81,7 +80,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
 			} else if column.DataType == existingColumn.DataType {
 				if column.IsArray != existingColumn.IsArray {
-					changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pq.QuoteIdentifier(existingColumn.Name), column.DataType))
+					changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pgx.Identifier{existingColumn.Name}.Sanitize(), column.DataType))
 				}
 			}
 
@@ -116,11 +115,11 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				return []string{}, nil
 			}
 
-			return []string{fmt.Sprintf(`alter table %s %s`, pq.QuoteIdentifier(tableName), strings.Join(changes, ", "))}, nil
+			return []string{fmt.Sprintf(`alter table %s %s`, pgx.Identifier{tableName}.Sanitize(), strings.Join(changes, ", "))}, nil
 		}
 	}
 
-	return []string{fmt.Sprintf(`alter table %s drop column %s`, pq.QuoteIdentifier(tableName), pq.QuoteIdentifier(existingColumn.Name))}, nil
+	return []string{fmt.Sprintf(`alter table %s drop column %s`, pgx.Identifier{tableName}.Sanitize(), pgx.Identifier{existingColumn.Name}.Sanitize())}, nil
 }
 
 func columnsMatch(col1 *types.Column, col2 *types.Column) bool {

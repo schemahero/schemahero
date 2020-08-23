@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
@@ -12,7 +12,7 @@ func RemoveConstrantStatement(tableName string, constraint *types.KeyConstraint)
 	if constraint == nil {
 		return ""
 	}
-	return fmt.Sprintf("alter table %s drop constraint %s", tableName, pq.QuoteIdentifier(constraint.Name))
+	return fmt.Sprintf("alter table %s drop constraint %s", tableName, pgx.Identifier{constraint.Name}.Sanitize())
 }
 
 func AddConstrantStatement(tableName string, constraint *types.KeyConstraint) string {

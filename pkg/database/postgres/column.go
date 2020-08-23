@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -73,7 +73,7 @@ func postgresColumnAsInsert(column *schemasv1alpha4.SQLTableColumn) (string, err
 		arraySpecifier = "[]"
 	}
 
-	formatted := fmt.Sprintf("%s %s%s", pq.QuoteIdentifier(column.Name), postgresColumn.DataType, arraySpecifier)
+	formatted := fmt.Sprintf("%s %s%s", pgx.Identifier{column.Name}.Sanitize(), postgresColumn.DataType, arraySpecifier)
 
 	if postgresColumn.Constraints != nil && postgresColumn.Constraints.NotNull != nil {
 		if *postgresColumn.Constraints.NotNull == true {
@@ -97,7 +97,7 @@ func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.SQLT
 		return "", err
 	}
 
-	statement := fmt.Sprintf(`alter table %s add column %s`, pq.QuoteIdentifier(tableName), columnFields)
+	statement := fmt.Sprintf(`alter table %s add column %s`, pgx.Identifier{tableName}.Sanitize(), columnFields)
 
 	return statement, nil
 }

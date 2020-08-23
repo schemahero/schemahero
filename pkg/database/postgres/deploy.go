@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -16,11 +16,11 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to postgres")
 	}
-	defer p.db.Close()
+	defer p.Close()
 
 	// determine if the table exists
 	query := `select count(1) from information_schema.tables where table_name = $1`
-	row := p.db.QueryRow(query, tableName)
+	row := p.conn.QueryRow(context.Background(), query, tableName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
 		return nil, errors.Wrap(err, "failed to scan")
@@ -30,7 +30,7 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 		return []string{}, nil
 	} else if tableExists > 0 && postgresTableSchema.IsDeleted {
 		return []string{
-			fmt.Sprintf(`drop table %s`, pq.QuoteIdentifier(tableName)),
+			fmt.Sprintf(`drop table %s`, pgx.Identifier{tableName}.Sanitize()),
 		}, nil
 	}
 
@@ -82,7 +82,7 @@ func DeployPostgresStatements(uri string, statements []string) error {
 	if err != nil {
 		return err
 	}
-	defer p.db.Close()
+	defer p.Close()
 
 	// execute
 	if err := executeStatements(p, statements); err != nil {
@@ -98,7 +98,7 @@ func executeStatements(p *PostgresConnection, statements []string) error {
 			continue
 		}
 		fmt.Printf("Executing query %q\n", statement)
-		if _, err := p.db.ExecContext(context.Background(), statement); err != nil {
+		if _, err := p.conn.Exec(context.Background(), statement); err != nil {
 			return err
 		}
 	}
@@ -111,7 +111,7 @@ func buildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 column_name, column_default, is_nullable, data_type, udt_name, character_maximum_length
 from information_schema.columns
 where table_name = $1`
-	rows, err := p.db.Query(query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to select from information_schema")
 	}

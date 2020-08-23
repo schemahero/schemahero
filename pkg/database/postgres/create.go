@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
 
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -23,7 +23,7 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTabl
 	if len(tableSchema.PrimaryKey) > 0 {
 		primaryKeyColumns := []string{}
 		for _, primaryKeyColumn := range tableSchema.PrimaryKey {
-			primaryKeyColumns = append(primaryKeyColumns, pq.QuoteIdentifier(primaryKeyColumn))
+			primaryKeyColumns = append(primaryKeyColumns, pgx.Identifier{primaryKeyColumn}.Sanitize())
 		}
 
 		columns = append(columns, fmt.Sprintf("primary key (%s)", strings.Join(primaryKeyColumns, ", ")))
@@ -34,7 +34,7 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTabl
 			if index.IsUnique {
 				uniqueColumns := []string{}
 				for _, indexColumn := range index.Columns {
-					uniqueColumns = append(uniqueColumns, pq.QuoteIdentifier(indexColumn))
+					uniqueColumns = append(uniqueColumns, pgx.Identifier{indexColumn}.Sanitize())
 				}
 				columns = append(columns, fmt.Sprintf("constraint %q unique (%s)", types.GenerateIndexName(tableName, index), strings.Join(uniqueColumns, ", ")))
 			} else {
@@ -49,7 +49,7 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTabl
 		}
 	}
 
-	query := fmt.Sprintf(`create table %s (%s)`, pq.QuoteIdentifier(tableName), strings.Join(columns, ", "))
+	query := fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{tableName}.Sanitize(), strings.Join(columns, ", "))
 
 	return query, nil
 }

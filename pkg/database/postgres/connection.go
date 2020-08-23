@@ -1,30 +1,21 @@
 package postgres
 
 import (
-	"database/sql"
-	goerrors "errors"
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 
-	// import the postgres driver
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
+	"github.com/pkg/errors"
 	"github.com/xo/dburl"
 )
 
 type PostgresConnection struct {
-	conn          *sql.Conn
-	db            *sql.DB
 	databaseName  string
 	engineVersion string
-}
 
-func (p *PostgresConnection) GetConnection() *sql.Conn {
-	return p.conn
-}
-
-func (p *PostgresConnection) GetDB() *sql.DB {
-	return p.db
+	conn *pgx.Conn
 }
 
 func (p *PostgresConnection) DatabaseName() string {
@@ -36,12 +27,12 @@ func (p *PostgresConnection) EngineVersion() string {
 }
 
 func Connect(uri string) (*PostgresConnection, error) {
-	db, err := sql.Open("postgres", uri)
+	conn, err := pgx.Connect(context.Background(), uri)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to connect to postgres")
 	}
 
-	if err := db.Ping(); err != nil {
+	if err := conn.Ping(context.Background()); err != nil {
 		return nil, err
 	}
 
@@ -51,7 +42,7 @@ func Connect(uri string) (*PostgresConnection, error) {
 	}
 
 	query := `select version()`
-	row := db.QueryRow(query)
+	row := conn.QueryRow(context.Background(), query)
 	var reportedVersion string
 	if err := row.Scan(&reportedVersion); err != nil {
 		return nil, err
@@ -62,18 +53,22 @@ func Connect(uri string) (*PostgresConnection, error) {
 	}
 
 	postgresConnection := PostgresConnection{
-		db:            db,
 		databaseName:  databaseName,
 		engineVersion: engineVersion,
+		conn:          conn,
 	}
 
 	return &postgresConnection, nil
 }
 
+func (p *PostgresConnection) Close() {
+	p.conn.Close(context.Background())
+}
+
 func DatabaseNameFromURI(uri string) (string, error) {
 	parsed, err := dburl.Parse(uri)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "failed to parse uri")
 	}
 
 	return strings.TrimLeft(parsed.Path, "/"), nil
@@ -85,7 +80,7 @@ func parsePostgresVersion(reportedVersion string) (string, error) {
 	matchGroups := r.FindStringSubmatch(reportedVersion)
 
 	if len(matchGroups) == 0 {
-		return "", goerrors.New(`faled to parse postgres version`)
+		return "", errors.New(`faled to parse postgres version`)
 	}
 
 	major := matchGroups[1]

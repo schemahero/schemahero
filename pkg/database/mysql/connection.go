@@ -10,14 +10,9 @@ import (
 )
 
 type MysqlConnection struct {
-	conn          *sql.Conn
 	db            *sql.DB
 	databaseName  string
 	engineVersion string
-}
-
-func (m *MysqlConnection) GetConnection() *sql.Conn {
-	return m.conn
 }
 
 func (m *MysqlConnection) GetDB() *sql.DB {
@@ -58,6 +53,9 @@ func Connect(uri string) (*MysqlConnection, error) {
 	return &mysqlConnection, nil
 }
 
+func (m MysqlConnection) Close() {
+	m.db.Close()
+}
 func DatabaseNameFromURI(uri string) (string, error) {
 	cfg, err := mysqldriver.ParseDSN(uri)
 	if err != nil {
