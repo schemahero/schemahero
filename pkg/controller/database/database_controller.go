@@ -215,7 +215,7 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 	} else {
 		// update with the new database details
 
-		logger.Error(errors.New("updating table reconciler is not implemeted"))
+		logger.Error(errors.New("updating table reconciler is not implemented"))
 	}
 
 	return reconcile.Result{}, nil
