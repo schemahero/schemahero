@@ -15,6 +15,7 @@ var unparameterizedColumnTypes = []string{
 	"bytea",
 	"cidr",
 	"circle",
+	"citext",
 	"date",
 	"double precision",
 	"inet",
