@@ -88,6 +88,11 @@ func Test_maybeParseParameterizedColumnType(t *testing.T) {
 			requestedType:      "numeric  (5,3)",
 			expectedColumnType: "numeric (5, 3)",
 		},
+		{
+			name:               "citext",
+			requestedType:      "citext",
+			expectedColumnType: "citext",
+		},
 	}
 
 	for _, test := range tests {
