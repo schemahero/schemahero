@@ -1,0 +1,11 @@
+database: schemahero
+name: projects
+schema:
+  mysql:
+    primaryKey: [id]
+    collation: utf16_german2_ci
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true

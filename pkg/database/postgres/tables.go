@@ -14,7 +14,7 @@ var (
 	falseValue = false
 )
 
-func (p *PostgresConnection) ListTables() ([]string, error) {
+func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
 	query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
 
 	rows, err := p.conn.Query(context.Background(), query, p.databaseName, "public")
@@ -22,17 +22,19 @@ func (p *PostgresConnection) ListTables() ([]string, error) {
 		return nil, errors.Wrap(err, "failed to list tables")
 	}
 
-	tableNames := make([]string, 0, 0)
+	tables := []*types.Table{}
 	for rows.Next() {
 		tableName := ""
 		if err := rows.Scan(&tableName); err != nil {
 			return nil, errors.Wrap(err, "failed to scan row")
 		}
 
-		tableNames = append(tableNames, tableName)
+		tables = append(tables, &types.Table{
+			Name: tableName,
+		})
 	}
 
-	return tableNames, nil
+	return tables, nil
 }
 
 func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName string) ([]string, error) {

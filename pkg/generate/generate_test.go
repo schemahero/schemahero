@@ -31,7 +31,7 @@ func Test_writeTableFile(t *testing.T) {
 		name         string
 		driver       string
 		dbName       string
-		tableName    string
+		table        types.Table
 		primaryKey   []string
 		foreignKeys  []*types.ForeignKey
 		indexes      []*types.Index
@@ -39,15 +39,17 @@ func Test_writeTableFile(t *testing.T) {
 		expectedYAML string
 	}{
 		{
-			name:        "pg 1 col",
-			driver:      "postgres",
-			dbName:      "db",
-			tableName:   "simple",
+			name:   "pg 1 col",
+			driver: "postgres",
+			dbName: "db",
+			table: types.Table{
+				Name: "simple",
+			},
 			primaryKey:  []string{"one"},
 			foreignKeys: []*types.ForeignKey{},
 			indexes:     []*types.Index{},
 			columns: []*types.Column{
-				&types.Column{
+				{
 					Name:     "id",
 					DataType: "integer",
 				},
@@ -69,13 +71,15 @@ spec:
 `,
 		},
 		{
-			name:       "pg foreign key",
-			driver:     "postgres",
-			dbName:     "db",
-			tableName:  "withfk",
+			name:   "pg foreign key",
+			driver: "postgres",
+			dbName: "db",
+			table: types.Table{
+				Name: "withfk",
+			},
 			primaryKey: []string{"pk"},
 			foreignKeys: []*types.ForeignKey{
-				&types.ForeignKey{
+				{
 					ChildColumns:  []string{"cc"},
 					ParentTable:   "p",
 					ParentColumns: []string{"pc"},
@@ -84,11 +88,11 @@ spec:
 			},
 			indexes: []*types.Index{},
 			columns: []*types.Column{
-				&types.Column{
+				{
 					Name:     "pk",
 					DataType: "integer",
 				},
-				&types.Column{
+				{
 					Name:     "cc",
 					DataType: "integer",
 				},
@@ -120,25 +124,27 @@ spec:
 `,
 		},
 		{
-			name:        "generating with index",
-			driver:      "postgres",
-			dbName:      "db",
-			tableName:   "simple",
+			name:   "generating with index",
+			driver: "postgres",
+			dbName: "db",
+			table: types.Table{
+				Name: "simple",
+			},
 			primaryKey:  []string{"id"},
 			foreignKeys: []*types.ForeignKey{},
 			indexes: []*types.Index{
-				&types.Index{
+				{
 					Columns:  []string{"other"},
 					Name:     "idx_simple_other",
 					IsUnique: true,
 				},
 			},
 			columns: []*types.Column{
-				&types.Column{
+				{
 					Name:     "id",
 					DataType: "integer",
 				},
-				&types.Column{
+				{
 					Name:     "other",
 					DataType: "varchar (255)",
 					Constraints: &types.ColumnConstraints{
@@ -172,13 +178,15 @@ spec:
 `,
 		},
 		{
-			name:       "generating with auto_increment",
-			driver:     "mysql",
-			dbName:     "db",
-			tableName:  "simple",
+			name:   "generating with auto_increment",
+			driver: "mysql",
+			dbName: "db",
+			table: types.Table{
+				Name: "simple",
+			},
 			primaryKey: []string{"id"},
 			columns: []*types.Column{
-				&types.Column{
+				{
 					Name:     "id",
 					DataType: "integer",
 					Attributes: &types.ColumnAttributes{
@@ -210,7 +218,7 @@ spec:
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			y, err := generateTableYAML(test.driver, test.dbName, test.tableName, test.primaryKey, test.foreignKeys, test.indexes, test.columns)
+			y, err := generateTableYAML(test.driver, test.dbName, &test.table, test.primaryKey, test.foreignKeys, test.indexes, test.columns)
 			req.NoError(err)
 			assert.Equal(t, test.expectedYAML, y)
 		})

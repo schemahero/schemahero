@@ -7,7 +7,7 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
-func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTableSchema) (string, error) {
+func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.MysqlSQLTableSchema) (string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := mysqlColumnAsInsert(desiredColumn)
@@ -34,6 +34,13 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTabl
 	}
 
 	query := fmt.Sprintf("create table `%s` (%s)", tableName, strings.Join(columns, ", "))
+
+	if tableSchema.DefaultCharset != "" {
+		query = fmt.Sprintf("%s default character set %s", query, tableSchema.DefaultCharset)
+	}
+	if tableSchema.Collation != "" {
+		query = fmt.Sprintf("%s collate %s", query, tableSchema.Collation)
+	}
 
 	return query, nil
 }

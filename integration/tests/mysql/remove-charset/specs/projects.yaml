@@ -1,0 +1,10 @@
+database: schemahero
+name: projects
+schema:
+  mysql:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true

@@ -5,7 +5,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
+func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.MysqlSQLTableColumn, existingColumn *types.Column) ([]string, error) {
 	// this could be an alter or a drop column command
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
@@ -47,6 +47,14 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 
 func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
 	if col1.DataType != col2.DataType {
+		return false
+	}
+
+	if col1.Charset != col2.Charset {
+		return false
+	}
+
+	if col1.Collation != col2.Collation {
 		return false
 	}
 

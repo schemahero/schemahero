@@ -32,53 +32,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-var tenSeconds = int64(10)
-var defaultMode = int32(420)
-
-// Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
-// and Start it when the Manager is Started.
-func Add(mgr manager.Manager, managerImage string, managerTag string) error {
-	return add(mgr, newReconciler(mgr, managerImage, managerTag))
-}
-
-// newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, managerImage string, managerTag string) reconcile.Reconciler {
-	return &ReconcileDatabase{
-		Client:       mgr.GetClient(),
-		scheme:       mgr.GetScheme(),
-		managerImage: managerImage,
-		managerTag:   managerTag,
-	}
-}
-
-// add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler) error {
-	logger.Debug("adding database controller to manager")
-
-	// Create a new controller
-	c, err := controller.New("database-controller", mgr, controller.Options{Reconciler: r})
-	if err != nil {
-		return err
-	}
-
-	// Watch for changes to Database kinds
-	err = c.Watch(&source.Kind{
-		Type: &databasesv1alpha4.Database{},
-	}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 var _ reconcile.Reconciler = &ReconcileDatabase{}
 

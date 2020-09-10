@@ -74,6 +74,11 @@ func RunCmd() *cobra.Command {
 			}
 
 			if len(v.GetStringSlice("database-name")) > 0 {
+				if err := databasecontroller.AddForDatabaseSchemasOnly(mgr, v.GetStringSlice("database-name")); err != nil {
+					logger.Error(err)
+					os.Exit(1)
+				}
+
 				if err := tablecontroller.Add(mgr, v.GetStringSlice("database-name")); err != nil {
 					logger.Error(err)
 					os.Exit(1)

@@ -126,6 +126,8 @@ spec:
                   type: object
                 mysql:
                   properties:
+                    collation:
+                      type: string
                     columns:
                       items:
                         properties:
@@ -134,6 +136,10 @@ spec:
                               autoIncrement:
                                 type: boolean
                             type: object
+                          charset:
+                            type: string
+                          collation:
+                            type: string
                           constraints:
                             properties:
                               notNull:
@@ -150,6 +156,8 @@ spec:
                         - type
                         type: object
                       type: array
+                    defaultCharset:
+                      type: string
                     foreignKeys:
                       items:
                         properties:
@@ -437,6 +445,8 @@ spec:
                     type: object
                   mysql:
                     properties:
+                      collation:
+                        type: string
                       columns:
                         items:
                           properties:
@@ -445,6 +455,10 @@ spec:
                                 autoIncrement:
                                   type: boolean
                               type: object
+                            charset:
+                              type: string
+                            collation:
+                              type: string
                             constraints:
                               properties:
                                 notNull:
@@ -461,6 +475,8 @@ spec:
                           - type
                           type: object
                         type: array
+                      defaultCharset:
+                        type: string
                       foreignKeys:
                         items:
                           properties:

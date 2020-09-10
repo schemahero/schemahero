@@ -7,10 +7,12 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func schemaColumnToColumn(schemaColumn *schemasv1alpha4.SQLTableColumn) (*types.Column, error) {
+func schemaColumnToColumn(schemaColumn *schemasv1alpha4.MysqlSQLTableColumn) (*types.Column, error) {
 	column := &types.Column{
 		Name:          schemaColumn.Name,
 		ColumnDefault: schemaColumn.Default,
+		Charset:       schemaColumn.Charset,
+		Collation:     schemaColumn.Collation,
 	}
 
 	if schemaColumn.Constraints != nil {
@@ -54,7 +56,7 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha4.SQLTableColumn) (*types.
 	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
-func mysqlColumnAsInsert(column *schemasv1alpha4.SQLTableColumn) (string, error) {
+func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlSQLTableColumn) (string, error) {
 	mysqlColumn, err := schemaColumnToColumn(column)
 	if err != nil {
 		return "", err
@@ -90,10 +92,17 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.SQLTableColumn) (string, error)
 		}
 	}
 
+	if mysqlColumn.Charset != "" {
+		formatted = fmt.Sprintf("%s character set %s", formatted, mysqlColumn.Charset)
+	}
+	if mysqlColumn.Collation != "" {
+		formatted = fmt.Sprintf("%s collate %s", formatted, mysqlColumn.Collation)
+	}
+
 	return formatted, nil
 }
 
-func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.SQLTableColumn) (string, error) {
+func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.MysqlSQLTableColumn) (string, error) {
 	columnFields, err := mysqlColumnAsInsert(desiredColumn)
 	if err != nil {
 		return "", err

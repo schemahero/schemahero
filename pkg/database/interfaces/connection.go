@@ -10,7 +10,7 @@ type SchemaHeroDatabaseConnection interface {
 	DatabaseName() string
 	EngineVersion() string
 
-	ListTables() ([]string, error)
+	ListTables() ([]*types.Table, error)
 	ListTableForeignKeys(string, string) ([]*types.ForeignKey, error)
 	ListTableIndexes(string, string) ([]*types.Index, error)
 
