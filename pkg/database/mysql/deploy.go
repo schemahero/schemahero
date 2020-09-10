@@ -214,7 +214,7 @@ where TABLE_NAME = ?`
 		var columnName, dataType, isNullable, extra string
 		var columnDefault sql.NullString
 		var charMaxLength sql.NullInt64
-		var charset, collation string // TODO
+		var charset, collation string
 
 		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &extra, &dataType, &charMaxLength); err != nil {
 			return nil, errors.Wrap(err, "failed to scan")
