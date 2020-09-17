@@ -53,6 +53,20 @@ func Test_mysqlColumnAsInsert(t *testing.T) {
 			},
 			expectedStatement: "`c` varchar (255) character set latin1 collate latin1_danish_ci",
 		},
+		{
+			name: "charset and collation not null default",
+			column: &schemasv1alpha4.MysqlSQLTableColumn{
+				Name: "c",
+				Type: "varchar(255)",
+				Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+				Default:   &default11,
+				Charset:   "latin1",
+				Collation: "latin1_danish_ci",
+			},
+			expectedStatement: "`c` varchar (255) character set latin1 collate latin1_danish_ci not null default '11'",
+		},
 	}
 
 	for _, test := range tests {

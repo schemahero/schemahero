@@ -8,6 +8,7 @@ import (
 )
 
 func TestAlterDDL(t *testing.T) {
+	default11 := "11"
 	tests := []struct {
 		name           string
 		tableName      string
@@ -23,6 +24,10 @@ func TestAlterDDL(t *testing.T) {
 				DataType:  "datatype",
 				Charset:   "charset",
 				Collation: "collation",
+				Constraints: &types.ColumnConstraints{
+					NotNull: &trueValue,
+				},
+				ColumnDefault: &default11,
 			},
 			column: types.Column{
 				Name:      "col",
@@ -31,7 +36,7 @@ func TestAlterDDL(t *testing.T) {
 				Collation: "collation_new",
 			},
 			expect: []string{
-				"alter table `t` modify column `col` datatype character set charset_new collate collation_new",
+				"alter table `t` modify column `col` datatype character set charset_new collate collation_new not null defaut \"11\"",
 			},
 		},
 	}

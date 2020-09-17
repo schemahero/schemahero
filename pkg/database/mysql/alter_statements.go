@@ -41,6 +41,10 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 		fmt.Sprintf("alter table `%s` modify column `%s` %s", s.TableName, s.Column.Name, s.Column.DataType),
 	}
 
+	if s.Column.Charset != s.ExistingColumn.Charset || s.Column.Collation != s.ExistingColumn.Collation {
+		stmts = append(stmts, fmt.Sprintf("character set %s collate %s", s.Column.Charset, s.Column.Collation))
+	}
+
 	if useConstraintsFromExistingColumn {
 		if s.ExistingColumn.Constraints != nil {
 			if *s.ExistingColumn.Constraints.NotNull {
@@ -65,10 +69,6 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 
 	if s.Column.ColumnDefault != nil {
 		stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
-	}
-
-	if s.Column.Charset != s.ExistingColumn.Charset || s.Column.Collation != s.ExistingColumn.Collation {
-		stmts = append(stmts, fmt.Sprintf("character set %s collate %s", s.Column.Charset, s.Column.Collation))
 	}
 
 	return []string{strings.Join(stmts, " ")}
