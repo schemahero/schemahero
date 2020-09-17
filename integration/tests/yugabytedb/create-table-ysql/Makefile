@@ -1,4 +1,5 @@
 include ../common.mk
 
-TEST_NAME := postgres-create-table
+TEST_NAME := yugabytedb-ysql-create-table
 SPEC_FILE := ./specs/users.yaml
+FIXTURES_FILE := ./fixtures.sql
