@@ -41,6 +41,8 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 		isParamBased = d.Spec.Connection.CockroachDB.URI.IsEmpty()
 	} else if driver == "mysql" {
 		isParamBased = d.Spec.Connection.Mysql.URI.IsEmpty()
+	} else if driver == "yugabytedb" {
+		isParamBased = d.Spec.Connection.YugabyteDB.URI.IsEmpty()
 	}
 
 	if isParamBased {
@@ -165,6 +167,40 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 		if d.Spec.Connection.Mysql.DisableTLS {
 			uri = fmt.Sprintf("%s?tls=false", uri)
 		}
+	} else if driver == "yugabytedb" {
+		hostname, err := d.Spec.Connection.YugabyteDB.Host.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb hostname")
+		}
+
+		port, err := d.Spec.Connection.YugabyteDB.Port.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb port")
+		}
+
+		user, err := d.Spec.Connection.YugabyteDB.User.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb user")
+		}
+
+		password, err := d.Spec.Connection.YugabyteDB.Password.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb password")
+		}
+
+		dbname, err := d.Spec.Connection.YugabyteDB.DBName.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb dbname")
+		}
+
+		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
+		if !d.Spec.Connection.YugabyteDB.SSLMode.IsEmpty() {
+			sslMode, err := d.Spec.Connection.YugabyteDB.SSLMode.Read(clientset, d.Namespace)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read yugabytedb12 ssl mode")
+			}
+			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
+		}
 	}
 
 	return driver, uri, nil
@@ -186,6 +222,8 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 		valueOrValueFrom = d.Spec.Connection.CockroachDB.URI
 	} else if driver == "mysql" {
 		valueOrValueFrom = d.Spec.Connection.Mysql.URI
+	} else if driver == "yugabytedb" {
+		valueOrValueFrom = d.Spec.Connection.YugabyteDB.URI
 	}
 
 	// if the value is static, return it

@@ -25,6 +25,7 @@ type DatabaseConnection struct {
 	Postgres    *PostgresConnection    `json:"postgres,omitempty"`
 	Mysql       *MysqlConnection       `json:"mysql,omitempty"`
 	CockroachDB *CockroachDBConnection `json:"cockroachdb,omitempty"`
+	YugabyteDB  *YugabyteDBConnection  `json:"yugabytedb,omitempty"`
 }
 
 type SchemaHero struct {

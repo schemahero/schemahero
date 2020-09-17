@@ -29,6 +29,7 @@ type TableSchema struct {
 	Postgres    *SQLTableSchema      `json:"postgres,omitempty" yaml:"postgres,omitempty"`
 	Mysql       *MysqlSQLTableSchema `json:"mysql,omitempty" yaml:"mysql,omitempty"`
 	CockroachDB *SQLTableSchema      `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
+	YugabyteDB  *SQLTableSchema      `json:"yugabytedb,omitempty" yaml:"yugabytedb,omitempty"`
 }
 
 // TableSpec defines the desired state of Table
