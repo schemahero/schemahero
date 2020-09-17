@@ -41,12 +41,10 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 		isParamBased = d.Spec.Connection.CockroachDB.URI.IsEmpty()
 	} else if driver == "mysql" {
 		isParamBased = d.Spec.Connection.Mysql.URI.IsEmpty()
-	} else if driver == "yugabytedb" {
-		if d.Spec.Connection.YugabyteDB.YSQL != nil {
-			isParamBased = d.Spec.Connection.YugabyteDB.YSQL.URI.IsEmpty()
-		} else if d.Spec.Connection.YugabyteDB.YCQL != nil {
-			isParamBased = true
-		}
+	} else if driver == "yugabytedb-ysql" {
+		isParamBased = d.Spec.Connection.YugabyteDB.YSQL.URI.IsEmpty()
+	} else if driver == "yugabyte-ycql" {
+		return "", "", errors.New("not implemented")
 	}
 
 	if isParamBased {
@@ -171,44 +169,42 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 		if d.Spec.Connection.Mysql.DisableTLS {
 			uri = fmt.Sprintf("%s?tls=false", uri)
 		}
-	} else if driver == "yugabytedb" {
-		if d.Spec.Connection.YugabyteDB.YSQL != nil {
-			hostname, err := d.Spec.Connection.YugabyteDB.YSQL.Host.Read(clientset, d.Namespace)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read yugabytedb hostname")
-			}
-
-			port, err := d.Spec.Connection.YugabyteDB.YSQL.Port.Read(clientset, d.Namespace)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read yugabytedb port")
-			}
-
-			user, err := d.Spec.Connection.YugabyteDB.YSQL.User.Read(clientset, d.Namespace)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read yugabytedb user")
-			}
-
-			password, err := d.Spec.Connection.YugabyteDB.YSQL.Password.Read(clientset, d.Namespace)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read yugabytedb password")
-			}
-
-			dbname, err := d.Spec.Connection.YugabyteDB.YSQL.DBName.Read(clientset, d.Namespace)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read yugabytedb dbname")
-			}
-
-			uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
-			if !d.Spec.Connection.YugabyteDB.YSQL.SSLMode.IsEmpty() {
-				sslMode, err := d.Spec.Connection.YugabyteDB.YSQL.SSLMode.Read(clientset, d.Namespace)
-				if err != nil {
-					return "", "", errors.Wrap(err, "failed to read yugabytedb12 ssl mode")
-				}
-				uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
-			}
-		} else if d.Spec.Connection.YugabyteDB.YCQL != nil {
-			return "", "", errors.New("not implemented")
+	} else if driver == "yugabytedb-ysql" {
+		hostname, err := d.Spec.Connection.YugabyteDB.YSQL.Host.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb hostname")
 		}
+
+		port, err := d.Spec.Connection.YugabyteDB.YSQL.Port.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb port")
+		}
+
+		user, err := d.Spec.Connection.YugabyteDB.YSQL.User.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb user")
+		}
+
+		password, err := d.Spec.Connection.YugabyteDB.YSQL.Password.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb password")
+		}
+
+		dbname, err := d.Spec.Connection.YugabyteDB.YSQL.DBName.Read(clientset, d.Namespace)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read yugabytedb dbname")
+		}
+
+		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
+		if !d.Spec.Connection.YugabyteDB.YSQL.SSLMode.IsEmpty() {
+			sslMode, err := d.Spec.Connection.YugabyteDB.YSQL.SSLMode.Read(clientset, d.Namespace)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read yugabytedb12 ssl mode")
+			}
+			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
+		}
+	} else if driver == "yugabytedb-ycql" {
+		return "", "", errors.New("not implemented")
 	}
 
 	return driver, uri, nil
@@ -230,12 +226,10 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 		valueOrValueFrom = d.Spec.Connection.CockroachDB.URI
 	} else if driver == "mysql" {
 		valueOrValueFrom = d.Spec.Connection.Mysql.URI
-	} else if driver == "yugabytedb" {
-		if d.Spec.Connection.YugabyteDB.YSQL != nil {
-			valueOrValueFrom = d.Spec.Connection.YugabyteDB.YSQL.URI
-		} else if d.Spec.Connection.YugabyteDB.YCQL != nil {
-			return "", "", errors.New("not implemented")
-		}
+	} else if driver == "yugabytedb-ysql" {
+		valueOrValueFrom = d.Spec.Connection.YugabyteDB.YSQL.URI
+	} else if driver == "yugabyte-ycql" {
+		return "", "", errors.New("not implemented")
 	}
 
 	// if the value is static, return it

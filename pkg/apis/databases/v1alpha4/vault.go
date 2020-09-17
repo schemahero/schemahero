@@ -56,7 +56,11 @@ func (d Database) getDbType() (string, error) {
 		return "cockroachdb", nil
 	}
 	if d.Spec.Connection.YugabyteDB != nil {
-		return "yugabytedb", nil
+		if d.Spec.Connection.YugabyteDB.YSQL != nil {
+			return "yugabytedb-ysql", nil
+		} else if d.Spec.Connection.YugabyteDB.YCQL != nil {
+			return "yugabytedb-ycql", nil
+		}
 	}
 	if d.Spec.Connection.Postgres != nil {
 		return "postgres", nil

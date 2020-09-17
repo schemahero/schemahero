@@ -1,7 +1,6 @@
 SHELL := /bin/bash
 DATABASE_IMAGE_NAME := schemahero/database
 DATABASE_CONTAINER_NAME := schemahero-database
-DRIVER := yugabytedb
 URI := postgres://schemahero:password@127.0.0.1:5433/schemahero?sslmode=disable
 
 .PHONY: run

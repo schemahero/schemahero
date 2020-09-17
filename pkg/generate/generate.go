@@ -235,8 +235,10 @@ func generateGenericTableYAML(driver string, dbName string, table *types.Table, 
 		schema.Postgres = tableSchema
 	} else if driver == "cockroachdb" {
 		schema.CockroachDB = tableSchema
-	} else if driver == "yugabytedb" {
+	} else if driver == "yugabytedb-ysql" {
 		schema.YugabyteDB = tableSchema
+	} else if driver == "yugabytedb-ycql" {
+		return "", errors.New("not implemented")
 	}
 
 	schemaHeroResource := schemasv1alpha4.TableSpec{

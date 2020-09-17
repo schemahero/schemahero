@@ -97,7 +97,7 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, statement)
-		} else if d.Driver == "yugabytedb" {
+		} else if d.Driver == "yugabytedb-ysql" {
 			if spec.Schema.YugabyteDB == nil {
 				return nil
 			}
@@ -108,6 +108,8 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, statement)
+		} else if d.Driver == "yugabytedb-ycql" {
+			return errors.New("not implemented")
 		}
 
 		return nil
@@ -176,8 +178,10 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql)
 	} else if d.Driver == "cockroachdb" {
 		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB)
-	} else if d.Driver == "yugabytedb" {
+	} else if d.Driver == "yugabytedb-ysql" {
 		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.YugabyteDB)
+	} else if d.Driver == "yugabytedb-ycql" {
+		return nil, errors.New("not implmented")
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -190,8 +194,10 @@ func (d *Database) ApplySync(statements []string) error {
 		return mysql.DeployMysqlStatements(d.URI, statements)
 	} else if d.Driver == "cockroachdb" {
 		return postgres.DeployPostgresStatements(d.URI, statements)
-	} else if d.Driver == "yugabytedb" {
+	} else if d.Driver == "yugabytedb-ysql" {
 		return postgres.DeployPostgresStatements(d.URI, statements)
+	} else if d.Driver == "yugabytedb-ycql" {
+		return errors.New("not implemented")
 	}
 
 	return errors.Errorf("unknown database driver: %q", d.Driver)
