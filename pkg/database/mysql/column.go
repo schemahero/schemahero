@@ -64,6 +64,13 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlSQLTableColumn) (string, e
 
 	formatted := fmt.Sprintf("`%s` %s", column.Name, mysqlColumn.DataType)
 
+	if mysqlColumn.Charset != "" {
+		formatted = fmt.Sprintf("%s character set %s", formatted, mysqlColumn.Charset)
+	}
+	if mysqlColumn.Collation != "" {
+		formatted = fmt.Sprintf("%s collate %s", formatted, mysqlColumn.Collation)
+	}
+
 	if mysqlColumn.Constraints != nil && mysqlColumn.Constraints.NotNull != nil {
 		if *mysqlColumn.Constraints.NotNull == true {
 			formatted = fmt.Sprintf("%s not null", formatted)
@@ -90,13 +97,6 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlSQLTableColumn) (string, e
 		} else {
 			formatted = fmt.Sprintf("%s default %s", formatted, *mysqlColumn.ColumnDefault)
 		}
-	}
-
-	if mysqlColumn.Charset != "" {
-		formatted = fmt.Sprintf("%s character set %s", formatted, mysqlColumn.Charset)
-	}
-	if mysqlColumn.Collation != "" {
-		formatted = fmt.Sprintf("%s collate %s", formatted, mysqlColumn.Collation)
 	}
 
 	return formatted, nil
