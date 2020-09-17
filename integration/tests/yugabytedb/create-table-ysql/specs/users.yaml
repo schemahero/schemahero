@@ -3,15 +3,14 @@ name: users
 requires: []
 schema:
   yugabytedb:
-    ysql:
-      primaryKey: [id]
-      columns:
-        - name: id
-          type: integer
-        - name: login
-          type: varchar(255)
-        - name: name
-          type: varchar(255)
-          constraints:
-            notNull: true
-          default: ethan
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: login
+        type: varchar(255)
+      - name: name
+        type: varchar(255)
+        constraints:
+          notNull: true
+        default: ethan
