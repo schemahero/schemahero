@@ -17,6 +17,11 @@ limitations under the License.
 package v1alpha4
 
 type YugabyteDBConnection struct {
+	YSQL *YSQLConnection `json:"ysql,omitempty"`
+	YCQL *YCQLConnection `json:"ycql,omitempty"`
+}
+
+type YSQLConnection struct {
 	URI ValueOrValueFrom `json:"uri,omitempty"`
 
 	Host     ValueOrValueFrom `json:"host,omitempty"`
@@ -25,4 +30,8 @@ type YugabyteDBConnection struct {
 	Password ValueOrValueFrom `json:"password,omitempty"`
 	DBName   ValueOrValueFrom `json:"dbname,omitempty"`
 	SSLMode  ValueOrValueFrom `json:"sslmode,omitempty"`
+}
+
+type YCQLConnection struct {
+	Hosts []string `json:"hosts,omitempty"`
 }

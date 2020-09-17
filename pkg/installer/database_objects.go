@@ -1798,612 +1798,622 @@ spec:
                   type: object
                 yugabytedb:
                   properties:
-                    dbname:
+                    ycql:
                       properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        hosts:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    ysql:
+                      properties:
+                        dbname:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
-                      type: object
-                    host:
-                      properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        host:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
-                      type: object
-                    password:
-                      properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        password:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
-                      type: object
-                    port:
-                      properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        port:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
-                      type: object
-                    sslmode:
-                      properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        sslmode:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
-                      type: object
-                    uri:
-                      properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        uri:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
-                      type: object
-                    user:
-                      properties:
-                        value:
-                          type: string
-                        valueFrom:
+                        user:
                           properties:
-                            secretKeyRef:
+                            value:
+                              type: string
+                            valueFrom:
                               properties:
-                                key:
-                                  type: string
-                                name:
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            ssm:
-                              properties:
-                                accessKeyId:
+                                secretKeyRef:
                                   properties:
-                                    value:
+                                    key:
                                       type: string
-                                    valueFrom:
-                                      properties:
-                                        secretKeyRef:
-                                          properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
-                                          type: object
-                                      type: object
+                                    name:
+                                      type: string
                                   required:
-                                  - value
+                                  - key
+                                  - name
                                   type: object
-                                name:
-                                  type: string
-                                region:
-                                  type: string
-                                secretAccessKey:
+                                ssm:
                                   properties:
-                                    value:
-                                      type: string
-                                    valueFrom:
+                                    accessKeyId:
                                       properties:
-                                        secretKeyRef:
+                                        value:
+                                          type: string
+                                        valueFrom:
                                           properties:
-                                            key:
-                                              type: string
-                                            name:
-                                              type: string
-                                          required:
-                                          - key
-                                          - name
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
                                           type: object
+                                      required:
+                                      - value
                                       type: object
+                                    name:
+                                      type: string
+                                    region:
+                                      type: string
+                                    secretAccessKey:
+                                      properties:
+                                        value:
+                                          type: string
+                                        valueFrom:
+                                          properties:
+                                            secretKeyRef:
+                                              properties:
+                                                key:
+                                                  type: string
+                                                name:
+                                                  type: string
+                                              required:
+                                              - key
+                                              - name
+                                              type: object
+                                          type: object
+                                      required:
+                                      - value
+                                      type: object
+                                    withDecryption:
+                                      type: boolean
                                   required:
-                                  - value
+                                  - name
                                   type: object
-                                withDecryption:
-                                  type: boolean
-                              required:
-                              - name
-                              type: object
-                            vault:
-                              properties:
-                                agentInject:
-                                  type: boolean
-                                endpoint:
-                                  type: string
-                                role:
-                                  type: string
-                                secret:
-                                  type: string
-                                serviceAccount:
-                                  type: string
-                                serviceAccountNamespace:
-                                  type: string
-                              required:
-                              - role
-                              - secret
+                                vault:
+                                  properties:
+                                    agentInject:
+                                      type: boolean
+                                    endpoint:
+                                      type: string
+                                    role:
+                                      type: string
+                                    secret:
+                                      type: string
+                                    serviceAccount:
+                                      type: string
+                                    serviceAccountNamespace:
+                                      type: string
+                                  required:
+                                  - role
+                                  - secret
+                                  type: object
                               type: object
                           type: object
                       type: object
@@ -4247,612 +4257,622 @@ spec:
                     type: object
                   yugabytedb:
                     properties:
-                      dbname:
+                      ycql:
                         properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          hosts:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      ysql:
+                        properties:
+                          dbname:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
-                        type: object
-                      host:
-                        properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          host:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
-                        type: object
-                      password:
-                        properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          password:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
-                        type: object
-                      port:
-                        properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          port:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
-                        type: object
-                      sslmode:
-                        properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          sslmode:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
-                        type: object
-                      uri:
-                        properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          uri:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
-                        type: object
-                      user:
-                        properties:
-                          value:
-                            type: string
-                          valueFrom:
+                          user:
                             properties:
-                              secretKeyRef:
+                              value:
+                                type: string
+                              valueFrom:
                                 properties:
-                                  key:
-                                    type: string
-                                  name:
-                                    type: string
-                                required:
-                                - key
-                                - name
-                                type: object
-                              ssm:
-                                properties:
-                                  accessKeyId:
+                                  secretKeyRef:
                                     properties:
-                                      value:
+                                      key:
                                         type: string
-                                      valueFrom:
-                                        properties:
-                                          secretKeyRef:
-                                            properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
-                                            type: object
-                                        type: object
+                                      name:
+                                        type: string
                                     required:
-                                    - value
+                                    - key
+                                    - name
                                     type: object
-                                  name:
-                                    type: string
-                                  region:
-                                    type: string
-                                  secretAccessKey:
+                                  ssm:
                                     properties:
-                                      value:
-                                        type: string
-                                      valueFrom:
+                                      accessKeyId:
                                         properties:
-                                          secretKeyRef:
+                                          value:
+                                            type: string
+                                          valueFrom:
                                             properties:
-                                              key:
-                                                type: string
-                                              name:
-                                                type: string
-                                            required:
-                                            - key
-                                            - name
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
                                             type: object
+                                        required:
+                                        - value
                                         type: object
+                                      name:
+                                        type: string
+                                      region:
+                                        type: string
+                                      secretAccessKey:
+                                        properties:
+                                          value:
+                                            type: string
+                                          valueFrom:
+                                            properties:
+                                              secretKeyRef:
+                                                properties:
+                                                  key:
+                                                    type: string
+                                                  name:
+                                                    type: string
+                                                required:
+                                                - key
+                                                - name
+                                                type: object
+                                            type: object
+                                        required:
+                                        - value
+                                        type: object
+                                      withDecryption:
+                                        type: boolean
                                     required:
-                                    - value
+                                    - name
                                     type: object
-                                  withDecryption:
-                                    type: boolean
-                                required:
-                                - name
-                                type: object
-                              vault:
-                                properties:
-                                  agentInject:
-                                    type: boolean
-                                  endpoint:
-                                    type: string
-                                  role:
-                                    type: string
-                                  secret:
-                                    type: string
-                                  serviceAccount:
-                                    type: string
-                                  serviceAccountNamespace:
-                                    type: string
-                                required:
-                                - role
-                                - secret
+                                  vault:
+                                    properties:
+                                      agentInject:
+                                        type: boolean
+                                      endpoint:
+                                        type: string
+                                      role:
+                                        type: string
+                                      secret:
+                                        type: string
+                                      serviceAccount:
+                                        type: string
+                                      serviceAccountNamespace:
+                                        type: string
+                                    required:
+                                    - role
+                                    - secret
+                                    type: object
                                 type: object
                             type: object
                         type: object
