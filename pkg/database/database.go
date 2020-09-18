@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/database/cassandra"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/logger"
@@ -21,6 +22,10 @@ type Database struct {
 	OutputDir string
 	Driver    string
 	URI       string
+	Hosts     []string
+	Username  string
+	Password  string
+	Keyspace  string
 }
 
 func (d *Database) CreateFixturesSync() error {
@@ -97,6 +102,8 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, statement)
+		} else if d.Driver == "cassandra" {
+			return errors.New("not implemented")
 		}
 
 		return nil
@@ -124,16 +131,22 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) PlanSyncFromFile(filename string) ([]string, error) {
+func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string, error) {
 	specContents, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read file")
 	}
 
-	return d.PlanSync(specContents)
+	if specType == "table" {
+		return d.planTableSync(specContents)
+	} else if specType == "type" {
+		return d.planTypeSync(specContents)
+	}
+
+	return nil, errors.New("unknown spec type")
 }
 
-func (d *Database) PlanSync(specContents []byte) ([]string, error) {
+func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	var spec *schemasv1alpha4.TableSpec
 	parsedK8sObject := schemasv1alpha4.Table{}
 	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
@@ -165,9 +178,44 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql)
 	} else if d.Driver == "cockroachdb" {
 		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB)
+	} else if d.Driver == "cassandra" {
+		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
+}
+
+func (d *Database) planTypeSync(specContents []byte) ([]string, error) {
+	var spec *schemasv1alpha4.DataTypeSpec
+	parsedK8sObject := schemasv1alpha4.DataType{}
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Schema != nil {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha4.DataTypeSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal spec")
+		}
+
+		spec = &plainSpec
+	}
+
+	return d.PlanSyncTypeSpec(spec)
+}
+
+func (d *Database) PlanSyncTypeSpec(spec *schemasv1alpha4.DataTypeSpec) ([]string, error) {
+	if spec.Schema == nil {
+		return []string{}, nil
+	}
+
+	if d.Driver == "cassandra" {
+		return cassandra.PlanCassandraType(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+	}
+
+	return nil, errors.Errorf("planning types is not supported for driver %q", d.Driver)
 }
 
 func (d *Database) ApplySync(statements []string) error {
@@ -177,6 +225,8 @@ func (d *Database) ApplySync(statements []string) error {
 		return mysql.DeployMysqlStatements(d.URI, statements)
 	} else if d.Driver == "cockroachdb" {
 		return postgres.DeployPostgresStatements(d.URI, statements)
+	} else if d.Driver == "cassandra" {
+		return cassandra.DeployCassandraStatements(d.Hosts, d.Username, d.Password, d.Keyspace, statements)
 	}
 
 	return errors.Errorf("unknown database driver: %q", d.Driver)

@@ -28,6 +28,10 @@ type FakeSchemasV1alpha4 struct {
 	*testing.Fake
 }
 
+func (c *FakeSchemasV1alpha4) DataTypes(namespace string) v1alpha4.DataTypeInterface {
+	return &FakeDataTypes{c, namespace}
+}
+
 func (c *FakeSchemasV1alpha4) Migrations(namespace string) v1alpha4.MigrationInterface {
 	return &FakeMigrations{c, namespace}
 }

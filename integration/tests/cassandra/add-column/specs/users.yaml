@@ -1,0 +1,14 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  cassandra:
+    primaryKey:
+      - [id]
+    columns:
+      - name: id
+        type: int
+      - name: login
+        type: text
+      - name: name
+        type: text

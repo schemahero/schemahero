@@ -46,6 +46,73 @@ spec:
               type: array
             schema:
               properties:
+                cassandra:
+                  properties:
+                    clusteringOrder:
+                      properties:
+                        column:
+                          type: string
+                        isDescending:
+                          type: boolean
+                      required:
+                      - column
+                      type: object
+                    columns:
+                      items:
+                        properties:
+                          isStatic:
+                            type: boolean
+                          name:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - name
+                        - type
+                        type: object
+                      type: array
+                    isDeleted:
+                      type: boolean
+                    primaryKey:
+                      items:
+                        items:
+                          type: string
+                        type: array
+                      type: array
+                    properties:
+                      properties:
+                        bloomFilterFPChance:
+                          type: string
+                        caching:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        comment:
+                          type: string
+                        compaction:
+                          type: string
+                        compression:
+                          type: string
+                        crcCheckChance:
+                          type: string
+                        dcLocalReadRepairChance:
+                          type: string
+                        defaultTTL:
+                          type: integer
+                        gcGraceSeconds:
+                          type: integer
+                        maxIndexInterval:
+                          type: integer
+                        memtableFlushPeriodMs:
+                          type: integer
+                        minIndexInterval:
+                          type: integer
+                        readRepairChance:
+                          type: string
+                        speculativeRetry:
+                          type: string
+                      type: object
+                  type: object
                 cockroachdb:
                   properties:
                     columns:
@@ -365,6 +432,73 @@ spec:
                 type: array
               schema:
                 properties:
+                  cassandra:
+                    properties:
+                      clusteringOrder:
+                        properties:
+                          column:
+                            type: string
+                          isDescending:
+                            type: boolean
+                        required:
+                        - column
+                        type: object
+                      columns:
+                        items:
+                          properties:
+                            isStatic:
+                              type: boolean
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - name
+                          - type
+                          type: object
+                        type: array
+                      isDeleted:
+                        type: boolean
+                      primaryKey:
+                        items:
+                          items:
+                            type: string
+                          type: array
+                        type: array
+                      properties:
+                        properties:
+                          bloomFilterFPChance:
+                            type: string
+                          caching:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          comment:
+                            type: string
+                          compaction:
+                            type: string
+                          compression:
+                            type: string
+                          crcCheckChance:
+                            type: string
+                          dcLocalReadRepairChance:
+                            type: string
+                          defaultTTL:
+                            type: integer
+                          gcGraceSeconds:
+                            type: integer
+                          maxIndexInterval:
+                            type: integer
+                          memtableFlushPeriodMs:
+                            type: integer
+                          minIndexInterval:
+                            type: integer
+                          readRepairChance:
+                            type: string
+                          speculativeRetry:
+                            type: string
+                        type: object
+                    type: object
                   cockroachdb:
                     properties:
                       columns:

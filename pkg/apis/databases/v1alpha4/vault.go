@@ -18,6 +18,8 @@ package v1alpha4
 
 import (
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 // UsingVault determines whether the specific Database connection is
@@ -55,12 +57,14 @@ func (d Database) getDbType() (string, error) {
 	if d.Spec.Connection.CockroachDB != nil {
 		return "cockroachdb", nil
 	}
+	if d.Spec.Connection.Cassandra != nil {
+		return "cassandra", nil
+	}
 	if d.Spec.Connection.Postgres != nil {
 		return "postgres", nil
 	}
 	if d.Spec.Connection.Mysql != nil {
 		return "mysql", nil
-
 	}
 	return "", fmt.Errorf("No database connection configured for database: %s", d.Name)
 }
@@ -102,6 +106,8 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/%s{{- end }}`
 {{ .Data.username }}:{{ .Data.password }}@tcp(mysql:3306)/%s{{- end }}`, v.Role, d.Name)
 
 		annotations["vault.hashicorp.com/agent-inject-template-schemaherouri"] = t
+	case "cassandra":
+		return nil, errors.New("not implemented")
 	}
 
 	annotations["vault.hashicorp.com/agent-inject"] = "true"

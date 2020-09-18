@@ -1,0 +1,13 @@
+database: schemahero
+name: basic_info
+schema:
+  cassandra:
+    fields:
+      - name: birthday
+        type: timestamp
+      - name: nationality
+        type: text
+      - name: weight
+        type: text
+      - name: height
+        type: text

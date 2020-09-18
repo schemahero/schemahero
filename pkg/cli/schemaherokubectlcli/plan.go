@@ -27,8 +27,9 @@ func PlanCmd() *cobra.Command {
 			driver := v.GetString("driver")
 			specFile := v.GetString("spec-file")
 			uri := v.GetString("uri")
+			host := v.GetStringSlice("host")
 
-			if driver == "" || specFile == "" || uri == "" {
+			if driver == "" || specFile == "" || uri == "" || len(host) == 0 {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")
@@ -36,11 +37,15 @@ func PlanCmd() *cobra.Command {
 				if specFile == "" {
 					missing = append(missing, "spec-file")
 				}
-				if uri == "" {
-					missing = append(missing, "uri")
+
+				// one of uri or host/port must be specified
+				if uri == "" && len(host) == 0 {
+					missing = append(missing, "uri or host(s)")
 				}
 
-				return fmt.Errorf("missing required params: %v", missing)
+				if len(missing) > 0 {
+					return fmt.Errorf("missing required params: %v", missing)
+				}
 			}
 
 			fi, err := os.Stat(v.GetString("spec-file"))
@@ -73,12 +78,16 @@ func PlanCmd() *cobra.Command {
 				OutputDir: v.GetString("output-dir"),
 				Driver:    v.GetString("driver"),
 				URI:       v.GetString("uri"),
+				Hosts:     v.GetStringSlice("host"),
+				Username:  v.GetString("username"),
+				Password:  v.GetString("password"),
+				Keyspace:  v.GetString("keyspace"),
 			}
 
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					if !info.IsDir() {
-						statements, err := db.PlanSyncFromFile(path)
+						statements, err := db.PlanSyncFromFile(path, v.GetString("spec-type"))
 						if err != nil {
 							return err
 						}
@@ -101,7 +110,7 @@ func PlanCmd() *cobra.Command {
 
 				return err
 			} else {
-				statements, err := db.PlanSyncFromFile(v.GetString("spec-file"))
+				statements, err := db.PlanSyncFromFile(v.GetString("spec-file"), v.GetString("spec-type"))
 				if err != nil {
 					return err
 				}
@@ -124,8 +133,16 @@ func PlanCmd() *cobra.Command {
 	}
 
 	cmd.Flags().String("driver", "", "name of the database driver to use")
+
 	cmd.Flags().String("uri", "", "connection string uri to use")
+
+	cmd.Flags().String("username", "", "username to use when connecting")
+	cmd.Flags().String("password", "", "password to use when connecting")
+	cmd.Flags().StringSlice("host", []string{}, "hostname to use when connecting")
+	cmd.Flags().String("keyspace", "", "the keyspace to use for databases that support keyspaces")
+
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
+	cmd.Flags().String("spec-type", "table", "type of spec in spec-file")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 	cmd.Flags().Bool("overwrite", true, "when set, will overwrite the out file, if it already exists")
 

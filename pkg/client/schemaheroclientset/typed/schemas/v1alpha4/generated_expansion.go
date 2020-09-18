@@ -18,6 +18,8 @@ limitations under the License.
 
 package v1alpha4
 
+type DataTypeExpansion interface{}
+
 type MigrationExpansion interface{}
 
 type TableExpansion interface{}

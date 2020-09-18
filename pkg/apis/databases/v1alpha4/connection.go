@@ -41,6 +41,8 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 		isParamBased = d.Spec.Connection.CockroachDB.URI.IsEmpty()
 	} else if driver == "mysql" {
 		isParamBased = d.Spec.Connection.Mysql.URI.IsEmpty()
+	} else if driver == "cassandra" {
+		isParamBased = true
 	}
 
 	if isParamBased {
@@ -135,6 +137,8 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			}
 			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
 		}
+	} else if driver == "cassandra" {
+		return "", "", errors.New("not implemented")
 	} else if driver == "mysql" {
 		hostname, err := d.Spec.Connection.Mysql.Host.Read(clientset, d.Namespace)
 		if err != nil {
@@ -184,6 +188,8 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 		valueOrValueFrom = d.Spec.Connection.Postgres.URI
 	} else if driver == "cockroachdb" {
 		valueOrValueFrom = d.Spec.Connection.CockroachDB.URI
+	} else if driver == "cassandra" {
+		return "", "", errors.New("reading cassandra connecting from uri is not supported")
 	} else if driver == "mysql" {
 		valueOrValueFrom = d.Spec.Connection.Mysql.URI
 	}
