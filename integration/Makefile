@@ -19,6 +19,14 @@ mysql:
 cockroach:
 	make -C tests/cockroach run
 
+.PHONY: yugabytedb-ysql
+yugabytedb-ysql:
+	make -C tests/yugabytedb-ysql run
+
+.PHONY: yugabytedb-ycql
+yugabytedb-ycql:
+	make -C tests/yugabytedb-ycql run
+
 .PHONY: build
 build: docker-build
 	docker push $(IMAGE)

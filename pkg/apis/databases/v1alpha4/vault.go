@@ -55,6 +55,13 @@ func (d Database) getDbType() (string, error) {
 	if d.Spec.Connection.CockroachDB != nil {
 		return "cockroachdb", nil
 	}
+	if d.Spec.Connection.YugabyteDB != nil {
+		if d.Spec.Connection.YugabyteDB.YSQL != nil {
+			return "yugabytedb-ysql", nil
+		} else if d.Spec.Connection.YugabyteDB.YCQL != nil {
+			return "yugabytedb-ycql", nil
+		}
+	}
 	if d.Spec.Connection.Postgres != nil {
 		return "postgres", nil
 	}
@@ -90,7 +97,7 @@ func (d *Database) GetVaultAnnotations() (map[string]string, error) {
 	annotations := make(map[string]string)
 
 	switch t {
-	case "postgres", "cockroachdb":
+	case "postgres", "cockroachdb", "yuagbytedb":
 		t := fmt.Sprintf(`
 {{- with secret "database/creds/%s" -}}
 postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/%s{{- end }}`, v.Role, d.Name)
