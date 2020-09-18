@@ -17,14 +17,14 @@ run:
 	docker exec $(DATABASE_CONTAINER_NAME) ./bin/ysqlsh -d schemahero -f /fixtures.sql
 
 	# Plan
-	../../../../bin/kubectl-schemahero plan --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
+	../../../../bin/kubectl-schemahero plan --driver=yugabytedb-ysql --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)
 	diff -B expect.sql out.sql
 
 	# Apply
-	../../../../bin/kubectl-schemahero apply --driver=$(DRIVER) --uri="$(URI)" --ddl out.sql
+	../../../../bin/kubectl-schemahero apply --driver=yugabytedb-ysql --uri="$(URI)" --ddl out.sql
 
 	# Cleanup
 	@-sleep 5

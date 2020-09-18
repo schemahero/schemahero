@@ -5,12 +5,12 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 2.1.4.0
+run: 2.3.1.0
 
-.PHONY: 2.1.4.0
-2.1.4.0: export YUGABYTEDB_VERSION = 2.1.4.0-b5
-2.1.4.0:
-	make -C create-table-ysql run
+.PHONY: 2.3.1.0
+2.3.1.0: export YUGABYTEDB_VERSION = 2.3.1.0-b15
+2.3.1.0:
+	make -C create-table run
 
 .PHONY: build
 build: docker-build
