@@ -26,6 +26,7 @@ import (
 
 type SchemasV1alpha4Interface interface {
 	RESTClient() rest.Interface
+	DataTypesGetter
 	MigrationsGetter
 	TablesGetter
 }
@@ -33,6 +34,10 @@ type SchemasV1alpha4Interface interface {
 // SchemasV1alpha4Client is used to interact with features provided by the schemas.schemahero.io group.
 type SchemasV1alpha4Client struct {
 	restClient rest.Interface
+}
+
+func (c *SchemasV1alpha4Client) DataTypes(namespace string) DataTypeInterface {
+	return newDataTypes(c, namespace)
 }
 
 func (c *SchemasV1alpha4Client) Migrations(namespace string) MigrationInterface {

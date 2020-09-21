@@ -1,0 +1,38 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  cassandra:
+    primaryKey:
+      - [id]
+    columns:
+      - name: id
+        type: int
+      - name: login
+        type: varchar
+      - name: name
+        type: varchar
+        default: ethan
+    properties:
+      bloomFilterFPChance: "0.5"
+      caching:
+        keys: 'NONE'
+        rows_per_partition: "20"
+      comment: "updated"
+      compaction: 
+        class: 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'
+        max_threshold: '64'
+        min_threshold: '4'
+      compression: 
+        chunk_length_in_kb: '128' 
+        class: 'org.apache.cassandra.io.compress.LZ4Compressor'
+      crcCheckChance: "0.5"
+      dcLocalReadRepairChance: "0.5"
+      defaultTTL: 100
+      gcGraceSecons: 43200
+      maxIndexInterval: 1024
+      memtableFlushPeriodMs: 10
+      minIndexInterval: 64
+      readRepairChange: "0.5"
+      speculativeRetry: ALWAYS
+
