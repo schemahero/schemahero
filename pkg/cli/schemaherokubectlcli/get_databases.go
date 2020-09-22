@@ -8,11 +8,11 @@ import (
 
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func GetDatabasesCmd() *cobra.Command {
@@ -27,7 +27,7 @@ func GetDatabasesCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
 
-			cfg, err := config.GetConfig()
+			cfg, err := config.GetRESTConfig()
 			if err != nil {
 				return err
 			}

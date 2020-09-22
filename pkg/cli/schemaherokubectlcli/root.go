@@ -5,13 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
-)
-
-var (
-	kubernetesConfigFlags *genericclioptions.ConfigFlags
 )
 
 func RootCmd() *cobra.Command {
@@ -30,8 +26,7 @@ func RootCmd() *cobra.Command {
 
 	cobra.OnInitialize(initConfig)
 
-	kubernetesConfigFlags = genericclioptions.NewConfigFlags(false)
-	kubernetesConfigFlags.AddFlags(cmd.PersistentFlags())
+	config.AddFlags(cmd.PersistentFlags())
 
 	cmd.AddCommand(Version())
 	cmd.AddCommand(InstallCmd())

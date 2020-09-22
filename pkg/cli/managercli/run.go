@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/schemahero/schemahero/pkg/apis"
+	"github.com/schemahero/schemahero/pkg/config"
 	databasecontroller "github.com/schemahero/schemahero/pkg/controller/database"
 	migrationcontroller "github.com/schemahero/schemahero/pkg/controller/migration"
 	tablecontroller "github.com/schemahero/schemahero/pkg/controller/table"
@@ -14,7 +15,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
@@ -39,7 +39,7 @@ func RunCmd() *cobra.Command {
 			}
 
 			// Get a config to talk to the apiserver
-			cfg, err := config.GetConfig()
+			cfg, err := config.GetRESTConfig()
 			if err != nil {
 				logger.Error(err)
 				os.Exit(1)
