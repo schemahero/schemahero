@@ -6,8 +6,8 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/config"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool, enterpriseTag string, namespace string) (map[string][]byte, error) {
@@ -106,7 +106,7 @@ func InstallOperator(isEnterprise bool, namespace string) error {
 	// todo create and pass this from higher
 	ctx := context.Background()
 
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRESTConfig()
 	if err != nil {
 		return errors.Wrap(err, "failed to get kubernetes config")
 	}

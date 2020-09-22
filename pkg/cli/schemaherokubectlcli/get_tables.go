@@ -8,11 +8,11 @@ import (
 
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func GetTablesCmd() *cobra.Command {
@@ -30,7 +30,7 @@ func GetTablesCmd() *cobra.Command {
 
 			databaseNameFilter := v.GetString("database")
 
-			cfg, err := config.GetConfig()
+			cfg, err := config.GetRESTConfig()
 			if err != nil {
 				return err
 			}

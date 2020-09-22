@@ -114,7 +114,7 @@ func (r *ReconcileTable) getDatabaseInstance(ctx context.Context, namespace stri
 		zap.String("namespace", namespace),
 		zap.String("name", name))
 
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRESTConfig()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get config")
 	}

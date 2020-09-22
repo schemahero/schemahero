@@ -7,6 +7,7 @@ import (
 	"os"
 
 	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/shell"
 	"github.com/spf13/cobra"
@@ -17,7 +18,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func ShellCmd() *cobra.Command {
@@ -45,7 +45,7 @@ func ShellCmd() *cobra.Command {
 				namespace = corev1.NamespaceDefault
 			}
 
-			cfg, err := config.GetConfig()
+			cfg, err := config.GetRESTConfig()
 			if err != nil {
 				return err
 			}
@@ -142,7 +142,7 @@ func ShellCmd() *cobra.Command {
 			defer func() error {
 				// a lot of time could pass, so we need to get a
 				// new clientset here to re-authc
-				cfg, err := config.GetConfig()
+				cfg, err := config.GetRESTConfig()
 				if err != nil {
 					return err
 				}

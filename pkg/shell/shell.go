@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/config"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 // StartShellPod will start a new pod in the namespace using the imagename
@@ -44,7 +44,7 @@ func StartShellPod(ctx context.Context, namespace string, imageName string) (str
 		},
 	}
 
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRESTConfig()
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get config")
 	}
