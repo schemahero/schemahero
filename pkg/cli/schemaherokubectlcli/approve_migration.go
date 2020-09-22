@@ -7,12 +7,12 @@ import (
 
 	"github.com/pkg/errors"
 	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func ApproveMigrationCmd() *cobra.Command {
@@ -31,7 +31,7 @@ func ApproveMigrationCmd() *cobra.Command {
 			ctx := context.Background()
 			migrationName := args[0]
 
-			cfg, err := config.GetConfig()
+			cfg, err := config.GetRESTConfig()
 			if err != nil {
 				return err
 			}

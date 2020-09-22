@@ -21,9 +21,9 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 func (d Database) GetConnection(ctx context.Context) (string, string, error) {
@@ -58,7 +58,7 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 		return "", "", errors.Wrap(err, "failed to get database type")
 	}
 
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRESTConfig()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get config")
 	}
@@ -200,7 +200,7 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 	}
 
 	// for other types, we need to talk to the kubernetes api
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRESTConfig()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get config")
 	}
