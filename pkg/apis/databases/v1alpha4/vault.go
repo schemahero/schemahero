@@ -108,6 +108,8 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/%s{{- end }}`
 		annotations["vault.hashicorp.com/agent-inject-template-schemaherouri"] = t
 	case "cassandra":
 		return nil, errors.New("not implemented")
+	default:
+		return nil, fmt.Errorf("unknown database driver: %q", t)
 	}
 
 	annotations["vault.hashicorp.com/agent-inject"] = "true"

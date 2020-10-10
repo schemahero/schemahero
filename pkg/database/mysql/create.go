@@ -7,12 +7,12 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
-func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.MysqlSQLTableSchema) (string, error) {
+func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := mysqlColumnAsInsert(desiredColumn)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		columns = append(columns, columnFields)
 	}
@@ -42,5 +42,5 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.MysqlSQ
 		query = fmt.Sprintf("%s collate %s", query, tableSchema.Collation)
 	}
 
-	return query, nil
+	return []string{query}, nil
 }

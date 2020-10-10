@@ -21,10 +21,10 @@ func (fk *ForeignKey) Equals(other *ForeignKey) bool {
 	return false
 }
 
-func ForeignKeyToSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4.SQLTableForeignKey {
-	schemaForeignKey := schemasv1alpha4.SQLTableForeignKey{
+func ForeignKeyToMysqlSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4.MysqlTableForeignKey {
+	schemaForeignKey := schemasv1alpha4.MysqlTableForeignKey{
 		Columns: foreignKey.ChildColumns,
-		References: schemasv1alpha4.SQLTableForeignKeyReferences{
+		References: schemasv1alpha4.MysqlTableForeignKeyReferences{
 			Table:   foreignKey.ParentTable,
 			Columns: foreignKey.ParentColumns,
 		},
@@ -35,7 +35,21 @@ func ForeignKeyToSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4.SQLTa
 	return &schemaForeignKey
 }
 
-func SchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.SQLTableForeignKey) *ForeignKey {
+func ForeignKeyToPostgresqlSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4.PostgresqlTableForeignKey {
+	schemaForeignKey := schemasv1alpha4.PostgresqlTableForeignKey{
+		Columns: foreignKey.ChildColumns,
+		References: schemasv1alpha4.PostgresqlTableForeignKeyReferences{
+			Table:   foreignKey.ParentTable,
+			Columns: foreignKey.ParentColumns,
+		},
+		Name:     foreignKey.Name,
+		OnDelete: foreignKey.OnDelete,
+	}
+
+	return &schemaForeignKey
+}
+
+func MysqlSchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.MysqlTableForeignKey) *ForeignKey {
 	foreignKey := ForeignKey{
 		ChildColumns:  schemaForeignKey.Columns,
 		ParentTable:   schemaForeignKey.References.Table,
@@ -47,7 +61,27 @@ func SchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.SQLTableFore
 	return &foreignKey
 }
 
-func GenerateFKName(tableName string, schemaForeignKey *schemasv1alpha4.SQLTableForeignKey) string {
+func PostgresqlSchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.PostgresqlTableForeignKey) *ForeignKey {
+	foreignKey := ForeignKey{
+		ChildColumns:  schemaForeignKey.Columns,
+		ParentTable:   schemaForeignKey.References.Table,
+		ParentColumns: schemaForeignKey.References.Columns,
+		Name:          schemaForeignKey.Name,
+		OnDelete:      schemaForeignKey.OnDelete,
+	}
+
+	return &foreignKey
+}
+
+func GenerateMysqlFKName(tableName string, schemaForeignKey *schemasv1alpha4.MysqlTableForeignKey) string {
+	if schemaForeignKey.Name != "" {
+		return schemaForeignKey.Name
+	}
+
+	return fmt.Sprintf("%s_%s_fkey", tableName, strings.Join(schemaForeignKey.Columns, "_"))
+}
+
+func GeneratePostgresqlFKName(tableName string, schemaForeignKey *schemasv1alpha4.PostgresqlTableForeignKey) string {
 	if schemaForeignKey.Name != "" {
 		return schemaForeignKey.Name
 	}

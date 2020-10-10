@@ -14,12 +14,12 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 	default11 := "11"
 	tests := []struct {
 		name              string
-		column            *schemasv1alpha4.SQLTableColumn
+		column            *schemasv1alpha4.PostgresqlTableColumn
 		expectedStatement string
 	}{
 		{
 			name: "simple",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "c",
 				Type: "integer",
 			},
@@ -27,7 +27,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "text",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "t",
 				Type: "text",
 			},
@@ -35,7 +35,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "timestamp without time zone",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "t",
 				Type: "timestamp without time zone",
 			},
@@ -43,7 +43,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "character varying (4)",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "c",
 				Type: "character varying (4)",
 			},
@@ -51,10 +51,10 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "constraint not null",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "c",
 				Type: "integer",
-				Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},
@@ -62,7 +62,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "default",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name:    "c",
 				Type:    "integer",
 				Default: &default11,
@@ -71,7 +71,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		},
 		{
 			name: "text[]",
-			column: &schemasv1alpha4.SQLTableColumn{
+			column: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "c",
 				Type: "text[]",
 			},
@@ -94,13 +94,13 @@ func Test_InsertColumnStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
-		desiredColumn     *schemasv1alpha4.SQLTableColumn
+		desiredColumn     *schemasv1alpha4.PostgresqlTableColumn
 		expectedStatement string
 	}{
 		{
 			name:      "add column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha4.SQLTableColumn{
+			desiredColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "a",
 				Type: "integer",
 			},
@@ -109,10 +109,10 @@ func Test_InsertColumnStatement(t *testing.T) {
 		{
 			name:      "add not null column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha4.SQLTableColumn{
+			desiredColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "a",
 				Type: "integer",
-				Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
 					NotNull: &trueValue,
 				},
 			},
@@ -121,10 +121,10 @@ func Test_InsertColumnStatement(t *testing.T) {
 		{
 			name:      "add null column",
 			tableName: "t",
-			desiredColumn: &schemasv1alpha4.SQLTableColumn{
+			desiredColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "a",
 				Type: "integer",
-				Constraints: &schemasv1alpha4.SQLTableColumnConstraints{
+				Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
 					NotNull: &falseValue,
 				},
 			},
@@ -146,12 +146,12 @@ func Test_InsertColumnStatement(t *testing.T) {
 func Test_schemaColumnToPostgresColumn(t *testing.T) {
 	tests := []struct {
 		name           string
-		schemaColumn   *schemasv1alpha4.SQLTableColumn
+		schemaColumn   *schemasv1alpha4.PostgresqlTableColumn
 		expectedColumn *types.Column
 	}{
 		{
 			name: "text",
-			schemaColumn: &schemasv1alpha4.SQLTableColumn{
+			schemaColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "t",
 				Type: "text",
 			},
@@ -164,7 +164,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		},
 		{
 			name: "character varying (10)",
-			schemaColumn: &schemasv1alpha4.SQLTableColumn{
+			schemaColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "c",
 				Type: "character varying (10)",
 			},
@@ -176,7 +176,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		},
 		{
 			name: "varchar (10)",
-			schemaColumn: &schemasv1alpha4.SQLTableColumn{
+			schemaColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "vc",
 				Type: "varchar (10)",
 			},
@@ -188,7 +188,7 @@ func Test_schemaColumnToPostgresColumn(t *testing.T) {
 		},
 		{
 			name: "cidr",
-			schemaColumn: &schemasv1alpha4.SQLTableColumn{
+			schemaColumn: &schemasv1alpha4.PostgresqlTableColumn{
 				Name: "ip",
 				Type: "cidr",
 			},

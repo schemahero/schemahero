@@ -26,10 +26,10 @@ import (
 )
 
 type TableSchema struct {
-	Postgres    *SQLTableSchema       `json:"postgres,omitempty" yaml:"postgres,omitempty"`
-	Mysql       *MysqlSQLTableSchema  `json:"mysql,omitempty" yaml:"mysql,omitempty"`
-	CockroachDB *SQLTableSchema       `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
-	Cassandra   *CassandraTableSchema `json:"cassandra,omitempty" yaml:"cassandra,omitempty"`
+	Postgres    *PostgresqlTableSchema `json:"postgres,omitempty" yaml:"postgres,omitempty"`
+	Mysql       *MysqlTableSchema      `json:"mysql,omitempty" yaml:"mysql,omitempty"`
+	CockroachDB *PostgresqlTableSchema `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
+	Cassandra   *CassandraTableSchema  `json:"cassandra,omitempty" yaml:"cassandra,omitempty"`
 }
 
 // TableSpec defines the desired state of Table

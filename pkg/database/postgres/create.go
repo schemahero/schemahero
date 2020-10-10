@@ -10,12 +10,12 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTableSchema) (string, error) {
+func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := postgresColumnAsInsert(desiredColumn)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		columns = append(columns, columnFields)
 	}
@@ -36,7 +36,7 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTabl
 				for _, indexColumn := range index.Columns {
 					uniqueColumns = append(uniqueColumns, pgx.Identifier{indexColumn}.Sanitize())
 				}
-				columns = append(columns, fmt.Sprintf("constraint %q unique (%s)", types.GenerateIndexName(tableName, index), strings.Join(uniqueColumns, ", ")))
+				columns = append(columns, fmt.Sprintf("constraint %q unique (%s)", types.GeneratePostgresqlIndexName(tableName, index), strings.Join(uniqueColumns, ", ")))
 			} else {
 				// non unique indexes are not supported in fixtures
 			}
@@ -49,7 +49,9 @@ func CreateTableStatement(tableName string, tableSchema *schemasv1alpha4.SQLTabl
 		}
 	}
 
-	query := fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{tableName}.Sanitize(), strings.Join(columns, ", "))
+	queries := []string{
+		fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{tableName}.Sanitize(), strings.Join(columns, ", ")),
+	}
 
-	return query, nil
+	return queries, nil
 }

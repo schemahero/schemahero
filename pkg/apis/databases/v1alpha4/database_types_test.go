@@ -3,6 +3,7 @@ package v1alpha4
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -24,7 +25,9 @@ func TestVaultConnectionURI(t *testing.T) {
 							URI: ValueOrValueFrom{
 								ValueFrom: &ValueFrom{
 									Vault: &Vault{
-										Secret: "database/creds/test",
+										AgentInject: true,
+										Role:        "test",
+										Secret:      "database/creds/test",
 									},
 								},
 							},
@@ -48,7 +51,9 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/testdb{{- end
 							URI: ValueOrValueFrom{
 								ValueFrom: &ValueFrom{
 									Vault: &Vault{
-										Secret: "database/creds/test",
+										AgentInject: true,
+										Role:        "test",
+										Secret:      "database/creds/test",
 									},
 								},
 							},
@@ -58,7 +63,7 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/testdb{{- end
 			},
 			want: `
 {{- with secret "database/creds/test" -}}
-mysql://{{ .Data.username }}:{{ .Data.password }}@mysql:3306/testdb{{- end }}`,
+{{ .Data.username }}:{{ .Data.password }}@tcp(mysql:3306)/testdb{{- end }}`,
 		},
 		{
 			name: "CockroachDB",
@@ -72,7 +77,9 @@ mysql://{{ .Data.username }}:{{ .Data.password }}@mysql:3306/testdb{{- end }}`,
 							URI: ValueOrValueFrom{
 								ValueFrom: &ValueFrom{
 									Vault: &Vault{
-										Secret: "database/creds/test",
+										AgentInject: true,
+										Role:        "test",
+										Secret:      "database/creds/test",
 									},
 								},
 							},
@@ -88,14 +95,10 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/testdb{{- end
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test := test
-			t.Parallel()
+			req := require.New(t)
 
 			a, err := test.db.GetVaultAnnotations()
-
-			if err != nil {
-				t.Fatal(err)
-			}
+			req.NoError(err)
 
 			if got := a["vault.hashicorp.com/agent-inject-template-schemaherouri"]; got != test.want {
 				t.Fatalf("Expected:\n%s\ngot:\n%s", test.want, got)

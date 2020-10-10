@@ -72,12 +72,12 @@ func PlanCassandraTable(hosts []string, username string, password string, keyspa
 
 	if tableExists == 0 {
 		// shortcut to just create it
-		query, err := CreateTableStatement(keyspace, tableName, cassandraTableSchema)
+		queries, err := CreateTableStatements(keyspace, tableName, cassandraTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
 		}
 
-		return []string{query}, nil
+		return queries, nil
 	}
 
 	statements := []string{}

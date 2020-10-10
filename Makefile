@@ -31,7 +31,7 @@ endef
 export GO111MODULE=on
 # export GOPROXY=https://proxy.golang.org
 
-all: generate fmt vet manifests bin/kubectl-schemahero manager
+all: generate fmt vet manifests bin/kubectl-schemahero manager test
 
 .PHONY: clean-and-tidy
 clean-and-tidy:

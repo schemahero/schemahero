@@ -74,34 +74,34 @@ func (d *Database) CreateFixturesSync() error {
 				return nil
 			}
 
-			statement, err := postgres.CreateTableStatement(spec.Name, spec.Schema.Postgres)
+			createStatements, err := postgres.CreateTableStatements(spec.Name, spec.Schema.Postgres)
 			if err != nil {
 				return err
 			}
 
-			statements = append(statements, statement)
+			statements = append(statements, createStatements...)
 		} else if d.Driver == "mysql" {
 			if spec.Schema.Mysql == nil {
 				return nil
 			}
 
-			statement, err := mysql.CreateTableStatement(spec.Name, spec.Schema.Mysql)
+			createStatements, err := mysql.CreateTableStatements(spec.Name, spec.Schema.Mysql)
 			if err != nil {
 				return err
 			}
 
-			statements = append(statements, statement)
+			statements = append(statements, createStatements...)
 		} else if d.Driver == "cockroachdb" {
 			if spec.Schema.CockroachDB == nil {
 				return nil
 			}
 
-			statement, err := postgres.CreateTableStatement(spec.Name, spec.Schema.CockroachDB)
+			createStatements, err := postgres.CreateTableStatements(spec.Name, spec.Schema.CockroachDB)
 			if err != nil {
 				return err
 			}
 
-			statements = append(statements, statement)
+			statements = append(statements, createStatements...)
 		} else if d.Driver == "cassandra" {
 			return errors.New("not implemented")
 		}

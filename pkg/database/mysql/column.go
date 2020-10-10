@@ -7,7 +7,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func schemaColumnToColumn(schemaColumn *schemasv1alpha4.MysqlSQLTableColumn) (*types.Column, error) {
+func schemaColumnToColumn(schemaColumn *schemasv1alpha4.MysqlTableColumn) (*types.Column, error) {
 	column := &types.Column{
 		Name:          schemaColumn.Name,
 		ColumnDefault: schemaColumn.Default,
@@ -56,7 +56,7 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha4.MysqlSQLTableColumn) (*t
 	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
-func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlSQLTableColumn) (string, error) {
+func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlTableColumn) (string, error) {
 	mysqlColumn, err := schemaColumnToColumn(column)
 	if err != nil {
 		return "", err
@@ -102,7 +102,7 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlSQLTableColumn) (string, e
 	return formatted, nil
 }
 
-func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.MysqlSQLTableColumn) (string, error) {
+func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.MysqlTableColumn) (string, error) {
 	columnFields, err := mysqlColumnAsInsert(desiredColumn)
 	if err != nil {
 		return "", err

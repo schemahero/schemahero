@@ -128,23 +128,23 @@ func generateTableYAML(driver string, dbName string, table *types.Table, primary
 		return generateMysqlTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
 	}
 
-	return generateGenericTableYAML(driver, dbName, table, primaryKey, foreignKeys, indexes, columns)
+	return generatePostgresqlTableYAML(driver, dbName, table, primaryKey, foreignKeys, indexes, columns)
 }
 
 func generateMysqlTableYAML(dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
-	schemaForeignKeys := make([]*schemasv1alpha4.SQLTableForeignKey, 0, 0)
+	schemaForeignKeys := make([]*schemasv1alpha4.MysqlTableForeignKey, 0, 0)
 	for _, foreignKey := range foreignKeys {
-		schemaForeignKey := types.ForeignKeyToSchemaForeignKey(foreignKey)
+		schemaForeignKey := types.ForeignKeyToMysqlSchemaForeignKey(foreignKey)
 		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
 	}
 
-	schemaIndexes := make([]*schemasv1alpha4.SQLTableIndex, 0, 0)
+	schemaIndexes := make([]*schemasv1alpha4.MysqlTableIndex, 0, 0)
 	for _, index := range indexes {
-		schemaIndex := types.IndexToSchemaIndex(index)
+		schemaIndex := types.IndexToMysqlSchemaIndex(index)
 		schemaIndexes = append(schemaIndexes, schemaIndex)
 	}
 
-	schemaTableColumns := make([]*schemasv1alpha4.MysqlSQLTableColumn, 0, 0)
+	schemaTableColumns := make([]*schemasv1alpha4.MysqlTableColumn, 0, 0)
 	for _, column := range columns {
 		schemaTableColumn, err := types.ColumnToMysqlSchemaColumn(column)
 		if err != nil {
@@ -155,7 +155,7 @@ func generateMysqlTableYAML(dbName string, table *types.Table, primaryKey []stri
 		schemaTableColumns = append(schemaTableColumns, schemaTableColumn)
 	}
 
-	tableSchema := &schemasv1alpha4.MysqlSQLTableSchema{
+	tableSchema := &schemasv1alpha4.MysqlTableSchema{
 		PrimaryKey:     primaryKey,
 		Columns:        schemaTableColumns,
 		ForeignKeys:    schemaForeignKeys,
@@ -198,22 +198,22 @@ metadata:
 
 }
 
-func generateGenericTableYAML(driver string, dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
-	schemaForeignKeys := make([]*schemasv1alpha4.SQLTableForeignKey, 0, 0)
+func generatePostgresqlTableYAML(driver string, dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
+	schemaForeignKeys := make([]*schemasv1alpha4.PostgresqlTableForeignKey, 0, 0)
 	for _, foreignKey := range foreignKeys {
-		schemaForeignKey := types.ForeignKeyToSchemaForeignKey(foreignKey)
+		schemaForeignKey := types.ForeignKeyToPostgresqlSchemaForeignKey(foreignKey)
 		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
 	}
 
-	schemaIndexes := make([]*schemasv1alpha4.SQLTableIndex, 0, 0)
+	schemaIndexes := make([]*schemasv1alpha4.PostgresqlTableIndex, 0, 0)
 	for _, index := range indexes {
-		schemaIndex := types.IndexToSchemaIndex(index)
+		schemaIndex := types.IndexToPostgresqlSchemaIndex(index)
 		schemaIndexes = append(schemaIndexes, schemaIndex)
 	}
 
-	schemaTableColumns := make([]*schemasv1alpha4.SQLTableColumn, 0, 0)
+	schemaTableColumns := make([]*schemasv1alpha4.PostgresqlTableColumn, 0, 0)
 	for _, column := range columns {
-		schemaTableColumn, err := types.ColumnToSchemaColumn(column)
+		schemaTableColumn, err := types.ColumnToPostgresqlSchemaColumn(column)
 		if err != nil {
 			fmt.Printf("%#v\n", err)
 			return "", err
@@ -222,7 +222,7 @@ func generateGenericTableYAML(driver string, dbName string, table *types.Table, 
 		schemaTableColumns = append(schemaTableColumns, schemaTableColumn)
 	}
 
-	tableSchema := &schemasv1alpha4.SQLTableSchema{
+	tableSchema := &schemasv1alpha4.PostgresqlTableSchema{
 		PrimaryKey:  primaryKey,
 		Columns:     schemaTableColumns,
 		ForeignKeys: schemaForeignKeys,
