@@ -56,7 +56,7 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha4.PostgresqlTableColumn) (
 	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
-func postgresColumnAsInsert(column *schemasv1alpha4.PostgresqlTableColumn) (string, error) {
+func columnAsInsert(column *schemasv1alpha4.PostgresqlTableColumn) (string, error) {
 	// Note, we don't always quote the column type because of how pg handles these two statement very differently:
 
 	// 1. create table "users" ("id" "bigint","login" "varchar(255)","name" "varchar(255)")
@@ -92,7 +92,7 @@ func postgresColumnAsInsert(column *schemasv1alpha4.PostgresqlTableColumn) (stri
 }
 
 func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.PostgresqlTableColumn) (string, error) {
-	columnFields, err := postgresColumnAsInsert(desiredColumn)
+	columnFields, err := columnAsInsert(desiredColumn)
 	if err != nil {
 		return "", err
 	}

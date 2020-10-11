@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_postgresColumnAsInsert(t *testing.T) {
+func Test_columnAsInsert(t *testing.T) {
 	default11 := "11"
 	tests := []struct {
 		name              string
@@ -83,7 +83,7 @@ func Test_postgresColumnAsInsert(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			generatedStatement, err := postgresColumnAsInsert(test.column)
+			generatedStatement, err := columnAsInsert(test.column)
 			req.NoError(err)
 			assert.Equal(t, test.expectedStatement, generatedStatement)
 		})

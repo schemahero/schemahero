@@ -93,6 +93,35 @@ func Test_CreateTableStatement(t *testing.T) {
 				`create table "composite_unique_index" ("one" integer, "two" integer, "three" character varying (255), primary key ("one"), constraint "idx_composite_unique_index_two_three" unique ("two", "three"))`,
 			},
 		},
+		{
+			name: "simple with trigger",
+			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.PostgresqlTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+				},
+				Triggers: []*schemasv1alpha4.PostgresqlTableTrigger{
+					{
+						Name: "tgr",
+						Events: []string{
+							"after insert",
+						},
+						ForEachRow:       &trueValue,
+						ExecuteProcedure: "test()",
+					},
+				},
+			},
+			tableName: "simple",
+			expectedStatements: []string{
+				`create table "simple" ("id" integer, primary key ("id"))`,
+				`create trigger "tgr" after insert on "simple" for each row execute procedure test()`,
+			},
+		},
 	}
 
 	for _, test := range tests {
