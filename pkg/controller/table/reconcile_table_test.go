@@ -25,7 +25,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 				},
 			},
 			tableSchema: schemasv1alpha4.TableSchema{
-				Postgres: &schemasv1alpha4.SQLTableSchema{},
+				Postgres: &schemasv1alpha4.PostgresqlTableSchema{},
 			},
 			expect: true,
 		},
@@ -39,7 +39,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 				},
 			},
 			tableSchema: schemasv1alpha4.TableSchema{
-				Mysql: &schemasv1alpha4.MysqlSQLTableSchema{},
+				Mysql: &schemasv1alpha4.MysqlTableSchema{},
 			},
 			expect: true,
 		},
@@ -53,7 +53,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 				},
 			},
 			tableSchema: schemasv1alpha4.TableSchema{
-				Postgres: &schemasv1alpha4.SQLTableSchema{},
+				Postgres: &schemasv1alpha4.PostgresqlTableSchema{},
 			},
 			expect: false,
 		},
@@ -67,7 +67,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 				},
 			},
 			tableSchema: schemasv1alpha4.TableSchema{
-				Mysql: &schemasv1alpha4.MysqlSQLTableSchema{},
+				Mysql: &schemasv1alpha4.MysqlTableSchema{},
 			},
 			expect: false,
 		},

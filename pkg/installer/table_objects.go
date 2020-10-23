@@ -90,9 +90,13 @@ spec:
                         comment:
                           type: string
                         compaction:
-                          type: string
+                          additionalProperties:
+                            type: string
+                          type: object
                         compression:
-                          type: string
+                          additionalProperties:
+                            type: string
+                          type: object
                         crcCheckChance:
                           type: string
                         dcLocalReadRepairChance:
@@ -186,6 +190,34 @@ spec:
                       type: array
                     isDeleted:
                       type: boolean
+                    json:triggers:
+                      items:
+                        properties:
+                          arguments:
+                            items:
+                              type: string
+                            type: array
+                          condition:
+                            type: string
+                          constraintTrigger:
+                            type: boolean
+                          events:
+                            items:
+                              type: string
+                            type: array
+                          executeProcedure:
+                            type: string
+                          forEachRun:
+                            type: boolean
+                          forEachStatement:
+                            type: boolean
+                          name:
+                            type: string
+                        required:
+                        - events
+                        - executeProcedure
+                        type: object
+                      type: array
                     primaryKey:
                       items:
                         type: string
@@ -350,6 +382,34 @@ spec:
                       type: array
                     isDeleted:
                       type: boolean
+                    json:triggers:
+                      items:
+                        properties:
+                          arguments:
+                            items:
+                              type: string
+                            type: array
+                          condition:
+                            type: string
+                          constraintTrigger:
+                            type: boolean
+                          events:
+                            items:
+                              type: string
+                            type: array
+                          executeProcedure:
+                            type: string
+                          forEachRun:
+                            type: boolean
+                          forEachStatement:
+                            type: boolean
+                          name:
+                            type: string
+                        required:
+                        - events
+                        - executeProcedure
+                        type: object
+                      type: array
                     primaryKey:
                       items:
                         type: string
@@ -476,9 +536,13 @@ spec:
                           comment:
                             type: string
                           compaction:
-                            type: string
+                            additionalProperties:
+                              type: string
+                            type: object
                           compression:
-                            type: string
+                            additionalProperties:
+                              type: string
+                            type: object
                           crcCheckChance:
                             type: string
                           dcLocalReadRepairChance:
@@ -572,6 +636,34 @@ spec:
                         type: array
                       isDeleted:
                         type: boolean
+                      json:triggers:
+                        items:
+                          properties:
+                            arguments:
+                              items:
+                                type: string
+                              type: array
+                            condition:
+                              type: string
+                            constraintTrigger:
+                              type: boolean
+                            events:
+                              items:
+                                type: string
+                              type: array
+                            executeProcedure:
+                              type: string
+                            forEachRun:
+                              type: boolean
+                            forEachStatement:
+                              type: boolean
+                            name:
+                              type: string
+                          required:
+                          - events
+                          - executeProcedure
+                          type: object
+                        type: array
                       primaryKey:
                         items:
                           type: string
@@ -736,6 +828,34 @@ spec:
                         type: array
                       isDeleted:
                         type: boolean
+                      json:triggers:
+                        items:
+                          properties:
+                            arguments:
+                              items:
+                                type: string
+                              type: array
+                            condition:
+                              type: string
+                            constraintTrigger:
+                              type: boolean
+                            events:
+                              items:
+                                type: string
+                              type: array
+                            executeProcedure:
+                              type: string
+                            forEachRun:
+                              type: boolean
+                            forEachStatement:
+                              type: boolean
+                            name:
+                              type: string
+                          required:
+                          - events
+                          - executeProcedure
+                          type: object
+                        type: array
                       primaryKey:
                         items:
                           type: string

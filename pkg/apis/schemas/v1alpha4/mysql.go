@@ -16,22 +16,49 @@ limitations under the License.
 
 package v1alpha4
 
-type MysqlSQLTableColumn struct {
-	Name        string                     `json:"name" yaml:"name"`
-	Type        string                     `json:"type" yaml:"type"`
-	Constraints *SQLTableColumnConstraints `json:"constraints,omitempty" yaml:"constraints,omitempty"`
-	Attributes  *SQLTableColumnAttributes  `json:"attributes,omitempty" yaml:"attributes,omitempty"`
-	Default     *string                    `json:"default,omitempty" yaml:"default,omitempty"`
-	Charset     string                     `json:"charset,omitempty" yaml:"charset,omitempty"`
-	Collation   string                     `json:"collation,omitempty" yaml:"collation,omitempty"`
+type MysqlTableColumnConstraints struct {
+	NotNull *bool `json:"notNull,omitempty" yaml:"notNull,omitempty"`
 }
 
-type MysqlSQLTableSchema struct {
-	PrimaryKey     []string               `json:"primaryKey,omitempty" yaml:"primaryKey,omitempty"`
-	ForeignKeys    []*SQLTableForeignKey  `json:"foreignKeys,omitempty" yaml:"foreignKeys,omitempty"`
-	Indexes        []*SQLTableIndex       `json:"indexes,omitempty" yaml:"indexes,omitempty"`
-	Columns        []*MysqlSQLTableColumn `json:"columns,omitempty" yaml:"columns,omitempty"`
-	IsDeleted      bool                   `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
-	DefaultCharset string                 `json:"defaultCharset,omitempty" yaml:"defaultCharset,omitempty"`
-	Collation      string                 `json:"collation,omitempty" yaml:"collation,omitempty"`
+type MysqlTableColumnAttributes struct {
+	AutoIncrement *bool `json:"autoIncrement,omitempty" yaml:"autoIncrement,omitempty"`
+}
+
+type MysqlTableForeignKeyReferences struct {
+	Table   string   `json:"table"`
+	Columns []string `json:"columns"`
+}
+
+type MysqlTableForeignKey struct {
+	Columns    []string                       `json:"columns" yaml:"columns"`
+	References MysqlTableForeignKeyReferences `json:"references" yaml:"references"`
+	OnDelete   string                         `json:"onDelete,omitempty" yaml:"onDelete,omitempty"`
+	Name       string                         `json:"name,omitempty" yaml:"name,omitempty"`
+}
+
+type MysqlTableIndex struct {
+	Columns  []string `json:"columns" yaml:"columns"`
+	Name     string   `json:"name,omitempty" yaml:"name,omitempty"`
+	IsUnique bool     `json:"isUnique,omitempty" yaml:"isUnique,omitempty"`
+	Type     string   `json:"type,omitempty" yaml:"type,omitempty"`
+}
+
+type MysqlTableColumn struct {
+	Name        string                       `json:"name" yaml:"name"`
+	Type        string                       `json:"type" yaml:"type"`
+	Constraints *MysqlTableColumnConstraints `json:"constraints,omitempty" yaml:"constraints,omitempty"`
+	Attributes  *MysqlTableColumnAttributes  `json:"attributes,omitempty" yaml:"attributes,omitempty"`
+	Default     *string                      `json:"default,omitempty" yaml:"default,omitempty"`
+	Charset     string                       `json:"charset,omitempty" yaml:"charset,omitempty"`
+	Collation   string                       `json:"collation,omitempty" yaml:"collation,omitempty"`
+}
+
+type MysqlTableSchema struct {
+	PrimaryKey     []string                `json:"primaryKey,omitempty" yaml:"primaryKey,omitempty"`
+	ForeignKeys    []*MysqlTableForeignKey `json:"foreignKeys,omitempty" yaml:"foreignKeys,omitempty"`
+	Indexes        []*MysqlTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
+	Columns        []*MysqlTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
+	IsDeleted      bool                    `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
+	DefaultCharset string                  `json:"defaultCharset,omitempty" yaml:"defaultCharset,omitempty"`
+	Collation      string                  `json:"collation,omitempty" yaml:"collation,omitempty"`
 }

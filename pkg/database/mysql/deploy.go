@@ -11,7 +11,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlSQLTableSchema) ([]string, error) {
+func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	m, err := Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to mysql")
@@ -36,12 +36,12 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 
 	if tableExists == 0 {
 		// shortcut to just create it
-		query, err := CreateTableStatement(tableName, mysqlTableSchema)
+		queries, err := CreateTableStatements(tableName, mysqlTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
 		}
 
-		return []string{query}, nil
+		return queries, nil
 	}
 
 	statements := []string{}
@@ -113,7 +113,7 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 	return nil
 }
 
-func buildTableCharsetAndCollationStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlSQLTableSchema) ([]string, error) {
+func buildTableCharsetAndCollationStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	query := `select 
 t.TABLE_COLLATION,
 c.character_set_name FROM information_schema.TABLES t,
@@ -199,7 +199,7 @@ WHERE schema_name = ?`
 	}, nil
 }
 
-func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlSQLTableSchema) ([]string, error) {
+func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	query := `select
 COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH
 from information_schema.COLUMNS
@@ -292,7 +292,7 @@ where TABLE_NAME = ?`
 	return alterAndDropStatements, nil
 }
 
-func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlSQLTableSchema) ([]string, error) {
+func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	currentPrimaryKey, err := m.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -327,7 +327,7 @@ func buildPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	return statements, nil
 }
 
-func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlSQLTableSchema) ([]string, error) {
+func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	foreignKeyStatements := []string{}
 	currentForeignKeys, err := m.ListTableForeignKeys(m.databaseName, tableName)
 	if err != nil {
@@ -338,7 +338,7 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 		var statement string
 		var matchedForeignKey *types.ForeignKey
 		for _, currentForeignKey := range currentForeignKeys {
-			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
+			if currentForeignKey.Equals(types.MysqlSchemaForeignKeyToForeignKey(foreignKey)) {
 				goto Next
 			}
 
@@ -361,7 +361,7 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	for _, currentForeignKey := range currentForeignKeys {
 		var statement string
 		for _, foreignKey := range mysqlTableSchema.ForeignKeys {
-			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
+			if currentForeignKey.Equals(types.MysqlSchemaForeignKeyToForeignKey(foreignKey)) {
 				goto NextCurrentFK
 			}
 		}
@@ -375,7 +375,7 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	return foreignKeyStatements, nil
 }
 
-func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlSQLTableSchema) ([]string, error) {
+func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	currentIndexes, err := m.ListTableIndexes(m.databaseName, tableName)
 	if err != nil {
@@ -385,7 +385,7 @@ func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema
 	for _, currentIndex := range currentIndexes {
 		isMatch := false
 		for _, desiredIndex := range mysqlTableSchema.Indexes {
-			if currentIndex.Equals(types.SchemaIndexToIndex(desiredIndex)) {
+			if currentIndex.Equals(types.MysqlSchemaIndexToIndex(desiredIndex)) {
 				isMatch = true
 			}
 		}
@@ -398,7 +398,7 @@ func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema
 	for _, desiredIndex := range mysqlTableSchema.Indexes {
 		isMatch := false
 		for _, currentIndex := range currentIndexes {
-			if currentIndex.Equals(types.SchemaIndexToIndex(desiredIndex)) {
+			if currentIndex.Equals(types.MysqlSchemaIndexToIndex(desiredIndex)) {
 				isMatch = true
 			}
 		}

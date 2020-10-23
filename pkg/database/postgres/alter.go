@@ -9,7 +9,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.SQLTableColumn, existingColumn *types.Column) ([]string, error) {
+func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.PostgresqlTableColumn, existingColumn *types.Column) ([]string, error) {
 	alterStatement := fmt.Sprintf("alter column %s", pgx.Identifier{existingColumn.Name}.Sanitize())
 
 	// this could be an alter or a drop column command

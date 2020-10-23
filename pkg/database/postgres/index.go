@@ -20,7 +20,7 @@ func RemoveIndexStatement(tableName string, index *types.Index) string {
 	return fmt.Sprintf("drop index %s", pgx.Identifier{index.Name}.Sanitize())
 }
 
-func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIndex) string {
+func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
 	unique := ""
 	if schemaIndex.IsUnique {
 		unique = "unique "
@@ -28,7 +28,7 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIn
 
 	name := schemaIndex.Name
 	if name == "" {
-		name = types.GenerateIndexName(tableName, schemaIndex)
+		name = types.GeneratePostgresqlIndexName(tableName, schemaIndex)
 	}
 
 	return fmt.Sprintf("create %sindex %s on %s (%s)",
@@ -38,6 +38,6 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIn
 		strings.Join(schemaIndex.Columns, ", "))
 }
 
-func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.SQLTableIndex) string {
+func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
 	return fmt.Sprintf("alter index %s rename to %s", pgx.Identifier{index.Name}.Sanitize(), pgx.Identifier{schemaIndex.Name}.Sanitize())
 }

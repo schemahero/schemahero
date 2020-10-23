@@ -11,7 +11,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
+func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	p, err := Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to postgres")
@@ -36,12 +36,12 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 
 	if tableExists == 0 {
 		// shortcut to just create it
-		query, err := CreateTableStatement(tableName, postgresTableSchema)
+		queries, err := CreateTableStatements(tableName, postgresTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
 		}
 
-		return []string{query}, nil
+		return queries, nil
 	}
 
 	statements := []string{}
@@ -106,7 +106,7 @@ func executeStatements(p *PostgresConnection, statements []string) error {
 	return nil
 }
 
-func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
+func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	query := `select
 column_name, column_default, is_nullable, data_type, udt_name, character_maximum_length
 from information_schema.columns
@@ -183,7 +183,7 @@ where table_name = $1`
 	return alterAndDropStatements, nil
 }
 
-func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
+func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	currentPrimaryKey, err := p.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -212,7 +212,7 @@ func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgres
 	return statements, nil
 }
 
-func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
+func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	foreignKeyStatements := []string{}
 	droppedKeys := []string{}
 	currentForeignKeys, err := p.ListTableForeignKeys(p.databaseName, tableName)
@@ -224,7 +224,7 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 		var statement string
 		var matchedForeignKey *types.ForeignKey
 		for _, currentForeignKey := range currentForeignKeys {
-			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
+			if currentForeignKey.Equals(types.PostgresqlSchemaForeignKeyToForeignKey(foreignKey)) {
 				goto Next
 			}
 
@@ -248,7 +248,7 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	for _, currentForeignKey := range currentForeignKeys {
 		var statement string
 		for _, foreignKey := range postgresTableSchema.ForeignKeys {
-			if currentForeignKey.Equals(types.SchemaForeignKeyToForeignKey(foreignKey)) {
+			if currentForeignKey.Equals(types.PostgresqlSchemaForeignKeyToForeignKey(foreignKey)) {
 				goto NextCurrentFK
 			}
 		}
@@ -268,7 +268,7 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	return foreignKeyStatements, nil
 }
 
-func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.SQLTableSchema) ([]string, error) {
+func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)
@@ -282,13 +282,13 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 
 	for _, index := range postgresTableSchema.Indexes {
 		if index.Name == "" {
-			index.Name = types.GenerateIndexName(tableName, index)
+			index.Name = types.GeneratePostgresqlIndexName(tableName, index)
 		}
 
 		var statement string
 		var matchedIndex *types.Index
 		for _, currentIndex := range currentIndexes {
-			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
+			if currentIndex.Equals(types.PostgresqlSchemaIndexToIndex(index)) {
 				goto Next
 			}
 
@@ -326,7 +326,7 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 		isConstraint := false
 
 		for _, index := range postgresTableSchema.Indexes {
-			if currentIndex.Equals(types.SchemaIndexToIndex(index)) {
+			if currentIndex.Equals(types.PostgresqlSchemaIndexToIndex(index)) {
 				goto NextCurrentIdx
 			}
 		}

@@ -12,7 +12,7 @@ func RemoveIndexStatement(tableName string, index *types.Index) string {
 	return fmt.Sprintf("alter table %q drop index %q", tableName, index.Name)
 }
 
-func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIndex) string {
+func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {
 	unique := ""
 	if schemaIndex.IsUnique {
 		unique = "unique "
@@ -20,12 +20,12 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.SQLTableIn
 
 	name := schemaIndex.Name
 	if name == "" {
-		name = types.GenerateIndexName(tableName, schemaIndex)
+		name = types.GenerateMysqlIndexName(tableName, schemaIndex)
 	}
 
 	return fmt.Sprintf("create %sindex %s on %s (%s)", unique, name, tableName, strings.Join(schemaIndex.Columns, ", "))
 }
 
-func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.SQLTableIndex) string {
+func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {
 	return fmt.Sprintf("alter index %s rename to %s", index.Name, schemaIndex.Name)
 }

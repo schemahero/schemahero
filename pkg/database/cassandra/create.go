@@ -24,12 +24,12 @@ func CreateTypeStatement(keyspace string, typeName string, typeSchema *schemasv1
 	return query, nil
 }
 
-func CreateTableStatement(keyspace string, tableName string, tableSchema *schemasv1alpha4.CassandraTableSchema) (string, error) {
+func CreateTableStatements(keyspace string, tableName string, tableSchema *schemasv1alpha4.CassandraTableSchema) ([]string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnsFields, err := cassandraColumnAsInsert(desiredColumn)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		columns = append(columns, columnsFields)
 	}
@@ -74,7 +74,7 @@ func CreateTableStatement(keyspace string, tableName string, tableSchema *schema
 		if tableSchema.Properties.Caching != nil {
 			b, err := json.Marshal(tableSchema.Properties.Caching)
 			if err != nil {
-				return "", errors.Wrap(err, "failed to marshal caching property")
+				return nil, errors.Wrap(err, "failed to marshal caching property")
 			}
 			tableProperty := fmt.Sprintf(`caching = %s`, b)
 			tableProperties = append(tableProperties, tableProperty)
@@ -86,7 +86,7 @@ func CreateTableStatement(keyspace string, tableName string, tableSchema *schema
 		if tableSchema.Properties.Compaction != nil {
 			b, err := json.Marshal(tableSchema.Properties.Compaction)
 			if err != nil {
-				return "", errors.Wrap(err, "failed to marshal compaction property")
+				return nil, errors.Wrap(err, "failed to marshal compaction property")
 			}
 			tableProperty := fmt.Sprintf(`compaction = %s`, b)
 			tableProperties = append(tableProperties, tableProperty)
@@ -94,7 +94,7 @@ func CreateTableStatement(keyspace string, tableName string, tableSchema *schema
 		if tableSchema.Properties.Compression != nil {
 			b, err := json.Marshal(tableSchema.Properties.Compression)
 			if err != nil {
-				return "", errors.Wrap(err, "failed to marshal compression property")
+				return nil, errors.Wrap(err, "failed to marshal compression property")
 			}
 			tableProperty := fmt.Sprintf(`compression = %s`, b)
 			tableProperties = append(tableProperties, tableProperty)
@@ -141,5 +141,5 @@ func CreateTableStatement(keyspace string, tableName string, tableSchema *schema
 		query = fmt.Sprintf("%s with %s", query, strings.Join(tableProperties, " AND "))
 	}
 
-	return query, nil
+	return []string{query}, nil
 }

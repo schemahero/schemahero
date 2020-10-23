@@ -9,13 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_CreateTableStatement(t *testing.T) {
+func Test_CreateTableStatements(t *testing.T) {
 	tests := []struct {
-		name              string
-		keyspace          string
-		tableName         string
-		tableSchema       schemasv1alpha4.CassandraTableSchema
-		expectedStatement string
+		name               string
+		keyspace           string
+		tableName          string
+		tableSchema        schemasv1alpha4.CassandraTableSchema
+		expectedStatements []string
 	}{
 		{
 			name:      "simple",
@@ -29,7 +29,9 @@ func Test_CreateTableStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `create table t (a int)`,
+			expectedStatements: []string{
+				`create table "k.t" (a int)`,
+			},
 		},
 		{
 			name:      "with pk",
@@ -48,7 +50,9 @@ func Test_CreateTableStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `create table t (a int, primary key (a))`,
+			expectedStatements: []string{
+				`create table "k.t" (a int, primary key (a))`,
+			},
 		},
 		{
 			name:      "with compound pk",
@@ -74,7 +78,9 @@ func Test_CreateTableStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `create table t (a int, b int, primary key (a, b))`,
+			expectedStatements: []string{
+				`create table "k.t" (a int, b int, primary key (a, b))`,
+			},
 		},
 		{
 			name:      "with composite partition pk",
@@ -104,7 +110,9 @@ func Test_CreateTableStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `create table t (a int, b int, c int, primary key ((a, b), c))`,
+			expectedStatements: []string{
+				`create table "k.t" (a int, b int, c int, primary key ((a, b), c))`,
+			},
 		},
 		{
 			name:      "clustering order",
@@ -121,7 +129,9 @@ func Test_CreateTableStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `create table t (a int) with clustering order by (a)`,
+			expectedStatements: []string{
+				`create table "k.t" (a int) with clustering order by (a)`,
+			},
 		},
 		{
 			name:      "clustering order desc",
@@ -139,7 +149,9 @@ func Test_CreateTableStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `create table t (a int) with clustering order by (a desc)`,
+			expectedStatements: []string{
+				`create table "k.t" (a int) with clustering order by (a desc)`,
+			},
 		},
 	}
 
@@ -147,9 +159,9 @@ func Test_CreateTableStatement(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			generatedStatement, err := CreateTableStatement(test.keyspace, test.tableName, &test.tableSchema)
+			generatedStatements, err := CreateTableStatements(test.keyspace, test.tableName, &test.tableSchema)
 			req.NoError(err)
-			assert.Equal(t, test.expectedStatement, generatedStatement)
+			assert.Equal(t, test.expectedStatements, generatedStatements)
 		})
 	}
 }

@@ -44,7 +44,7 @@ foreignKeys:
 
 	g := gomega.NewGomegaWithT(t)
 
-	table := SQLTableSchema{}
+	table := PostgresqlTableSchema{}
 	err := yaml.Unmarshal([]byte(fk), &table)
 	g.Expect(err).NotTo(gomega.HaveOccurred())
 	g.Expect(table.Columns).To(gomega.HaveLen(2))

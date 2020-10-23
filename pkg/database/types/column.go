@@ -31,20 +31,20 @@ type Column struct {
 	IsStatic      bool
 }
 
-func ColumnToMysqlSchemaColumn(column *Column) (*schemasv1alpha4.MysqlSQLTableColumn, error) {
-	schemaColumn := &schemasv1alpha4.MysqlSQLTableColumn{
+func ColumnToMysqlSchemaColumn(column *Column) (*schemasv1alpha4.MysqlTableColumn, error) {
+	schemaColumn := &schemasv1alpha4.MysqlTableColumn{
 		Name: column.Name,
 		Type: column.DataType,
 	}
 
 	if column.Constraints != nil {
-		schemaColumn.Constraints = &schemasv1alpha4.SQLTableColumnConstraints{
+		schemaColumn.Constraints = &schemasv1alpha4.MysqlTableColumnConstraints{
 			NotNull: column.Constraints.NotNull,
 		}
 	}
 
 	if column.Attributes != nil {
-		schemaColumn.Attributes = &schemasv1alpha4.SQLTableColumnAttributes{
+		schemaColumn.Attributes = &schemasv1alpha4.MysqlTableColumnAttributes{
 			AutoIncrement: column.Attributes.AutoIncrement,
 		}
 	}
@@ -57,20 +57,20 @@ func ColumnToMysqlSchemaColumn(column *Column) (*schemasv1alpha4.MysqlSQLTableCo
 	return schemaColumn, nil
 }
 
-func ColumnToSchemaColumn(column *Column) (*schemasv1alpha4.SQLTableColumn, error) {
-	schemaColumn := &schemasv1alpha4.SQLTableColumn{
+func ColumnToPostgresqlSchemaColumn(column *Column) (*schemasv1alpha4.PostgresqlTableColumn, error) {
+	schemaColumn := &schemasv1alpha4.PostgresqlTableColumn{
 		Name: column.Name,
 		Type: column.DataType,
 	}
 
 	if column.Constraints != nil {
-		schemaColumn.Constraints = &schemasv1alpha4.SQLTableColumnConstraints{
+		schemaColumn.Constraints = &schemasv1alpha4.PostgresqlTableColumnConstraints{
 			NotNull: column.Constraints.NotNull,
 		}
 	}
 
 	if column.Attributes != nil {
-		schemaColumn.Attributes = &schemasv1alpha4.SQLTableColumnAttributes{
+		schemaColumn.Attributes = &schemasv1alpha4.PostgresqlTableColumnAttributes{
 			AutoIncrement: column.Attributes.AutoIncrement,
 		}
 	}
