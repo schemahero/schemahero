@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2.1.2
+      - uses: actions/setup-go@v2.1.3
         with:
           go-version: "1.14.3"
       - name: setup goenv
@@ -18,11 +18,11 @@ jobs:
         shell: bash
       - uses: actions/checkout@v2
       - run: make all
-      - uses: actions/upload-artifact@v2.1.4
+      - uses: actions/upload-artifact@v2.2.0
         with:
           name: kubectl-schemahero
           path: bin/kubectl-schemahero
-      - uses: actions/upload-artifact@v2.1.4
+      - uses: actions/upload-artifact@v2.2.0
         with:
           name: manager
           path: bin/manager
@@ -109,7 +109,7 @@ jobs:
 
       - name: Create the release
         id: test-action
-        uses: replicatedhq/action-kots-release@v0.3.0
+        uses: replicatedhq/action-kots-release@v0.4.0
         with:
           replicated-app: "schemahero-enterprise"
           replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
