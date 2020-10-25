@@ -17,3 +17,4 @@ jobs:
           commit-message: "[proaction] updating workflow"
           title: Updating workflow from Proaction
           token: ${{secrets.PROACTION_TOKEN}}
+          signoff: true
