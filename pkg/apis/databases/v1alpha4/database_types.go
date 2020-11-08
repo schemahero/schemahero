@@ -26,6 +26,7 @@ type DatabaseConnection struct {
 	Mysql       *MysqlConnection       `json:"mysql,omitempty"`
 	CockroachDB *CockroachDBConnection `json:"cockroachdb,omitempty"`
 	Cassandra   *CassandraConnection   `json:"cassandra,omitempty"`
+	SQLite      *SqliteConnection      `json:"sqlite,omitempty"`
 }
 
 type SchemaHero struct {

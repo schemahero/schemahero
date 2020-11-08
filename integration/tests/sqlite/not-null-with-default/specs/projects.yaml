@@ -1,0 +1,16 @@
+database: schemahero
+name: projects
+schema:
+  sqlite:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: name
+        type: varchar(255)
+        default: "name me"
+        constraints:
+          notNull: true
+      - name: icon_uri
+        type: varchar(255)
+

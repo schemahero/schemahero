@@ -30,6 +30,7 @@ type TableSchema struct {
 	Mysql       *MysqlTableSchema      `json:"mysql,omitempty" yaml:"mysql,omitempty"`
 	CockroachDB *PostgresqlTableSchema `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
 	Cassandra   *CassandraTableSchema  `json:"cassandra,omitempty" yaml:"cassandra,omitempty"`
+	SQLite      *SqliteTableSchema     `json:"sqlite,omitempty" yaml:"sqlite,omitempty"`
 }
 
 // TableSpec defines the desired state of Table

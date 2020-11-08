@@ -12,6 +12,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/cassandra"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
+	"github.com/schemahero/schemahero/pkg/database/sqlite"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
@@ -180,6 +181,8 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB)
 	} else if d.Driver == "cassandra" {
 		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+	} else if d.Driver == "sqlite" {
+		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -227,7 +230,8 @@ func (d *Database) ApplySync(statements []string) error {
 		return postgres.DeployPostgresStatements(d.URI, statements)
 	} else if d.Driver == "cassandra" {
 		return cassandra.DeployCassandraStatements(d.Hosts, d.Username, d.Password, d.Keyspace, statements)
+	} else if d.Driver == "sqlite" {
+		return sqlite.DeploySqliteStatements(d.URI, statements)
 	}
-
 	return errors.Errorf("unknown database driver: %q", d.Driver)
 }

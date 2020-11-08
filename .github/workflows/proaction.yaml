@@ -14,7 +14,7 @@ jobs:
 
       - uses: peter-evans/create-pull-request@v3.5.0
         with:
-          commit-message: "[proaction] updating workflow"
-          title: Updating workflow from Proaction
+          commit-message: "updating workflow"
+          title: Updating workflow with latest actions
           token: ${{secrets.PROACTION_TOKEN}}
           signoff: true
