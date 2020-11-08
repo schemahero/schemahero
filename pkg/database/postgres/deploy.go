@@ -74,6 +74,13 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	}
 	statements = append(statements, indexStatements...)
 
+	// trigger changes
+	triggerStatements, err := buildTriggerStatements(p, tableName, postgrepostgresTableSchema)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build trigger statements")
+	}
+	stqatements = append(statements, triggerStatements...)
+
 	return statements, nil
 }
 
@@ -355,4 +362,14 @@ func buildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 	}
 
 	return indexStatements, nil
+}
+
+func buildTriggerStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+	currentTriggers, err := p.ListTableTriggers(p.databaseName, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list current triggers")
+	}
+
+	fmt.Printf("%#v\n", currentTriggers)
+	return nil, errors.New("not implmeneted")
 }

@@ -21,6 +21,7 @@ func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list tables")
 	}
+	defer rows.Close()
 
 	tables := []*types.Table{}
 	for rows.Next() {
@@ -44,6 +45,7 @@ func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list constraints")
 	}
+	defer rows.Close()
 
 	constraints := []string{}
 	for rows.Next() {
@@ -56,6 +58,33 @@ func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName
 	}
 
 	return constraints, nil
+}
+
+func (p *PostgresConnection) ListTableTriggers(databaseName string, tableName string) ([]*types.Trigger, error) {
+	query := `select 
+	event_object_table, 
+	trigger_name,
+	event_manipulation,
+	action_statement,
+	action_timing
+	from information_schema.triggers
+	where event_object_table = $1`
+	rows, err := p.conn.Query(context.Background(), query, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to query triggers")
+	}
+	defer rows.Close()
+
+	triggers := make([]*types.Trigger, 0, 0)
+	for rows.Next() {
+		trigger := types.Trigger{}
+
+		// scan
+
+		triggers = append(triggers, &trigger)
+	}
+
+	return nil, errors.New("not implemented")
 }
 
 func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
@@ -78,6 +107,7 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	indexes := make([]*types.Index, 0, 0)
 	for rows.Next() {
@@ -97,7 +127,6 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 }
 
 func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
-	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
 	// TODO SchemaHero implementation needs to include a schema (database) here
 	// this is pg specific because composite fks need to be handled and this might be the only way?
 	query := `select
@@ -134,6 +163,7 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	foreignKeys := make([]*types.ForeignKey, 0, 0)
 	for rows.Next() {
@@ -182,6 +212,7 @@ order by c.ordinal_position`
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var hasKey bool
 
