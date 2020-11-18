@@ -1,0 +1,7 @@
+apiVersion: troubleshoot.sh/v1beta2
+kind: SupportBundle
+metadata:
+  name: schemahero
+spec:
+  collectors: []
+
