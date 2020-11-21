@@ -51,6 +51,10 @@ func GenerateCmd() *cobra.Command {
 	cmd.Flags().String("driver", "", "name of the database driver to run (required)")
 	cmd.Flags().String("dbname", "", "schemahero database name to write in the yaml (required)")
 
+	cmd.MarkFlagRequired("uri")
+	cmd.MarkFlagRequired("driver")
+	cmd.MarkFlagRequired("dbname")
+
 	cmd.Flags().String("output-dir", cwd, "directory to write schema files to")
 
 	return cmd
