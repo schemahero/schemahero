@@ -126,6 +126,32 @@ func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Resu
 						Annotations: vaultAnnotations,
 					},
 					Spec: corev1.PodSpec{
+						Affinity: &corev1.Affinity{
+							NodeAffinity: &corev1.NodeAffinity{
+								RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+									NodeSelectorTerms: []corev1.NodeSelectorTerm{
+										{
+											MatchExpressions: []corev1.NodeSelectorRequirement{
+												{
+													Key:      "kubernetes.io/os",
+													Operator: corev1.NodeSelectorOpIn,
+													Values: []string{
+														"linux",
+													},
+												},
+												{
+													Key:      "kubernetes.io/arch",
+													Operator: corev1.NodeSelectorOpIn,
+													Values: []string{
+														"amd64",
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						TerminationGracePeriodSeconds: &tenSeconds,
 						ServiceAccountName:            serviceAccountName,
 						Containers: []corev1.Container{
