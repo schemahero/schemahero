@@ -109,7 +109,7 @@ jobs:
 
       - name: Create the release
         id: test-action
-        uses: replicatedhq/action-kots-release@v0.4.0
+        uses: replicatedhq/action-kots-release@v0.5.0
         with:
           replicated-app: "schemahero-enterprise"
           replicated-api-token: ${{ secrets.REPLICATED_API_TOKEN }}
