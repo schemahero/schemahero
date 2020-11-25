@@ -94,7 +94,7 @@ jobs:
       - name: set previous release tag for goreleaser
         shell: bash
         run: |
-          echo ::set-env name=GORELEASER_PREVIOUS_TAG::$(curl --silent "https://api.github.com/repos/schemahero/schemahero/releases/latest" | grep -Po '"tag_name": "\K.*?(?=")')
+          echo "GORELEASER_PREVIOUS_TAG=$(curl --silent 'https://api.github.com/repos/schemahero/schemahero/releases/latest' | grep -Po '\"tag_name\": \"\K.*?(?=\")' )" >> $GITHUB_ENV
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.2.1
         with:
