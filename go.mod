@@ -27,7 +27,6 @@ require (
 	k8s.io/code-generator v0.18.3-beta.0 // indirect
 	sigs.k8s.io/controller-runtime v0.5.1-0.20200402191424-df180accb901
 	sigs.k8s.io/controller-tools v0.2.8 // indirect
-
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
