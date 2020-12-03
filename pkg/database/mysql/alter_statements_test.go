@@ -36,7 +36,7 @@ func TestAlterDDL(t *testing.T) {
 				Collation: "collation_new",
 			},
 			expect: []string{
-				"alter table `t` modify column `col` datatype character set charset_new collate collation_new not null defaut \"11\"",
+				"alter table `t` modify column `col` datatype character set charset_new collate collation_new",
 			},
 		},
 	}
