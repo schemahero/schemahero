@@ -13,9 +13,10 @@ import (
 
 func ApplyCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "apply",
-		Short: "apply a spec to a database",
-		Long:  `...`,
+		Use:          "apply",
+		Short:        "apply a spec to a database",
+		Long:         `...`,
+		SilenceUsage: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},

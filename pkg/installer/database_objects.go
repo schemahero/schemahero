@@ -2067,6 +2067,13 @@ spec:
                           type: object
                       type: object
                   type: object
+                sqlite:
+                  properties:
+                    dsn:
+                      type: string
+                  required:
+                  - dsn
+                  type: object
               type: object
             enableShellCommand:
               type: boolean
@@ -4174,6 +4181,13 @@ spec:
                                 type: object
                             type: object
                         type: object
+                    type: object
+                  sqlite:
+                    properties:
+                      dsn:
+                        type: string
+                    required:
+                    - dsn
                     type: object
                 type: object
               enableShellCommand:

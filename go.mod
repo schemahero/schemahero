@@ -11,9 +11,9 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jackc/pgx/v4 v4.8.1
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.4
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/common v0.4.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.4.0
@@ -26,9 +26,7 @@ require (
 	k8s.io/apimachinery v0.18.0
 	k8s.io/cli-runtime v0.18.0
 	k8s.io/client-go v0.18.0
-	k8s.io/code-generator v0.18.3-beta.0 // indirect
 	sigs.k8s.io/controller-runtime v0.5.1-0.20200402191424-df180accb901
-	sigs.k8s.io/controller-tools v0.2.8 // indirect
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible

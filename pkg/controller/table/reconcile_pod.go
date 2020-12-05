@@ -29,9 +29,9 @@ func (r *ReconcileTable) readConnectionURI(namespace string, valueOrValueFrom da
 		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
 			if kuberneteserrors.IsNotFound(err) {
 				return "", errors.New("table secret not found")
-			} else {
-				return "", errors.Wrap(err, "failed to get existing connection secret")
 			}
+
+			return "", errors.Wrap(err, "failed to get existing connection secret")
 		}
 
 		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
