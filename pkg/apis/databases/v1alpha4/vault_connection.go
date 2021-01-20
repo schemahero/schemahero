@@ -30,7 +30,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func (d *Database) getVaultConnection(ctx context.Context, clientset *kubernetes.Clientset, driver string, valueOrValueFrom ValueOrValueFrom) (string, string, error) {
+func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.Interface, driver string, valueOrValueFrom ValueOrValueFrom) (string, string, error) {
 	// if the value is in vault and we are using the vault injector, just read the file
 	if valueOrValueFrom.ValueFrom.Vault.AgentInject {
 		vaultInjectedFileContents, err := ioutil.ReadFile("/vault/secrets/schemaherouri")
@@ -74,7 +74,11 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset *kubernetes
 		return "", "", errors.Wrap(err, "failed to marshal login payload")
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/v1/auth/kubernetes/login", valueOrValueFrom.ValueFrom.Vault.Endpoint), bytes.NewReader(marshalledLoginBody))
+	k8sAuthEndpoint := "/v1/auth/kubernetes/login"
+	if valueOrValueFrom.ValueFrom.Vault.KubernetesAuthEndpoint != "" {
+		k8sAuthEndpoint = valueOrValueFrom.ValueFrom.Vault.KubernetesAuthEndpoint
+	}
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s%s", valueOrValueFrom.ValueFrom.Vault.Endpoint, k8sAuthEndpoint), bytes.NewReader(marshalledLoginBody))
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to create login request")
 	}
@@ -137,41 +141,7 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset *kubernetes
 		return "", "", errors.Wrap(err, "failed to unmarshal response")
 	}
 
-	req, err = http.NewRequest("GET", fmt.Sprintf("%s/v1/database/config/%s", valueOrValueFrom.ValueFrom.Vault.Endpoint, d.Name), nil)
-	if err != nil {
-		return "", "", errors.Wrap(err, "failed to create request")
-	}
-	req.Header.Add("X-Vault-Token", loginResponse.Auth.ClientToken)
-
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		return "", "", errors.Wrap(err, "failed to execute request")
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", "", errors.Errorf("unexpected response from vault reading config: %d", resp.StatusCode)
-	}
-
-	type ConnectionDetails struct {
-		ConnectionURL string `json:"connection_url"`
-	}
-	type ConfigDataResponse struct {
-		ConnectionDetails ConnectionDetails `json:"connection_details"`
-	}
-	configResponse := struct {
-		Data ConfigDataResponse `json:"data"`
-	}{
-		Data: ConfigDataResponse{},
-	}
-
-	b, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", "", errors.Wrap(err, "failed to read body")
-	}
-	if err := json.Unmarshal(b, &configResponse); err != nil {
-		return "", "", errors.Wrap(err, "failed to unmarshal response")
-	}
+	uriTemplate, err := getConnectionURITemplate(valueOrValueFrom.ValueFrom.Vault, loginResponse.Auth.ClientToken, d.Name)
 
 	funcMap := template.FuncMap{}
 	funcMap["username"] = func() string {
@@ -182,11 +152,56 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset *kubernetes
 	}
 
 	// with the connection url and the username and password (context), we can build a connection string
-	t := template.Must(template.New(fmt.Sprintf("%s/%s/%s", d.Namespace, d.Name, d.ResourceVersion)).Funcs(funcMap).Parse(configResponse.Data.ConnectionDetails.ConnectionURL))
+	t := template.Must(template.New(fmt.Sprintf("%s/%s/%s", d.Namespace, d.Name, d.ResourceVersion)).Funcs(funcMap).Parse(uriTemplate))
 	var connectionURI bytes.Buffer
 	if err := t.Execute(&connectionURI, credsResponse.Data); err != nil {
 		return "", "", errors.Wrap(err, "failed to render vault connection template")
 	}
 
 	return driver, connectionURI.String(), nil
+}
+
+// get the uri template from the DB spec if set, otherwise use DB config in Vault
+func getConnectionURITemplate(vault *Vault, token string, dbName string) (string, error) {
+	if vault.ConnectionTemplate != "" {
+		return vault.ConnectionTemplate, nil
+	} else {
+		req, err := http.NewRequest("GET", fmt.Sprintf("%s/v1/database/config/%s", vault.Endpoint, dbName), nil)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to create request")
+		}
+		req.Header.Add("X-Vault-Token", token)
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to execute request")
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			return "", errors.Errorf("unexpected response from vault reading config: %d", resp.StatusCode)
+		}
+
+		type ConnectionDetails struct {
+			ConnectionURL string `json:"connection_url"`
+		}
+		type ConfigDataResponse struct {
+			ConnectionDetails ConnectionDetails `json:"connection_details"`
+		}
+		configResponse := struct {
+			Data ConfigDataResponse `json:"data"`
+		}{
+			Data: ConfigDataResponse{},
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", errors.Wrap(err, "failed to read body")
+		}
+		if err := json.Unmarshal(b, &configResponse); err != nil {
+			return "", errors.Wrap(err, "failed to unmarshal response")
+		}
+
+		return configResponse.Data.ConnectionDetails.ConnectionURL, nil
+	}
 }

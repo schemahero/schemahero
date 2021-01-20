@@ -91,10 +91,41 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/testdb{{- end
 {{- with secret "database/creds/test" -}}
 postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/testdb{{- end }}`,
 		},
+		{
+			name: "Postgres_template_passed_in",
+			db: &Database{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "testdb",
+				},
+				Spec: DatabaseSpec{
+					Connection: DatabaseConnection{
+						Postgres: &PostgresConnection{
+							URI: ValueOrValueFrom{
+								ValueFrom: &ValueFrom{
+									Vault: &Vault{
+										AgentInject:        true,
+										Role:               "test",
+										Secret:             "database/creds/test",
+										ConnectionTemplate: "postgres://{{ .username }}:{{ .password }}@postgres:1234/userdb",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: `
+{{- with secret "database/creds/test" -}}
+postgres://{{ .username }}:{{ .password }}@postgres:1234/userdb{{- end }}`,
+		},
 	}
 
 	for _, test := range tests {
+		test := test
+
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+
 			req := require.New(t)
 
 			a, err := test.db.GetVaultAnnotations()

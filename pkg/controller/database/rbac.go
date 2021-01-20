@@ -121,7 +121,7 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 			Rules: []rbacv1.PolicyRule{
 				{
 					APIGroups: []string{""},
-					Resources: []string{"secrets"},
+					Resources: []string{"secrets", "serviceaccounts"},
 					Verbs:     metav1.Verbs{"get"},
 				},
 				{
