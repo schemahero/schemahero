@@ -17,11 +17,11 @@ jobs:
         shell: bash
       - uses: actions/checkout@v2
       - run: make all
-      - uses: actions/upload-artifact@v2.2.1
+      - uses: actions/upload-artifact@v2.2.2
         with:
           name: manager
           path: bin/manager
-      - uses: actions/upload-artifact@v2.2.1
+      - uses: actions/upload-artifact@v2.2.2
         with:
           name: kubectl-schemahero
           path: bin/kubectl-schemahero
@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -67,7 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -96,7 +96,7 @@ jobs:
         run: |
           echo "GORELEASER_PREVIOUS_TAG=$(curl --silent 'https://api.github.com/repos/schemahero/schemahero/releases/latest' | grep -Po '\"tag_name\": \"\K.*?(?=\")' )" >> $GITHUB_ENV
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2.3.0
+        uses: goreleaser/goreleaser-action@v2.4.1
         with:
           version: latest
           args: release --rm-dist --config deploy/.goreleaser.yaml
