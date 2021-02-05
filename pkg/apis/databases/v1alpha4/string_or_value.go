@@ -21,13 +21,14 @@ type SecretKeyRef struct {
 }
 
 type Vault struct {
-	AgentInject bool   `json:"agentInject,omitempty" yaml:"agentInject,omitempty"`
-	Secret      string `json:"secret" yaml:"secret"`
-	Role        string `json:"role" yaml:"role"`
-
+	AgentInject             bool   `json:"agentInject,omitempty" yaml:"agentInject,omitempty"`
+	Secret                  string `json:"secret" yaml:"secret"`
+	Role                    string `json:"role" yaml:"role"`
 	Endpoint                string `json:"endpoint,omitempty" yaml:"endpoint,omitempty"`
 	ServiceAccount          string `json:"serviceAccount,omitempty" yaml:"serviceAccount,omitempty"`
 	ServiceAccountNamespace string `json:"serviceAccountNamespace,omitempty" yaml:"serviceAccountNamespace,omitempty"`
+	ConnectionTemplate      string `json:"connectionTemplate,omitempty" yaml:"connectionTemplate,omitempty"`
+	KubernetesAuthEndpoint  string `json:"kubernetesAuthEndpoint,omitempty" yaml:"kubernetesAuthEndpoint,omitempty"`
 }
 
 type SSM struct {

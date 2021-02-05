@@ -118,7 +118,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -205,7 +209,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -292,7 +300,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -385,7 +397,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -472,7 +488,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -559,7 +579,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -646,7 +670,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -733,7 +761,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -820,7 +852,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -907,7 +943,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -999,7 +1039,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1090,7 +1134,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1177,7 +1225,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1264,7 +1316,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1351,7 +1407,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1438,7 +1498,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1528,7 +1592,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1615,7 +1683,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1702,7 +1774,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1789,7 +1865,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1876,7 +1956,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -1963,7 +2047,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -2050,7 +2138,11 @@ spec:
                               properties:
                                 agentInject:
                                   type: boolean
+                                connectionTemplate:
+                                  type: string
                                 endpoint:
+                                  type: string
+                                kubernetesAuthEndpoint:
                                   type: string
                                 role:
                                   type: string
@@ -2233,7 +2325,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2320,7 +2416,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2407,7 +2507,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2500,7 +2604,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2587,7 +2695,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2674,7 +2786,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2761,7 +2877,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2848,7 +2968,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -2935,7 +3059,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3022,7 +3150,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3114,7 +3246,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3205,7 +3341,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3292,7 +3432,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3379,7 +3523,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3466,7 +3614,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3553,7 +3705,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3643,7 +3799,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3730,7 +3890,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3817,7 +3981,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3904,7 +4072,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -3991,7 +4163,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -4078,7 +4254,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
@@ -4165,7 +4345,11 @@ spec:
                                 properties:
                                   agentInject:
                                     type: boolean
+                                  connectionTemplate:
+                                    type: string
                                   endpoint:
+                                    type: string
+                                  kubernetesAuthEndpoint:
                                     type: string
                                   role:
                                     type: string
