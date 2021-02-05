@@ -18,11 +18,11 @@ jobs:
         shell: bash
       - uses: actions/checkout@v2
       - run: make all
-      - uses: actions/upload-artifact@v2.2.1
+      - uses: actions/upload-artifact@v2.2.2
         with:
           name: kubectl-schemahero
           path: bin/kubectl-schemahero
-      - uses: actions/upload-artifact@v2.2.1
+      - uses: actions/upload-artifact@v2.2.2
         with:
           name: manager
           path: bin/manager
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -68,7 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -100,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
@@ -116,7 +116,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v2.0.6
+        uses: actions/download-artifact@v2.0.8
         with:
           name: kubectl-schemahero
           path: bin/
