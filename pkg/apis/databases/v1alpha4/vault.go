@@ -104,14 +104,15 @@ func (d *Database) GetVaultAnnotations() (map[string]string, error) {
 	} else {
 		switch db {
 		case "postgres", "cockroachdb":
-			template = fmt.Sprintf(`
+			if connTemplate == "" {
+				template = fmt.Sprintf(`
 {{- with secret "database/creds/%s" -}}
 postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/%s{{- end }}`, v.Role, d.Name)
-		} else {
-			t = fmt.Sprintf(`
+			} else {
+				template = fmt.Sprintf(`
 {{- with secret "database/creds/%s" -}}
 %s`, v.Role, connTemplate)
-		}
+			}
 
 		case "mysql":
 			template = fmt.Sprintf(`
