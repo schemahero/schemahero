@@ -12,6 +12,8 @@ run:
 	touch ./db/db.db
 	docker pull keinos/sqlite3:latest
 	docker run --rm -v `pwd`/db:/db --name $(DATABASE_CONTAINER_NAME) keinos/sqlite3:latest sqlite3 /db/db.db
+	chmod a+w db   # give the "sqlite" user in the container permissions
+	chmod a+w db/db.db   # and permission to the file
 	docker run --rm -v `pwd`/db:/db -v `pwd`/fixtures.sql:/fixtures.sql --name $(DATABASE_CONTAINER_NAME) keinos/sqlite3:latest sqlite3 /db/db.db ".read /fixtures.sql"
 
 	# Plan
