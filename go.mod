@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jackc/pgx/v4 v4.8.1
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
-	github.com/mattn/go-sqlite3 v1.14.4
+	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v0.0.5
