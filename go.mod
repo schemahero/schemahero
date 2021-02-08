@@ -11,8 +11,8 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
+	github.com/onsi/gomega v1.10.5
 	github.com/mattn/go-sqlite3 v1.14.6
-	github.com/onsi/gomega v1.8.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
@@ -20,7 +20,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/xo/dburl v0.0.0-20200124232849-e9ec94f52bc3
 	go.uber.org/zap v1.16.0
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.0
 	k8s.io/apiextensions-apiserver v0.18.0
 	k8s.io/apimachinery v0.18.0
