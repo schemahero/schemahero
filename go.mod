@@ -9,7 +9,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/jackc/pgx/v4 v4.8.1
+	github.com/jackc/pgx/v4 v4.10.1
 	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/onsi/gomega v1.8.1
