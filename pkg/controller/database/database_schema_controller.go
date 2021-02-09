@@ -43,7 +43,7 @@ type ReconcileDatabaseSchema struct {
 // and what is in the Database.Spec for schemas
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases/status,verbs=get;update;patch
-func (r *ReconcileDatabaseSchema) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileDatabaseSchema) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	databaseInstance, err := r.getInstance(request)
 	if err != nil {
 		return reconcile.Result{}, err

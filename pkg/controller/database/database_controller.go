@@ -53,13 +53,11 @@ type ReconcileDatabase struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=databases.schemahero.io,resources=databases/status,verbs=get;update;patch
-func (r *ReconcileDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	databaseInstance, err := r.getInstance(request)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
-
-	ctx := context.Background()
 
 	// A "database" object is realized in the cluster as a deployment object,
 	// in the namespace specified in the custom resource,

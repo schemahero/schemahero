@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/xo/dburl"
 )
 
@@ -49,7 +50,7 @@ func Connect(uri string) (*PostgresConnection, error) {
 	}
 	engineVersion, err := parsePostgresVersion(reportedVersion)
 	if err != nil {
-		log.Info(err.Error()) // NOTE: this doesnt work with cockroachdb
+		logger.Info(err.Error()) // NOTE: this doesnt work with cockroachdb
 	}
 
 	postgresConnection := PostgresConnection{
