@@ -139,7 +139,7 @@ kotsimages: bin/kubectl-schemahero manager
 .PHONY: contoller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.2.8
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
@@ -148,7 +148,7 @@ endif
 .PHONY: client-gen
 client-gen:
 ifeq (, $(shell which client-gen))
-	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.18.0
+	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.20.0
 CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
 else
 CLIENT_GEN=$(shell which client-gen)
