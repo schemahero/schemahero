@@ -17,7 +17,6 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         shell: bash
       - uses: actions/checkout@v2
-      - run: go clean --modcache
       - run: make all
       - uses: actions/upload-artifact@v2.2.2
         with:
