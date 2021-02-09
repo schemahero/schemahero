@@ -70,7 +70,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// update the status of the table custom resource and do a little garbage collection
 	generatedClient := kubernetes.NewForConfigOrDie(mgr.GetConfig())
 	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Minute)
-	err = mgr.Add(manager.RunnableFunc(func(s <-chan struct{}) error {
+	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+		s := make(chan struct{})
 		generatedInformers.Start(s)
 		<-s
 		return nil
@@ -98,7 +99,7 @@ type ReconcileTable struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=tables/status,verbs=get;update;patch
-func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileTable) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	// This reconcile loop will be called for all Table objects and all pods
 	// because of the informer that we have set up
 	// The behavior here is pretty different depending on the type
@@ -120,7 +121,7 @@ func (r *ReconcileTable) Reconcile(request reconcile.Request) (reconcile.Result,
 		return reconcile.Result{}, nil
 	}
 
-	result, err := r.reconcileTable(context.Background(), instance)
+	result, err := r.reconcileTable(ctx, instance)
 	if err != nil {
 		logger.Error(err)
 	}

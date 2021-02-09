@@ -71,7 +71,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	generatedClient := kubernetes.NewForConfigOrDie(mgr.GetConfig())
 	generatedInformers := kubeinformers.NewSharedInformerFactory(generatedClient, time.Minute)
-	err = mgr.Add(manager.RunnableFunc(func(s <-chan struct{}) error {
+	err = mgr.Add(manager.RunnableFunc(func(ctx context.Context) error {
+		s := make(chan struct{})
 		generatedInformers.Start(s)
 		<-s
 		return nil
@@ -99,7 +100,7 @@ type ReconcileMigration struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=migrations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=schemas.schemahero.io,resources=migrations/status,verbs=get;update;patch
-func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileMigration) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	// This reconcile loop will be called for all Migration objects and all pods
 	// because of the informer that we have set up
 	// The behavior here is pretty different depending on the type
@@ -109,7 +110,7 @@ func (r *ReconcileMigration) Reconcile(request reconcile.Request) (reconcile.Res
 		return reconcile.Result{}, err
 	}
 
-	result, err := r.reconcileMigration(context.Background(), instance)
+	result, err := r.reconcileMigration(ctx, instance)
 	if err != nil {
 		logger.Error(err)
 	}
