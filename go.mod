@@ -19,15 +19,14 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xo/dburl v0.0.0-20200124232849-e9ec94f52bc3
 	go.uber.org/zap v1.16.0
-	gopkg.in/yaml.v2 v2.3.0
+	golang.org/x/tools v0.0.0-20200616195046-dc31b401abb5 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.2
 	k8s.io/apiextensions-apiserver v0.20.2
 	k8s.io/apimachinery v0.20.2
 	k8s.io/cli-runtime v0.20.2
 	k8s.io/client-go v0.20.2
-	k8s.io/code-generator v0.20.3-rc.0 // indirect
 	sigs.k8s.io/controller-runtime v0.8.1
-	sigs.k8s.io/controller-tools v0.4.1 // indirect
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
