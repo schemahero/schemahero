@@ -3,13 +3,13 @@ module github.com/schemahero/schemahero
 go 1.15
 
 require (
-	github.com/aws/aws-sdk-go-v2 v0.23.0
+	github.com/aws/aws-sdk-go-v2 v1.2.0
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.1.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jackc/pgx/v4 v4.10.1
-	github.com/jmespath/go-jmespath v0.3.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/onsi/gomega v1.10.5
 	github.com/pkg/errors v0.9.1
