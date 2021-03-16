@@ -5,11 +5,11 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 10.14 11.9 12.4 13-beta3
+run: 10.16 11.11 12.6 13.2
 
-.PHONY: 10.14
-10.14: export PG_VERSION = 10.14
-10.14:
+.PHONY: 10.16
+10.16: export PG_VERSION = 10.16
+10.16:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -25,9 +25,9 @@ run: 10.14 11.9 12.4 13-beta3
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 
-.PHONY: 11.9
-11.9: export PG_VERSION = 11.9
-11.9:
+.PHONY: 11.11
+11.11: export PG_VERSION = 11.11
+11.11:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -43,9 +43,9 @@ run: 10.14 11.9 12.4 13-beta3
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 
-.PHONY: 12.4
-12.4: export PG_VERSION = 12.4
-12.4:
+.PHONY: 12.6
+12.6: export PG_VERSION = 12.6
+12.6:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -61,9 +61,9 @@ run: 10.14 11.9 12.4 13-beta3
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 
-.PHONY: 13-beta3
-13-beta3: export PG_VERSION = 13-beta3
-13-beta3:
+.PHONY: 13.2
+13.2: export PG_VERSION = 13.2
+13.2:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
