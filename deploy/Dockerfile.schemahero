@@ -1,6 +1,6 @@
 FROM debian:stretch
 WORKDIR /
-COPY schemahero /schemahero
+COPY kubectl-schemahero /schemahero
 RUN chmod a+x /schemahero
 
 RUN apt-get -qq update \
