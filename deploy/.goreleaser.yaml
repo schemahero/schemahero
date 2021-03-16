@@ -74,3 +74,8 @@ dockers:
       - "schemahero/schemahero-manager:{{.Version}}"
     binaries:
       - manager
+  - dockerfile: ./deploy/Dockerfile.schemahero
+    image_templates:
+      - "schemahero/schemahero:{{.Version}}"
+    binaries:
+      - kubectl-schemahero
