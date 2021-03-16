@@ -26,7 +26,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        postgres_version: ["10.14", "11.9", "12.4", "13-beta3"]
+        postgres_version: ["10.16", "11.11", "12.6", "13.2"]
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
@@ -42,7 +42,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        mysql_version: ["5.6.49", "5.7.31", "8.0.21"]
+        mysql_version: ["5.6.51", "5.7.33", "8.0.23"]
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
@@ -58,7 +58,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        cockroachdb_version: ["v19.2.9", "v20.1.4"]
+        cockroachdb_version: ["v19.2.12", "v20.1.13", "v20.2.6"]
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
