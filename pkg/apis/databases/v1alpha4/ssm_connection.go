@@ -19,9 +19,10 @@ package v1alpha4
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -33,7 +34,7 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 		region = "us-east-1"
 	}
 
-	cfg, err := external.LoadDefaultAWSConfig()
+	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to create aws config")
 	}
@@ -62,20 +63,21 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 			accessKeyID = string(secret.Data[valueOrValueFrom.ValueFrom.SSM.SecretAccessKey.ValueFrom.SecretKeyRef.Key])
 		}
 
-		cfg.Credentials = aws.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
+		cfg.Credentials = credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
 	}
 
-	client := ssm.New(cfg)
+	client := ssm.New(ssm.Options{
+		Credentials: cfg.Credentials,
+	})
 
 	params := ssm.GetParameterInput{
-		WithDecryption: aws.Bool(valueOrValueFrom.ValueFrom.SSM.WithDecryption),
+		WithDecryption: valueOrValueFrom.ValueFrom.SSM.WithDecryption,
 		Name:           aws.String(valueOrValueFrom.ValueFrom.SSM.Name),
 	}
-	req := client.GetParameterRequest(&params)
-	resp, err := req.Send(ctx)
+	getParameterOutput, err := client.GetParameter(ctx, &params)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get ssm parameter")
 	}
 
-	return driver, *resp.Parameter.Value, nil
+	return driver, *getParameterOutput.Parameter.Value, nil
 }
