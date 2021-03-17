@@ -133,9 +133,6 @@ microk8s: bin/kubectl-schemahero manager
 .PHONY: kind
 kind: bin/kubectl-schemahero manager
 
-.PHONY: kotsimages
-kotsimages: bin/kubectl-schemahero manager
-
 .PHONY: contoller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))
