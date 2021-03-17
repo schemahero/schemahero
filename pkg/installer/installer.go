@@ -2,35 +2,28 @@ package installer
 
 import (
 	"context"
-	"strings"
 
-	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/config"
 	"k8s.io/client-go/kubernetes"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string, namespace string) (map[string][]byte, error) {
+func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
-	useExtensionsV1Beta1 := false
-	if requestedExtensionsAPIVersion == "v1beta1" {
-		useExtensionsV1Beta1 = true
-	}
-
-	manifest, err := databasesCRDYAML(useExtensionsV1Beta1)
+	manifest, err := databasesCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get databases crd")
 	}
 	manifests["databases_crd.yaml"] = manifest
 
-	manifest, err = tablesCRDYAML(useExtensionsV1Beta1)
+	manifest, err = tablesCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tables crd")
 	}
 	manifests["tables_crd.yaml"] = manifest
 
-	manifest, err = migrationsCRDYAML(useExtensionsV1Beta1)
+	manifest, err = migrationsCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get migrations crd")
 	}
@@ -83,16 +76,15 @@ func InstallOperator(namespace string) error {
 		return errors.Wrap(err, "failed to create new kubernetes client")
 	}
 
-	useExtensionsV1Beta1 := shouldUseExtensionsV1Beta1(client)
-	if err := ensureDatabasesCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
+	if err := ensureDatabasesCRD(ctx, cfg); err != nil {
 		return errors.Wrap(err, "failed to create databases crd")
 	}
 
-	if err := ensureTablesCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
+	if err := ensureTablesCRD(ctx, cfg); err != nil {
 		return errors.Wrap(err, "failed to create tables crd")
 	}
 
-	if err := ensureMigrationsCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
+	if err := ensureMigrationsCRD(ctx, cfg); err != nil {
 		return errors.Wrap(err, "failed to create migrations crd")
 	}
 
@@ -121,19 +113,4 @@ func InstallOperator(namespace string) error {
 	}
 
 	return nil
-}
-
-func shouldUseExtensionsV1Beta1(client *kubernetes.Clientset) bool {
-	// if there's no client or no server, just return v1, it's not an error
-	serverVersion, err := client.ServerVersion()
-	if err != nil {
-		return false
-	}
-
-	parsedVersion, err := semver.Make(strings.TrimLeft(serverVersion.String(), "v"))
-	if err != nil {
-		return false
-	}
-	minimumExtensionsV1 := semver.MustParse("1.16.0")
-	return parsedVersion.LT(minimumExtensionsV1)
 }

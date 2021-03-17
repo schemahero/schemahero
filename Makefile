@@ -70,7 +70,7 @@ run-database: generate fmt vet bin/manager
 	--manager-tag latest
 
 .PHONY: install
-install: manifests generate microk8s
+install: manifests generate local
 	kubectl apply -f config/crds/v1
 
 .PHONY: install-kind
@@ -84,11 +84,6 @@ deploy: manifests
 
 .PHONY: manifests
 manifests: controller-gen
-	$(CONTROLLER_GEN) \
-		rbac:roleName=manager-role webhook \
-		crd:crdVersions=v1beta1 \
-		output:crd:artifacts:config=config/crds/v1beta1 \
-		paths="./..."
 	$(CONTROLLER_GEN) \
 		rbac:roleName=manager-role webhook \
 		crd:crdVersions=v1 \
@@ -124,8 +119,8 @@ bin/kubectl-schemahero:
 		./cmd/kubectl-schemahero
 	@echo "built bin/kubectl-schemahero"
 
-.PHONY: microk8s
-microk8s: bin/kubectl-schemahero manager
+.PHONY: local
+local: bin/kubectl-schemahero manager
 	docker build -t schemahero/schemahero-manager -f ./Dockerfile.manager .
 	docker tag schemahero/schemahero-manager localhost:32000/schemahero/schemahero-manager:latest
 	docker push localhost:32000/schemahero/schemahero-manager:latest
