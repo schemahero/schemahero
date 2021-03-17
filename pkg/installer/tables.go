@@ -32,16 +32,27 @@ func ensureTablesCRD(ctx context.Context, cfg *rest.Config) error {
 		return errors.Wrap(err, "faild to create extensions client")
 	}
 
-	_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "tables.schemas.schemahero.io", metav1.GetOptions{})
-	if err != nil {
-		if !kuberneteserrors.IsNotFound(err) {
-			return errors.Wrap(err, "failed to get tables crd")
-		}
+	existingCRD, err := extensionsClient.CustomResourceDefinitions().Get(ctx, "tables.schemas.schemahero.io", metav1.GetOptions{})
+	// if there's an error and it's not a NotFound error, that's unexpected and we cannot continue
+	if err != nil && !kuberneteserrors.IsNotFound(err) {
+		return errors.Wrap(err, "get tables crd")
+	}
 
+	if kuberneteserrors.IsNotFound(err) {
 		_, err := extensionsClient.CustomResourceDefinitions().Create(ctx, tablesCRDV1(), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create tables crd")
 		}
+	}
+
+	// update the existing object with the new
+	existingCRD.Spec = tablesCRDV1().Spec
+	existingCRD.Labels = tablesCRDV1().Labels
+	existingCRD.Annotations = tablesCRDV1().Annotations
+
+	_, err = extensionsClient.CustomResourceDefinitions().Update(ctx, existingCRD, metav1.UpdateOptions{})
+	if err != nil {
+		return errors.Wrap(err, "update tables crd")
 	}
 
 	return nil
