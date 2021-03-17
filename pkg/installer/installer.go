@@ -2,35 +2,28 @@ package installer
 
 import (
 	"context"
-	"strings"
 
-	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/config"
 	"k8s.io/client-go/kubernetes"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string, namespace string) (map[string][]byte, error) {
+func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
-	useExtensionsV1Beta1 := false
-	if requestedExtensionsAPIVersion == "v1beta1" {
-		useExtensionsV1Beta1 = true
-	}
-
-	manifest, err := databasesCRDYAML(useExtensionsV1Beta1)
+	manifest, err := databasesCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get databases crd")
 	}
 	manifests["databases_crd.yaml"] = manifest
 
-	manifest, err = tablesCRDYAML(useExtensionsV1Beta1)
+	manifest, err = tablesCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get tables crd")
 	}
 	manifests["tables_crd.yaml"] = manifest
 
-	manifest, err = migrationsCRDYAML(useExtensionsV1Beta1)
+	manifest, err = migrationsCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get migrations crd")
 	}
@@ -69,71 +62,56 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, namespace string
 	return manifests, nil
 }
 
-func InstallOperator(namespace string) error {
+func InstallOperator(namespace string) (bool, error) {
 	// todo create and pass this from higher
 	ctx := context.Background()
 
 	cfg, err := config.GetRESTConfig()
 	if err != nil {
-		return errors.Wrap(err, "failed to get kubernetes config")
+		return false, errors.Wrap(err, "failed to get kubernetes config")
 	}
 
 	client, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return errors.Wrap(err, "failed to create new kubernetes client")
+		return false, errors.Wrap(err, "failed to create new kubernetes client")
 	}
 
-	useExtensionsV1Beta1 := shouldUseExtensionsV1Beta1(client)
-	if err := ensureDatabasesCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
-		return errors.Wrap(err, "failed to create databases crd")
+	if err := ensureDatabasesCRD(ctx, cfg); err != nil {
+		return false, errors.Wrap(err, "failed to create databases crd")
 	}
 
-	if err := ensureTablesCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
-		return errors.Wrap(err, "failed to create tables crd")
+	if err := ensureTablesCRD(ctx, cfg); err != nil {
+		return false, errors.Wrap(err, "failed to create tables crd")
 	}
 
-	if err := ensureMigrationsCRD(ctx, cfg, useExtensionsV1Beta1); err != nil {
-		return errors.Wrap(err, "failed to create migrations crd")
+	if err := ensureMigrationsCRD(ctx, cfg); err != nil {
+		return false, errors.Wrap(err, "failed to create migrations crd")
 	}
 
 	if err := ensureClusterRole(ctx, client); err != nil {
-		return errors.Wrap(err, "failed to create cluster role")
+		return false, errors.Wrap(err, "failed to create cluster role")
 	}
 
 	if err := ensureClusterRoleBinding(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create cluster role binding")
+		return false, errors.Wrap(err, "failed to create cluster role binding")
 	}
 
 	if err := ensureNamespace(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create namespace")
+		return false, errors.Wrap(err, "failed to create namespace")
 	}
 
 	if err := ensureService(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create service")
+		return false, errors.Wrap(err, "failed to create service")
 	}
 
 	if err := ensureSecret(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create secret")
+		return false, errors.Wrap(err, "failed to create secret")
 	}
 
-	if err := ensureManager(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create manager")
-	}
-
-	return nil
-}
-
-func shouldUseExtensionsV1Beta1(client *kubernetes.Clientset) bool {
-	// if there's no client or no server, just return v1, it's not an error
-	serverVersion, err := client.ServerVersion()
+	wasUpgraded, err := ensureManager(ctx, client, namespace)
 	if err != nil {
-		return false
+		return false, errors.Wrap(err, "failed to create manager")
 	}
 
-	parsedVersion, err := semver.Make(strings.TrimLeft(serverVersion.String(), "v"))
-	if err != nil {
-		return false
-	}
-	minimumExtensionsV1 := semver.MustParse("1.16.0")
-	return parsedVersion.LT(minimumExtensionsV1)
+	return wasUpgraded, nil
 }

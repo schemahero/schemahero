@@ -14,9 +14,14 @@ import (
 
 func InstallCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:           "install",
-		Short:         "install the schemahero operator to the cluster",
-		Long:          `...`,
+		Use:   "install",
+		Short: "install or upgrade the schemahero operator in a cluster (or generate the yaml)",
+		Long: `The install command will install SchemaHero into a cluster, or upgrade an existing installation if one is found.
+
+When upgrading, the command will replace the SchemaHero operator with the latest and will likely overwrite any manual changes to the operator manifest.
+After upgrading, the operator will roll out new database managers, restarting each with the newest version.
+
+For more control, use the --yaml flag to avoid making any changes to the cluster, and only print the manifests to the terminal that can be deployed using other tooling.`,
 		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
@@ -24,15 +29,8 @@ func InstallCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
 
-			if v.GetString("extensions-api") != "" {
-				if v.GetString("extensions-api") != "v1" && v.GetString("extensions-api") != "v1beta1" {
-					fmt.Printf("Unsupported value in extensions-api %q, only v1 and v1beta1 are supported\n", v.GetString("extensions-api"))
-					os.Exit(1)
-				}
-			}
-
 			if v.GetBool("yaml") {
-				manifests, err := installer.GenerateOperatorYAML(v.GetString("extensions-api"), v.GetString("namespace"))
+				manifests, err := installer.GenerateOperatorYAML(v.GetString("namespace"))
 				if err != nil {
 					fmt.Printf("Error: %s\n", err.Error())
 					return err
@@ -69,19 +67,25 @@ func InstallCmd() *cobra.Command {
 				}
 				return nil
 			}
-			if err := installer.InstallOperator(v.GetString("namespace")); err != nil {
+
+			wasUpgraded, err := installer.InstallOperator(v.GetString("namespace"))
+			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				return err
 			}
 
-			fmt.Println("The SchemaHero operator has been installed to the cluster")
+			if !wasUpgraded {
+				fmt.Println("The SchemaHero operator has been installed to the cluster")
+			} else {
+				fmt.Println("The SchemaHero operator has been upgraded in the cluster")
+			}
+
 			return nil
 		},
 	}
 
 	cmd.Flags().Bool("yaml", false, "If present, don't install the operator, just generate the yaml")
 	cmd.Flags().String("out-dir", "", "If present and --yaml also specified, write all of the manifests to this directory")
-	cmd.Flags().String("extensions-api", "", "version of apiextensions.k8s.io to generate. if unset, will detect best version from kubernetes version")
 
 	cmd.Flags().StringP("namespace", "n", "schemahero-system", "The namespace to install SchemaHero Operator into")
 
