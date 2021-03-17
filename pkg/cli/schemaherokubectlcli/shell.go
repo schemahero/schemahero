@@ -80,7 +80,7 @@ func ShellCmd() *cobra.Command {
 				// TODO versions
 				podImage = "postgres:11"
 
-				connectionURI, err := database.Spec.Connection.Postgres.URI.Read(clientset, namespace)
+				_, connectionURI, err := database.GetConnection(ctx)
 				if err != nil {
 					return err
 				}
@@ -92,7 +92,7 @@ func ShellCmd() *cobra.Command {
 				// TODO versions
 				podImage = "mysql:latest"
 
-				connectionURI, err := database.Spec.Connection.Mysql.URI.Read(clientset, namespace)
+				_, connectionURI, err := database.GetConnection(ctx)
 				if err != nil {
 					return err
 				}

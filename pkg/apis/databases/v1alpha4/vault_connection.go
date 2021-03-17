@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// getVaultConnection returns the driver, the resolved URI, or an error
 func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.Interface, driver string, valueOrValueFrom ValueOrValueFrom) (string, string, error) {
 	// if the value is in vault and we are using the vault injector, just read the file
 	if valueOrValueFrom.ValueFrom.Vault.AgentInject {
