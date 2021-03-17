@@ -1,7 +1,6 @@
 FROM postgres:10.7
 
 ENV POSTGRES_USER=schemahero
-ENV POSTGRES_PASSWORD=password
 ENV POSTGRES_DB=schemahero
 
 ## Insert fixtures
