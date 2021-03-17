@@ -149,24 +149,24 @@ func secret(namespace string) *corev1.Secret {
 	}
 }
 
-func managerYAML(isEnterprise bool, namespace string) ([]byte, error) {
+func managerYAML(namespace string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(manager(isEnterprise, namespace), &result); err != nil {
+	if err := s.Encode(manager(namespace), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal manager")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, isEnterprise bool, namespace string) error {
+func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespace string) error {
 	_, err := clientset.AppsV1().StatefulSets(namespace).Get(ctx, "schemahero", metav1.GetOptions{})
 	if err != nil {
 		if !kuberneteserrors.IsNotFound(err) {
 			return errors.Wrap(err, "failed to get statefulset")
 		}
 
-		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(isEnterprise, namespace), metav1.CreateOptions{})
+		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(namespace), metav1.CreateOptions{})
 		if err != nil {
 			return errors.Wrap(err, "failed to create statefulset")
 		}
@@ -175,7 +175,7 @@ func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, isEnter
 	return nil
 }
 
-func manager(isEnterprise bool, namespace string) *appsv1.StatefulSet {
+func manager(namespace string) *appsv1.StatefulSet {
 	env := []corev1.EnvVar{
 		{
 			Name: "POD_NAMESPACE",

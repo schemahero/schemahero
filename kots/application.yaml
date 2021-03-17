@@ -1,9 +1,0 @@
-apiVersion: app.k8s.io/v1beta1
-kind: Application
-metadata:
-  name: schemahero-enterprise
-  labels:
-    app.kubernetes.io/name: schemahero-enterprise
-spec:
-  descriptor:
-    links: []

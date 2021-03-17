@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise bool, enterpriseTag string, namespace string) (map[string][]byte, error) {
+func GenerateOperatorYAML(requestedExtensionsAPIVersion string, namespace string) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
 	useExtensionsV1Beta1 := false
@@ -48,14 +48,6 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise boo
 	}
 	manifests["cluster-role-binding.yaml"] = manifest
 
-	if !isEnterprise {
-		manifest, err = namespaceYAML(namespace)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get namespace")
-		}
-		manifests["namespace.yaml"] = manifest
-	}
-
 	manifest, err = serviceYAML(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get service")
@@ -68,41 +60,16 @@ func GenerateOperatorYAML(requestedExtensionsAPIVersion string, isEnterprise boo
 	}
 	manifests["secret.yaml"] = manifest
 
-	manifest, err = managerYAML(isEnterprise, namespace)
+	manifest, err = managerYAML(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get manager")
 	}
 	manifests["manager.yaml"] = manifest
 
-	if isEnterprise {
-		manifest, err = heroAPIYAML(namespace, enterpriseTag)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get hero api")
-		}
-		manifests["hero-api.yaml"] = manifest
-
-		manifest, err = heroAPIServiceYAML(namespace)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get hero api service")
-		}
-		manifests["hero-api-service.yaml"] = manifest
-
-		manifest, err = heroWebYAML(namespace, enterpriseTag)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get hero web")
-		}
-		manifests["hero-web.yaml"] = manifest
-
-		manifest, err = heroWebServiceYAML(namespace)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to get hero web service")
-		}
-		manifests["hero-web-service.yaml"] = manifest
-	}
 	return manifests, nil
 }
 
-func InstallOperator(isEnterprise bool, namespace string) error {
+func InstallOperator(namespace string) error {
 	// todo create and pass this from higher
 	ctx := context.Background()
 
@@ -149,7 +116,7 @@ func InstallOperator(isEnterprise bool, namespace string) error {
 		return errors.Wrap(err, "failed to create secret")
 	}
 
-	if err := ensureManager(ctx, client, isEnterprise, namespace); err != nil {
+	if err := ensureManager(ctx, client, namespace); err != nil {
 		return errors.Wrap(err, "failed to create manager")
 	}
 
