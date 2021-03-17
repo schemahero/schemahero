@@ -26,6 +26,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// GetConnection returns driver name, uri, and any error
 func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 	isParamBased := false
 
@@ -58,80 +59,70 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 		return "", "", errors.Wrap(err, "failed to get database type")
 	}
 
-	cfg, err := config.GetRESTConfig()
-	if err != nil {
-		return "", "", errors.Wrap(err, "failed to get config")
-	}
-
-	clientset, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		return "", "", errors.Wrap(err, "failed to get clientset")
-	}
-
 	uri := ""
 	if driver == "postgres" {
-		hostname, err := d.Spec.Connection.Postgres.Host.Read(clientset, d.Namespace)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres hostname")
 		}
 
-		port, err := d.Spec.Connection.Postgres.Port.Read(clientset, d.Namespace)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres port")
 		}
 
-		user, err := d.Spec.Connection.Postgres.User.Read(clientset, d.Namespace)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres user")
 		}
 
-		password, err := d.Spec.Connection.Postgres.Password.Read(clientset, d.Namespace)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres password")
 		}
 
-		dbname, err := d.Spec.Connection.Postgres.DBName.Read(clientset, d.Namespace)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres dbname")
 		}
 
 		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
 		if !d.Spec.Connection.Postgres.SSLMode.IsEmpty() {
-			sslMode, err := d.Spec.Connection.Postgres.SSLMode.Read(clientset, d.Namespace)
+			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.SSLMode)
 			if err != nil {
 				return "", "", errors.Wrap(err, "failed to read postgres ssl mode")
 			}
 			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
 		}
 	} else if driver == "cockroachdb" {
-		hostname, err := d.Spec.Connection.CockroachDB.Host.Read(clientset, d.Namespace)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb hostname")
 		}
 
-		port, err := d.Spec.Connection.CockroachDB.Port.Read(clientset, d.Namespace)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb port")
 		}
 
-		user, err := d.Spec.Connection.CockroachDB.User.Read(clientset, d.Namespace)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb user")
 		}
 
-		password, err := d.Spec.Connection.CockroachDB.Password.Read(clientset, d.Namespace)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb password")
 		}
 
-		dbname, err := d.Spec.Connection.CockroachDB.DBName.Read(clientset, d.Namespace)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb dbname")
 		}
 
 		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
 		if !d.Spec.Connection.CockroachDB.SSLMode.IsEmpty() {
-			sslMode, err := d.Spec.Connection.CockroachDB.SSLMode.Read(clientset, d.Namespace)
+			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.SSLMode)
 			if err != nil {
 				return "", "", errors.Wrap(err, "failed to read cockroachdb ssl mode")
 			}
@@ -140,27 +131,27 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 	} else if driver == "cassandra" {
 		return "", "", errors.New("not implemented")
 	} else if driver == "mysql" {
-		hostname, err := d.Spec.Connection.Mysql.Host.Read(clientset, d.Namespace)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql hostname")
 		}
 
-		port, err := d.Spec.Connection.Mysql.Port.Read(clientset, d.Namespace)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql port")
 		}
 
-		user, err := d.Spec.Connection.Mysql.User.Read(clientset, d.Namespace)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql user")
 		}
 
-		password, err := d.Spec.Connection.Mysql.Password.Read(clientset, d.Namespace)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql password")
 		}
 
-		dbname, err := d.Spec.Connection.Mysql.DBName.Read(clientset, d.Namespace)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql dbname")
 		}
@@ -174,7 +165,7 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 	return driver, uri, nil
 }
 
-// getConnectionFromURI will return a valid connection string for the database. This
+// getConnectionFromURI will return the driver, and a valid connection string for the database. This
 // is compatible with any way that the uri was set.
 // TODO refactor this to be shorter, simpler and more testable
 func (d Database) getConnectionFromURI(ctx context.Context) (string, string, error) {
@@ -182,7 +173,6 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")
 	}
-
 	var valueOrValueFrom ValueOrValueFrom
 	if driver == "postgres" {
 		valueOrValueFrom = d.Spec.Connection.Postgres.URI
@@ -193,40 +183,53 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 	} else if driver == "mysql" {
 		valueOrValueFrom = d.Spec.Connection.Mysql.URI
 	}
+	value, err := d.getValueFromValueOrValueFrom(ctx, driver, valueOrValueFrom)
+	return driver, value, err
+}
+
+// getValueFromValueOrValueFrom returns the resolved value, or an error
+func (d Database) getValueFromValueOrValueFrom(ctx context.Context, driver string, valueOrValueFrom ValueOrValueFrom) (string, error) {
 
 	// if the value is static, return it
 	if valueOrValueFrom.Value != "" {
-		return driver, valueOrValueFrom.Value, nil
+		return valueOrValueFrom.Value, nil
 	}
 
 	// for other types, we need to talk to the kubernetes api
 	cfg, err := config.GetRESTConfig()
 	if err != nil {
-		return "", "", errors.Wrap(err, "failed to get config")
+		return "", errors.Wrap(err, "failed to get config")
 	}
 
 	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return "", "", errors.Wrap(err, "failed to get clientset")
+		return "", errors.Wrap(err, "failed to get clientset")
 	}
 
 	// if the value is in a secret, look it up and return it
 	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
-		secret, err := clientset.CoreV1().Secrets(d.Namespace).Get(ctx, valueOrValueFrom.ValueFrom.SecretKeyRef.Name, metav1.GetOptions{})
+		secretKeyRefName := valueOrValueFrom.ValueFrom.SecretKeyRef.Name
+		secret, err := clientset.CoreV1().Secrets(d.Namespace).Get(ctx, secretKeyRefName, metav1.GetOptions{})
 		if err != nil {
-			return "", "", errors.Wrap(err, "failed to get secret")
+			return "", errors.Wrap(err, "failed to get secret")
 		}
-
-		return driver, string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
+		keyName := valueOrValueFrom.ValueFrom.SecretKeyRef.Key
+		keyData, ok := secret.Data[keyName]
+		if !ok {
+			return "", fmt.Errorf("expected Secret \"%s\" to contain key \"%s\"", secretKeyRefName, keyName)
+		}
+		return string(keyData), nil
 	}
 
 	if valueOrValueFrom.ValueFrom.Vault != nil {
-		return d.getVaultConnection(ctx, clientset, driver, valueOrValueFrom)
+		_, value, err := d.getVaultConnection(ctx, clientset, driver, valueOrValueFrom)
+		return value, err
 	}
 
 	if valueOrValueFrom.ValueFrom.SSM != nil {
-		return d.getSSMConnection(ctx, clientset, driver, valueOrValueFrom)
+		_, value, err := d.getSSMConnection(ctx, clientset, driver, valueOrValueFrom)
+		return value, err
 	}
 
-	return "", "", errors.New("unable to get connection")
+	return "", errors.New("unable to get value for driver")
 }
