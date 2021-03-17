@@ -62,55 +62,56 @@ func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	return manifests, nil
 }
 
-func InstallOperator(namespace string) error {
+func InstallOperator(namespace string) (bool, error) {
 	// todo create and pass this from higher
 	ctx := context.Background()
 
 	cfg, err := config.GetRESTConfig()
 	if err != nil {
-		return errors.Wrap(err, "failed to get kubernetes config")
+		return false, errors.Wrap(err, "failed to get kubernetes config")
 	}
 
 	client, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
-		return errors.Wrap(err, "failed to create new kubernetes client")
+		return false, errors.Wrap(err, "failed to create new kubernetes client")
 	}
 
 	if err := ensureDatabasesCRD(ctx, cfg); err != nil {
-		return errors.Wrap(err, "failed to create databases crd")
+		return false, errors.Wrap(err, "failed to create databases crd")
 	}
 
 	if err := ensureTablesCRD(ctx, cfg); err != nil {
-		return errors.Wrap(err, "failed to create tables crd")
+		return false, errors.Wrap(err, "failed to create tables crd")
 	}
 
 	if err := ensureMigrationsCRD(ctx, cfg); err != nil {
-		return errors.Wrap(err, "failed to create migrations crd")
+		return false, errors.Wrap(err, "failed to create migrations crd")
 	}
 
 	if err := ensureClusterRole(ctx, client); err != nil {
-		return errors.Wrap(err, "failed to create cluster role")
+		return false, errors.Wrap(err, "failed to create cluster role")
 	}
 
 	if err := ensureClusterRoleBinding(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create cluster role binding")
+		return false, errors.Wrap(err, "failed to create cluster role binding")
 	}
 
 	if err := ensureNamespace(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create namespace")
+		return false, errors.Wrap(err, "failed to create namespace")
 	}
 
 	if err := ensureService(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create service")
+		return false, errors.Wrap(err, "failed to create service")
 	}
 
 	if err := ensureSecret(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create secret")
+		return false, errors.Wrap(err, "failed to create secret")
 	}
 
-	if err := ensureManager(ctx, client, namespace); err != nil {
-		return errors.Wrap(err, "failed to create manager")
+	wasUpgraded, err := ensureManager(ctx, client, namespace)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to create manager")
 	}
 
-	return nil
+	return wasUpgraded, nil
 }

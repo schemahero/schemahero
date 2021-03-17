@@ -159,20 +159,32 @@ func managerYAML(namespace string) ([]byte, error) {
 	return result.Bytes(), nil
 }
 
-func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespace string) error {
-	_, err := clientset.AppsV1().StatefulSets(namespace).Get(ctx, "schemahero", metav1.GetOptions{})
-	if err != nil {
-		if !kuberneteserrors.IsNotFound(err) {
-			return errors.Wrap(err, "failed to get statefulset")
-		}
+func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespace string) (bool, error) {
+	existingManager, err := clientset.AppsV1().StatefulSets(namespace).Get(ctx, "schemahero", metav1.GetOptions{})
 
-		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(namespace), metav1.CreateOptions{})
-		if err != nil {
-			return errors.Wrap(err, "failed to create statefulset")
-		}
+	if err != nil && !kuberneteserrors.IsNotFound(err) {
+		return false, errors.Wrap(err, "get manager statefulset")
 	}
 
-	return nil
+	if kuberneteserrors.IsNotFound(err) {
+		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(namespace), metav1.CreateOptions{})
+		if err != nil {
+			return false, errors.Wrap(err, "create manager statefulset")
+		}
+
+		return false, nil
+	}
+
+	// update the existing manager, but it's a statefulset, so
+	// we can only mutate some fields
+	existingManager.Spec = manager(namespace).Spec
+
+	_, err = clientset.AppsV1().StatefulSets(namespace).Update(ctx, existingManager, metav1.UpdateOptions{})
+	if err != nil {
+		return false, errors.Wrap(err, "update manager statefulset")
+	}
+
+	return true, nil
 }
 
 func manager(namespace string) *appsv1.StatefulSet {

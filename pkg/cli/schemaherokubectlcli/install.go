@@ -68,12 +68,18 @@ For more control, use the --yaml flag to avoid making any changes to the cluster
 				return nil
 			}
 
-			if err := installer.InstallOperator(v.GetString("namespace")); err != nil {
+			wasUpgraded, err := installer.InstallOperator(v.GetString("namespace"))
+			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				return err
 			}
 
-			fmt.Println("The SchemaHero operator has been installed to the cluster")
+			if !wasUpgraded {
+				fmt.Println("The SchemaHero operator has been installed to the cluster")
+			} else {
+				fmt.Println("The SchemaHero operator has been upgraded in the cluster")
+			}
+
 			return nil
 		},
 	}

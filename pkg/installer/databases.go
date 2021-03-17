@@ -32,7 +32,7 @@ func ensureDatabasesCRD(ctx context.Context, cfg *rest.Config) error {
 		return errors.Wrap(err, "create extensions client")
 	}
 
-	existingDatabasesCRDV1, err := extensionsClient.CustomResourceDefinitions().Get(ctx, "databases.databases.schemahero.io", metav1.GetOptions{})
+	existingCRD, err := extensionsClient.CustomResourceDefinitions().Get(ctx, "databases.databases.schemahero.io", metav1.GetOptions{})
 
 	// if there's an error and it's not a NotFound error, that's unexpected and we cannot continue
 	if err != nil && !kuberneteserrors.IsNotFound(err) {
@@ -49,11 +49,11 @@ func ensureDatabasesCRD(ctx context.Context, cfg *rest.Config) error {
 	}
 
 	// update the existing object with the new
-	existingDatabasesCRDV1.Spec = databasesCRDV1().Spec
-	existingDatabasesCRDV1.Labels = databasesCRDV1().Labels
-	existingDatabasesCRDV1.Annotations = databasesCRDV1().Annotations
+	existingCRD.Spec = databasesCRDV1().Spec
+	existingCRD.Labels = databasesCRDV1().Labels
+	existingCRD.Annotations = databasesCRDV1().Annotations
 
-	_, err = extensionsClient.CustomResourceDefinitions().Update(ctx, existingDatabasesCRDV1, metav1.UpdateOptions{})
+	_, err = extensionsClient.CustomResourceDefinitions().Update(ctx, existingCRD, metav1.UpdateOptions{})
 	if err != nil {
 		return errors.Wrap(err, "update database crd")
 	}
