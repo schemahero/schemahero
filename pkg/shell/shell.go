@@ -14,8 +14,8 @@ import (
 
 // StartShellPod will start a new pod in the namespace using the imagename
 // The command will be sleep infinity, so the exec will have to start the
-// destired command
-// the caller is respondible for cleaning up this pod
+// desired command
+// the caller is responsible for cleaning up this pod
 func StartShellPod(ctx context.Context, namespace string, imageName string) (string, error) {
 	pod := &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
