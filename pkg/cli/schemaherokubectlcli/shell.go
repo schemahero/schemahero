@@ -28,7 +28,9 @@ func ShellCmd() *cobra.Command {
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.BindPFlags(cmd.Flags())
+			if err := viper.BindPFlags(cmd.Flags()); err != nil {
+				panic(err)
+			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
@@ -77,8 +79,10 @@ func ShellCmd() *cobra.Command {
 			// podArgs := []string{}
 
 			if database.Spec.Connection.Postgres != nil {
-				// TODO versions
-				podImage = "postgres:11"
+				if podImage == "" {
+					// TODO versions
+					podImage = "postgres:11"
+				}
 
 				connectionURI, err := database.Spec.Connection.Postgres.URI.Read(clientset, namespace)
 				if err != nil {
@@ -89,8 +93,10 @@ func ShellCmd() *cobra.Command {
 					connectionURI,
 				}
 			} else if database.Spec.Connection.Mysql != nil {
-				// TODO versions
-				podImage = "mysql:latest"
+				if podImage == "" {
+					// TODO versions
+					podImage = "mysql:latest"
+				}
 
 				connectionURI, err := database.Spec.Connection.Mysql.URI.Read(clientset, namespace)
 				if err != nil {
