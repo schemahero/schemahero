@@ -19,6 +19,7 @@ package v1alpha4
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/config"
@@ -86,7 +87,8 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			return "", "", errors.Wrap(err, "failed to read postgres dbname")
 		}
 
-		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
+		authInfo := url.UserPassword(user, password).String()
+		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
 		if !d.Spec.Connection.Postgres.SSLMode.IsEmpty() {
 			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.SSLMode)
 			if err != nil {
@@ -120,7 +122,8 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			return "", "", errors.Wrap(err, "failed to read cockroachdb dbname")
 		}
 
-		uri = fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, hostname, port, dbname)
+		authInfo := url.UserPassword(user, password).String()
+		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
 		if !d.Spec.Connection.CockroachDB.SSLMode.IsEmpty() {
 			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.SSLMode)
 			if err != nil {
