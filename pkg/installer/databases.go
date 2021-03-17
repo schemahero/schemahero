@@ -29,19 +29,33 @@ func databasesCRDYAML() ([]byte, error) {
 func ensureDatabasesCRD(ctx context.Context, cfg *rest.Config) error {
 	extensionsClient, err := extensionsv1client.NewForConfig(cfg)
 	if err != nil {
-		return errors.Wrap(err, "faild to create extensions client")
+		return errors.Wrap(err, "create extensions client")
 	}
 
-	_, err = extensionsClient.CustomResourceDefinitions().Get(ctx, "databases.databases.schemahero.io", metav1.GetOptions{})
-	if err != nil {
-		if !kuberneteserrors.IsNotFound(err) {
-			return errors.Wrap(err, "failed to get databases crd")
-		}
+	existingDatabasesCRDV1, err := extensionsClient.CustomResourceDefinitions().Get(ctx, "databases.databases.schemahero.io", metav1.GetOptions{})
 
+	// if there's an error and it's not a NotFound error, that's unexpected and we cannot continue
+	if err != nil && !kuberneteserrors.IsNotFound(err) {
+		return errors.Wrap(err, "get database crd")
+	}
+
+	if kuberneteserrors.IsNotFound(err) {
 		_, err := extensionsClient.CustomResourceDefinitions().Create(ctx, databasesCRDV1(), metav1.CreateOptions{})
 		if err != nil {
-			return errors.Wrap(err, "failed to create databases crd")
+			return errors.Wrap(err, "create database crd")
 		}
+
+		return nil
+	}
+
+	// update the existing object with the new
+	existingDatabasesCRDV1.Spec = databasesCRDV1().Spec
+	existingDatabasesCRDV1.Labels = databasesCRDV1().Labels
+	existingDatabasesCRDV1.Annotations = databasesCRDV1().Annotations
+
+	_, err = extensionsClient.CustomResourceDefinitions().Update(ctx, existingDatabasesCRDV1, metav1.UpdateOptions{})
+	if err != nil {
+		return errors.Wrap(err, "update database crd")
 	}
 
 	return nil
