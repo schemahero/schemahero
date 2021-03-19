@@ -18,9 +18,31 @@ spec:
     bin: kubectl-schemahero
   - selector:
       matchLabels:
+        os: linux
+        arch: arm64
+    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_linux_arm64.tar.gz" .TagName }}
+    files:
+    - from: kubectl-schemahero
+      to: .
+    - from: LICENSE
+      to: .
+    bin: kubectl-schemahero
+  - selector:
+      matchLabels:
         os: darwin
         arch: amd64
     {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_darwin_amd64.tar.gz" .TagName }}
+    files:
+    - from: kubectl-schemahero
+      to: .
+    - from: LICENSE
+      to: .
+    bin: kubectl-schemahero
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: arm64
+    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_darwin_arm64.tar.gz" .TagName }}
     files:
     - from: kubectl-schemahero
       to: .

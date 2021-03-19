@@ -13,6 +13,7 @@ builds:
     goarch:
       - amd64
       - "386"
+      - arm64
     env:
       - CGO_ENABLED=0
     main: cmd/kubectl-schemahero/main.go
@@ -73,10 +74,10 @@ dockers:
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates:
       - "schemahero/schemahero-manager:{{.Version}}"
-    binaries:
+    ids:
       - manager
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates:
       - "schemahero/schemahero:{{.Version}}"
-    binaries:
+    ids:
       - kubectl-schemahero
