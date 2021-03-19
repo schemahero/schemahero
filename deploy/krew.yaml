@@ -1,0 +1,55 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: schemahero
+spec:
+  version: {{ .TagName }}
+  platforms:
+  - selector:
+      matchLabels:
+        os: linux
+        arch: amd64
+    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_linux_amd64.tar.gz" .TagName }}
+    files:
+    - from: kubectl-schemahero
+      to: .
+    - from: LICENSE
+      to: .
+    bin: kubectl-schemahero
+  - selector:
+      matchLabels:
+        os: darwin
+        arch: amd64
+    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_darwin_amd64.tar.gz" .TagName }}
+    files:
+    - from: kubectl-schemahero
+      to: .
+    - from: LICENSE
+      to: .
+    bin: kubectl-schemahero
+  - selector:
+      matchLabels:
+        os: windows
+        arch: amd64
+    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_windows_amd64.zip" .TagName }}
+    files:
+    - from: kubectl-schemahero.exe
+      to: .
+    - from: LICENSE
+      to: .
+    bin: kubectl-schemahero.exe
+  shortDescription: Declarative database schema migrations via YAML
+  homepage: https://schemahero.io
+  caveats: |
+    SchemaHero requires an in-cluster operator. To install the operator run:
+      $ kubectl schemahero install
+  description: |
+    SchemaHero is a database schema migration tool that converts a schema
+    definition into migration scripts to be applied to a database engine
+    (with current support for Postgres, Mysql and CockroachDB).
+    SchemaHero allows developers to define a database table schema as a
+    declarative Kubernetes object and then apply the definition to the
+    cluster. The SchemaHero operator will then query the current database
+    schema and generate (and optionally apply) the necessary SQL
+    statements to update the database to the desired schema.
+    To learn more, try the tutorial at https://schemahero.io/tutorial/
