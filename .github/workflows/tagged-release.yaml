@@ -97,3 +97,8 @@ jobs:
           args: release --rm-dist --config deploy/.goreleaser.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create new schemahero version in krew-index
+        uses: rajatjindal/krew-release-bot@v0.0.39
+        with:
+          krew_template_file: deploy/krew.yaml
