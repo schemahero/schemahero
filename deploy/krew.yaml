@@ -42,14 +42,17 @@ spec:
   homepage: https://schemahero.io
   caveats: |
     SchemaHero requires an in-cluster operator. To install the operator run:
+
       $ kubectl schemahero install
   description: |
     SchemaHero is a database schema migration tool that converts a schema
     definition into migration scripts to be applied to a database engine
     (with current support for Postgres, Mysql and CockroachDB).
+
     SchemaHero allows developers to define a database table schema as a
     declarative Kubernetes object and then apply the definition to the
     cluster. The SchemaHero operator will then query the current database
     schema and generate (and optionally apply) the necessary SQL
     statements to update the database to the desired schema.
+
     To learn more, try the tutorial at https://schemahero.io/tutorial/
