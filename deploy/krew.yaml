@@ -31,7 +31,7 @@ spec:
       matchLabels:
         os: windows
         arch: amd64
-    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_windows_amd64.zip" .TagName }}
+    {{addURIAndSha "https://github.com/schemahero/schemahero/releases/download/{{ .TagName }}/kubectl-schemahero_windows_amd64.tar.gz" .TagName }}
     files:
     - from: kubectl-schemahero.exe
       to: .
