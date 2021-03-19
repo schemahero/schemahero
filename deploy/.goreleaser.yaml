@@ -71,12 +71,33 @@ archives:
       - CHANGELOG*
 dockers:
   - dockerfile: ./deploy/Dockerfile.manager
-    image_templates:
-      - "schemahero/schemahero-manager:{{.Version}}"
-    binaries:
-      - manager
+    image_templates: ["schemahero/schemahero-manager:{{.Version}}-amd64"]
+    binaries: [manager]
+    build_flag_templates: ["--platform=linux/amd64"]
+    use_buildx: true
+  - dockerfile: ./deploy/Dockerfile.manager
+    image_templates: ["schemahero/schemahero-manager:{{.Version}}-arm64"]
+    binaries: [manager]
+    build_flag_templates: ["--platform=linux/amd64"]
+    use_buildx: true
+    goarch: arm64
   - dockerfile: ./deploy/Dockerfile.schemahero
+    image_templates: ["schemahero/schemahero:{{.Version}}-amd64"]
+    binaries: [kubectl-schemahero]
+    build_flag_templates: ["--platform=linux/amd64"]
+    use_buildx: true
+  - dockerfile: ./deploy/Dockerfile.schemahero
+    image_templates: ["schemahero/schemahero:{{.Version}}-arm64"]
+    binaries: [kubectl-schemahero]
+    build_flag_templates: ["--platform=linux/arm64"]
+    use_buildx: true
+    goarch: arm64
+docker_manifests:
+  - name_template: schemahero/schemahero:{{ .Version }}
     image_templates:
-      - "schemahero/schemahero:{{.Version}}"
-    binaries:
-      - kubectl-schemahero
+      - schemahero/schemahero:{{ .Version }}-amd64
+      - schemahero/schemahero:{{ .Version }}-arm64
+  - name_template: schemahero/schemahero-manager:{{ .Version }}
+    image_templates:
+      - schemahero/schemahero-manager:{{ .Version }}-amd64
+      - schemahero/schemahero-manager:{{ .Version }}-arm64
