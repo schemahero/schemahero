@@ -1,0 +1,10 @@
+FROM ubuntu:latest
+
+RUN apt-get update -y && apt-get install -y ca-certificates
+
+WORKDIR /
+
+RUN useradd -c 'schemahero-manager user' -m -d /home/schemahero-manager -s /bin/bash -u 1001 schemahero-manager
+USER schemahero-manager
+ENV HOME /home/schemahero-manager
+

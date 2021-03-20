@@ -13,6 +13,7 @@ builds:
     goarch:
       - amd64
       - "386"
+      - arm64
     env:
       - CGO_ENABLED=0
     main: cmd/kubectl-schemahero/main.go
@@ -29,6 +30,7 @@ builds:
       - linux
     goarch:
       - amd64
+      - arm64
     env:
       - CGO_ENABLED=0
     main: cmd/manager/main.go
@@ -72,23 +74,23 @@ archives:
 dockers:
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates: ["schemahero/schemahero-manager:{{.Version}}-amd64"]
-    binaries: [manager]
+    ids: [manager]
     build_flag_templates: ["--platform=linux/amd64"]
     use_buildx: true
   - dockerfile: ./deploy/Dockerfile.manager
     image_templates: ["schemahero/schemahero-manager:{{.Version}}-arm64"]
-    binaries: [manager]
+    ids: [manager]
     build_flag_templates: ["--platform=linux/amd64"]
     use_buildx: true
     goarch: arm64
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates: ["schemahero/schemahero:{{.Version}}-amd64"]
-    binaries: [kubectl-schemahero]
+    ids: [kubectl-schemahero]
     build_flag_templates: ["--platform=linux/amd64"]
     use_buildx: true
   - dockerfile: ./deploy/Dockerfile.schemahero
     image_templates: ["schemahero/schemahero:{{.Version}}-arm64"]
-    binaries: [kubectl-schemahero]
+    ids: [kubectl-schemahero]
     build_flag_templates: ["--platform=linux/arm64"]
     use_buildx: true
     goarch: arm64

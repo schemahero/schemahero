@@ -1,0 +1,11 @@
+FROM debian:stretch
+WORKDIR /
+
+RUN apt-get -qq update \
+ && apt-get -qq -y install \
+    ca-certificates
+
+RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 schemahero
+USER schemahero
+ENV HOME /home/schemahero
+

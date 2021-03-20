@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v2.1.3
         with:
-          go-version: "1.15.5"
+          go-version: "1.16"
       - uses: actions/checkout@v2
       - run: make all
       - uses: actions/upload-artifact@v2.2.2
@@ -69,6 +69,43 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
+  docker-base:
+    runs-on: ubuntu-latest
+    needs:
+      - test-postgres
+      - test-mysql
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: schemaherodeploy
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push base schemahero image
+        uses: docker/build-push-action@v2
+        with:
+          file: ./deploy/Dockerfile.schemahero.base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: schemahero/schemahero-base:latest
+
+      - name: Build and push base manager image
+        uses: docker/build-push-action@v2
+        with:
+          file: ./deploy/Dockerfile.manager.base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: schemahero/schemahero-manager-base:latest
+
   goreleaser:
     runs-on: ubuntu-latest
     needs:
@@ -81,7 +118,7 @@ jobs:
         run: git fetch --prune --unshallow
       - uses: actions/setup-go@v2.1.3
         with:
-          go-version: "1.15.5"
+          go-version: "1.16"
       - uses: azure/docker-login@v1
         with:
           username: schemaherodeploy

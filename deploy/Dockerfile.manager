@@ -1,13 +1,6 @@
-FROM ubuntu:latest
+FROM schemahero/schemahero-manager-base:latest
 
-RUN apt-get update -y && apt-get install -y ca-certificates
-
-WORKDIR /
 COPY manager /manager
 RUN chmod a+x /manager
-
-RUN useradd -c 'schemahero-manager user' -m -d /home/schemahero-manager -s /bin/bash -u 1001 schemahero-manager
-USER schemahero-manager
-ENV HOME /home/schemahero-manager
 
 ENTRYPOINT ["/manager", "run"]
