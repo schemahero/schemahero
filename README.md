@@ -10,7 +10,7 @@
 
 ## What is SchemaHero?
 
-SchemaHero is a Kubernetes Operator for [Declarative Schema Management](https://schemahero.io/learn/declarative-schema-management/) for [various databases](https://schemahero.io/databases). SchemaHero has the following goals:
+SchemaHero is a Kubernetes Operator for [Declarative Schema Management](https://schemahero.io/learn/declarative-schema-management/) for [various databases](https://schemahero.io/databases/postgresql/versions/). SchemaHero has the following goals:
 
 1. Database table schemas can be expressed as [Kubernetes resources](https://schemahero.io/docs/managing-tables/creating-tables/) that can be deployed to a cluster.
 2. Database schemas can be edited and deployed to the cluster. SchemaHero will calculate the required change (`ALTER TABLE` statement) and apply it.
@@ -20,7 +20,7 @@ SchemaHero is a Kubernetes Operator for [Declarative Schema Management](https://
 
 The recommended way to deploy SchemaHero is to use the kubectl plugin. Full instruction and other installation methods listed in the [documentation](https://schemahero.io/docs/installing/kubectl/).
 
-To get started, read the [tutorial](https://schemahero.io/tutorial/) and the [full documentation](https://schemahero.io/docs/)
+To get started, read the [tutorial](https://schemahero.io/tutorial/introduction/) and the [full documentation](https://schemahero.io/docs/)
 
 # Community
 
