@@ -73,8 +73,8 @@ github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.0.4/go.mod h1:BDw1ukadBHn//M/n7
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.0.3/go.mod h1:C50Z41fJaJ7WgaeeCulOGAU3q4+4se4B3uOPFdhBi2I=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.0.4 h1:DRIpujxvhdv3+xLXCoaKk1VB4vk/Sh8sIOBewLJJpes=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.0.4/go.mod h1:DGOKKGeqXdIWX3xD5DKr4otrgNw5cstwUCJYwSKxbp0=
-github.com/aws/aws-sdk-go-v2/service/ssm v1.1.2 h1:JywBoZUsy/bulUKlYI3xPTlXDEn+VZ/sCIlX1yDPN8Y=
-github.com/aws/aws-sdk-go-v2/service/ssm v1.1.2/go.mod h1:9TBBoeFURy05tPw0heKAHKXN2b447xZJXeFKme+EO2s=
+github.com/aws/aws-sdk-go-v2/service/ssm v1.2.0 h1:b6D7f7GZ9NqAQhIDR1q79PrYy5d/eTxK9w3o20BfBH8=
+github.com/aws/aws-sdk-go-v2/service/ssm v1.2.0/go.mod h1:z8/IhDblxj1WkSTTlqBJaoMXeiTDfD36R1x9bR4x5n4=
 github.com/aws/aws-sdk-go-v2/service/sso v1.1.2/go.mod h1:5yU1oE3+CVYYLUsaHt2AVU3CJJZ6ER4pwsrRD1L2KSc=
 github.com/aws/aws-sdk-go-v2/service/sso v1.1.3 h1:NVLHdz3KtZhCrX0GWZKpdINKuDh7PsaZ8Vsr4OxP88s=
 github.com/aws/aws-sdk-go-v2/service/sso v1.1.3/go.mod h1:F1l5lKzDzoY3/0cFbB3AA/ey9MsNiH5rhf6HOssy1/Q=

@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.37.31
 	github.com/aws/aws-sdk-go-v2/config v1.1.2
 	github.com/aws/aws-sdk-go-v2/credentials v1.1.3
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.1.2
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.2.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
