@@ -20,8 +20,8 @@ SchemaHero is a Kubernetes Operator for [Declarative Schema Management](https://
 
 The recommended way to deploy SchemaHero is to use the kubectl plugin. Full instruction and other installation methods listed in the [documentation](https://schemahero.io/docs/installing/kubectl/).
 
-To get started, read the [tutorial](https://schemahero.io/tutorial/) and the [full documentation](https://schemahero.io/docs/)
+To get started, read the [tutorial](https://schemahero.io/learn/tutorial/introduction) and the [full documentation](https://schemahero.io/docs/)
 
 # Community
 
-For questions about using SchemaHero, there's a [Replicated Community](https://help.replicated.com/community) forum, and a [#schemahero channel in Kubernetes Slack](https://kubernetes.slack.com/channels/schemahero).
+For questions about using SchemaHero, there's a [Replicated Community](https://help.replicated.com/community) forum, and a [#schemahero channel in Kubernetes Slack](https://kubernetes.slack.com/channels/schemahero). If you are interested in contributing to Schemahero, you can find more information on how to get started  on our [Community page](https://schemahero.io/community/).
