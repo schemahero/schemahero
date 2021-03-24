@@ -115,17 +115,25 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 		withPrecisionWithoutTimeZone := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)\s*without time zone`)
 		withPrecision := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)`)
 		withoutPrecisionWithoutTimeZone := regexp.MustCompile(`timestamp\s*without time zone`)
+		withPrecisionWithTimeZone := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)\s*with time zone`)
+		withoutPrecisionWithTimeZone := regexp.MustCompile(`timestamp\s*with time zone`)
 		withoutPrecision := regexp.MustCompile(`timestamp\s*`)
 
 		withPrecisionMatchGroups := withPrecision.FindStringSubmatch(requestedType)
 		withPrecisionWithoutTimeZoneMatchGroups := withPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+		withPrecisionWithTimeZoneMatchGroups := withPrecisionWithTimeZone.FindStringSubmatch(requestedType)
 		withoutPrecisionMatchGroups := withoutPrecision.FindStringSubmatch(requestedType)
 		withoutPrecisionWithoutTimeZoneMatchGroups := withoutPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+		withoutPrecisionWithTimeZoneMatchGroups := withoutPrecisionWithTimeZone.FindStringSubmatch(requestedType)
 
 		if len(withPrecisionWithoutTimeZoneMatchGroups) == 2 {
 			columnType = fmt.Sprintf("timestamp (%s) without time zone", withPrecisionWithoutTimeZoneMatchGroups[1])
 		} else if len(withoutPrecisionWithoutTimeZoneMatchGroups) == 1 {
 			columnType = "timestamp without time zone"
+		} else if len(withPrecisionWithTimeZoneMatchGroups) == 2 {
+			columnType = fmt.Sprintf("timestamp (%s) with time zone", withPrecisionWithTimeZoneMatchGroups[1])
+		} else if len(withoutPrecisionWithTimeZoneMatchGroups) == 1 {
+			columnType = "timestamp with time zone"
 		} else if len(withPrecisionMatchGroups) == 2 {
 			columnType = fmt.Sprintf("timestamp (%s)", withPrecisionMatchGroups[1])
 		} else if len(withoutPrecisionMatchGroups) == 1 {
@@ -137,17 +145,25 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 		withPrecisionWithoutTimeZone := regexp.MustCompile(`time\s*\(\s*(?P<precision>.*)\s*\)\s*without time zone`)
 		withPrecision := regexp.MustCompile(`time\s*\(\s*(?P<precision>.*)\s*\)`)
 		withoutPrecisionWithoutTimeZone := regexp.MustCompile(`time\s*without time zone`)
+		withPrecisionWithTimeZone := regexp.MustCompile(`timestamp\s*\(\s*(?P<precision>.*)\s*\)\s*with time zone`)
 		withoutPrecision := regexp.MustCompile(`time\s*`)
+		withoutPrecisionWithTimeZone := regexp.MustCompile(`time\s*with time zone`)
 
 		withPrecisionMatchGroups := withPrecision.FindStringSubmatch(requestedType)
 		withPrecisionWithoutTimeZoneMatchGroups := withPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+		withPrecisionWithTimeZoneMatchGroups := withPrecisionWithTimeZone.FindStringSubmatch(requestedType)
 		withoutPrecisionMatchGroups := withoutPrecision.FindStringSubmatch(requestedType)
 		withoutPrecisionWithoutTimeZoneMatchGroups := withoutPrecisionWithoutTimeZone.FindStringSubmatch(requestedType)
+		withoutPrecisionWithTimeZoneMatchGroups := withoutPrecisionWithTimeZone.FindStringSubmatch(requestedType)
 
 		if len(withPrecisionWithoutTimeZoneMatchGroups) == 2 {
 			columnType = fmt.Sprintf("time (%s) without time zone", withPrecisionWithoutTimeZoneMatchGroups[1])
 		} else if len(withoutPrecisionWithoutTimeZoneMatchGroups) == 1 {
 			columnType = "time without time zone"
+		} else if len(withPrecisionWithTimeZoneMatchGroups) == 2 {
+			columnType = fmt.Sprintf("time (%s) with time zone", withPrecisionWithoutTimeZoneMatchGroups[1])
+		} else if len(withoutPrecisionWithTimeZoneMatchGroups) == 1 {
+			columnType = "time with time zone"
 		} else if len(withPrecisionMatchGroups) == 2 {
 			columnType = fmt.Sprintf("time (%s)", withPrecisionMatchGroups[1])
 		} else if len(withoutPrecisionMatchGroups) == 1 {

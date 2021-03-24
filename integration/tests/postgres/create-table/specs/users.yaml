@@ -14,3 +14,9 @@ schema:
         constraints:
           notNull: true
         default: ethan
+      - name: tz_1
+        type: timestamp
+      - name: tz_2
+        type: timestamp with time zone
+      - name: tz_3
+        type: timestamp without time zone
