@@ -11,20 +11,20 @@ run: 10.16 11.11 12.6 13.2
 10.16: export PG_VERSION = 10.16
 10.16:
 	make -C alter-column-timezone run
-	# make -C column-set-default run
-	# make -C column-unset-default run
-	# make -C create-table run
-	# make -C foreign-key-create run
-	# make -C foreign-key-action run
-	# make -C foreign-key-drop run
-	# make -C foreign-key-alter run
-	# make -C not-null run
-	# make -C not-null-with-default run
-	# make -C index-create run
-	# make -C primary-key-add run
-	# make -C primary-key-drop run
-	# make -C unique-constraint-add run
-	# make -C unique-constraint-drop run
+	make -C column-set-default run
+	make -C column-unset-default run
+	make -C create-table run
+	make -C foreign-key-create run
+	make -C foreign-key-action run
+	make -C foreign-key-drop run
+	make -C foreign-key-alter run
+	make -C not-null run
+	make -C not-null-with-default run
+	make -C index-create run
+	make -C primary-key-add run
+	make -C primary-key-drop run
+	make -C unique-constraint-add run
+	make -C unique-constraint-drop run
 
 .PHONY: 11.11
 11.11: export PG_VERSION = 11.11
