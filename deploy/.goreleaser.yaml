@@ -72,11 +72,15 @@ archives:
       - CHANGELOG*
 dockers:
   - dockerfile: ./deploy/Dockerfile.manager
+    build_flag_templates:
+      - "--pull"
     image_templates:
       - "schemahero/schemahero-manager:{{.Version}}"
     ids:
       - manager
   - dockerfile: ./deploy/Dockerfile.schemahero
+    build_flag_templates:
+      - "--pull"
     image_templates:
       - "schemahero/schemahero:{{.Version}}"
     ids:
