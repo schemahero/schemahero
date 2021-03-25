@@ -10,6 +10,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_ColumnsMatch(t *testing.T) {
+	tests := []struct {
+		name   string
+		col1   types.Column
+		col2   types.Column
+		expect bool
+	}{
+		{
+			name: "timestamp and timestamp without time zone",
+			col1: types.Column{
+				Name:     "a",
+				DataType: "timestamp",
+			},
+			col2: types.Column{
+				Name:     "a",
+				DataType: "timestamp without time zone",
+			},
+			expect: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			actual := columnsMatch(test.col1, test.col2)
+			assert.Equal(t, test.expect, actual)
+		})
+	}
+}
+
 func Test_AlterColumnStatments(t *testing.T) {
 	defaultEleven := "11"
 	defaultEmpty := ""
@@ -25,11 +54,11 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "no change",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "b",
 					Type: "integer",
 				},
@@ -45,7 +74,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "no change varchar",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "a",
 					Type: "varchar(32)",
 				},
@@ -60,11 +89,11 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "change data type",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "b",
 					Type: "integer",
 				},
@@ -80,7 +109,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "drop column",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
@@ -118,7 +147,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "drop not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
@@ -140,7 +169,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "no change to not null constraint",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "t",
 					Type: "text",
 				},
@@ -159,7 +188,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "no change to not nullable timestamp using short column type",
 			tableName: "ts",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "ts",
 					Type: "timestamp",
 					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
@@ -181,7 +210,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "no change to not nullable timestamp",
 			tableName: "ts",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "ts",
 					Type: "timestamp with time zone",
 					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
@@ -191,7 +220,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			},
 			existingColumn: &types.Column{
 				Name:          "ts",
-				DataType:      "timestamp",
+				DataType:      "timestamp with time zone",
 				ColumnDefault: nil,
 				Constraints: &types.ColumnConstraints{
 					NotNull: &trueValue,
@@ -203,7 +232,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "default set",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name:    "a",
 					Type:    "integer",
 					Default: &defaultEleven,
@@ -219,7 +248,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "default unset",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name: "a",
 					Type: "integer",
 				},
@@ -235,7 +264,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			name:      "default empty string",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
-				&schemasv1alpha4.PostgresqlTableColumn{
+				{
 					Name:    "a",
 					Type:    "varchar (32)",
 					Default: &defaultEmpty,

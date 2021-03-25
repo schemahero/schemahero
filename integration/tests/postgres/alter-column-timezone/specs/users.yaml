@@ -1,0 +1,17 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: tz_1
+        type: timestamp
+      - name: tz_2
+        type: timestamp without time zone
+      - name: tz_3
+        type: timestamp with time zone
+      - name: tz_4
+        type: timestamp
