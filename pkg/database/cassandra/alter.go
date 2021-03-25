@@ -18,7 +18,7 @@ func AlterColumnStatements(keyspace string, tableName string, desiredColumns []*
 				return nil, err
 			}
 
-			if columnsMatch(existingColumn, column) {
+			if columnsMatch(*existingColumn, *column) {
 				return []string{}, nil
 			}
 
@@ -38,7 +38,7 @@ func AlterColumnStatements(keyspace string, tableName string, desiredColumns []*
 	return []string{fmt.Sprintf(`alter table "%s.%s" drop column %s`, keyspace, tableName, existingColumn.Name)}, nil
 }
 
-func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
+func columnsMatch(col1 types.Column, col2 types.Column) bool {
 	if col1.DataType != col2.DataType {
 		return false
 	}

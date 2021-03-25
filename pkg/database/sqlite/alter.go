@@ -47,7 +47,7 @@ func RecreateTableStatements(tableName string, sqliteTableSchema *schemasv1alpha
 	return statements, nil
 }
 
-func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
+func columnsMatch(col1 types.Column, col2 types.Column) bool {
 	if col1.DataType != col2.DataType {
 		return false
 	}

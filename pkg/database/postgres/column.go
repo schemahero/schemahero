@@ -9,6 +9,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
+// schemaColumnToColumn converts the requested type from the v1alpha4 schema to a postgres schema type
 func schemaColumnToColumn(schemaColumn *schemasv1alpha4.PostgresqlTableColumn) (*types.Column, error) {
 	column := &types.Column{
 		Name:          schemaColumn.Name,

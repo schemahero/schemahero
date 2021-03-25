@@ -26,7 +26,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				ensureColumnConstraintsNotNullTrue(column)
 			}
 
-			if columnsMatch(existingColumn, column) {
+			if columnsMatch(*existingColumn, *column) {
 				return []string{}, nil
 			}
 
@@ -45,7 +45,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 	}.DDL(), nil
 }
 
-func columnsMatch(col1 *types.Column, col2 *types.Column) bool {
+func columnsMatch(col1 types.Column, col2 types.Column) bool {
 	if col1.DataType != col2.DataType {
 		return false
 	}

@@ -137,7 +137,7 @@ AND m.name = ?`
 				if err != nil {
 					return nil, errors.Wrap(err, "failed to convert desired column")
 				}
-				if !columnsMatch(colA, &existingColumn) {
+				if !columnsMatch(*colA, existingColumn) {
 					needsRecreate = true
 				}
 			}

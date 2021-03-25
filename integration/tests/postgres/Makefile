@@ -10,6 +10,7 @@ run: 10.16 11.11 12.6 13.2
 .PHONY: 10.16
 10.16: export PG_VERSION = 10.16
 10.16:
+	make -C alter-column-timezone run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
