@@ -25,9 +25,11 @@ require (
 	k8s.io/api v0.20.5
 	k8s.io/apiextensions-apiserver v0.20.5
 	k8s.io/apimachinery v0.20.5
+	k8s.io/apiserver v0.20.5 // indirect
 	k8s.io/cli-runtime v0.20.5
 	k8s.io/client-go v0.20.5
 	sigs.k8s.io/controller-runtime v0.8.3
+	sigs.k8s.io/controller-tools v0.4.1 // indirect
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
