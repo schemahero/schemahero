@@ -43,6 +43,7 @@ func ensureTablesCRD(ctx context.Context, cfg *rest.Config) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to create tables crd")
 		}
+		return nil
 	}
 
 	// update the existing object with the new
