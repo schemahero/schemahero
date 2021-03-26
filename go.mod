@@ -31,3 +31,4 @@ require (
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
+
