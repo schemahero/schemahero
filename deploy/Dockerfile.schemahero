@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:buster
 WORKDIR /
 COPY kubectl-schemahero /schemahero
 RUN chmod a+x /schemahero
