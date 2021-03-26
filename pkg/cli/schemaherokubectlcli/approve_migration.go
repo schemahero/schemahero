@@ -61,7 +61,7 @@ func ApproveMigrationCmd() *cobra.Command {
 				if v.GetString("namespace") != "" {
 					namespaceNames = []string{v.GetString("namespace")}
 				} else {
-					namespaceNames = []string{"default"}
+					namespaceNames = []string{metav1.NamespaceDefault}
 				}
 			}
 
@@ -89,7 +89,7 @@ func ApproveMigrationCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	cmd.Flags().Bool("all-namespaces", false, "If present, search for the requested object across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
 
 	return cmd
 }

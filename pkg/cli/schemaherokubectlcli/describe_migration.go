@@ -62,7 +62,7 @@ func DescribeMigrationCmd() *cobra.Command {
 				if v.GetString("namespace") != "" {
 					namespaceNames = []string{v.GetString("namespace")}
 				} else {
-					namespaceNames = []string{"default"}
+					namespaceNames = []string{metav1.NamespaceDefault}
 				}
 			}
 
