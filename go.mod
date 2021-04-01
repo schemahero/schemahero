@@ -3,7 +3,7 @@ module github.com/schemahero/schemahero
 go 1.15
 
 require (
-	github.com/aws/aws-sdk-go v1.38.2
+	github.com/aws/aws-sdk-go v1.38.7
 	github.com/aws/aws-sdk-go-v2/config v1.1.3
 	github.com/aws/aws-sdk-go-v2/credentials v1.1.3
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.2.0
@@ -25,11 +25,9 @@ require (
 	k8s.io/api v0.20.5
 	k8s.io/apiextensions-apiserver v0.20.5
 	k8s.io/apimachinery v0.20.5
-	k8s.io/apiserver v0.20.5 // indirect
 	k8s.io/cli-runtime v0.20.5
 	k8s.io/client-go v0.20.5
 	sigs.k8s.io/controller-runtime v0.8.3
-	sigs.k8s.io/controller-tools v0.4.1 // indirect
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
