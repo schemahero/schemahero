@@ -77,11 +77,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		<-s
 		return nil
 	}))
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 var _ reconcile.Reconciler = &ReconcileMigration{}
