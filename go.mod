@@ -29,4 +29,4 @@ require (
 	sigs.k8s.io/controller-runtime v0.8.3
 )
 
-replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
+replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1

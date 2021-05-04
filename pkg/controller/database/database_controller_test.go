@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -164,7 +163,7 @@ func CreateNamespace(client runtimeclient.Client) (*corev1.Namespace, error) {
 // to get the StatefulSet created by the Controller. This caters for the
 // time between submitting a Database CRD and the Controller Reconcile loop
 // finishing
-func GetStatefulSet(client client.Client, namespace string, name string, retries int, sleep int) (appsv1.StatefulSet, error) {
+func GetStatefulSet(client runtimeclient.Client, namespace string, name string, retries int, sleep int) (appsv1.StatefulSet, error) {
 	ss := appsv1.StatefulSet{}
 	lk := runtimeclient.ObjectKey{
 		Namespace: namespace,
