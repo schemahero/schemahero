@@ -11,7 +11,10 @@ jobs:
         with:
           go-version: "1.16.2"
       - uses: actions/checkout@v2
-      - run: make all
+      - run: make generate fmt
+      - run: go mod tidy
+      - run: git diff
+      - run: make vet manifests bin/kubectl-schemahero manager test
       - uses: actions/upload-artifact@v2.2.2
         with:
           name: manager
