@@ -78,7 +78,9 @@ func ApplyCmd() *cobra.Command {
 					if err != nil {
 						return err
 					}
-					defer f.Close()
+					defer func() {
+						f.Close()
+					}()
 
 					commands := []string{}
 					scanner := bufio.NewScanner(f)
@@ -107,7 +109,9 @@ func ApplyCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				defer f.Close()
+				defer func() {
+					f.Close()
+				}()
 
 				commands := []string{}
 				scanner := bufio.NewScanner(f)

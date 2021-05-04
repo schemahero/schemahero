@@ -70,7 +70,9 @@ func PlanCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				defer f.Close()
+				defer func() {
+					f.Close()
+				}()
 			}
 
 			db := database.Database{
