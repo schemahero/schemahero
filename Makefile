@@ -137,8 +137,12 @@ endif
 .PHONY: client-gen
 client-gen:
 ifeq (, $(shell which client-gen))
+	mkdir /tmp/cgen
+	cd /tmp/cgen; \
+		go mod init tmp; \
 	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.20.0
-CLIENT_GEN=$(shell which client-gen)
+	rm -rf /tmp/cgen
+CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
 else
 CLIENT_GEN=$(shell which client-gen)
 endif
