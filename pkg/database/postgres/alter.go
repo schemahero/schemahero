@@ -26,7 +26,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 
 			// If the request is to modify a column to add a not null contraint to an existing column
 			// handle that part here
-			if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull == true {
+			if column.Constraints != nil && column.Constraints.NotNull != nil && *column.Constraints.NotNull {
 				isAddingNotNull := false
 				if existingColumn.Constraints == nil {
 					isAddingNotNull = true

@@ -56,7 +56,7 @@ func CreateTableStatements(keyspace string, tableName string, tableSchema *schem
 	// clustering
 	if tableSchema.ClusteringOrder != nil {
 		order := ""
-		if tableSchema.ClusteringOrder.IsDescending != nil && *tableSchema.ClusteringOrder.IsDescending == true {
+		if tableSchema.ClusteringOrder.IsDescending != nil && *tableSchema.ClusteringOrder.IsDescending {
 			order = " desc"
 		}
 		clustering := fmt.Sprintf("with clustering order by (%s%s)", tableSchema.ClusteringOrder.Column, order)

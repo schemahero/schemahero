@@ -72,7 +72,7 @@ func mysqlColumnAsInsert(column *schemasv1alpha4.MysqlTableColumn) (string, erro
 	}
 
 	if mysqlColumn.Constraints != nil && mysqlColumn.Constraints.NotNull != nil {
-		if *mysqlColumn.Constraints.NotNull == true {
+		if *mysqlColumn.Constraints.NotNull {
 			formatted = fmt.Sprintf("%s not null", formatted)
 		} else {
 			formatted = fmt.Sprintf("%s null", formatted)
