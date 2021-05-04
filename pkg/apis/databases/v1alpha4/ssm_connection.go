@@ -19,10 +19,10 @@ package v1alpha4
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -67,18 +67,16 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 		cfg.Credentials = credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
 	}
 
-	client := ssm.New(ssm.Options{
-		Credentials: cfg.Credentials,
-	})
+	client := ssm.NewFromConfig(cfg)
 
 	params := ssm.GetParameterInput{
 		WithDecryption: valueOrValueFrom.ValueFrom.SSM.WithDecryption,
 		Name:           aws.String(valueOrValueFrom.ValueFrom.SSM.Name),
 	}
-	getParameterOutput, err := client.GetParameter(ctx, &params)
+	out, err := client.GetParameter(ctx, &params)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get ssm parameter")
 	}
 
-	return driver, *getParameterOutput.Parameter.Value, nil
+	return driver, *out.Parameter.Value, nil
 }

@@ -94,6 +94,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		// create
 
 		serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+		labels := createLabels(databaseInstance)
 
 		statefulSet := appsv1.StatefulSet{
 			TypeMeta: metav1.TypeMeta{
@@ -103,10 +104,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      statefulsetName,
 				Namespace: databaseInstance.Namespace,
-				Labels: map[string]string{
-					"control-plane": "schemahero",
-					"database":      databaseInstance.Name,
-				},
+				Labels:    *labels,
 			},
 			Spec: appsv1.StatefulSetSpec{
 				Selector: &metav1.LabelSelector{
@@ -117,10 +115,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 				},
 				Template: corev1.PodTemplateSpec{
 					ObjectMeta: metav1.ObjectMeta{
-						Labels: map[string]string{
-							"control-plane": "schemahero",
-							"database":      databaseInstance.Name,
-						},
+						Labels:      *labels,
 						Annotations: vaultAnnotations,
 					},
 					Spec: corev1.PodSpec{
@@ -199,6 +194,21 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func createLabels(db *databasesv1alpha4.Database) *map[string]string {
+	l := map[string]string{
+		"control-plane": "schemahero",
+		"database":      db.Name,
+	}
+
+	if db.Spec.Template != nil {
+		for k, v := range db.Spec.Template.ObjectMeta.Labels {
+			l[k] = v
+		}
+	}
+
+	return &l
 }
 
 func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1alpha4.Database, error) {
