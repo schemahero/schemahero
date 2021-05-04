@@ -27,7 +27,6 @@ import (
 )
 
 var tenSeconds = int64(10)
-var defaultMode = int32(420)
 
 // Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
