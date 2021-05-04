@@ -80,7 +80,7 @@ func (g *Generator) RunSync() error {
 		// ensure that outputdir exists
 		fi, err := os.Stat(g.OutputDir)
 		if os.IsNotExist(err) {
-			if err := os.MkdirAll(g.OutputDir, 0755); err != nil {
+			if err := os.MkdirAll(g.OutputDir, 0750); err != nil {
 				return errors.Wrap(err, "failed to create output dir")
 			}
 		} else if err != nil {
@@ -91,7 +91,7 @@ func (g *Generator) RunSync() error {
 
 		// If there was a outputdir set, write it, else print it
 		if g.OutputDir != "" {
-			if err := ioutil.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(table.Name))), []byte(tableYAML), 0644); err != nil {
+			if err := ioutil.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(table.Name))), []byte(tableYAML), 0600); err != nil {
 				return err
 			}
 

@@ -66,7 +66,7 @@ func PlanCmd() *cobra.Command {
 
 			var f *os.File
 			if v.GetString("out") != "" {
-				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 				if err != nil {
 					return err
 				}
