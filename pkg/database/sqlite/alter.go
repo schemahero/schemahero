@@ -94,10 +94,3 @@ func columnsMatch(col1 types.Column, col2 types.Column) bool {
 
 	return true
 }
-
-func ensureColumnConstraintsNotNullTrue(column *types.Column) {
-	if column.Constraints == nil {
-		column.Constraints = &types.ColumnConstraints{}
-	}
-	column.Constraints.NotNull = &trueValue
-}
