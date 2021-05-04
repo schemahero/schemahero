@@ -70,7 +70,7 @@ func sqliteColumnAsInsert(column *schemasv1alpha4.SqliteTableColumn) (string, er
 	}
 
 	if sqliteColumn.Constraints != nil && sqliteColumn.Constraints.NotNull != nil {
-		if *sqliteColumn.Constraints.NotNull == true {
+		if *sqliteColumn.Constraints.NotNull {
 			formatted = fmt.Sprintf("%s not null", formatted)
 		} else {
 			formatted = fmt.Sprintf("%s null", formatted)

@@ -32,7 +32,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 					isAddingNotNull = true
 				} else if existingColumn.Constraints.NotNull == nil {
 					isAddingNotNull = true
-				} else if *existingColumn.Constraints.NotNull == false {
+				} else if !*existingColumn.Constraints.NotNull {
 					isAddingNotNull = true
 				}
 
@@ -102,8 +102,8 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				}
 
 				if !isPrimaryKey {
-					if existingColumn.Constraints != nil && existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull == true {
-						if column.Constraints == nil || column.Constraints.NotNull == nil || *column.Constraints.NotNull == false {
+					if existingColumn.Constraints != nil && existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull {
+						if column.Constraints == nil || column.Constraints.NotNull == nil || !*column.Constraints.NotNull {
 							changes = append(changes, fmt.Sprintf("%s drop not null", alterStatement))
 						}
 					}
