@@ -74,7 +74,7 @@ func ApplyCmd() *cobra.Command {
 						return nil
 					}
 
-					f, err := os.Open(path)
+					f, err := os.Open(filepath.Clean(path))
 					if err != nil {
 						return err
 					}
