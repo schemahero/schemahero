@@ -15,12 +15,12 @@ type AlterModifyColumnStatement struct {
 
 func (s AlterModifyColumnStatement) DDL() []string {
 	isAddingNotNull := false
-	if s.Column.Constraints != nil && s.Column.Constraints.NotNull != nil && *s.Column.Constraints.NotNull == true {
+	if s.Column.Constraints != nil && s.Column.Constraints.NotNull != nil && *s.Column.Constraints.NotNull {
 		if s.ExistingColumn.Constraints == nil {
 			isAddingNotNull = true
 		} else if s.ExistingColumn.Constraints.NotNull == nil {
 			isAddingNotNull = true
-		} else if *s.ExistingColumn.Constraints.NotNull == false {
+		} else if !*s.ExistingColumn.Constraints.NotNull {
 			isAddingNotNull = true
 		}
 	}
