@@ -54,22 +54,25 @@ func TestGetConnectionURIFromTemplate(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 				switch r.URL.Path {
 				case "/v1/auth/kubernetes/login":
-					rw.Write([]byte(`{
+					_, err := rw.Write([]byte(`{
   "auth": {
     "client_token": "blah"
   }
 }`))
+					assert.NoError(t, err)
 				case "/v1/database/creds/secret":
-					rw.Write([]byte(`{
+					_, err := rw.Write([]byte(`{
   "lease_duration": 86400,
   "data": {
     "username": "someuser",
     "password": "p@ssw0rd"
   }
 }`))
+					assert.NoError(t, err)
 				default:
 					rw.WriteHeader(http.StatusNotFound)
-					rw.Write([]byte(fmt.Sprintf("Unknown path: %s", r.URL.Path)))
+					_, err := rw.Write([]byte(fmt.Sprintf("Unknown path: %s", r.URL.Path)))
+					assert.NoError(t, err)
 				}
 			}))
 			defer srv.Close()
