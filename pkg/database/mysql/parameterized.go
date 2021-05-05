@@ -35,8 +35,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 	columnType := ""
 
 	if strings.HasPrefix(requestedType, "varchar") {
-		columnType = "varchar"
-
 		r := regexp.MustCompile(`varchar\s*\((?P<max>\d*)\)`)
 
 		matchGroups := r.FindStringSubmatch(requestedType)
@@ -51,8 +49,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			columnType = fmt.Sprintf("varchar (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "char") {
-		columnType = "char"
-
 		if strings.Contains(requestedType, "character") {
 			requestedType = strings.Replace(requestedType, "character", "char", -1)
 		}
@@ -72,8 +68,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			columnType = fmt.Sprintf("char (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "tinyint") {
-		columnType = "tinyint"
-
 		r := regexp.MustCompile(`tinyint\s*\((?P<max>\d*)\)`)
 
 		matchGroups := r.FindStringSubmatch(requestedType)
