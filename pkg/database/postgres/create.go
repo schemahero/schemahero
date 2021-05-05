@@ -38,8 +38,6 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Postgr
 					uniqueColumns = append(uniqueColumns, pgx.Identifier{indexColumn}.Sanitize())
 				}
 				columns = append(columns, fmt.Sprintf("constraint %q unique (%s)", types.GeneratePostgresqlIndexName(tableName, index), strings.Join(uniqueColumns, ", ")))
-			} else {
-				// non unique indexes are not supported in fixtures
 			}
 		}
 	}
