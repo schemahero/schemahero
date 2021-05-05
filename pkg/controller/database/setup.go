@@ -72,9 +72,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler, name string) error {
 	err = c.Watch(&source.Kind{
 		Type: &databasesv1alpha4.Database{},
 	}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }

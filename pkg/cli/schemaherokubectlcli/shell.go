@@ -190,11 +190,8 @@ func ShellCmd() *cobra.Command {
 				Stderr: os.Stderr,
 				Tty:    true,
 			})
-			if err != nil {
-				return err
-			}
 
-			return nil
+			return err
 		},
 	}
 
