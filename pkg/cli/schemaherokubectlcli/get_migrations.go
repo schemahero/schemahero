@@ -159,7 +159,7 @@ func timestampToAge(t int64) string {
 		return ""
 	}
 
-	d := time.Now().Sub(time.Unix(t, 0))
+	d := time.Since(time.Unix(t, 0))
 	if d < time.Duration(time.Minute) {
 		return fmt.Sprintf("%ds", int(d.Seconds()))
 	} else if d < time.Duration(time.Minute*10) {
