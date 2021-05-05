@@ -133,7 +133,7 @@ func (d *Database) CreateFixturesSync() error {
 }
 
 func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string, error) {
-	specContents, err := ioutil.ReadFile(filename)
+	specContents, err := ioutil.ReadFile(filepath.Clean(filename))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read file")
 	}

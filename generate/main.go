@@ -48,7 +48,7 @@ func templateManifest(manifestV1File string, tmplFile string, out string) error 
 		return errors.Wrap(err, "error deleting out file")
 	}
 
-	manifestv1, err := ioutil.ReadFile(manifestV1File)
+	manifestv1, err := ioutil.ReadFile(filepath.Clean(manifestV1File))
 	if err != nil {
 		return errors.Wrap(err, "failed to read v1 file")
 	}
