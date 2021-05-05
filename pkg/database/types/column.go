@@ -13,10 +13,10 @@ type ColumnAttributes struct {
 }
 
 func BoolsEqual(a, b *bool) bool {
-	if a == nil || *a == false {
-		return b == nil || *b == false
+	if a == nil || !*a {
+		return b == nil || !*b
 	}
-	return b != nil && *b == true
+	return b != nil && *b
 }
 
 type Column struct {

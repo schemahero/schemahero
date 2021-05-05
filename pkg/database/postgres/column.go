@@ -77,7 +77,7 @@ func columnAsInsert(column *schemasv1alpha4.PostgresqlTableColumn) (string, erro
 	formatted := fmt.Sprintf("%s %s%s", pgx.Identifier{column.Name}.Sanitize(), postgresColumn.DataType, arraySpecifier)
 
 	if postgresColumn.Constraints != nil && postgresColumn.Constraints.NotNull != nil {
-		if *postgresColumn.Constraints.NotNull == true {
+		if *postgresColumn.Constraints.NotNull {
 			formatted = fmt.Sprintf("%s not null", formatted)
 		} else {
 			formatted = fmt.Sprintf("%s null", formatted)
