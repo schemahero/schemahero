@@ -21,13 +21,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
-	corev1 "k8s.io/api/core/v1"
-	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -125,40 +121,4 @@ func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1a
 	}
 
 	return v1alpha4instance, nil
-}
-
-func (r *ReconcileMigration) readConnectionURI(namespace string, valueOrValueFrom databasesv1alpha4.ValueOrValueFrom) (string, error) {
-	if valueOrValueFrom.Value != "" {
-		return valueOrValueFrom.Value, nil
-	}
-
-	if valueOrValueFrom.ValueFrom == nil {
-		return "", errors.New("value and valueFrom cannot both be nil/empty")
-	}
-
-	if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
-		secret := &corev1.Secret{}
-		secretNamespacedName := types.NamespacedName{
-			Name:      valueOrValueFrom.ValueFrom.SecretKeyRef.Name,
-			Namespace: namespace,
-		}
-
-		if err := r.Get(context.Background(), secretNamespacedName, secret); err != nil {
-			if kuberneteserrors.IsNotFound(err) {
-				return "", errors.New("table secret not found")
-			} else {
-				return "", errors.Wrap(err, "failed to get existing connection secret")
-			}
-		}
-
-		return string(secret.Data[valueOrValueFrom.ValueFrom.SecretKeyRef.Key]), nil
-	}
-
-	if valueOrValueFrom.ValueFrom.Vault != nil {
-		// this feels wrong, but also doesn't make sense to return a
-		// a URI ref as a connection URI?
-		return "", nil
-	}
-
-	return "", errors.New("unable to find supported valueFrom")
 }
