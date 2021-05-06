@@ -79,7 +79,7 @@ func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string
 		return nil, err
 	}
 
-	indexes := make([]*types.Index, 0, 0)
+	indexes := make([]*types.Index, 0)
 	for rows.Next() {
 		var index types.Index
 		var columns string
@@ -117,7 +117,7 @@ func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName st
 		return nil, err
 	}
 
-	foreignKeys := make([]*types.ForeignKey, 0, 0)
+	foreignKeys := make([]*types.ForeignKey, 0)
 	for rows.Next() {
 		var childColumn, parentColumn, parentTable, name, deleteRule string
 
@@ -200,7 +200,7 @@ order by ORDINAL_POSITION`
 		return nil, err
 	}
 
-	columns := make([]*types.Column, 0, 0)
+	columns := make([]*types.Column, 0)
 
 	for rows.Next() {
 		column := types.Column{
