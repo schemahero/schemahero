@@ -46,7 +46,7 @@ func (g *Generator) RunSync() error {
 		return errors.Wrap(err, "failed to list tables")
 	}
 
-	filesWritten := make([]string, 0, 0)
+	filesWritten := make([]string, 0)
 	for _, table := range tables {
 		primaryKey, err := db.GetTablePrimaryKey(table.Name)
 		if err != nil {
@@ -80,7 +80,7 @@ func (g *Generator) RunSync() error {
 		// ensure that outputdir exists
 		fi, err := os.Stat(g.OutputDir)
 		if os.IsNotExist(err) {
-			if err := os.MkdirAll(g.OutputDir, 0755); err != nil {
+			if err := os.MkdirAll(g.OutputDir, 0750); err != nil {
 				return errors.Wrap(err, "failed to create output dir")
 			}
 		} else if err != nil {
@@ -91,7 +91,7 @@ func (g *Generator) RunSync() error {
 
 		// If there was a outputdir set, write it, else print it
 		if g.OutputDir != "" {
-			if err := ioutil.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(table.Name))), []byte(tableYAML), 0644); err != nil {
+			if err := ioutil.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(table.Name))), []byte(tableYAML), 0600); err != nil {
 				return err
 			}
 
@@ -132,19 +132,19 @@ func generateTableYAML(driver string, dbName string, table *types.Table, primary
 }
 
 func generateMysqlTableYAML(dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
-	schemaForeignKeys := make([]*schemasv1alpha4.MysqlTableForeignKey, 0, 0)
+	schemaForeignKeys := make([]*schemasv1alpha4.MysqlTableForeignKey, 0)
 	for _, foreignKey := range foreignKeys {
 		schemaForeignKey := types.ForeignKeyToMysqlSchemaForeignKey(foreignKey)
 		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
 	}
 
-	schemaIndexes := make([]*schemasv1alpha4.MysqlTableIndex, 0, 0)
+	schemaIndexes := make([]*schemasv1alpha4.MysqlTableIndex, 0)
 	for _, index := range indexes {
 		schemaIndex := types.IndexToMysqlSchemaIndex(index)
 		schemaIndexes = append(schemaIndexes, schemaIndex)
 	}
 
-	schemaTableColumns := make([]*schemasv1alpha4.MysqlTableColumn, 0, 0)
+	schemaTableColumns := make([]*schemasv1alpha4.MysqlTableColumn, 0)
 	for _, column := range columns {
 		schemaTableColumn, err := types.ColumnToMysqlSchemaColumn(column)
 		if err != nil {
@@ -199,19 +199,19 @@ metadata:
 }
 
 func generatePostgresqlTableYAML(driver string, dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
-	schemaForeignKeys := make([]*schemasv1alpha4.PostgresqlTableForeignKey, 0, 0)
+	schemaForeignKeys := make([]*schemasv1alpha4.PostgresqlTableForeignKey, 0)
 	for _, foreignKey := range foreignKeys {
 		schemaForeignKey := types.ForeignKeyToPostgresqlSchemaForeignKey(foreignKey)
 		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
 	}
 
-	schemaIndexes := make([]*schemasv1alpha4.PostgresqlTableIndex, 0, 0)
+	schemaIndexes := make([]*schemasv1alpha4.PostgresqlTableIndex, 0)
 	for _, index := range indexes {
 		schemaIndex := types.IndexToPostgresqlSchemaIndex(index)
 		schemaIndexes = append(schemaIndexes, schemaIndex)
 	}
 
-	schemaTableColumns := make([]*schemasv1alpha4.PostgresqlTableColumn, 0, 0)
+	schemaTableColumns := make([]*schemasv1alpha4.PostgresqlTableColumn, 0)
 	for _, column := range columns {
 		schemaTableColumn, err := types.ColumnToPostgresqlSchemaColumn(column)
 		if err != nil {

@@ -15,14 +15,14 @@ func triggerCreateStatement(trigger *schemasv1alpha4.PostgresqlTableTrigger, tab
 	}
 
 	o := "trigger"
-	if trigger.ConstraintTrigger != nil && *trigger.ConstraintTrigger == true {
+	if trigger.ConstraintTrigger != nil && *trigger.ConstraintTrigger {
 		o = "constraint trigger"
 	}
 
 	stmt := fmt.Sprintf(`create %s %q %s on %q`, o, trigger.Name, triggerEventSyntax, tableName)
 
 	forEachStatement := true // pg default
-	if trigger.ForEachRow != nil && *trigger.ForEachRow == true {
+	if trigger.ForEachRow != nil && *trigger.ForEachRow {
 		forEachStatement = false
 	}
 

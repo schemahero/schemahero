@@ -68,9 +68,7 @@ func GetDatabasesCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				for _, database := range databases.Items {
-					matchingDatabases = append(matchingDatabases, database)
-				}
+				matchingDatabases = append(matchingDatabases, databases.Items...)
 			}
 			if len(matchingDatabases) == 0 {
 				fmt.Println("No reosurces found.")

@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	trueValue  = true
-	falseValue = false
+	trueValue = true
 )
 
 func Test_sanitizeName(t *testing.T) {

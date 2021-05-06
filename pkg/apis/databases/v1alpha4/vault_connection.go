@@ -143,7 +143,9 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.
 	}
 
 	uriTemplate, err := getConnectionURITemplate(valueOrValueFrom.ValueFrom.Vault, loginResponse.Auth.ClientToken, d.Name)
-
+	if err != nil {
+		return "", "", errors.Wrap(err, "failed to get connection URI Template")
+	}
 	funcMap := template.FuncMap{}
 	funcMap["username"] = func() string {
 		return credsResponse.Data["username"].(string)

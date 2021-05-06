@@ -79,7 +79,7 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 		return nil, err
 	}
 
-	indexes := make([]*types.Index, 0, 0)
+	indexes := make([]*types.Index, 0)
 	for rows.Next() {
 		var index types.Index
 		var method string
@@ -135,7 +135,7 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 		return nil, err
 	}
 
-	foreignKeys := make([]*types.ForeignKey, 0, 0)
+	foreignKeys := make([]*types.ForeignKey, 0)
 	for rows.Next() {
 		var childColumn, parentColumn, parentTable, name, deleteRule string
 
@@ -215,7 +215,7 @@ func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, 
 		return nil, err
 	}
 
-	columns := make([]*types.Column, 0, 0)
+	columns := make([]*types.Column, 0)
 	for rows.Next() {
 		column := types.Column{}
 
