@@ -20,7 +20,7 @@ func (s AlterModifyColumnStatement) DDL() []string {
 			isAddingNotNull = true
 		} else if s.ExistingColumn.Constraints.NotNull == nil {
 			isAddingNotNull = true
-		} else if *s.ExistingColumn.Constraints.NotNull {
+		} else if !*s.ExistingColumn.Constraints.NotNull {
 			isAddingNotNull = true
 		}
 	}
