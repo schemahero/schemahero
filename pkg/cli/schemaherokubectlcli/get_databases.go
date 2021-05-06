@@ -55,9 +55,7 @@ func GetDatabasesCmd() *cobra.Command {
 					return err
 				}
 
-				for _, database := range databases.Items {
-					matchingDatabases = append(matchingDatabases, database)
-				}
+				matchingDatabases = append(matchingDatabases, databases.Items...)
 			}
 
 			if len(matchingDatabases) == 0 {

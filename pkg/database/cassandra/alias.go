@@ -1,9 +1,5 @@
 package cassandra
 
-var unparameterizedColumnTypes = []string{
-	// TODO
-}
-
 func unaliasUnparameterizedColumnType(requestedType string) string {
 	switch requestedType {
 	case "varchar":

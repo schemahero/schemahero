@@ -27,7 +27,6 @@ import (
 )
 
 var tenSeconds = int64(10)
-var defaultMode = int32(420)
 
 // Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
@@ -73,9 +72,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler, name string) error {
 	err = c.Watch(&source.Kind{
 		Type: &databasesv1alpha4.Database{},
 	}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }

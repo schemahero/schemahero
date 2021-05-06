@@ -74,11 +74,13 @@ func ApplyCmd() *cobra.Command {
 						return nil
 					}
 
-					f, err := os.Open(path)
+					f, err := os.Open(filepath.Clean(path))
 					if err != nil {
 						return err
 					}
-					defer f.Close()
+					defer func() {
+						f.Close()
+					}()
 
 					commands := []string{}
 					scanner := bufio.NewScanner(f)
@@ -107,7 +109,9 @@ func ApplyCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				defer f.Close()
+				defer func() {
+					f.Close()
+				}()
 
 				commands := []string{}
 				scanner := bufio.NewScanner(f)
