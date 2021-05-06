@@ -33,7 +33,10 @@ func FixturesCmd() *cobra.Command {
 	cmd.Flags().String("input-dir", "", "directory to read schema files from")
 	cmd.Flags().String("output-dir", "", "directory to write fixture files to")
 
-	cmd.MarkFlagRequired("driver")
+	err := cmd.MarkFlagRequired("driver")
+	if err != nil {
+		panic(err)
+	}
 	cmd.MarkFlagRequired("dbname")
 	cmd.MarkFlagRequired("input-dir")
 	cmd.MarkFlagRequired("output-dir")

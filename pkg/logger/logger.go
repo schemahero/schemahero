@@ -37,15 +37,17 @@ func Error(err error) {
 	sugar.Error(err)
 }
 
-func Info(msg string, fields ...zap.Field) {
+func Info(msg string, err error, fields ...zap.Field) {
 	defer log.Sync()
 	sugar := log.Sugar()
+	sugar.Error(err)
 	sugar.Info(msg, fields)
 }
 
-func Infof(template string, args ...interface{}) {
+func Infof(template string, err error, args ...interface{}) {
 	defer log.Sync()
 	sugar := log.Sugar()
+	sugar.Error(err)
 	sugar.Infof(template, args)
 }
 
