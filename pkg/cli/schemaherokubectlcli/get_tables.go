@@ -113,7 +113,7 @@ func GetTablesCmd() *cobra.Command {
 					status = fmt.Sprintf("%d", pendingMigrations)
 				}
 
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s", table.Name, table.Spec.Database, status))
+				fmt.Fprintf(w, fmt.Sprintf("%s\t%s\t%s", table.Name, table.Spec.Database, status))
 			}
 			w.Flush()
 

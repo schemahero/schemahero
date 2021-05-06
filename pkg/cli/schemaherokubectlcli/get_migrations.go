@@ -138,7 +138,7 @@ func GetMigrationsCmd() *cobra.Command {
 			fmt.Fprintln(w, "ID\tDATABASE\tTABLE\tPLANNED\tEXECUTED\tAPPROVED\tREJECTED")
 
 			for _, row := range rows {
-				fmt.Fprintln(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s", row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
+				fmt.Fprintf(w, fmt.Sprintf("%s\t%s\t%s\t%s\t%s\t%s\t%s", row[0], row[1], row[2], row[3], row[4], row[5], row[6]))
 			}
 			w.Flush()
 
