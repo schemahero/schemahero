@@ -79,7 +79,7 @@ func ApplyCmd() *cobra.Command {
 						return err
 					}
 					defer func() {
-						f.Close()
+						err = f.Close()
 					}()
 
 					commands := []string{}
@@ -110,7 +110,7 @@ func ApplyCmd() *cobra.Command {
 					return err
 				}
 				defer func() {
-					f.Close()
+					err = f.Close()
 				}()
 
 				commands := []string{}

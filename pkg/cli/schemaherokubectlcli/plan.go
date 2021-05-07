@@ -71,7 +71,7 @@ func PlanCmd() *cobra.Command {
 					return err
 				}
 				defer func() {
-					f.Close()
+					err = f.Close()
 				}()
 			}
 
