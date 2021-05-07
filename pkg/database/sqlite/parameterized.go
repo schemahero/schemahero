@@ -32,7 +32,7 @@ func isParameterizedColumnType(requestedType string) bool {
 }
 
 func maybeParseParameterizedColumnType(requestedType string) (string, error) {
-	columnType := ""
+	var columnType string
 
 	if strings.HasPrefix(requestedType, "varchar") {
 		columnType = "varchar"
