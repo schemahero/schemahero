@@ -18,7 +18,11 @@ func ApplyCmd() *cobra.Command {
 		Long:         `...`,
 		SilenceUsage: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.BindPFlags(cmd.Flags())
+			err := viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				panic(nil)
+
+			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()

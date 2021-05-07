@@ -43,7 +43,7 @@ var unparameterizedColumnTypes = []string{
 }
 
 func maybeParseParameterizedColumnType(requestedType string) (string, error) {
-	columnType := ""
+	var columnType string
 
 	if strings.HasPrefix(requestedType, "bit varying") {
 		columnType = "bit varying"
