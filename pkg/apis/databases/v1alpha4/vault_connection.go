@@ -142,7 +142,7 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.
 		return "", "", errors.Wrap(err, "failed to unmarshal response")
 	}
 
-	uriTemplate, err := getConnectionURITemplate(valueOrValueFrom.ValueFrom.Vault, loginResponse.Auth.ClientToken, d.Name)
+	uriTemplate := getConnectionURITemplate(valueOrValueFrom.ValueFrom.Vault, loginResponse.Auth.ClientToken, d.Name)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get connection URI Template")
 	}
