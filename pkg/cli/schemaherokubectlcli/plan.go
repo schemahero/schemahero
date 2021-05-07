@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -71,7 +72,9 @@ func PlanCmd() *cobra.Command {
 					return err
 				}
 				defer func() {
-					err = f.Close()
+					if err := f.Close(); err != nil {
+						logger.Error(err)
+					}
 				}()
 			}
 

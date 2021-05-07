@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -78,8 +79,11 @@ func ApplyCmd() *cobra.Command {
 					if err != nil {
 						return err
 					}
+
 					defer func() {
-						err = f.Close()
+						if err := f.Close(); err != nil {
+							logger.Error(err)
+						}
 					}()
 
 					commands := []string{}
@@ -110,7 +114,9 @@ func ApplyCmd() *cobra.Command {
 					return err
 				}
 				defer func() {
-					err = f.Close()
+					if err := f.Close(); err != nil {
+						logger.Error(err)
+					}
 				}()
 
 				commands := []string{}
