@@ -13,7 +13,10 @@ func DescribeCmd() *cobra.Command {
 		Args:          cobra.MinimumNArgs(1),
 		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.BindPFlags(cmd.Flags())
+			err := viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				panic(err)
+			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return nil

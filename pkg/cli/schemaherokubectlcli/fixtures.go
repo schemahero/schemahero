@@ -13,7 +13,10 @@ func FixturesCmd() *cobra.Command {
 		Short: "fixtures creates sql statements from a schemahero definition",
 		Long:  `...`,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.BindPFlags(cmd.Flags())
+			err := viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				panic(err)
+			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			v := viper.GetViper()
