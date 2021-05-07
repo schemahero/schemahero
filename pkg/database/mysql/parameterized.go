@@ -82,7 +82,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			columnType = fmt.Sprintf("tinyint (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "bit") {
-		columnType = "bit"
 
 		r := regexp.MustCompile(`bit\s*\((?P<max>\d*)\)`)
 
@@ -98,7 +97,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			columnType = fmt.Sprintf("bit (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "smallint") {
-		columnType = "smallint"
 
 		r := regexp.MustCompile(`smallint\s*\((?P<max>\d*)\)`)
 
@@ -114,7 +112,6 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			columnType = fmt.Sprintf("smallint (%d)", max)
 		}
 	} else if strings.HasPrefix(requestedType, "mediumint") {
-		columnType = "mediumint"
 
 		r := regexp.MustCompile(`mediumint\s*\((?P<max>\d*)\)`)
 
