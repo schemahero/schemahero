@@ -16,7 +16,10 @@ func RootCmd() *cobra.Command {
 		Short: "SchemaHero is a cloud-native database schema management tool",
 		Long:  `...`,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.BindPFlags(cmd.Flags())
+			err := viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				panic(err)
+			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
@@ -33,7 +36,10 @@ func RootCmd() *cobra.Command {
 	cmd.AddCommand(Version())
 	cmd.AddCommand(RunCmd())
 
-	viper.BindPFlags(cmd.Flags())
+	err := viper.BindPFlags(cmd.Flags())
+	if err != nil {
+		panic(err)
+	}
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 

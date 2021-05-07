@@ -61,7 +61,10 @@ func ensureMigrationsCRD(ctx context.Context, cfg *rest.Config) error {
 }
 
 func migrationsCRDV1() *extensionsv1.CustomResourceDefinition {
-	extensionsscheme.AddToScheme(scheme.Scheme)
+	err := extensionsscheme.AddToScheme(scheme.Scheme)
+	if err != nil {
+		panic(err)
+	}
 	decode := scheme.Codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(generatedMigrationCRDV1), nil, nil)
 	if err != nil {

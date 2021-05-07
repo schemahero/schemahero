@@ -27,7 +27,10 @@ func RunCmd() *cobra.Command {
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PreRun: func(cmd *cobra.Command, args []string) {
-			viper.BindPFlags(cmd.Flags())
+			err := viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				panic(err)
+			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger.Infof("Starting schemahero version %+v", version.GetBuild())
