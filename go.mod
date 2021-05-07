@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.2.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
+	github.com/gostaticanalysis/nakedreturn v0.1.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mattn/go-sqlite3 v1.14.6
@@ -20,7 +21,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/xo/dburl v0.0.0-20200124232849-e9ec94f52bc3
 	go.uber.org/zap v1.16.0
-	golang.org/x/tools v0.0.0-20200616195046-dc31b401abb5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.20.5
 	k8s.io/apiextensions-apiserver v0.20.5

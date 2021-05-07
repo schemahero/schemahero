@@ -74,7 +74,7 @@ func (c *migrations) Get(ctx context.Context, name string, options v1.GetOptions
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // List takes label and field selectors, and returns the list of Migrations that match those selectors.
@@ -91,7 +91,7 @@ func (c *migrations) List(ctx context.Context, opts v1.ListOptions) (result *v1a
 		Timeout(timeout).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Watch returns a watch.Interface that watches the requested migrations.
@@ -119,7 +119,7 @@ func (c *migrations) Create(ctx context.Context, migration *v1alpha4.Migration, 
 		Body(migration).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Update takes the representation of a migration and updates it. Returns the server's representation of the migration, and an error, if there is any.
@@ -133,7 +133,7 @@ func (c *migrations) Update(ctx context.Context, migration *v1alpha4.Migration, 
 		Body(migration).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
@@ -149,7 +149,7 @@ func (c *migrations) UpdateStatus(ctx context.Context, migration *v1alpha4.Migra
 		Body(migration).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Delete takes name of the migration and deletes it. Returns an error if one occurs.
@@ -191,5 +191,5 @@ func (c *migrations) Patch(ctx context.Context, name string, pt types.PatchType,
 		Body(data).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }

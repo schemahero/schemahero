@@ -74,7 +74,7 @@ func (c *tables) Get(ctx context.Context, name string, options v1.GetOptions) (r
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // List takes label and field selectors, and returns the list of Tables that match those selectors.
@@ -91,7 +91,7 @@ func (c *tables) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha
 		Timeout(timeout).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Watch returns a watch.Interface that watches the requested tables.
@@ -119,7 +119,7 @@ func (c *tables) Create(ctx context.Context, table *v1alpha4.Table, opts v1.Crea
 		Body(table).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Update takes the representation of a table and updates it. Returns the server's representation of the table, and an error, if there is any.
@@ -133,7 +133,7 @@ func (c *tables) Update(ctx context.Context, table *v1alpha4.Table, opts v1.Upda
 		Body(table).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
@@ -149,7 +149,7 @@ func (c *tables) UpdateStatus(ctx context.Context, table *v1alpha4.Table, opts v
 		Body(table).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Delete takes name of the table and deletes it. Returns an error if one occurs.
@@ -191,5 +191,5 @@ func (c *tables) Patch(ctx context.Context, name string, pt types.PatchType, dat
 		Body(data).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }

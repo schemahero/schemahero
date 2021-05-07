@@ -74,7 +74,7 @@ func (c *databases) Get(ctx context.Context, name string, options v1.GetOptions)
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // List takes label and field selectors, and returns the list of Databases that match those selectors.
@@ -91,7 +91,7 @@ func (c *databases) List(ctx context.Context, opts v1.ListOptions) (result *v1al
 		Timeout(timeout).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Watch returns a watch.Interface that watches the requested databases.
@@ -119,7 +119,7 @@ func (c *databases) Create(ctx context.Context, database *v1alpha4.Database, opt
 		Body(database).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Update takes the representation of a database and updates it. Returns the server's representation of the database, and an error, if there is any.
@@ -133,7 +133,7 @@ func (c *databases) Update(ctx context.Context, database *v1alpha4.Database, opt
 		Body(database).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // UpdateStatus was generated because the type contains a Status member.
@@ -149,7 +149,7 @@ func (c *databases) UpdateStatus(ctx context.Context, database *v1alpha4.Databas
 		Body(database).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
 
 // Delete takes name of the database and deletes it. Returns an error if one occurs.
@@ -191,5 +191,5 @@ func (c *databases) Patch(ctx context.Context, name string, pt types.PatchType, 
 		Body(data).
 		Do(ctx).
 		Into(result)
-	return
+	return result, err
 }
