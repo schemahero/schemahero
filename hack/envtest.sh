@@ -9,16 +9,19 @@
 # work presuming controller-runtime will fix this eventually
 version=1.19.2
 download_url=https://storage.googleapis.com/kubebuilder-tools
+if [[ -z "${TMPDIR}" ]]; then
+    TMPDIR=/tmp
+fi
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    rm -f /tmp/kubebuilder-tools-${version}-darwin-amd64.tar.gz
-    rm -rf /tmp/kubebuilder && mkdir -p /tmp/kubebuilder
+    rm -f ${TMPDIR}/kubebuilder-tools-${version}-darwin-amd64.tar.gz
+    rm -rf ${TMPDIR}/kubebuilder && mkdir -p ${TMPDIR}/kubebuilder
 
-    curl -L ${download_url}/kubebuilder-tools-${version}-darwin-amd64.tar.gz -o /tmp/kubebuilder-tools-${version}-darwin-amd64.tar.gz
-    tar -xzvf /tmp/kubebuilder-tools-${version}-darwin-amd64.tar.gz -C /tmp
+    curl -L ${download_url}/kubebuilder-tools-${version}-darwin-amd64.tar.gz -o ${TMPDIR}/kubebuilder-tools-${version}-darwin-amd64.tar.gz
+    tar -xzvf ${TMPDIR}/kubebuilder-tools-${version}-darwin-amd64.tar.gz -C $TMPDIR
 else
-    rm -f /tmp/kubebuilder-tools-${version}-linux-amd64.tar.gz
-    rm -rf /tmp/kubebuilder && mkdir -p /tmp/kubebuilder
+    rm -f ${TMPDIR}/kubebuilder-tools-${version}-linux-amd64.tar.gz
+    rm -rf ${TMPDIR}/kubebuilder && mkdir -p ${TMPDIR}/kubebuilder
 
-    curl -L ${download_url}/kubebuilder-tools-${version}-linux-amd64.tar.gz -o /tmp/kubebuilder-tools-${version}-linux-amd64.tar.gz
-    tar -xzvf /tmp/kubebuilder-tools-${version}-linux-amd64.tar.gz -C /tmp
+    curl -L ${download_url}/kubebuilder-tools-${version}-linux-amd64.tar.gz -o ${TMPDIR}/kubebuilder-tools-${version}-linux-amd64.tar.gz
+    tar -xzvf ${TMPDIR}/kubebuilder-tools-${version}-linux-amd64.tar.gz -C $TMPDIR
 fi

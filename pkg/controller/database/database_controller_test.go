@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -35,7 +36,7 @@ func TestDbControllerTest(t *testing.T) {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "..", "..", "config", "crds", "v1"),
 		},
-		BinaryAssetsDirectory: filepath.Join("/tmp", "kubebuilder", "bin"),
+		BinaryAssetsDirectory: filepath.Join(os.TempDir(), "kubebuilder", "bin"),
 	}
 
 	// start the kube api server and etcd
@@ -159,11 +160,11 @@ func CreateNamespace(client runtimeclient.Client) (*corev1.Namespace, error) {
 	return namespace, err
 }
 
-// GetStatefulSet will retry 'retries' times, sleeping for 'sleep' seconds
+// GetStatefulSet will retry 'retries' times, sleeping for 'sleepSeconds'
 // to get the StatefulSet created by the Controller. This caters for the
 // time between submitting a Database CRD and the Controller Reconcile loop
 // finishing
-func GetStatefulSet(client runtimeclient.Client, namespace string, name string, retries int, sleep int) (appsv1.StatefulSet, error) {
+func GetStatefulSet(client runtimeclient.Client, namespace string, name string, retries int, sleepSeconds time.Duration) (appsv1.StatefulSet, error) {
 	ss := appsv1.StatefulSet{}
 	lk := runtimeclient.ObjectKey{
 		Namespace: namespace,
@@ -175,7 +176,7 @@ func GetStatefulSet(client runtimeclient.Client, namespace string, name string, 
 	for tries < retries {
 		err = client.Get(context.Background(), lk, &ss)
 		if kuberneteserrors.IsNotFound(err) {
-			time.Sleep(1 * time.Second)
+			time.Sleep(sleepSeconds * time.Second)
 			tries++
 		} else {
 			break
