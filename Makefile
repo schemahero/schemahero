@@ -87,11 +87,6 @@ deploy: manifests
 manifests: controller-gen
 	$(CONTROLLER_GEN) \
 		rbac:roleName=manager-role webhook \
-		crd:crdVersions=v1beta1,generateEmbeddedObjectMeta=true  \
-		output:crd:artifacts:config=config/crds/v1beta1 \
-		paths="./..."
-	$(CONTROLLER_GEN) \
-		rbac:roleName=manager-role webhook \
 		crd:crdVersions=v1,generateEmbeddedObjectMeta=true  \
 		output:crd:artifacts:config=config/crds/v1 \
 		paths="./..."
