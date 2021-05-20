@@ -38,11 +38,12 @@ clean-and-tidy:
 	@go clean -modcache ||:
 	@go mod tidy ||:
 
-.PHONY: deps
-deps: ./hack/deps.sh
+.PHONY: envtest
+envtest:
+	./hack/envtest.sh
 
 .PHONY: test
-test: generate fmt vet manifests
+test: generate fmt vet manifests envtest
 	go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 .PHONY: manager
@@ -86,7 +87,7 @@ deploy: manifests
 manifests: controller-gen
 	$(CONTROLLER_GEN) \
 		rbac:roleName=manager-role webhook \
-		crd:crdVersions=v1 \
+		crd:crdVersions=v1,generateEmbeddedObjectMeta=true  \
 		output:crd:artifacts:config=config/crds/v1 \
 		paths="./..."
 	go run ./generate/...
@@ -131,8 +132,8 @@ kind: bin/kubectl-schemahero manager
 .PHONY: contoller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.1
-CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.0-beta.0
+	CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif

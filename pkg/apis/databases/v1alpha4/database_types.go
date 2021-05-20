@@ -39,6 +39,11 @@ type DatabaseSpec struct {
 	EnableShellCommand bool               `json:"enableShellCommand,omitempty"`
 	ImmediateDeploy    bool               `json:"immediateDeploy,omitempty"`
 	SchemaHero         *SchemaHero        `json:"schemahero,omitempty"`
+	Template           *DatabaseTemplate  `json:"template,omitempty"`
+}
+
+type DatabaseTemplate struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 }
 
 // DatabaseStatus defines the observed state of Database
