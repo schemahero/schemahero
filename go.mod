@@ -23,11 +23,11 @@ require (
 	github.com/xo/dburl v0.0.0-20200124232849-e9ec94f52bc3
 	go.uber.org/zap v1.17.0
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.21.1
+	k8s.io/api v0.21.2
 	k8s.io/apiextensions-apiserver v0.21.1
-	k8s.io/apimachinery v0.21.1
+	k8s.io/apimachinery v0.21.2
 	k8s.io/cli-runtime v0.21.1
-	k8s.io/client-go v0.21.1
+	k8s.io/client-go v0.21.2
 	k8s.io/kube-openapi v0.0.0-20210527164424-3c818078ee3d // indirect
 	sigs.k8s.io/controller-runtime v0.9.0
 )
