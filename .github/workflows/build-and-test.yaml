@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v2.1.3
         with:
-          go-version: "1.16.3"
+          go-version: "1.16.5"
 
       - id: go-cache-paths
         run: |
@@ -28,7 +28,7 @@ jobs:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
-      - run: make generate fmt
+      - run: make fmt
       - run: go mod tidy
       - run: git diff
       - run: make vet manifests bin/kubectl-schemahero manager test
