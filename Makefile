@@ -43,11 +43,11 @@ envtest:
 	./hack/envtest.sh
 
 .PHONY: test
-test: generate fmt vet manifests envtest
+test: fmt vet manifests envtest
 	go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 .PHONY: manager
-manager: generate fmt vet bin/manager
+manager: fmt vet bin/manager
 
 .PHONY: bin/manager
 bin/manager:
@@ -72,10 +72,6 @@ run-database: generate fmt vet bin/manager
 
 .PHONY: install
 install: manifests generate local
-	kubectl apply -f config/crds/v1
-
-.PHONY: install-kind
-install-kind: manifests generate kind
 	kubectl apply -f config/crds/v1
 
 .PHONY: deploy
@@ -132,8 +128,8 @@ kind: bin/kubectl-schemahero manager
 .PHONY: contoller-gen
 controller-gen:
 ifeq (, $(shell which controller-gen))
-	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.0-beta.0
-	CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
+	go get sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.0
+CONTROLLER_GEN=$(shell which controller-gen)
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
@@ -142,7 +138,7 @@ endif
 client-gen:
 ifeq (, $(shell which client-gen))
 	go get k8s.io/code-generator/cmd/client-gen@kubernetes-1.20.0
-CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
+CLIENT_GEN=$(shell which client-gen)
 else
 CLIENT_GEN=$(shell which client-gen)
 endif
