@@ -31,11 +31,11 @@ jobs:
       - run: go mod tidy
       - run: git diff
       - run: make vet manifests bin/kubectl-schemahero manager test
-      - uses: actions/upload-artifact@v2.2.3
+      - uses: actions/upload-artifact@v2.2.4
         with:
           name: manager
           path: bin/manager
-      - uses: actions/upload-artifact@v2.2.3
+      - uses: actions/upload-artifact@v2.2.4
         with:
           name: kubectl-schemahero
           path: bin/kubectl-schemahero
