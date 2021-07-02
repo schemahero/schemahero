@@ -125,6 +125,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Create new schemahero version in krew-index
-        uses: rajatjindal/krew-release-bot@v0.0.39
+        uses: rajatjindal/krew-release-bot@v0.0.40
         with:
           krew_template_file: deploy/krew.yaml
