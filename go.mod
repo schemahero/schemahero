@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.7.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.2.1
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.6.2
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.7.0
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
@@ -18,7 +18,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.8.0
+	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/xo/dburl v0.0.0-20200124232849-e9ec94f52bc3
 	go.uber.org/zap v1.17.0
