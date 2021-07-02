@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.7.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.2.1
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.6.2
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.7.0
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
