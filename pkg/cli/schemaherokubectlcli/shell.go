@@ -165,6 +165,10 @@ func ShellCmd() *cobra.Command {
 				}
 
 				fmt.Println("pod deleted.")
+				err = clientset.CoreV1().Pods(namespace).Delete(ctx, podName, metav1.DeleteOptions{})
+				if err != nil {
+					fmt.Print("error ", err)
+				}
 				return nil
 			}()
 
