@@ -71,7 +71,7 @@ func TestGetConnectionURIFromTemplate(t *testing.T) {
 					assert.NoError(t, err)
 				default:
 					rw.WriteHeader(http.StatusNotFound)
-					_, err := rw.Write([]byte(fmt.Sprintf("Unknown path: %s", r.URL.Path)))
+					_, err := rw.Write([]byte(TextTemplate.Execute("Unknown path: %s", r.URL.Path)))
 					assert.NoError(t, err)
 				}
 			}))
@@ -157,7 +157,7 @@ func TestGetConnectionURIFromVault(t *testing.T) {
 }`))
 				default:
 					rw.WriteHeader(http.StatusNotFound)
-					rw.Write([]byte(fmt.Sprintf("Unknown path: %s", r.URL.Path)))
+					rw.Write([]byte(TextTemplate.Execute("Unknown path: %s", r.URL.Path)))
 				}
 			}))
 			defer s.Close()
