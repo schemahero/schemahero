@@ -12,7 +12,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
-	github.com/jackc/pgx/v4 v4.11.0
+	github.com/jackc/pgx/v4 v4.12.0
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/onsi/gomega v1.13.0
 	github.com/pkg/errors v0.9.1
