@@ -53,7 +53,6 @@ manager: fmt vet bin/manager
 bin/manager:
 	go build \
 		${LDFLAGS} \
-		-i \
 		-o bin/manager \
 		./cmd/manager
 
@@ -111,7 +110,6 @@ generate: controller-gen client-gen
 bin/kubectl-schemahero:
 	go build \
 		${LDFLAGS} \
-		-i \
 		-o bin/kubectl-schemahero \
 		./cmd/kubectl-schemahero
 	@echo "built bin/kubectl-schemahero"
@@ -127,7 +125,7 @@ kind: bin/kubectl-schemahero manager
 
 .PHONY: contoller-gen
 controller-gen:
-ifeq (, $(shell which controller-gen)) 
+ifeq (, $(shell which controller-gen))
 	go install sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.0
 CONTROLLER_GEN=$(shell go env GOPATH)/bin/controller-gen
 else
@@ -142,3 +140,50 @@ CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
 else
 CLIENT_GEN=$(shell which client-gen)
 endif
+
+.PHONY: sbom
+sbom: spdx-generator
+	mkdir -p sbom
+	$(SPDX_GENERATOR) -o ./sbom
+
+.PHONY: spdx-generator
+spdx-generator:
+ifeq (, $(shell which spdx-sbom-generator))
+	mkdir -p sbom
+	curl -L https://github.com/spdx/spdx-sbom-generator/releases/download/v0.0.10/spdx-sbom-generator-v0.0.10-linux-amd64.tar.gz -o ./sbom/spdx-sbom-generator-v0.0.10-linux-amd64.tar.gz
+	tar xzvf ./sbom/spdx-sbom-generator-v0.0.10-linux-amd64.tar.gz -C sbom
+SPDX_GENERATOR=./sbom/spdx-sbom-generator
+else
+SPDX_GENERATOR=$(shell which spdx-sbom-generator)
+endif
+
+.PHONY: release
+release:
+	rm -rf release
+	mkdir -p ./release
+
+	# Build the kubectl plugins
+
+	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero-linux-amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero-linux-arm64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero-windows-amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero-darwin-amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero-darwin-arm64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+
+	# build the docker images for in-cluster
+
+	GOOS=linux GOARCH=amd64 make bin/manager
+	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
+	docker build -t schemahero/schemahero:${GITHUB_TAG} -f ./deploy/Dockerfile.schemahero .
+	docker build -t schemahero/manager:${GITHUB_TAG} -f ./deploy/Dockerfile.manager .
+	docker push schemahero/schemahero:${GITHUB_TAG}
+	docker push schemahero/manager:${GITHUB_TAG}
+	cosign attach sbom -sbom ./sbom/bom-go-mod.spdx schemahero/schemahero:${GITHUB_TAG}
+	cosign attach sbom -sbom ./sbom/bom-go-mod.spdx schemahero/manager:${GITHUB_TAG}
+	cosign sign -key ./cosign.key schemahero/schemahero:${GITHUB_TAG}
+	cosign sign -key ./cosign.key schemahero/manager:${GITHUB_TAG}

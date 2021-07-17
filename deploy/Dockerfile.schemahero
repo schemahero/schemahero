@@ -1,6 +1,6 @@
 FROM debian:buster
 WORKDIR /
-COPY kubectl-schemahero /schemahero
+COPY ./bin/kubectl-schemahero /schemahero
 RUN chmod a+x /schemahero
 
 RUN apt-get -qq update \
