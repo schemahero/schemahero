@@ -190,10 +190,10 @@ release:
 	GOOS=linux GOARCH=amd64 make bin/manager
 	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	docker build -t schemahero/schemahero:${GITHUB_TAG} -f ./deploy/Dockerfile.schemahero .
-	docker build -t schemahero/manager:${GITHUB_TAG} -f ./deploy/Dockerfile.manager .
+	docker build -t schemahero/schemahero-manager:${GITHUB_TAG} -f ./deploy/Dockerfile.manager .
 	docker push schemahero/schemahero:${GITHUB_TAG}
-	docker push schemahero/manager:${GITHUB_TAG}
+	docker push schemahero/schemahero-manager:${GITHUB_TAG}
 	cosign attach sbom -sbom ./sbom/bom-go-mod.spdx schemahero/schemahero:${GITHUB_TAG}
-	cosign attach sbom -sbom ./sbom/bom-go-mod.spdx schemahero/manager:${GITHUB_TAG}
+	cosign attach sbom -sbom ./sbom/bom-go-mod.spdx schemahero/schemahero-manager:${GITHUB_TAG}
 	cosign sign -key ./cosign.key schemahero/schemahero:${GITHUB_TAG}
-	cosign sign -key ./cosign.key schemahero/manager:${GITHUB_TAG}
+	cosign sign -key ./cosign.key schemahero/schemahero-manager:${GITHUB_TAG}
