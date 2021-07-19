@@ -164,14 +164,23 @@ release:
 
 	# Build the kubectl plugins
 
+	rm -rf ./bin/kubectl-schemahero
 	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero-linux-amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+
+	rm -rf ./bin/kubectl-schemahero
 	GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero-linux-arm64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+
+	rm -rf ./bin/kubectl-schemahero
 	GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero-windows-amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+
+	rm -rf ./bin/kubectl-schemahero
 	GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero-darwin-amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+
+	rm -rf ./bin/kubectl-schemahero
 	GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero-darwin-arm64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
 
