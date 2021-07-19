@@ -88,39 +88,67 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
-  goreleaser:
+  build-release:
     runs-on: ubuntu-latest
     needs:
       - test-postgres
       - test-mysql
+      - test-cockroach
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Unshallow
-        run: git fetch --prune --unshallow
       - uses: actions/setup-go@v2.1.3
         with:
           go-version: "1.16.5"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-build }}
+          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.go-cache-paths.outputs.go-mod }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+
+      - uses: sigstore/cosign-installer@main
+
+      - name: sbom
+        run: make sbom
+
+      - id: get_version
+        uses: battila7/get-version-action@v2
+
       - uses: azure/docker-login@v1
         with:
           username: schemaherodeploy
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - name: set previous release tag for goreleaser
-        shell: bash
+
+      - name: get signing key
         run: |
-          echo "GORELEASER_PREVIOUS_TAG=$(curl --silent 'https://api.github.com/repos/schemahero/schemahero/releases/latest' | grep -Po '\"tag_name\": \"\K.*?(?=\")' )" >> $GITHUB_ENV
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2.6.1
-        with:
-          version: latest
-          args: release --rm-dist --config deploy/.goreleaser.yaml
+            echo $COSIGN_KEY >> ./cosign.key
+        env:
+          COSIGN_KEY : ${{secrets.COSIGN_KEY}}
+
+      - name: release
+        run: make release
+        env:
+          GITHUB_TAG: ${{ steps.get_version.outputs.version-without-v }}
+
+      - name: create github release
+        id: create-github-release
+        uses: Hs1r1us/Release-AIO@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_name: ${{ steps.get_version.outputs.version }}
+          tag_name: ${{ github.ref }}
+          asset_files: './release'
 
   krew:
     runs-on: ubuntu-latest
     needs:
-      - goreleaser
+      - build-release
     steps:
       - name: Checkout
         uses: actions/checkout@v2

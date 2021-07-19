@@ -29,3 +29,6 @@ dist/
 
 vendor
 integration/**/out.sql
+sbom/
+cosign.key
+cosign.pub
