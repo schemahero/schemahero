@@ -166,27 +166,29 @@ release:
 
 	rm -rf ./bin/kubectl-schemahero
 	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
-	tar czvf ./release/kubectl-schemahero_linux_amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	mv bin/kubectl-schemahero ./kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero_linux_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	rm -rf ./bin/kubectl-schemahero
 	GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
-	tar czvf ./release/kubectl-schemahero_linux_arm64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	mv bin/kubectl-schemahero ./kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero_linux_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	rm -rf ./bin/kubectl-schemahero
 	GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
-	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	mv bin/kubectl-schemahero ./kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	rm -rf ./bin/kubectl-schemahero
 	GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
-	tar czvf ./release/kubectl-schemahero_darwin_amd64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	mv bin/kubectl-schemahero ./kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero_darwin_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	rm -rf ./bin/kubectl-schemahero
 	GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
-	tar czvf ./release/kubectl-schemahero_darwin_arm64.tar.gz ./bin/kubectl-schemahero README.md LICENSE
+	mv bin/kubectl-schemahero ./kubectl-schemahero
+	tar czvf ./release/kubectl-schemahero_darwin_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
+
+	rm -rf ./kubectl-schemahero
 
 	# build the docker images for in-cluster
 
-	rm -rf ./bin/kubectl-schemahero
 	GOOS=linux GOARCH=amd64 make bin/manager
 	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	docker build -t schemahero/schemahero:${GITHUB_TAG} -f ./deploy/Dockerfile.schemahero .
