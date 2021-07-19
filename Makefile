@@ -186,6 +186,7 @@ release:
 
 	# build the docker images for in-cluster
 
+	rm -rf ./bin/kubectl-schemahero
 	GOOS=linux GOARCH=amd64 make bin/manager
 	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	docker build -t schemahero/schemahero:${GITHUB_TAG} -f ./deploy/Dockerfile.schemahero .

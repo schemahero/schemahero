@@ -124,6 +124,12 @@ jobs:
           username: schemaherodeploy
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: get signing key
+        run: |
+            echo $COSIGN_KEY >> ./cosign.key
+        env:
+          COSIGN_KEY : ${{secrets.COSIGN_KEY}}
+
       - name: release
         run: make release
         env:
