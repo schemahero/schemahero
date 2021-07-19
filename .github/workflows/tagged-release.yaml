@@ -130,7 +130,7 @@ jobs:
 
       - name: get signing key
         run: |
-            echo $COSIGN_KEY >> ./cosign.key
+            echo $COSIGN_KEY | base64 -d > ./cosign.key
         env:
           COSIGN_KEY : ${{secrets.COSIGN_KEY}}
 
