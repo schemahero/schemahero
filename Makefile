@@ -174,8 +174,9 @@ release:
 	tar czvf ./release/kubectl-schemahero_linux_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
 
 	GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
-	mv bin/kubectl-schemahero ./kubectl-schemahero
-	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
+	mv bin/kubectl-schemahero ./kubectl-schemahero.exe
+	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./kubectl-schemahero.exe README.md LICENSE
+	rm kubectl-schemahero.exe
 
 	GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
