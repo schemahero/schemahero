@@ -206,8 +206,8 @@ release-tarballs:
 release: release-tarballs
 	# build the docker images for in-cluster
 
-	GOOS=linux GOARCH=amd64 make bin/manager
-	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/manager
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	docker build -t schemahero/schemahero:${GITHUB_TAG} -f ./deploy/Dockerfile.schemahero .
 	docker build -t schemahero/schemahero-manager:${GITHUB_TAG} -f ./deploy/Dockerfile.manager .
 	docker push schemahero/schemahero:${GITHUB_TAG}
