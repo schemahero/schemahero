@@ -41,6 +41,18 @@ jobs:
           name: manager
           path: bin/manager
 
+  release-tarballs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2.1.3
+        with:
+          go-version: "1.16.5"
+
+      - uses: actions/checkout@v2
+
+      - run: make release-tarballs
+      - run: ls -alh ./release
+
   test-postgres:
     runs-on: ubuntu-latest
     needs: build

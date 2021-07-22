@@ -171,8 +171,8 @@ else
 SPDX_GENERATOR=$(shell which spdx-sbom-generator)
 endif
 
-.PHONY: release
-release:
+.PHONY: release-tarballs
+release-tarballs:
 	rm -rf release
 	mkdir -p ./release
 
@@ -202,6 +202,8 @@ release:
 
 	rm -rf ./kubectl-schemahero
 
+.PHONY: release
+release: release-tarballs
 	# build the docker images for in-cluster
 
 	GOOS=linux GOARCH=amd64 make bin/manager
