@@ -8,3 +8,4 @@
 - Dmitriy Ivolgin (@divolgin, Replicated)
 - Ethan Mosbaugh (@emosbaugh, Replicated)
 - Andrew Lavery (@laverya, Replicated)
+- Dan Stough (@danstough, Replicated)
