@@ -20,6 +20,17 @@ define GIT_SHA
 endef
 endif
 
+UNAME := $(shell uname)
+ifeq ($(UNAME), Linux)
+define LDFLAGS
+-ldflags "\
+	-X ${VERSION_PACKAGE}.version=${VERSION} \
+	-X ${VERSION_PACKAGE}.gitSHA=${GIT_SHA} \
+	-X ${VERSION_PACKAGE}.buildTime=${DATE} \
+	-w -extldflags \"-static\" \
+"
+endef
+else # all other OSes, including Windows and Darwin
 define LDFLAGS
 -ldflags "\
 	-X ${VERSION_PACKAGE}.version=${VERSION} \
@@ -27,6 +38,7 @@ define LDFLAGS
 	-X ${VERSION_PACKAGE}.buildTime=${DATE} \
 "
 endef
+endif
 
 export GO111MODULE=on
 # export GOPROXY=https://proxy.golang.org
@@ -52,6 +64,7 @@ manager: fmt vet bin/manager
 .PHONY: bin/manager
 bin/manager:
 	go build \
+	  -tags netgo -installsuffix netgo \
 		${LDFLAGS} \
 		-o bin/manager \
 		./cmd/manager
@@ -109,6 +122,7 @@ generate: controller-gen client-gen
 .PHONY: bin/kubectl-schemahero
 bin/kubectl-schemahero:
 	go build \
+	  -tags netgo -installsuffix netgo \
 		${LDFLAGS} \
 		-o bin/kubectl-schemahero \
 		./cmd/kubectl-schemahero
@@ -157,37 +171,39 @@ else
 SPDX_GENERATOR=$(shell which spdx-sbom-generator)
 endif
 
-.PHONY: release
-release:
+.PHONY: release-tarballs
+release-tarballs:
 	rm -rf release
 	mkdir -p ./release
 
 	# Build the kubectl plugins
 
 	rm -rf ./bin/kubectl-schemahero
-	GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_linux_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_linux_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero.exe
 	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./kubectl-schemahero.exe README.md LICENSE
 	rm kubectl-schemahero.exe
 
-	GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_darwin_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 
-	GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_darwin_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
 
 	rm -rf ./kubectl-schemahero
 
+.PHONY: release
+release: release-tarballs
 	# build the docker images for in-cluster
 
 	GOOS=linux GOARCH=amd64 make bin/manager
