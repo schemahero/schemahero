@@ -10,9 +10,10 @@ require (
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
+	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
-	github.com/jackc/pgx/v4 v4.11.0
+	github.com/jackc/pgx/v4 v4.13.0
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/onsi/gomega v1.13.0
 	github.com/pkg/errors v0.9.1
