@@ -85,7 +85,6 @@ p.dflt_value AS col_default_val,
 p.[notnull] AS col_is_not_null
 FROM sqlite_master m
 LEFT OUTER JOIN pragma_table_info((m.name)) p
-ON m.name <> p.name
 WHERE m.type = 'table'
 AND m.name = ?`
 	rows, err := s.db.Query(query, tableName)
