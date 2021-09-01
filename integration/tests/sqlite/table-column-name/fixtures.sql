@@ -1,0 +1,1 @@
+CREATE TABLE `abcdefg` (`source_hash` text not null, `abcdefg` timestamp not null, primary key (`source_hash`));
