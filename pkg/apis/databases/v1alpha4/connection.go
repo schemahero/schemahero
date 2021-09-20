@@ -89,12 +89,24 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 
 		authInfo := url.UserPassword(user, password).String()
 		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
+
+		queryStringCharacter := "?"
 		if !d.Spec.Connection.Postgres.SSLMode.IsEmpty() {
 			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.SSLMode)
 			if err != nil {
 				return "", "", errors.Wrap(err, "failed to read postgres ssl mode")
 			}
-			uri = fmt.Sprintf("%s?sslmode=%s", uri, sslMode)
+			uri = fmt.Sprintf("%s%ssslmode=%s", uri, queryStringCharacter, sslMode)
+			queryStringCharacter = "&"
+		}
+
+		if !d.Spec.Connection.Postgres.CurrentSchema.IsEmpty() {
+			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.CurrentSchema)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read postgres currentSchema")
+			}
+			uri = fmt.Sprintf("%s%scurrentSchema=%s", uri, queryStringCharacter, currentSchema)
+			queryStringCharacter = "&"
 		}
 	} else if driver == "cockroachdb" {
 		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Host)
