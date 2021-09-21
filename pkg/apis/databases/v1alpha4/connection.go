@@ -101,7 +101,7 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 		}
 
 		if !d.Spec.Connection.Postgres.CurrentSchema.IsEmpty() {
-			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.CurrentSchema)
+			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.CurrentSchema)
 			if err != nil {
 				return "", "", errors.Wrap(err, "failed to read postgres currentSchema")
 			}
@@ -147,10 +147,10 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			queryStringCharacter = "&"
 		}
 
-		if !d.Spec.Connection.Postgres.CurrentSchema.IsEmpty() {
+		if !d.Spec.Connection.CockroachDB.CurrentSchema.IsEmpty() {
 			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.CurrentSchema)
 			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read postgres currentSchema")
+				return "", "", errors.Wrap(err, "failed to read cockroachdb currentSchema")
 			}
 			uri = fmt.Sprintf("%s%ssearch_path=%s", uri, queryStringCharacter, currentSchema)
 			queryStringCharacter = "&"
