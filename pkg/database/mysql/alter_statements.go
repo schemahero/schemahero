@@ -124,7 +124,7 @@ func (s AlterRemoveConstrantStatement) String() string {
 	if s.Constraint.IsPrimary {
 		return fmt.Sprintf("alter table `%s` drop primary key", s.TableName)
 	}
-	return fmt.Sprintf("alter table `%s` drop index `%s`", s.TableName, s.Constraint.Name)
+	return RemoveIndexStatement(s.TableName, s.Constraint.Name)
 }
 
 type AlterAddConstrantStatement struct {

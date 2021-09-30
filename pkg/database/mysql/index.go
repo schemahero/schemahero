@@ -8,8 +8,8 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func RemoveIndexStatement(tableName string, index *types.Index) string {
-	return fmt.Sprintf("alter table %q drop index %q", tableName, index.Name)
+func RemoveIndexStatement(tableName string, indexName string) string {
+	return fmt.Sprintf("alter table `%s` drop index `%s`", tableName, indexName)
 }
 
 func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {

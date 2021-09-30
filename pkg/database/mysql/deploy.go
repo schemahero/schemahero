@@ -391,7 +391,7 @@ func buildIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema
 		}
 
 		if !isMatch {
-			indexStatements = append(indexStatements, RemoveIndexStatement(tableName, currentIndex))
+			indexStatements = append(indexStatements, RemoveIndexStatement(tableName, currentIndex.Name))
 		}
 	}
 
