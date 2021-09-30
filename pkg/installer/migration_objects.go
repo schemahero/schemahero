@@ -6,7 +6,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.6.0-beta.0
+    controller-gen.kubebuilder.io/version: v0.6.0
   creationTimestamp: null
   name: migrations.schemas.schemahero.io
 spec:
