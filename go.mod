@@ -8,13 +8,17 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.3.2
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.8.0
 	github.com/go-openapi/spec v0.20.3 // indirect
+	github.com/go-openapi/strfmt v0.19.5 // indirect
+	github.com/go-openapi/validate v0.19.8 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jackc/pgx/v4 v4.13.0
+	github.com/markbates/pkger v0.17.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.8
 	github.com/onsi/gomega v1.14.0
+	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
@@ -23,11 +27,11 @@ require (
 	github.com/xo/dburl v0.0.0-20200124232849-e9ec94f52bc3
 	go.uber.org/zap v1.19.1
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.21.3
-	k8s.io/apiextensions-apiserver v0.21.3
+	k8s.io/api v0.22.2
+	k8s.io/apiextensions-apiserver v0.22.2
 	k8s.io/apimachinery v0.22.2
-	k8s.io/cli-runtime v0.21.3
-	k8s.io/client-go v0.21.3
+	k8s.io/cli-runtime v0.22.2
+	k8s.io/client-go v0.22.2
 	k8s.io/kube-openapi v0.0.0-20210527164424-3c818078ee3d // indirect
 	sigs.k8s.io/controller-runtime v0.9.5
 )
