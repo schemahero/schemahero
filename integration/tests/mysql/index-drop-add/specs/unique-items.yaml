@@ -1,0 +1,15 @@
+database: schemahero
+name: unique_items
+requires: []
+schema:
+  mysql:
+    indexes:
+      - columns: [item_type]
+        name: uc_item_type
+    columns:
+      - name: primary_id
+        type: varchar(20)
+        constraints:
+          notNull: true
+      - name: item_type
+        type: varchar(20)

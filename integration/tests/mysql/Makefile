@@ -73,6 +73,7 @@ run: 5.6.51 5.7.33 8.0.23
 	make -C not-null run
 	make -C index-create run
 	make -C index-add run
+	make -C index-drop-add run
 	make -C primary-key-add run
 	make -C primary-key-drop run
 	make -C auto-increment-create run
