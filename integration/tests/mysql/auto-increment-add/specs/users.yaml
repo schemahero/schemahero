@@ -10,3 +10,7 @@ schema:
           notNull: true
         attributes:
           autoIncrement: true
+      - name: name
+        type: varchar(255)
+        constraints:
+          notNull: true

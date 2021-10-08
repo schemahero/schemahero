@@ -303,7 +303,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				"alter table `t` modify column `c` int (11) not null auto_increment",
+				"set @max = (select coalesce(max(`c`), 0) + 1 from `t`); set @alter_statement = concat('alter table `t` change column `c` `c` int (11) not null auto_increment, auto_increment=', @max); prepare stmt from @alter_statement; execute stmt; deallocate prepare stmt",
 			},
 		},
 		{
