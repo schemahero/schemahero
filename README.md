@@ -25,3 +25,5 @@ To get started, read the [tutorial](https://schemahero.io/learn/tutorial/introdu
 # Community
 
 For questions about using SchemaHero, there's a [Replicated Community](https://help.replicated.com/community) forum, and a [#schemahero channel in Kubernetes Slack](https://kubernetes.slack.com/channels/schemahero). If you are interested in contributing to Schemahero, you can find more information on how to get started  on our [Community page](https://schemahero.io/community/).
+
+If you're a user of SchemaHero, add yourself to the [ADOPTERS](/ADOPTERS) file!
