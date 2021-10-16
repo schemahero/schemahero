@@ -29,3 +29,17 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.MysqlTable
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {
 	return fmt.Sprintf("alter index %s rename to %s", index.Name, schemaIndex.Name)
 }
+
+func indexClause(tableName string, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {
+	unique := ""
+	if schemaIndex.IsUnique {
+		unique = "unique "
+	}
+
+	name := schemaIndex.Name
+	if name == "" {
+		name = types.GenerateMysqlIndexName(tableName, schemaIndex)
+	}
+
+	return fmt.Sprintf("%skey %s (%s)", unique, name, strings.Join(schemaIndex.Columns, ", "))
+}

@@ -4,6 +4,12 @@ requires: []
 schema:
   mysql:
     primaryKey: [id]
+    indexes:
+      - columns:
+          - name
+      - columns:
+          - email
+        isUnique: true
     columns:
       - name: id
         type: integer
@@ -14,3 +20,7 @@ schema:
         constraints:
           notNull: true
         default: ethan
+      - name: email
+        type: varchar(255)
+        constraints:
+          notNull: true

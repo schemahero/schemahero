@@ -33,6 +33,10 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.MysqlT
 
 	}
 
+	for _, index := range tableSchema.Indexes {
+		columns = append(columns, indexClause(tableName, index))
+	}
+
 	query := fmt.Sprintf("create table `%s` (%s)", tableName, strings.Join(columns, ", "))
 
 	if tableSchema.DefaultCharset != "" {
