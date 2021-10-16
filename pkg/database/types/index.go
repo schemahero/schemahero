@@ -82,7 +82,11 @@ func PostgresqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.PostgresqlTableIn
 }
 
 func GenerateMysqlIndexName(tableName string, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {
-	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
+	indexName := fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
+	if len(indexName) > 64 {
+		indexName = indexName[:64]
+	}
+	return indexName
 }
 
 func GeneratePostgresqlIndexName(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
