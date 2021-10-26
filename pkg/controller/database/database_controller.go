@@ -69,18 +69,18 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 	schemaHeroManagerImage := fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
 
 	vaultAnnotations, err := databaseInstance.GetVaultAnnotations()
-
 	if err != nil {
-		logger.Error(err)
+		logger.Error(errors.Wrap(err, "failed to get vault annotations"))
 		return reconcile.Result{}, err
 	}
+
 	if vaultAnnotations == nil {
 		vaultAnnotations = map[string]string{}
 	}
 
 	if err := r.reconcileRBAC(ctx, databaseInstance); err != nil {
-		logger.Error(err)
-		return reconcile.Result{}, nil
+		logger.Error(errors.Wrap(err, "failed to reconcile rbac"))
+		return reconcile.Result{}, err
 	}
 
 	// TODO detect k8s version and use appsv1 or appsv1beta
@@ -90,7 +90,16 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		Namespace: databaseInstance.Namespace,
 		Name:      statefulsetName,
 	}, &existingStatefulset)
-	if kuberneteserrors.IsNotFound(err) {
+
+	if err == nil {
+		err := r.Delete(ctx, &existingStatefulset)
+		if err != nil {
+			logger.Error(errors.Wrapf(err, "failed to delete controller %s", statefulsetName))
+			return reconcile.Result{}, err
+		}
+	}
+
+	if err == nil || kuberneteserrors.IsNotFound(err) {
 		// create
 
 		serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
@@ -150,7 +159,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 						Containers: []corev1.Container{
 							{
 								Image:           schemaHeroManagerImage,
-								ImagePullPolicy: corev1.PullAlways,
+								ImagePullPolicy: corev1.PullIfNotPresent,
 								Name:            "manager",
 								Command:         []string{"/manager"},
 								Args: []string{
@@ -185,12 +194,8 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 			return reconcile.Result{}, err
 		}
 	} else if err != nil {
-		logger.Error(err)
-		return reconcile.Result{}, nil
-	} else {
-		// update with the new database details
-
-		logger.Error(errors.New("updating table reconciler is not implemented"))
+		logger.Error(errors.Wrapf(err, "failed to get statefulset %s", statefulsetName))
+		return reconcile.Result{}, err
 	}
 
 	return reconcile.Result{}, nil
