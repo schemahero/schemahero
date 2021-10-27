@@ -5,10 +5,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ApproveCmd() *cobra.Command {
+func RejectCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:           "approve",
-		Short:         "approves a change to the database, such as a schema migration",
+		Use:           "reject",
+		Short:         "reject a change to the database, such as a schema migration",
 		Long:          `...`,
 		Args:          cobra.MinimumNArgs(1),
 		SilenceErrors: true,
@@ -20,7 +20,7 @@ func ApproveCmd() *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(ApproveMigrationCmd())
+	cmd.AddCommand(RejectMigrationCmd())
 
 	return cmd
 }

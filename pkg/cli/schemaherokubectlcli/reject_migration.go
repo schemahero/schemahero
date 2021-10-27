@@ -15,11 +15,11 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func ApproveMigrationCmd() *cobra.Command {
+func RejectMigrationCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "migration",
-		Short:         "approve a migration, which will allow changes to be automatically be applied to the database",
-		Long:          `approve a migration, which will allow changes to be automatically be applied to the database`,
+		Short:         "reject a migration, which will prevent it from being applied to the database without recalculation",
+		Long:          `reject a migration, which will prevent it from being applied to the database without recalculation`,
 		Args:          cobra.MinimumNArgs(1),
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -75,17 +75,17 @@ func ApproveMigrationCmd() *cobra.Command {
 					return err
 				}
 
-				// rejected migrations cannot be approved
-				if migration.Status.RejectedAt > 0 {
-					return errors.Errorf("Rejected migration %s cannot be approved\n", migrationName)
+				// approved migrations cannot be rejected
+				if migration.Status.ApprovedAt > 0 || migration.Status.ExecutedAt > 0 {
+					return errors.Errorf("Already approved migration %s cannot be rejected\n", migrationName)
 				}
 
-				migration.Status.ApprovedAt = time.Now().Unix()
+				migration.Status.RejectedAt = time.Now().Unix()
 				if _, err := schemasClient.Migrations(namespaceName).Update(ctx, migration, metav1.UpdateOptions{}); err != nil {
 					return err
 				}
 
-				fmt.Printf("Migration %s approved\n", migrationName)
+				fmt.Printf("Migration %s rejected\n", migrationName)
 				return nil
 			}
 
@@ -94,7 +94,7 @@ func ApproveMigrationCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	cmd.Flags().Bool("all-namespaces", false, "If present, look to reject the specified migration in any namespace. Namespace in current context is ignored even if specified with --namespace.")
 
 	return cmd
 }
