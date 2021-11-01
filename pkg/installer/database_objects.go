@@ -18,7 +18,19 @@ spec:
     singular: database
   scope: Namespaced
   versions:
-  - name: v1alpha4
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.namespace
+      name: Namespace
+      priority: 1
+      type: string
+    - jsonPath: .spec.immediateDeploy
+      name: Deploy Immediately
+      priority: 1
+      type: boolean
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Database is the Schema for the databases API
@@ -2352,6 +2364,7 @@ spec:
               enableShellCommand:
                 type: boolean
               immediateDeploy:
+                default: false
                 type: boolean
               schemahero:
                 properties:

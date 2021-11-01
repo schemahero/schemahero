@@ -16,7 +16,24 @@ spec:
     singular: migration
   scope: Namespaced
   versions:
-  - name: v1alpha4
+  - additionalPrinterColumns:
+    - jsonPath: .spec.databaseName
+      name: Database
+      type: string
+    - jsonPath: .spec.tableName
+      name: Table
+      type: string
+    - jsonPath: .metadata.namespace
+      name: Namespace
+      priority: 1
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Migration is the Schema for the migrations API
@@ -36,6 +53,8 @@ spec:
           spec:
             description: MigrationSpec defines the desired state of Migration
             properties:
+              databaseName:
+                type: string
               editedDDL:
                 type: string
               generatedDDL:
@@ -45,6 +64,7 @@ spec:
               tableNamespace:
                 type: string
             required:
+            - databaseName
             - tableName
             - tableNamespace
             type: object
@@ -62,6 +82,13 @@ spec:
                   was determined to be invalid or outdated
                 format: int64
                 type: integer
+              phase:
+                enum:
+                - PLANNED
+                - APPROVED
+                - EXECUTED
+                - INVALID
+                type: string
               plannedAt:
                 description: PlannedAt is the unix nano timestamp when the plan was
                   generated
@@ -70,10 +97,13 @@ spec:
               rejectedAt:
                 format: int64
                 type: integer
+            required:
+            - phase
             type: object
         type: object
     served: true
     storage: true
+    subresources: {}
 status:
   acceptedNames:
     kind: ""
