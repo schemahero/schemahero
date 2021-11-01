@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/spf13/cobra"
@@ -76,6 +77,7 @@ func ApproveMigrationCmd() *cobra.Command {
 				}
 
 				migration.Status.ApprovedAt = time.Now().Unix()
+				migration.Status.Phase = v1alpha4.Approved
 				if _, err := schemasClient.Migrations(namespaceName).Update(ctx, migration, metav1.UpdateOptions{}); err != nil {
 					return err
 				}

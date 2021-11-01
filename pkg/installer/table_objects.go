@@ -18,7 +18,21 @@ spec:
     singular: table
   scope: Namespaced
   versions:
-  - name: v1alpha4
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.namespace
+      name: Namespace
+      priority: 1
+      type: string
+    - jsonPath: .spec.name
+      name: Table
+      type: string
+    - jsonPath: .spec.database
+      name: Database
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha4
     schema:
       openAPIV3Schema:
         description: Table is the Schema for the tables API
@@ -514,6 +528,7 @@ spec:
         type: object
     served: true
     storage: true
+    subresources: {}
 status:
   acceptedNames:
     kind: ""

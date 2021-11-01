@@ -20,8 +20,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:validation:Enum=PLANNED;APPROVED;EXECUTED;INVALID
+type Phase string
+
+const (
+	Planned  Phase = "PLANNED"
+	Approved Phase = "APPROVED"
+	Executed Phase = "EXECUTED"
+	Invalid  Phase = "INVALID"
+)
+
 // MigrationSpec defines the desired state of Migration
 type MigrationSpec struct {
+	DatabaseName   string `json:"databaseName,omitempty"`
 	TableName      string `json:"tableName"`
 	TableNamespace string `json:"tableNamespace"`
 	GeneratedDDL   string `json:"generatedDDL,omitempty"`
@@ -30,6 +41,8 @@ type MigrationSpec struct {
 
 // MigrationStatus defines the observed state of Migration
 type MigrationStatus struct {
+	Phase Phase `json:"phase,omitempty"`
+
 	// PlannedAt is the unix nano timestamp when the plan was generated
 	PlannedAt int64 `json:"plannedAt,omitempty"`
 
@@ -38,7 +51,6 @@ type MigrationStatus struct {
 
 	ApprovedAt int64 `json:"approvedAt,omitempty"`
 	RejectedAt int64 `json:"rejectedAt,omitempty"`
-
 	ExecutedAt int64 `json:"executedAt,omitempty"`
 }
 
@@ -46,6 +58,11 @@ type MigrationStatus struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Migration is the Schema for the migrations API
+// +kubebuilder:printcolumn:name="Database",type=string,JSONPath=`.spec.databaseName`
+// +kubebuilder:printcolumn:name="Table",type=string,JSONPath=`.spec.tableName`
+// +kubebuilder:printcolumn:name="Namespace",type=string,JSONPath=`.metadata.namespace`,priority=1
+// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +k8s:openapi-gen=true
 type Migration struct {
 	metav1.TypeMeta   `json:",inline"`

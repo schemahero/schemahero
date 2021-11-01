@@ -48,6 +48,7 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 
 		// update the status to applied
 		instance.Status.ExecutedAt = time.Now().Unix()
+		instance.Status.Phase = schemasv1alpha4.Executed
 		err = r.Update(context.Background(), instance)
 
 		if err != nil {
@@ -62,8 +63,9 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 				}
 
 				updatedInstance.Status.ExecutedAt = time.Now().Unix()
+				instance.Status.Phase = schemasv1alpha4.Executed
 				if err := r.Update(context.Background(), updatedInstance); err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to udpate")
+					return reconcile.Result{}, errors.Wrap(err, "failed to update")
 				}
 			} else {
 				return reconcile.Result{}, err

@@ -195,16 +195,19 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 		},
 		Spec: schemasv1alpha4.MigrationSpec{
 			GeneratedDDL:   generatedDDL,
+			DatabaseName:   tableInstance.Spec.Database,
 			TableName:      tableInstance.Name,
 			TableNamespace: tableInstance.Namespace,
 		},
 		Status: schemasv1alpha4.MigrationStatus{
 			PlannedAt: time.Now().Unix(),
+			Phase:     schemasv1alpha4.Planned,
 		},
 	}
 
 	if databaseInstance.Spec.ImmediateDeploy {
 		migration.Status.ApprovedAt = time.Now().Unix()
+		migration.Status.Phase = schemasv1alpha4.Planned
 	}
 
 	var existingMigration schemasv1alpha4.Migration
