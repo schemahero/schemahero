@@ -98,7 +98,7 @@ manifests: controller-gen
 		crd:crdVersions=v1,generateEmbeddedObjectMeta=true  \
 		output:crd:artifacts:config=config/crds/v1 \
 		paths="./..."
-	go run ./generate/...
+	cp -R config/crds/v1/ pkg/installer/assets
 
 .PHONY: fmt
 fmt:
