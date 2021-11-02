@@ -3,6 +3,7 @@ package installer
 import (
 	"bytes"
 	"context"
+	_ "embed"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
@@ -14,6 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/client-go/rest"
 )
+
+//go:embed assets/databases.schemahero.io_databases.yaml
+var generatedDatabaseCRDV1 string
 
 func databasesCRDYAML() ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
