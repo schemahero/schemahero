@@ -53,9 +53,13 @@ func Connect(uri string) (*MysqlConnection, error) {
 	return &mysqlConnection, nil
 }
 
-func (m MysqlConnection) Close() {
-	m.db.Close()
+func (m *MysqlConnection) Close() error {
+	if m.db == nil {
+		return nil
+	}
+	return errors.Wrap(m.db.Close(), "failed to close connection")
 }
+
 func DatabaseNameFromURI(uri string) (string, error) {
 	cfg, err := mysqldriver.ParseDSN(uri)
 	if err != nil {

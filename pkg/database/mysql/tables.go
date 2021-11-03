@@ -28,8 +28,9 @@ AND t.table_schema = ?`
 
 	rows, err := m.db.Query(query, m.databaseName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query tables")
 	}
+	defer rows.Close()
 
 	tables := []*types.Table{}
 	for rows.Next() {
@@ -76,8 +77,9 @@ func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string
 	group by 1, 2`
 	rows, err := m.db.Query(query, tableName, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query indexes")
 	}
+	defer rows.Close()
 
 	indexes := make([]*types.Index, 0)
 	for rows.Next() {
@@ -114,8 +116,9 @@ func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName st
 
 	rows, err := m.db.Query(query, tableName, databaseName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query foreign keys")
 	}
+	defer rows.Close()
 
 	foreignKeys := make([]*types.ForeignKey, 0)
 	for rows.Next() {
@@ -163,8 +166,9 @@ order by c.ORDINAL_POSITION`
 
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query primary keys")
 	}
+	defer rows.Close()
 
 	var hasKey bool
 
@@ -177,7 +181,7 @@ order by c.ORDINAL_POSITION`
 		var constraintName, columnName, tmp string
 
 		if err := rows.Scan(&constraintName, &columnName, &tmp); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to scan row")
 		}
 
 		key.Name = constraintName
@@ -197,8 +201,9 @@ where TABLE_NAME = ?
 order by ORDINAL_POSITION`
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query table schema")
 	}
+	defer rows.Close()
 
 	columns := make([]*types.Column, 0)
 
