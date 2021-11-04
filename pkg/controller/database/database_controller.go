@@ -85,68 +85,49 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 
 	// TODO detect k8s version and use appsv1 or appsv1beta
 
-	existingStatefulset := appsv1.StatefulSet{}
-	err = r.Get(ctx, types.NamespacedName{
-		Namespace: databaseInstance.Namespace,
-		Name:      statefulsetName,
-	}, &existingStatefulset)
-
-	if err == nil {
-		err := r.Delete(ctx, &existingStatefulset)
-		if err != nil {
-			logger.Error(errors.Wrapf(err, "failed to delete controller %s", statefulsetName))
-			return reconcile.Result{}, err
-		}
-	}
-
-	if err == nil || kuberneteserrors.IsNotFound(err) {
-		// create
-
-		serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
-		labels := createLabels(databaseInstance)
-
-		statefulSet := appsv1.StatefulSet{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "apps/v1",
-				Kind:       "StatefulSet",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      statefulsetName,
-				Namespace: databaseInstance.Namespace,
-				Labels:    *labels,
-			},
-			Spec: appsv1.StatefulSetSpec{
-				Selector: &metav1.LabelSelector{
-					MatchLabels: map[string]string{
-						"control-plane": "schemahero",
-						"database":      databaseInstance.Name,
-					},
+	serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+	labels := createLabels(databaseInstance)
+	desiredStatefulSet := appsv1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "StatefulSet",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      statefulsetName,
+			Namespace: databaseInstance.Namespace,
+			Labels:    *labels,
+		},
+		Spec: appsv1.StatefulSetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"control-plane": "schemahero",
+					"database":      databaseInstance.Name,
 				},
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels:      *labels,
-						Annotations: vaultAnnotations,
-					},
-					Spec: corev1.PodSpec{
-						Affinity: &corev1.Affinity{
-							NodeAffinity: &corev1.NodeAffinity{
-								RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
-									NodeSelectorTerms: []corev1.NodeSelectorTerm{
-										{
-											MatchExpressions: []corev1.NodeSelectorRequirement{
-												{
-													Key:      "kubernetes.io/os",
-													Operator: corev1.NodeSelectorOpIn,
-													Values: []string{
-														"linux",
-													},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels:      *labels,
+					Annotations: vaultAnnotations,
+				},
+				Spec: corev1.PodSpec{
+					Affinity: &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{
+									{
+										MatchExpressions: []corev1.NodeSelectorRequirement{
+											{
+												Key:      "kubernetes.io/os",
+												Operator: corev1.NodeSelectorOpIn,
+												Values: []string{
+													"linux",
 												},
-												{
-													Key:      "kubernetes.io/arch",
-													Operator: corev1.NodeSelectorOpIn,
-													Values: []string{
-														"amd64",
-													},
+											},
+											{
+												Key:      "kubernetes.io/arch",
+												Operator: corev1.NodeSelectorOpIn,
+												Values: []string{
+													"amd64",
 												},
 											},
 										},
@@ -154,42 +135,56 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 								},
 							},
 						},
-						TerminationGracePeriodSeconds: &tenSeconds,
-						ServiceAccountName:            serviceAccountName,
-						Containers: []corev1.Container{
-							{
-								Image:           schemaHeroManagerImage,
-								ImagePullPolicy: corev1.PullIfNotPresent,
-								Name:            "manager",
-								Command:         []string{"/manager"},
-								Args: []string{
-									"run",
-									"--namespace", databaseInstance.Namespace,
-									"--database-name", databaseInstance.Name,
+					},
+					TerminationGracePeriodSeconds: &tenSeconds,
+					ServiceAccountName:            serviceAccountName,
+					Containers: []corev1.Container{
+						{
+							Image:           schemaHeroManagerImage,
+							ImagePullPolicy: corev1.PullIfNotPresent,
+							Name:            "manager",
+							Command:         []string{"/manager"},
+							Args: []string{
+								"run",
+								"--namespace", databaseInstance.Namespace,
+								"--database-name", databaseInstance.Name,
+							},
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("1"),
+									corev1.ResourceMemory: resource.MustParse("150Mi"),
 								},
-								Resources: corev1.ResourceRequirements{
-									Limits: corev1.ResourceList{
-										corev1.ResourceCPU:    resource.MustParse("1"),
-										corev1.ResourceMemory: resource.MustParse("150Mi"),
-									},
-									Requests: corev1.ResourceList{
-										corev1.ResourceCPU:    resource.MustParse("100m"),
-										corev1.ResourceMemory: resource.MustParse("50Mi"),
-									},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("10m"),
+									corev1.ResourceMemory: resource.MustParse("50Mi"),
 								},
 							},
 						},
 					},
 				},
 			},
-		}
+		},
+	}
 
-		if err := controllerutil.SetControllerReference(databaseInstance, &statefulSet, r.scheme); err != nil {
+	existingStatefulset := appsv1.StatefulSet{}
+	err = r.Get(ctx, types.NamespacedName{
+		Namespace: databaseInstance.Namespace,
+		Name:      statefulsetName,
+	}, &existingStatefulset)
+
+	if err == nil {
+		existingStatefulset.Spec = *desiredStatefulSet.Spec.DeepCopy()
+		if err := r.Update(ctx, &desiredStatefulSet); err != nil {
+			logger.Error(err)
+			return reconcile.Result{}, err
+		}
+	} else if kuberneteserrors.IsNotFound(err) {
+		if err := controllerutil.SetControllerReference(databaseInstance, &desiredStatefulSet, r.scheme); err != nil {
 			logger.Error(err)
 			return reconcile.Result{}, err
 		}
 
-		if err := r.Create(ctx, &statefulSet); err != nil {
+		if err := r.Create(ctx, &desiredStatefulSet); err != nil {
 			logger.Error(err)
 			return reconcile.Result{}, err
 		}
