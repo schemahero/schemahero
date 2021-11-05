@@ -21,6 +21,7 @@ func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list tables")
 	}
+	defer rows.Close()
 
 	tables := []*types.Table{}
 	for rows.Next() {
@@ -44,6 +45,7 @@ func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list constraints")
 	}
+	defer rows.Close()
 
 	constraints := []string{}
 	for rows.Next() {
@@ -76,8 +78,9 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	and idx.indisprimary = false`
 	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query indexes")
 	}
+	defer rows.Close()
 
 	indexes := make([]*types.Index, 0)
 	for rows.Next() {
@@ -132,8 +135,9 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 
 	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query foreign keys")
 	}
+	defer rows.Close()
 
 	foreignKeys := make([]*types.ForeignKey, 0)
 	for rows.Next() {
@@ -180,8 +184,9 @@ order by c.ordinal_position`
 
 	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query primary keys")
 	}
+	defer rows.Close()
 
 	var hasKey bool
 
@@ -212,8 +217,9 @@ func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, 
 
 	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to query table schema")
 	}
+	defer rows.Close()
 
 	columns := make([]*types.Column, 0)
 	for rows.Next() {

@@ -16,7 +16,7 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to mysql")
 	}
-	defer m.db.Close()
+	defer m.Close()
 
 	// determine if the table exists
 	query := `select count(1) from information_schema.TABLES where TABLE_NAME = ? and TABLE_SCHEMA = ?`
@@ -222,6 +222,8 @@ where TABLE_NAME = ?`
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query from information_schema")
 	}
+	defer rows.Close()
+
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
 	for rows.Next() {

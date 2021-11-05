@@ -5,7 +5,7 @@ import (
 )
 
 type SchemaHeroDatabaseConnection interface {
-	Close()
+	Close() error
 
 	DatabaseName() string
 	EngineVersion() string

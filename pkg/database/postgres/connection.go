@@ -62,8 +62,11 @@ func Connect(uri string) (*PostgresConnection, error) {
 	return &postgresConnection, nil
 }
 
-func (p *PostgresConnection) Close() {
-	p.conn.Close(context.Background())
+func (p *PostgresConnection) Close() error {
+	if p.conn == nil {
+		return nil
+	}
+	return p.conn.Close(context.Background())
 }
 
 func DatabaseNameFromURI(uri string) (string, error) {

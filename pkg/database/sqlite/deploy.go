@@ -15,7 +15,7 @@ func PlanSqliteTable(dsn string, tableName string, sqliteTableSchema *schemasv1a
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to sqlite")
 	}
-	defer s.db.Close()
+	defer s.Close()
 
 	tableExists := 0
 	row := s.db.QueryRow("select count(1) from sqlite_master where type=? and name=?", "table", tableName)
@@ -91,6 +91,8 @@ AND m.name = ?`
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query from sqlite_master")
 	}
+	defer rows.Close()
+
 	alterAndDropStatements := []string{}
 	foundColumnNames := []string{}
 	for rows.Next() {
