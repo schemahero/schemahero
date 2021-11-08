@@ -3,7 +3,7 @@ module github.com/schemahero/schemahero
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.10.0
+	github.com/aws/aws-sdk-go-v2 v1.11.0
 	github.com/aws/aws-sdk-go-v2/config v1.9.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.5.0
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.13.0
