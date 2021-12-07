@@ -11,7 +11,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	p, err := Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to postgres")
@@ -39,6 +39,15 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 		queries, err := CreateTableStatements(tableName, postgresTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
+		}
+
+		if seedData != nil {
+			seedDataStatements, err := SeedDataStatements(tableName, seedData)
+			if err != nil {
+				return nil, errors.Wrap(err, "create seed data statements")
+			}
+
+			queries = append(queries, seedDataStatements...)
 		}
 
 		return queries, nil

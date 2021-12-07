@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -10,6 +11,28 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
+
+func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	statements := []string{}
+
+	for _, row := range seedData.Rows {
+		cols := []string{}
+		vals := []string{}
+		for _, col := range row.Columns {
+			cols = append(cols, col.Column)
+			if col.Value.Int != nil {
+				vals = append(vals, strconv.Itoa(*col.Value.Int))
+			} else if col.Value.Str != nil {
+				vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+			}
+		}
+
+		statement := fmt.Sprintf(`insert into %s (%s) values (%s) on conflict do nothing`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statements = append(statements, statement)
+	}
+
+	return statements, nil
+}
 
 func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	columns := []string{}

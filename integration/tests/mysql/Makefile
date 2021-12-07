@@ -4,6 +4,12 @@ SHELL := /bin/bash
 export IMAGE
 export GO111MODULE=on
 
+.PHONY: seed
+seed: export MYSQL_VERSION = 8.0.23
+seed:
+	make -C basic-seed run
+	make -C seed-with-many-rows run
+
 .PHONY: run
 run: 5.6.51 5.7.33 8.0.23
 
@@ -34,6 +40,8 @@ run: 5.6.51 5.7.33 8.0.23
 	make -C add-charset run
 	make -C create-with-charset run
 	make -C no-modify-charset run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: 5.7.33
 5.7.33: export MYSQL_VERSION = 5.7.33
@@ -62,6 +70,8 @@ run: 5.6.51 5.7.33 8.0.23
 	make -C add-charset run
 	make -C create-with-charset run
 	make -C no-modify-charset run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: 8.0.23
 8.0.23: export MYSQL_VERSION = 8.0.23
@@ -91,6 +101,14 @@ run: 5.6.51 5.7.33 8.0.23
 	make -C add-charset run
 	make -C create-with-charset run
 	make -C no-modify-charset run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
+
+.PHONY: seed
+seed: export MYSQL_VERSION = 8.0.23
+seed:
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: build
 build: docker-build

@@ -25,6 +25,8 @@ run: 10.16 11.11 12.6 13.2
 	make -C primary-key-drop run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: 11.11
 11.11: export PG_VERSION = 11.11
@@ -43,6 +45,8 @@ run: 10.16 11.11 12.6 13.2
 	make -C primary-key-drop run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: 12.6
 12.6: export PG_VERSION = 12.6
@@ -61,6 +65,8 @@ run: 10.16 11.11 12.6 13.2
 	make -C primary-key-drop run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: 13.2
 13.2: export PG_VERSION = 13.2
@@ -79,6 +85,14 @@ run: 10.16 11.11 12.6 13.2
 	make -C primary-key-drop run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
+
+.PHONY: seed
+seed: export PG_VERSION = 13.2
+seed:
+	make -C basic-seed run
+	make -C seed-with-many-rows run
 
 .PHONY: build
 build: docker-build

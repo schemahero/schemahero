@@ -174,15 +174,27 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 	}
 
 	if d.Driver == "postgres" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres)
+		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres, spec.SeedData)
 	} else if d.Driver == "mysql" {
-		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql)
+		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql, spec.SeedData)
 	} else if d.Driver == "cockroachdb" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB)
+		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB, spec.SeedData)
 	} else if d.Driver == "cassandra" {
-		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, spec.SeedData)
 	} else if d.Driver == "sqlite" {
-		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite)
+		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, spec.SeedData)
+	}
+
+	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
+}
+
+func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.SeedData == nil {
+		return []string{}, nil
+	}
+
+	if d.Driver == "postgres" {
+		return postgres.PlanPostgresSeedData(d.URI, spec.Name, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)

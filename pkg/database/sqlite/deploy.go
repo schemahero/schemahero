@@ -10,7 +10,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanSqliteTable(dsn string, tableName string, sqliteTableSchema *schemasv1alpha4.SqliteTableSchema) ([]string, error) {
+func PlanSqliteTable(dsn string, tableName string, sqliteTableSchema *schemasv1alpha4.SqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	s, err := Connect(dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to sqlite")
@@ -36,6 +36,15 @@ func PlanSqliteTable(dsn string, tableName string, sqliteTableSchema *schemasv1a
 		queries, err := CreateTableStatements(tableName, sqliteTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statements")
+		}
+
+		if seedData != nil {
+			seedDataStatements, err := SeedDataStatements(tableName, seedData)
+			if err != nil {
+				return nil, errors.Wrap(err, "create seed data statements")
+			}
+
+			queries = append(queries, seedDataStatements...)
 		}
 
 		return queries, nil
