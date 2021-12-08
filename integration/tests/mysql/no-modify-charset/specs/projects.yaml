@@ -14,5 +14,4 @@ schema:
         type: text (65535)
         constraints:
           notNull: false
-      - name: newcol
-        type: int
+
