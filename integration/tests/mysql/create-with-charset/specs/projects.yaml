@@ -1,0 +1,16 @@
+database: schemahero
+name: projects
+schema:
+  mysql:
+    primaryKey: [id]
+    defaultCharset: utf16
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: name
+        charset: utf8mb4
+        type: text (65535)
+        constraints:
+          notNull: false

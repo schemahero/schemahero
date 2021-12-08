@@ -127,8 +127,11 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 	return nil
 }
 
+// buildTableCharsetAndCollationStatements will return the
+// statements needed to modify a TABLE's charset or collation
+// (not a column or a database, those are separate)
 func buildTableCharsetAndCollationStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
-	query := `select 
+	query := `select
 t.TABLE_COLLATION,
 c.character_set_name FROM information_schema.TABLES t,
 information_schema.COLLATION_CHARACTER_SET_APPLICABILITY c
@@ -143,33 +146,13 @@ AND t.table_name = ?;`
 	}
 
 	// get the default for the database also
-	query = `SELECT default_character_set_name, default_collation_name FROM information_schema.SCHEMATA 
+	query = `SELECT default_character_set_name, default_collation_name FROM information_schema.SCHEMATA
 WHERE schema_name = ?`
 	row = m.db.QueryRow(query, m.databaseName)
 
 	var databaseCollation, databaseCharset string
 	if err := row.Scan(&databaseCharset, &databaseCollation); err != nil {
 		return nil, errors.Wrap(err, "failed to read existing database charset and collate")
-	}
-
-	charsetMatches := false
-	collationMatches := false
-
-	if mysqlTableSchema.DefaultCharset == existingTableCharset {
-		charsetMatches = true
-	} else if mysqlTableSchema.DefaultCharset == "" && existingTableCharset == databaseCharset {
-		charsetMatches = true
-	}
-
-	if mysqlTableSchema.Collation == existingTableCollation {
-		collationMatches = true
-	}
-	if mysqlTableSchema.Collation == existingTableCollation {
-		collationMatches = true
-	}
-
-	if charsetMatches && collationMatches {
-		return []string{}, nil
 	}
 
 	if mysqlTableSchema.Collation == "" && mysqlTableSchema.DefaultCharset == "" {
@@ -208,6 +191,23 @@ WHERE schema_name = ?`
 		mysqlTableSchema.DefaultCharset = collationCharset
 	}
 
+	charsetMatches := false
+	collationMatches := false
+
+	if mysqlTableSchema.DefaultCharset == existingTableCharset {
+		charsetMatches = true
+	} else if mysqlTableSchema.DefaultCharset == "" && existingTableCharset == databaseCharset {
+		charsetMatches = true
+	}
+
+	if mysqlTableSchema.Collation == existingTableCollation {
+		collationMatches = true
+	}
+
+	if charsetMatches && collationMatches {
+		return []string{}, nil
+	}
+
 	return []string{
 		fmt.Sprintf("alter table %s convert to character set %s collate %s", tableName, mysqlTableSchema.DefaultCharset, mysqlTableSchema.Collation),
 	}, nil
@@ -215,7 +215,7 @@ WHERE schema_name = ?`
 
 func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	query := `select
-COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH
+COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_SET_NAME, COLLATION_NAME
 from information_schema.COLUMNS
 where TABLE_NAME = ?`
 	rows, err := m.db.Query(query, tableName)
@@ -230,9 +230,9 @@ where TABLE_NAME = ?`
 		var columnName, dataType, isNullable, extra string
 		var columnDefault sql.NullString
 		var charMaxLength sql.NullInt64
-		var charset, collation string
+		var columnCharset, columnCollation sql.NullString
 
-		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &extra, &dataType, &charMaxLength); err != nil {
+		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &extra, &dataType, &charMaxLength, &columnCharset, &columnCollation); err != nil {
 			return nil, errors.Wrap(err, "failed to scan")
 		}
 
@@ -253,6 +253,16 @@ where TABLE_NAME = ?`
 		}
 
 		foundColumnNames = append(foundColumnNames, columnName)
+
+		charset := ""
+		if columnCharset.Valid {
+			charset = columnCharset.String
+		}
+
+		collation := ""
+		if columnCollation.Valid {
+			collation = columnCollation.String
+		}
 
 		existingColumn := types.Column{
 			Name:        columnName,
