@@ -20,6 +20,8 @@ func Test_AlterColumnStatment(t *testing.T) {
 		desiredColumns     []*schemasv1alpha4.MysqlTableColumn
 		existingColumn     *types.Column
 		expectedStatements []string
+		defaultCharset     string
+		defaultCollation   string
 	}{
 		{
 			name:      "no change",
@@ -336,7 +338,7 @@ func Test_AlterColumnStatment(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			generatedStatements, err := AlterColumnStatements(test.tableName, []string{}, test.desiredColumns, test.existingColumn)
+			generatedStatements, err := AlterColumnStatements(test.tableName, []string{}, test.desiredColumns, test.existingColumn, test.defaultCharset, test.defaultCollation)
 			req.NoError(err)
 			assert.Equal(t, test.expectedStatements, generatedStatements)
 		})

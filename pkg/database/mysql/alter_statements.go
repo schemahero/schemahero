@@ -42,7 +42,10 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 	}
 
 	if s.Column.Charset != s.ExistingColumn.Charset || s.Column.Collation != s.ExistingColumn.Collation {
-		stmt := fmt.Sprintf("character set %s", s.Column.Charset)
+		stmt := ""
+		if s.Column.Charset != "" {
+			stmt = fmt.Sprintf("%s character set %s", stmt, s.Column.Charset)
+		}
 		if s.Column.Collation != "" {
 			stmt = fmt.Sprintf("%s collate %s", stmt, s.Column.Collation)
 		}

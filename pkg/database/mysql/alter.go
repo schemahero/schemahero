@@ -5,7 +5,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.MysqlTableColumn, existingColumn *types.Column) ([]string, error) {
+func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumns []*schemasv1alpha4.MysqlTableColumn, existingColumn *types.Column, defaultCharset string, defaultCollation string) ([]string, error) {
 	// this could be an alter or a drop column command
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
@@ -26,7 +26,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				ensureColumnConstraintsNotNullTrue(column)
 			}
 
-			if columnsMatch(*existingColumn, *column) {
+			if columnsMatch(*existingColumn, *column, defaultCharset, defaultCollation) {
 				return []string{}, nil
 			}
 
@@ -45,11 +45,25 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 	}.DDL(), nil
 }
 
-func columnsMatch(col1 types.Column, col2 types.Column) bool {
+func columnsMatch(col1 types.Column, col2 types.Column, defaultCharset string, defaultCollation string) bool {
 	if col1.DataType != col2.DataType {
 		return false
 	}
 
+	if col1.Charset == "" {
+		col1.Charset = defaultCharset
+	}
+	if col2.Charset == "" {
+		col2.Charset = defaultCharset
+	}
+	if col1.Collation == "" {
+		col1.Collation = defaultCollation
+	}
+	if col2.Collation == "" {
+		col2.Collation = defaultCollation
+	}
+
+	// now that we've applied defaults, let's see if they actually are different
 	if col1.Charset != col2.Charset {
 		return false
 	}
