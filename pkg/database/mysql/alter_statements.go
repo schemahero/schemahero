@@ -53,7 +53,9 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 			stmt = fmt.Sprintf("%scollate %s", stmt, s.Column.Collation)
 		}
 
-		stmts = append(stmts, stmt)
+		if len(stmt) > 0 {
+			stmts = append(stmts, stmt)
+		}
 	}
 
 	if useConstraintsFromExistingColumn {
