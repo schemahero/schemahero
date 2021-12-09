@@ -12,7 +12,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/mattn/go-sqlite3 v1.14.9
-	github.com/onsi/gomega v1.16.0
+	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
@@ -27,7 +27,7 @@ require (
 	k8s.io/cli-runtime v0.22.3
 	k8s.io/client-go v0.22.3
 	k8s.io/kube-openapi v0.0.0-20210527164424-3c818078ee3d // indirect
-	sigs.k8s.io/controller-runtime v0.10.2
+	sigs.k8s.io/controller-runtime v0.10.3
 )
 
 replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
