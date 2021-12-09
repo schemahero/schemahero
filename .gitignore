@@ -32,3 +32,4 @@ integration/**/out.sql
 sbom/
 cosign.key
 cosign.pub
+

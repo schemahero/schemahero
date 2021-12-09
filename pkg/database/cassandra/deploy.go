@@ -47,7 +47,7 @@ func PlanCassandraType(hosts []string, username string, password string, keyspac
 	return nil, errors.New("not implemented")
 }
 
-func PlanCassandraTable(hosts []string, username string, password string, keyspace string, tableName string, cassandraTableSchema *schemasv1alpha4.CassandraTableSchema) ([]string, error) {
+func PlanCassandraTable(hosts []string, username string, password string, keyspace string, tableName string, cassandraTableSchema *schemasv1alpha4.CassandraTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	c, err := Connect(hosts, username, password, keyspace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to cassandra")
@@ -220,7 +220,7 @@ where keyspace_name = ? and table_name = ?`
 }
 
 func buildColumnStatements(c *CassandraConnection, tableName string, cassandraTableSchema *schemasv1alpha4.CassandraTableSchema) ([]string, error) {
-	query := `select column_name, type from system_schema.columns where 
+	query := `select column_name, type from system_schema.columns where
 keyspace_name = ? and table_name = ?`
 	scanner := c.session.Query(query, c.keyspace, tableName).Iter().Scanner()
 

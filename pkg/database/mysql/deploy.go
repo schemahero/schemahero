@@ -11,7 +11,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	m, err := Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to mysql")
@@ -39,6 +39,15 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 		queries, err := CreateTableStatements(tableName, mysqlTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
+		}
+
+		if seedData != nil {
+			seedDataStatements, err := SeedDataStatements(tableName, seedData)
+			if err != nil {
+				return nil, errors.Wrap(err, "create seed data statements")
+			}
+
+			queries = append(queries, seedDataStatements...)
 		}
 
 		return queries, nil

@@ -2,10 +2,33 @@ package mysql
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
+
+func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	statements := []string{}
+
+	for _, row := range seedData.Rows {
+		cols := []string{}
+		vals := []string{}
+		for _, col := range row.Columns {
+			cols = append(cols, col.Column)
+			if col.Value.Int != nil {
+				vals = append(vals, strconv.Itoa(*col.Value.Int))
+			} else if col.Value.Str != nil {
+				vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+			}
+		}
+
+		statement := fmt.Sprintf(`insert ignore into %s (%s) values (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statements = append(statements, statement)
+	}
+
+	return statements, nil
+}
 
 func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
 	columns := []string{}
