@@ -213,7 +213,51 @@ WHERE schema_name = ?`
 	}, nil
 }
 
+// getDefaultCharsetAndCollationForTable will return the applied charset, collation for the specifed table
+func getDefaultCharsetAndCollationForTable(m *MysqlConnection, tableName string) (string, string, error) {
+	query := `SELECT default_character_set_name, default_collation_name FROM information_schema.SCHEMATA WHERE schema_name = ?`
+	row := m.db.QueryRow(query, m.databaseName)
+
+	defaultCharset := ""
+	defaultCollation := ""
+	if err := row.Scan(&defaultCharset, &defaultCollation); err != nil {
+		return "", "", errors.Wrap(err, "scan default charset and collation")
+	}
+
+	query = `select
+t.TABLE_COLLATION,
+c.character_set_name FROM information_schema.TABLES t,
+information_schema.COLLATION_CHARACTER_SET_APPLICABILITY c
+WHERE c.collation_name = t.table_collation
+AND t.table_schema = ?
+AND t.table_name = ?`
+	row = m.db.QueryRow(query, m.databaseName, tableName)
+
+	tableCharset := sql.NullString{}
+	tableCollation := sql.NullString{}
+	if err := row.Scan(&tableCollation, &tableCharset); err != nil {
+		return "", "", errors.Wrap(err, "scan table charset and collation")
+	}
+
+	mostSpecificCharset := defaultCharset
+	if tableCharset.Valid {
+		mostSpecificCharset = tableCharset.String
+	}
+
+	mostSpecificCollation := defaultCollation
+	if tableCollation.Valid {
+		mostSpecificCollation = tableCollation.String
+	}
+
+	return mostSpecificCharset, mostSpecificCollation, nil
+}
+
 func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	defaultCharset, defaultCollation, err := getDefaultCharsetAndCollationForTable(m, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "get default charset and collation")
+	}
+
 	query := `select
 COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_SET_NAME, COLLATION_NAME
 from information_schema.COLUMNS
@@ -289,7 +333,7 @@ where TABLE_NAME = ?`
 			existingColumn.ColumnDefault = &columnDefault.String
 		}
 
-		columnStatement, err := AlterColumnStatements(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn)
+		columnStatement, err := AlterColumnStatements(tableName, mysqlTableSchema.PrimaryKey, mysqlTableSchema.Columns, &existingColumn, defaultCharset, defaultCollation)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create alter column statement")
 		}

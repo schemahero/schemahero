@@ -64,7 +64,6 @@ spec:
               tableNamespace:
                 type: string
             required:
-            - databaseName
             - tableName
             - tableNamespace
             type: object
@@ -97,8 +96,6 @@ spec:
               rejectedAt:
                 format: int64
                 type: integer
-            required:
-            - phase
             type: object
         type: object
     served: true
