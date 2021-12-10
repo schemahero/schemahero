@@ -114,7 +114,7 @@ func PlanCmd() *cobra.Command {
 			} else {
 				statements, err := db.PlanSyncFromFile(v.GetString("spec-file"), v.GetString("spec-type"))
 				if err != nil {
-					return err
+					return fmt.Errorf("plan sync from file %q: %w", v.GetString("spec-file"), err)
 				}
 
 				if f != nil {
