@@ -513,16 +513,28 @@ spec:
                   rows:
                     items:
                       properties:
-                        column:
-                          type: string
-                        value:
-                          anyOf:
-                          - type: integer
-                          - type: string
-                          x-kubernetes-int-or-string: true
+                        columns:
+                          items:
+                            properties:
+                              column:
+                                type: string
+                              value:
+                                properties:
+                                  int:
+                                    type: integer
+                                  str:
+                                    type: string
+                                required:
+                                - int
+                                - str
+                                type: object
+                            required:
+                            - column
+                            - value
+                            type: object
+                          type: array
                       required:
-                      - column
-                      - value
+                      - columns
                       type: object
                     type: array
                 required:

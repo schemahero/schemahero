@@ -19,7 +19,18 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 			if col.Value.Int != nil {
 				vals = append(vals, strconv.Itoa(*col.Value.Int))
 			} else if col.Value.Str != nil {
-				vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+				// handle multiline strings
+				if strings.Contains(*col.Value.Str, "\n") {
+					builder := []string{
+						"CONCAT_WS(CHAR(10 using utf8)",
+					}
+					for _, s := range strings.Split(*col.Value.Str, "\n") {
+						builder = append(builder, fmt.Sprintf("'%s'", s))
+					}
+					vals = append(vals, fmt.Sprintf("%s)", strings.Join(builder, ", ")))
+				} else {
+					vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+				}
 			}
 		}
 

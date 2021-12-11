@@ -1,0 +1,27 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  mysql:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: login
+        type: varchar(255)
+      - name: address
+        type: text (65535)
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: login
+        value:
+          str: test
+      - column: address
+        value:
+          str: |-
+            123 Main St
+            Los Angeles, CA 90015
