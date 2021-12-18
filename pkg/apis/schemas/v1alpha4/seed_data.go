@@ -15,5 +15,6 @@ type SeedDataRow struct {
 }
 
 type SeedData struct {
+	Envs []string      `json:"envs,omitempty" yaml:"envs,omitempty"`
 	Rows []SeedDataRow `json:"rows" yaml:"rows"`
 }

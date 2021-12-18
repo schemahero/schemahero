@@ -40,7 +40,7 @@ type TableSpec struct {
 	Requires []string `json:"requires,omitempty" yaml:"requires,omitempty"`
 
 	Schema   *TableSchema `json:"schema,omitempty" yaml:"schema,omitempty"`
-	SeedData *SeedData    `json:"seedData,omitempty" yaml:"seedData,omitempty"`
+	SeedData []*SeedData  `json:"seedData,omitempty" yaml:"seedData,omitempty"`
 }
 
 // TableStatus defines the observed state of Table

@@ -42,6 +42,7 @@ type DatabaseSpec struct {
 	ImmediateDeploy bool              `json:"immediateDeploy,omitempty"`
 	SchemaHero      *SchemaHero       `json:"schemahero,omitempty"`
 	Template        *DatabaseTemplate `json:"template,omitempty"`
+	Env             string            `json:"env,omitempty"`
 }
 
 type DatabaseTemplate struct {
