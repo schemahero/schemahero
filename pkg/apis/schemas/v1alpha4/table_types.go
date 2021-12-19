@@ -31,6 +31,7 @@ type TableSchema struct {
 	CockroachDB *PostgresqlTableSchema `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
 	Cassandra   *CassandraTableSchema  `json:"cassandra,omitempty" yaml:"cassandra,omitempty"`
 	SQLite      *SqliteTableSchema     `json:"sqlite,omitempty" yaml:"sqlite,omitempty"`
+	Timescale   *TimescaleTableSchema  `json:"timescale,omitempty" yaml:"timescale,omitempty"`
 }
 
 // TableSpec defines the desired state of Table

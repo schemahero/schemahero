@@ -507,6 +507,141 @@ spec:
                           type: string
                         type: array
                     type: object
+                  timescale:
+                    properties:
+                      columns:
+                        items:
+                          properties:
+                            attributes:
+                              properties:
+                                autoIncrement:
+                                  type: boolean
+                              type: object
+                            constraints:
+                              properties:
+                                notNull:
+                                  type: boolean
+                              type: object
+                            default:
+                              type: string
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - name
+                          - type
+                          type: object
+                        type: array
+                      compression:
+                        items:
+                          properties:
+                            enabled:
+                              type: boolean
+                            interval:
+                              type: string
+                            segmentBy:
+                              type: string
+                          required:
+                          - enabled
+                          - interval
+                          - segmentBy
+                          type: object
+                        type: array
+                      foreignKeys:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            onDelete:
+                              type: string
+                            references:
+                              properties:
+                                columns:
+                                  items:
+                                    type: string
+                                  type: array
+                                table:
+                                  type: string
+                              required:
+                              - columns
+                              - table
+                              type: object
+                          required:
+                          - columns
+                          - references
+                          type: object
+                        type: array
+                      hypertable:
+                        type: boolean
+                      indexes:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            isUnique:
+                              type: boolean
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - columns
+                          type: object
+                        type: array
+                      isDeleted:
+                        type: boolean
+                      json:triggers:
+                        items:
+                          properties:
+                            arguments:
+                              items:
+                                type: string
+                              type: array
+                            condition:
+                              type: string
+                            constraintTrigger:
+                              type: boolean
+                            events:
+                              items:
+                                type: string
+                              type: array
+                            executeProcedure:
+                              type: string
+                            forEachRun:
+                              type: boolean
+                            forEachStatement:
+                              type: boolean
+                            name:
+                              type: string
+                          required:
+                          - events
+                          - executeProcedure
+                          type: object
+                        type: array
+                      primaryKey:
+                        items:
+                          type: string
+                        type: array
+                      retentionPolicy:
+                        items:
+                          properties:
+                            enabled:
+                              type: boolean
+                            interval:
+                              type: string
+                          required:
+                          - enabled
+                          - interval
+                          type: object
+                        type: array
+                    type: object
                 type: object
               seedData:
                 properties:

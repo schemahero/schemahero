@@ -13,9 +13,12 @@ import (
 
 func PlanCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "plan",
-		Short:        "plan a spec application against a database",
-		Long:         `...`,
+		Use:   "plan",
+		Short: "plan a spec application against a database",
+		Long: `
+Given a table schema, compare it to a running database
+and generate the migration steps that could be uses to
+bring the table to the desired schema.`,
 		SilenceUsage: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
@@ -48,12 +51,7 @@ func PlanCmd() *cobra.Command {
 				}
 			}
 
-			fi, err := os.Stat(v.GetString("spec-file"))
-			if err != nil {
-				return err
-			}
-
-			if _, err = os.Stat(v.GetString("out")); err == nil {
+			if _, err := os.Stat(v.GetString("out")); err == nil {
 				if !v.GetBool("overwrite") {
 					return errors.Errorf("file %s already exists", v.GetString("out"))
 				}
@@ -66,7 +64,7 @@ func PlanCmd() *cobra.Command {
 
 			var f *os.File
 			if v.GetString("out") != "" {
-				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+				f, err := os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 				if err != nil {
 					return err
 				}
@@ -86,7 +84,13 @@ func PlanCmd() *cobra.Command {
 				Keyspace:  v.GetString("keyspace"),
 			}
 
-			if fi.Mode().IsDir() {
+			// the value in spec-file can be a file or a directory
+			// if it's a directory, we plan all files in that dir.
+			specFileInfo, err := os.Stat(v.GetString("spec-file"))
+			if err != nil {
+				return err
+			}
+			if specFileInfo.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					if !info.IsDir() {
 						statements, err := db.PlanSyncFromFile(path, v.GetString("spec-type"))

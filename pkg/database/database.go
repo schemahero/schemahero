@@ -13,6 +13,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/database/sqlite"
+	"github.com/schemahero/schemahero/pkg/database/timescale"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
@@ -132,10 +133,13 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
+// PlanSyncFromFile will take the schema spec in filename and plan it
+// against the database d. It will return an array
+// of all required commands that the plan generated.
 func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string, error) {
 	specContents, err := ioutil.ReadFile(filepath.Clean(filename))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read file")
+		return nil, fmt.Errorf("read spec file: %w", err)
 	}
 
 	if specType == "table" {
@@ -147,6 +151,9 @@ func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string,
 	return nil, errors.New("unknown spec type")
 }
 
+// planTableSync will parse the table schema in specContents
+// and plan it against database d. It will return an array
+// of all required commands that the plan generated.
 func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	var spec *schemasv1alpha4.TableSpec
 	parsedK8sObject := schemasv1alpha4.Table{}
@@ -168,6 +175,9 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	return d.PlanSyncTableSpec(spec)
 }
 
+// PlanSyncTableSpec is the main entrypoing to plan a given spec
+// against a database d. This will return an array of all commands
+// that are necessary to apply the migration
 func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
 	if spec.Schema == nil {
 		return []string{}, nil
@@ -183,6 +193,8 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, spec.SeedData)
 	} else if d.Driver == "sqlite" {
 		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, spec.SeedData)
+	} else if d.Driver == "timescale" {
+		return timescale.PlanTimescaleTable(d.URI, spec.Name, spec.Schema.Timescale, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -195,6 +207,21 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 
 	if d.Driver == "postgres" {
 		return postgres.PlanPostgresSeedData(d.URI, spec.Name, spec.SeedData)
+	} else if d.Driver == "mysql" {
+		// TODO not implemented
+		return nil, errors.New("seed data in mysql is not yet implemented")
+	} else if d.Driver == "cockroachdb" {
+		// TODO not implemented
+		return nil, errors.New("seed data in cockroachdb is not yet implemented")
+	} else if d.Driver == "cassandra" {
+		// TODO not implemented
+		return nil, errors.New("seed data in cassandra is not yet implemented")
+	} else if d.Driver == "sqlite" {
+		// TODO not implemented
+		return nil, errors.New("seed data in sqlite is not yet implemented")
+	} else if d.Driver == "timescale" {
+		// TODO not implemented
+		return nil, errors.New("seed data in timescale is not yet implemented")
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -212,7 +239,7 @@ func (d *Database) planTypeSync(specContents []byte) ([]string, error) {
 	if spec == nil {
 		plainSpec := schemasv1alpha4.DataTypeSpec{}
 		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshal spec")
+			return nil, fmt.Errorf("unmarshal type spec: %w", err)
 		}
 
 		spec = &plainSpec
@@ -230,6 +257,8 @@ func (d *Database) PlanSyncTypeSpec(spec *schemasv1alpha4.DataTypeSpec) ([]strin
 		return cassandra.PlanCassandraType(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
 	}
 
+	// Only cassandra supports types right now
+
 	return nil, errors.Errorf("planning types is not supported for driver %q", d.Driver)
 }
 
@@ -244,6 +273,10 @@ func (d *Database) ApplySync(statements []string) error {
 		return cassandra.DeployCassandraStatements(d.Hosts, d.Username, d.Password, d.Keyspace, statements)
 	} else if d.Driver == "sqlite" {
 		return sqlite.DeploySqliteStatements(d.URI, statements)
+	} else if d.Driver == "timescale" {
+		// TODO not implemented
+		return errors.New("apply is not yet implemented for timescale")
 	}
+
 	return errors.Errorf("unknown database driver: %q", d.Driver)
 }

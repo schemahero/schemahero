@@ -22,7 +22,11 @@ cockroach:
 .PHONY: sqlite
 sqlite:
 	make -C tests/sqlite run
-	
+
+.PHONY: timescale
+timescale:
+	make -C tests/timescale run
+
 .PHONY: build
 build: docker-build
 	docker push $(IMAGE)
