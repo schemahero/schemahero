@@ -485,6 +485,11 @@ func buildRemoveIndexStatements(m *MysqlConnection, tableName string, mysqlTable
 	for _, currentIndex := range currentIndexes {
 		isMatch := false
 		for _, desiredIndex := range mysqlTableSchema.Indexes {
+			// if there's no name on the desired index,
+			// generate one
+			if desiredIndex.Name == "" {
+				desiredIndex.Name = types.GenerateMysqlIndexName(tableName, desiredIndex)
+			}
 			if currentIndex.Equals(types.MysqlSchemaIndexToIndex(desiredIndex)) {
 				isMatch = true
 			}

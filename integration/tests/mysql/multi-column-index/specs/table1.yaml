@@ -1,0 +1,22 @@
+database: schemahero
+name: table1
+schema:
+  mysql:
+    defaultCharset: latin1
+    indexes:
+      - columns:
+          - imageid
+          - teamid
+    columns:
+    - name: teamid
+      type: char (64)
+      constraints:
+        notNull: true
+    - name: imageid
+      type: char (64)
+      constraints:
+        notNull: true
+    - name: v2_blobsum
+      type: varchar (255)
+      constraints:
+        notNull: false
