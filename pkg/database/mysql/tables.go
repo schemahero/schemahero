@@ -18,7 +18,7 @@ func (m *MysqlConnection) ListTables() ([]*types.Table, error) {
 		return nil, errors.Wrap(err, "failed to select database default charset and collection")
 	}
 
-	query = `select 
+	query = `select
 t.table_name,
 t.TABLE_COLLATION,
 c.character_set_name FROM information_schema.TABLES t,
@@ -154,7 +154,7 @@ func (m *MysqlConnection) ListTableForeignKeys(databaseName string, tableName st
 }
 
 func (m *MysqlConnection) GetTablePrimaryKey(tableName string) (*types.KeyConstraint, error) {
-	query := `select distinct tc.CONSTRAINT_NAME, c.COLUMN_NAME, c.ORDINAL_POSITION
+	query := `select distinct tc.CONSTRAINT_NAME, c.COLUMN_NAME, kcu.ORDINAL_POSITION
 from information_schema.TABLE_CONSTRAINTS tc
 join information_schema.KEY_COLUMN_USAGE as kcu using (CONSTRAINT_SCHEMA, CONSTRAINT_NAME)
 join information_schema.COLUMNS as c on c.TABLE_SCHEMA = tc.CONSTRAINT_SCHEMA
@@ -162,7 +162,7 @@ join information_schema.COLUMNS as c on c.TABLE_SCHEMA = tc.CONSTRAINT_SCHEMA
   and kcu.TABLE_NAME = c.TABLE_NAME
   and kcu.COLUMN_NAME = c.COLUMN_NAME
 where tc.CONSTRAINT_TYPE = 'PRIMARY KEY' and tc.TABLE_NAME = ?
-order by c.ORDINAL_POSITION`
+order by kcu.ORDINAL_POSITION`
 
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {
@@ -196,8 +196,8 @@ order by c.ORDINAL_POSITION`
 
 func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
 	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE
-from information_schema.COLUMNS 
-where TABLE_NAME = ? 
+from information_schema.COLUMNS
+where TABLE_NAME = ?
 order by ORDINAL_POSITION`
 	rows, err := m.db.Query(query, tableName)
 	if err != nil {

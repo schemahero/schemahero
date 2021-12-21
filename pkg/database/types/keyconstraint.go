@@ -24,6 +24,7 @@ func (k *KeyConstraint) Equals(other *KeyConstraint) bool {
 	if len(k.Columns) != len(other.Columns) {
 		return false
 	}
+
 	for i, column := range k.Columns {
 		if column != other.Columns[i] {
 			return false

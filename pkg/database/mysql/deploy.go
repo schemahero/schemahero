@@ -404,6 +404,7 @@ func buildAddPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTab
 	if err != nil {
 		return nil, err
 	}
+
 	var mysqlTableSchemaPrimaryKey *types.KeyConstraint
 	if len(mysqlTableSchema.PrimaryKey) > 0 {
 		mysqlTableSchemaPrimaryKey = &types.KeyConstraint{
