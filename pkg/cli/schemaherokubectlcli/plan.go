@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/files"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -88,22 +89,36 @@ func PlanCmd() *cobra.Command {
 
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
-					if !info.IsDir() {
-						statements, err := db.PlanSyncFromFile(path, v.GetString("spec-type"))
-						if err != nil {
-							return err
-						}
+					isHidden, err := files.IsHidden(path)
+					if err != nil {
+						return err
+					}
 
-						if f != nil {
-							for _, statement := range statements {
-								if _, err := f.WriteString(fmt.Sprintf("%s;\n", statement)); err != nil {
-									return err
-								}
+					if info.IsDir() {
+						if isHidden {
+							return filepath.SkipDir
+						}
+						return nil
+					}
+
+					if isHidden {
+						return nil
+					}
+
+					statements, err := db.PlanSyncFromFile(path, v.GetString("spec-type"))
+					if err != nil {
+						return err
+					}
+
+					if f != nil {
+						for _, statement := range statements {
+							if _, err := f.WriteString(fmt.Sprintf("%s;\n", statement)); err != nil {
+								return err
 							}
-						} else {
-							for _, statement := range statements {
-								fmt.Printf("%s;\n", statement)
-							}
+						}
+					} else {
+						for _, statement := range statements {
+							fmt.Printf("%s;\n", statement)
 						}
 					}
 
