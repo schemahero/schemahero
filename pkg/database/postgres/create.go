@@ -12,14 +12,17 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	statements := []string{}
 
+	conflictInferenceSpec := findConflictInferenceSpec(tableName, tableSchema)
 	for _, row := range seedData.Rows {
 		cols := []string{}
 		vals := []string{}
+		updateVals := []string{}
 		for _, col := range row.Columns {
 			cols = append(cols, col.Column)
+			updateVals = append(updateVals, fmt.Sprintf("excluded.%s", col.Column))
 			if col.Value.Int != nil {
 				vals = append(vals, strconv.Itoa(*col.Value.Int))
 			} else if col.Value.Str != nil {
@@ -27,7 +30,12 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 			}
 		}
 
-		statement := fmt.Sprintf(`insert into %s (%s) values (%s) on conflict do nothing`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		var statement string
+		if conflictInferenceSpec != "" {
+			statement = fmt.Sprintf(`insert into %s (%s) values (%s) on conflict (%s) do update set (%s) = (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "), conflictInferenceSpec, strings.Join(cols, ", "), strings.Join(updateVals, ", "))
+		} else {
+			statement = fmt.Sprintf(`insert into %s (%s) values (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		}
 		statements = append(statements, statement)
 	}
 
@@ -85,4 +93,29 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Postgr
 		queries = append(queries, statement)
 	}
 	return queries, nil
+}
+
+func findConflictInferenceSpec(tableName string, tableSchema *schemasv1alpha4.PostgresqlTableSchema) string {
+	if len(tableSchema.PrimaryKey) > 0 {
+		primaryKeyColumns := []string{}
+		for _, primaryKeyColumn := range tableSchema.PrimaryKey {
+			primaryKeyColumns = append(primaryKeyColumns, pgx.Identifier{primaryKeyColumn}.Sanitize())
+		}
+
+		return strings.Join(primaryKeyColumns, ", ")
+	}
+
+	if len(tableSchema.Indexes) > 0 {
+		for _, index := range tableSchema.Indexes {
+			if index.IsUnique {
+				uniqueColumns := []string{}
+				for _, indexColumn := range index.Columns {
+					uniqueColumns = append(uniqueColumns, pgx.Identifier{indexColumn}.Sanitize())
+				}
+				return types.GeneratePostgresqlIndexName(tableName, index)
+			}
+		}
+	}
+
+	return ""
 }

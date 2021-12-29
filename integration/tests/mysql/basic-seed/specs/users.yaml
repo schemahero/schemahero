@@ -36,3 +36,6 @@ seedData:
       - column: name
         value:
           str: test2
+      - column: email
+        value:
+          str: email@mail.com
