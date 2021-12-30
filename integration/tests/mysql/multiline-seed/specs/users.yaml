@@ -12,7 +12,7 @@ schema:
       - name: address
         type: text (65535)
 seedData:
-  rows:
+  - rows:
     - columns:
       - column: id
         value:

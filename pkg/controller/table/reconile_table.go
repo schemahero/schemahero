@@ -164,6 +164,7 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 	db := database.Database{
 		Driver: driver,
 		URI:    connectionURI,
+		Env:    databaseInstance.Spec.Env,
 	}
 
 	// plan the schema

@@ -14,7 +14,7 @@ schema:
         constraints:
           notNull: true
 seedData:
-  rows:
+  - rows:
     - columns:
       - column: id
         value:

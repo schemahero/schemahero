@@ -27,6 +27,7 @@ type Database struct {
 	Username  string
 	Password  string
 	Keyspace  string
+	Env       string
 }
 
 func (d *Database) CreateFixturesSync() error {
@@ -193,11 +194,30 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 		return []string{}, nil
 	}
 
+	if !d.hasMatchingEnv(spec.SeedData.Envs) {
+		return []string{}, nil
+	}
+
 	if d.Driver == "postgres" {
 		return postgres.PlanPostgresSeedData(d.URI, spec.Name, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
+}
+
+func (d *Database) hasMatchingEnv(envs []string) bool {
+	// if no env is set in either, it's a match
+	if d.Env == "" && len(envs) == 0 {
+		return true
+	}
+
+	for _, env := range envs {
+		if d.Env == env {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (d *Database) planTypeSync(specContents []byte) ([]string, error) {
