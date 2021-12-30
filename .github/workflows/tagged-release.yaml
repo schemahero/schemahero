@@ -123,6 +123,16 @@ jobs:
       - id: get_version
         uses: battila7/get-version-action@v2
 
+      - id: get_prerelease_flag
+        env:
+          GITHUB_TAG: ${{ steps.get_version.outputs.version }}
+        run: |
+          if [[ $GITHUB_TAG == *"alpha"* ]]; then
+            echo "::set-output name=prerelease::true"
+          else
+            echo "::set-output name=prerelease::false"
+          fi
+
       - uses: azure/docker-login@v1
         with:
           username: schemaherodeploy
@@ -148,6 +158,7 @@ jobs:
           release_name: ${{ steps.get_version.outputs.version }}
           tag_name: ${{ github.ref }}
           asset_files: './release'
+          prerelease: ${{ steps.get_prerelease_flag.outputs.prerelease }}
 
   krew:
     runs-on: ubuntu-latest
