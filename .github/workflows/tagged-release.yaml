@@ -125,12 +125,12 @@ jobs:
 
       - id: get_prerelease_flag
         env:
-          GITHUB_TAG: ${{ steps.get_version.outputs.version }}
+          PRERELEASE: ${{ steps.get_version.outputs.prerelease }}
         run: |
-          if [[ $GITHUB_TAG == *"alpha"* ]]; then
-            echo "::set-output name=prerelease::true"
-          else
+          if [ -z $PRERELEASE ]; then
             echo "::set-output name=prerelease::false"
+          else
+            echo "::set-output name=prerelease::true"
           fi
 
       - uses: azure/docker-login@v1
