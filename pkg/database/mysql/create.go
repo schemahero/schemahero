@@ -14,10 +14,12 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 	for _, row := range seedData.Rows {
 		cols := []string{}
 		vals := []string{}
+		updateVals := []string{}
 		for _, col := range row.Columns {
 			cols = append(cols, col.Column)
 			if col.Value.Int != nil {
 				vals = append(vals, strconv.Itoa(*col.Value.Int))
+				updateVals = append(updateVals, fmt.Sprintf("%s=%s", col.Column, strconv.Itoa(*col.Value.Int)))
 			} else if col.Value.Str != nil {
 				// handle multiline strings
 				if strings.Contains(*col.Value.Str, "\n") {
@@ -28,13 +30,15 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 						builder = append(builder, fmt.Sprintf("'%s'", s))
 					}
 					vals = append(vals, fmt.Sprintf("%s)", strings.Join(builder, ", ")))
+					updateVals = append(updateVals, fmt.Sprintf("%s=%s", col.Column, fmt.Sprintf("%s)", strings.Join(builder, ", "))))
 				} else {
 					vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+					updateVals = append(updateVals, fmt.Sprintf("%s=%s", col.Column, fmt.Sprintf("'%s'", *col.Value.Str)))
 				}
 			}
 		}
 
-		statement := fmt.Sprintf(`insert ignore into %s (%s) values (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statement := fmt.Sprintf(`insert into %s (%s) values (%s) on duplicate key update %s`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "), strings.Join(updateVals, ", "))
 		statements = append(statements, statement)
 	}
 

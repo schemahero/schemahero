@@ -1,0 +1,29 @@
+database: schemahero
+name: other
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: something
+        type: varchar(255)
+        constraints:
+          notNull: true
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: something
+        value:
+          str: one
+    - columns:
+      - column: id
+        value:
+          int: 2
+      - column: something
+        value:
+          str: two

@@ -23,7 +23,7 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 			}
 		}
 
-		statement := fmt.Sprintf(`insert or ignore into %s (%s) values (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statement := fmt.Sprintf(`replace into %s (%s) values (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
 		statements = append(statements, statement)
 	}
 
