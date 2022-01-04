@@ -10,8 +10,7 @@ metadata:
     chart: postgresql-8.10.0
 type: Opaque
 data:
-  postgresql-postgres-password: "cGFzc3dvcmQ="
-  postgresql-password: "cGFzc3dvcmQ="
+  uri: cG9zdGdyZXNxbDovL2FpcmxpbmVkYi11c2VyOnBhc3N3b3JkQHBvc3RncmVzcWw6NTQzMi9wb3N0Z3Jlcw==
 ---
 # Source: postgresql/templates/svc-headless.yaml
 apiVersion: v1
