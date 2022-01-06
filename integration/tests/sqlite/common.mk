@@ -17,7 +17,7 @@ run:
 	docker run --rm -v `pwd`/db:/db -v `pwd`/fixtures.sql:/fixtures.sql --name $(DATABASE_CONTAINER_NAME) keinos/sqlite3:latest sqlite3 /db/db.db ".read /fixtures.sql"
 
 	# Plan
-	../../../../bin/kubectl-schemahero plan --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
+	../../../../bin/kubectl-schemahero plan --seed-data --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)

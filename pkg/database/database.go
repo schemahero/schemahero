@@ -19,14 +19,15 @@ import (
 )
 
 type Database struct {
-	InputDir  string
-	OutputDir string
-	Driver    string
-	URI       string
-	Hosts     []string
-	Username  string
-	Password  string
-	Keyspace  string
+	InputDir       string
+	OutputDir      string
+	Driver         string
+	URI            string
+	Hosts          []string
+	Username       string
+	Password       string
+	Keyspace       string
+	DeploySeedData bool
 }
 
 func (d *Database) CreateFixturesSync() error {
@@ -173,16 +174,21 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return []string{}, nil
 	}
 
+	var seedData *schemasv1alpha4.SeedData
+	if d.DeploySeedData {
+		seedData = spec.SeedData
+	}
+
 	if d.Driver == "postgres" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres, spec.SeedData)
+		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres, seedData)
 	} else if d.Driver == "mysql" {
-		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql, spec.SeedData)
+		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql, seedData)
 	} else if d.Driver == "cockroachdb" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB, spec.SeedData)
+		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB, seedData)
 	} else if d.Driver == "cassandra" {
-		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, spec.SeedData)
+		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, seedData)
 	} else if d.Driver == "sqlite" {
-		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, spec.SeedData)
+		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, seedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)

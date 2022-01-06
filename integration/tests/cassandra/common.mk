@@ -14,7 +14,7 @@ run:
 	docker exec $(DATABASE_CONTAINER_NAME) cqlsh -k schemahero -f /fixtures.sql
 
 	# Plan
-	../../../../bin/kubectl-schemahero plan --keyspace schemahero --host 127.0.0.1:9042 --driver=$(DRIVER) --spec-type $(SPEC_TYPE) --spec-file $(SPEC_FILE) > out.sql
+	../../../../bin/kubectl-schemahero plan --seed-data --keyspace schemahero --host 127.0.0.1:9042 --driver=$(DRIVER) --spec-type $(SPEC_TYPE) --spec-file $(SPEC_FILE) > out.sql
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)

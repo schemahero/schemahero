@@ -77,14 +77,15 @@ func PlanCmd() *cobra.Command {
 			}
 
 			db := database.Database{
-				InputDir:  v.GetString("input-dir"),
-				OutputDir: v.GetString("output-dir"),
-				Driver:    v.GetString("driver"),
-				URI:       v.GetString("uri"),
-				Hosts:     v.GetStringSlice("host"),
-				Username:  v.GetString("username"),
-				Password:  v.GetString("password"),
-				Keyspace:  v.GetString("keyspace"),
+				InputDir:       v.GetString("input-dir"),
+				OutputDir:      v.GetString("output-dir"),
+				Driver:         v.GetString("driver"),
+				URI:            v.GetString("uri"),
+				Hosts:          v.GetStringSlice("host"),
+				Username:       v.GetString("username"),
+				Password:       v.GetString("password"),
+				Keyspace:       v.GetString("keyspace"),
+				DeploySeedData: v.GetBool("seed-data"),
 			}
 
 			if fi.Mode().IsDir() {
@@ -163,5 +164,6 @@ func PlanCmd() *cobra.Command {
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 	cmd.Flags().Bool("overwrite", true, "when set, will overwrite the out file, if it already exists")
 
+	cmd.Flags().Bool("seed-data", false, "when set, will deploy seed data")
 	return cmd
 }
