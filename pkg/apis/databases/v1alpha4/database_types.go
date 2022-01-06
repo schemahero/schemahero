@@ -40,6 +40,7 @@ type DatabaseSpec struct {
 
 	//+kubebuilder:default:=false
 	ImmediateDeploy bool              `json:"immediateDeploy,omitempty"`
+	DeploySeedData  bool              `json:"deploySeedData,omitempty"` // TODO remove this for envs in 0.13.0
 	SchemaHero      *SchemaHero       `json:"schemahero,omitempty"`
 	Template        *DatabaseTemplate `json:"template,omitempty"`
 }

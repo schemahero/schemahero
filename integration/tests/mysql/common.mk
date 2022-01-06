@@ -14,7 +14,7 @@ run:
 	@sleep 10
 
 	# Plan
-	../../../../bin/kubectl-schemahero plan --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
+	../../../../bin/kubectl-schemahero plan --seed-data --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)
