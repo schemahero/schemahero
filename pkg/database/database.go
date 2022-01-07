@@ -200,7 +200,15 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 	}
 
 	if d.Driver == "postgres" {
-		return postgres.PlanPostgresSeedData(d.URI, spec.Name, spec.SeedData)
+		return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+	} else if d.Driver == "mysql" {
+		return mysql.SeedDataStatements(spec.Name, spec.SeedData)
+	} else if d.Driver == "cockroachdb" {
+		return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+	} else if d.Driver == "cassandra" {
+		return nil, errors.New("cassandra seed data is not implemented")
+	} else if d.Driver == "sqlite" {
+		return sqlite.SeedDataStatements(spec.Name, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
