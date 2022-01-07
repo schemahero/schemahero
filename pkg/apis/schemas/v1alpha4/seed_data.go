@@ -1,8 +1,8 @@
 package v1alpha4
 
 type SeedDataValue struct {
-	Int *int    `json:"int" yaml:"int"`
-	Str *string `json:"str" yaml:"str"`
+	Int *int    `json:"int,omitempty" yaml:"int,omitempty"`
+	Str *string `json:"str,omitempty" yaml:"str,omitempty"`
 }
 
 type Column struct {

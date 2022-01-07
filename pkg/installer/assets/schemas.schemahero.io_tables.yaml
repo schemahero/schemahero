@@ -524,9 +524,6 @@ spec:
                                     type: integer
                                   str:
                                     type: string
-                                required:
-                                - int
-                                - str
                                 type: object
                             required:
                             - column
