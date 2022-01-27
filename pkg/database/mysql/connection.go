@@ -97,3 +97,18 @@ func HostnameFromURI(uri string) (string, error) {
 	addrAndPort := strings.Split(cfg.Addr, ":")
 	return addrAndPort[0], nil
 }
+
+func PortFromURI(uri string) (string, error) {
+	cfg, err := mysqldriver.ParseDSN(uri)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to parse database uri")
+	}
+
+	// TODO this is very happy path
+	addrAndPort := strings.Split(cfg.Addr, ":")
+
+	if len(addrAndPort) > 1 {
+		return addrAndPort[1], nil
+	}
+	return "3306", nil
+}
