@@ -118,6 +118,11 @@ func ShellCmd() *cobra.Command {
 					return err
 				}
 
+				port, err := mysql.PortFromURI(connectionURI)
+				if err != nil {
+					return err
+				}
+
 				database, err := mysql.DatabaseNameFromURI(connectionURI)
 				if err != nil {
 					return err
@@ -133,6 +138,8 @@ func ShellCmd() *cobra.Command {
 					hostname,
 					"-D",
 					database,
+					"-P",
+					port,
 				}
 			}
 
