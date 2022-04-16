@@ -12,6 +12,8 @@ import (
 
 func Test_columnAsInsert(t *testing.T) {
 	default11 := "11"
+	curr_time_up := "CURRENT_TIMESTAMP"
+	curr_time_low := "current_timestamp"
 	tests := []struct {
 		name              string
 		column            *schemasv1alpha4.PostgresqlTableColumn
@@ -40,6 +42,24 @@ func Test_columnAsInsert(t *testing.T) {
 				Type: "timestamp without time zone",
 			},
 			expectedStatement: `"t" timestamp without time zone`,
+		},
+		{
+			name: "timestamp with default CURRENT_TIMESTAMP",
+			column: &schemasv1alpha4.PostgresqlTableColumn{
+				Name:    "t",
+				Type:    "timestamp",
+				Default: &curr_time_up,
+			},
+			expectedStatement: `"t" timestamp default current_timestamp`,
+		},
+		{
+			name: "timestamp with default current_timestamp",
+			column: &schemasv1alpha4.PostgresqlTableColumn{
+				Name:    "t",
+				Type:    "timestamp",
+				Default: &curr_time_low,
+			},
+			expectedStatement: `"t" timestamp default current_timestamp`,
 		},
 		{
 			name: "character varying (4)",

@@ -86,7 +86,13 @@ func columnAsInsert(column *schemasv1alpha4.PostgresqlTableColumn) (string, erro
 
 	if postgresColumn.ColumnDefault != nil {
 		value := stripOIDClass(*postgresColumn.ColumnDefault)
-		formatted = fmt.Sprintf("%s default '%s'", formatted, value)
+		if postgresColumn.DataType == "timestamp" {
+			if strings.EqualFold(*postgresColumn.ColumnDefault, "current_timestamp") {
+				formatted = fmt.Sprintf("%s default current_timestamp", formatted)
+			}
+		} else {
+			formatted = fmt.Sprintf("%s default '%s'", formatted, value)
+		}
 	}
 
 	return formatted, nil

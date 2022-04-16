@@ -17,3 +17,6 @@ schema:
       - name: num_seats
         type: integer
         default: "5"
+      - name: created_on
+        type: timestamp
+        default: current_timestamp
