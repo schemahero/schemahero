@@ -30,8 +30,8 @@ var tenSeconds = int64(10)
 
 // Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, managerImage string, managerTag string) error {
-	return add(mgr, newReconciler(mgr, managerImage, managerTag), "databaseController")
+func Add(mgr manager.Manager, managerImage string, managerTag string, debugLogs bool) error {
+	return add(mgr, newReconciler(mgr, managerImage, managerTag, debugLogs), "databaseController")
 }
 
 // AddForDatabaseSchemasOnly creates a new Database Controller to watch for changes to a specific database object. This is how database-level schema
@@ -41,12 +41,13 @@ func AddForDatabaseSchemasOnly(mgr manager.Manager, databaseNames []string) erro
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, managerImage string, managerTag string) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, managerImage string, managerTag string, debugLogs bool) reconcile.Reconciler {
 	return &ReconcileDatabase{
 		Client:       mgr.GetClient(),
 		scheme:       mgr.GetScheme(),
 		managerImage: managerImage,
 		managerTag:   managerTag,
+		debugLogs:    debugLogs,
 	}
 }
 

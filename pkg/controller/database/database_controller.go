@@ -44,6 +44,7 @@ type ReconcileDatabase struct {
 	scheme       *runtime.Scheme
 	managerImage string
 	managerTag   string
+	debugLogs    bool
 }
 
 // Reconcile reads that state of the cluster for a Database object and makes changes based on the state read
@@ -164,6 +165,10 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 				},
 			},
 		},
+	}
+
+	if r.debugLogs {
+		desiredStatefulSet.Spec.Template.Spec.Containers[0].Args = append(desiredStatefulSet.Spec.Template.Spec.Containers[0].Args, "--log-level", "debug")
 	}
 
 	existingStatefulset := appsv1.StatefulSet{}
