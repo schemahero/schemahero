@@ -34,7 +34,9 @@ func RunCmd() *cobra.Command {
 
 			v := viper.GetViper()
 
+			isDebug := false
 			if v.GetString("log-level") == "debug" {
+				isDebug = true
 				logger.SetDebug()
 			}
 
@@ -67,13 +69,15 @@ func RunCmd() *cobra.Command {
 			}
 
 			if v.GetBool("enable-database-controller") {
-				if err := databasecontroller.Add(mgr, v.GetString("manager-image"), v.GetString("manager-tag")); err != nil {
+				logger.Info("Starting database controller")
+				if err := databasecontroller.Add(mgr, v.GetString("manager-image"), v.GetString("manager-tag"), isDebug); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}
 			}
 
 			if len(v.GetStringSlice("database-name")) > 0 {
+				logger.Infof("Starting controllers for %+v", v.GetStringSlice("database-name"))
 				if err := databasecontroller.AddForDatabaseSchemasOnly(mgr, v.GetStringSlice("database-name")); err != nil {
 					logger.Error(err)
 					os.Exit(1)

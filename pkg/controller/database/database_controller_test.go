@@ -61,7 +61,7 @@ func TestDbControllerTest(t *testing.T) {
 	}
 
 	// add the Controller to the Manager
-	err = Add(mgr, "", "")
+	err = Add(mgr, "", "", true)
 	if err != nil {
 		t.Fatalf("Failed to add controller to manager: %v", err)
 	}
