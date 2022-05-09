@@ -18,6 +18,7 @@ bin
 !vendor/**/zz_generated.*
 
 # editor and IDE paraphernalia
+.vscode
 .idea
 *.swp
 *.swo
