@@ -198,8 +198,9 @@ func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, err
 	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE
 from information_schema.COLUMNS
 where TABLE_NAME = ?
+and TABLE_SCHEMA = ?
 order by ORDINAL_POSITION`
-	rows, err := m.db.Query(query, tableName)
+	rows, err := m.db.Query(query, tableName, m.databaseName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query table schema")
 	}
