@@ -216,3 +216,12 @@ release: release-tarballs
 	cosign attach sbom -sbom ./sbom/bom-go-mod.spdx schemahero/schemahero-manager:${GITHUB_TAG}
 	cosign sign -key ./cosign.key schemahero/schemahero:${GITHUB_TAG}
 	cosign sign -key ./cosign.key schemahero/schemahero-manager:${GITHUB_TAG}
+
+.PHONY: scan
+scan:
+	trivy fs \
+		--security-checks vuln \
+		--exit-code=1 \
+		--severity="HIGH,CRITICAL" \
+		--ignore-unfixed \
+		./
