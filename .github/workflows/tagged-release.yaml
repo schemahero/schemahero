@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2.1.5
+      - uses: actions/setup-go@v3.0.0
         with:
           go-version: "1.17.2"
 
@@ -95,7 +95,7 @@ jobs:
       - test-mysql
       - test-cockroach
     steps:
-      - uses: actions/setup-go@v2.1.5
+      - uses: actions/setup-go@v3.0.0
         with:
           go-version: "1.17.2"
 
