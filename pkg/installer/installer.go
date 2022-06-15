@@ -41,6 +41,12 @@ func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	}
 	manifests["cluster-role-binding.yaml"] = manifest
 
+	manifest, err = namespaceYAML(namespace)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get namespace")
+	}
+	manifests["namespace.yaml"] = manifest
+
 	manifest, err = serviceYAML(namespace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get service")
