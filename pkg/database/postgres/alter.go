@@ -76,35 +76,42 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 			}
 
 			changes := []string{}
-			if existingColumn.DataType != column.DataType {
-				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
-			} else if column.DataType == existingColumn.DataType {
-				if column.IsArray != existingColumn.IsArray {
-					changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pgx.Identifier{existingColumn.Name}.Sanitize(), column.DataType))
-				}
-			}
 
-			if column.ColumnDefault != nil {
-				if existingColumn.ColumnDefault == nil || *column.ColumnDefault != *existingColumn.ColumnDefault {
-					changes = append(changes, fmt.Sprintf("%s set default '%s'", alterStatement, *column.ColumnDefault))
-				}
-			} else if existingColumn.ColumnDefault != nil {
-				changes = append(changes, fmt.Sprintf("%s drop default", alterStatement))
-			}
+			// Checking if the column is type 'serial'
+			if column.DataType == "serial" &&
+				existingColumn.DataType == "integer" && // when a column is declared serial, the actual datatype becomes integer
+				strings.Contains(*existingColumn.ColumnDefault, tableName+"_"+existingColumn.Name+"_seq") { // and a new sequance is created to handle the increment
 
-			// too much complexity below!
-			if column.Constraints != nil || existingColumn.Constraints != nil {
-				isPrimaryKey := false
-				for _, primaryKey := range primaryKeys {
-					if column.Name == primaryKey {
-						isPrimaryKey = true
+				if existingColumn.DataType != column.DataType {
+					changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
+				} else if column.DataType == existingColumn.DataType {
+					if column.IsArray != existingColumn.IsArray {
+						changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pgx.Identifier{existingColumn.Name}.Sanitize(), column.DataType))
 					}
 				}
 
-				if !isPrimaryKey {
-					if existingColumn.Constraints != nil && existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull {
-						if column.Constraints == nil || column.Constraints.NotNull == nil || !*column.Constraints.NotNull {
-							changes = append(changes, fmt.Sprintf("%s drop not null", alterStatement))
+				if column.ColumnDefault != nil {
+					if existingColumn.ColumnDefault == nil || *column.ColumnDefault != *existingColumn.ColumnDefault {
+						changes = append(changes, fmt.Sprintf("%s set default '%s'", alterStatement, *column.ColumnDefault))
+					}
+				} else if existingColumn.ColumnDefault != nil {
+					changes = append(changes, fmt.Sprintf("%s drop default", alterStatement))
+				}
+
+				// too much complexity below!
+				if column.Constraints != nil || existingColumn.Constraints != nil {
+					isPrimaryKey := false
+					for _, primaryKey := range primaryKeys {
+						if column.Name == primaryKey {
+							isPrimaryKey = true
+						}
+					}
+
+					if !isPrimaryKey {
+						if existingColumn.Constraints != nil && existingColumn.Constraints.NotNull != nil && *existingColumn.Constraints.NotNull {
+							if column.Constraints == nil || column.Constraints.NotNull == nil || !*column.Constraints.NotNull {
+								changes = append(changes, fmt.Sprintf("%s drop not null", alterStatement))
+							}
 						}
 					}
 				}
