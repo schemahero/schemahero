@@ -76,12 +76,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 			}
 
 			changes := []string{}
-
-			// Checking if the column is type 'serial'
-			if column.DataType == "serial" &&
-				existingColumn.DataType == "integer" && // when a column is declared serial, the actual datatype becomes integer
-				strings.Contains(*existingColumn.ColumnDefault, tableName+"_"+existingColumn.Name+"_seq") { // and a new sequance is created to handle the increment
-
+			if column.DataType != "serial" && column.DataType != "bigserial" {
 				if existingColumn.DataType != column.DataType {
 					changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
 				} else if column.DataType == existingColumn.DataType {
