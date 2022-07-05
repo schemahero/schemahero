@@ -106,6 +106,26 @@ func Test_AlterColumnStatments(t *testing.T) {
 			expectedStatements: []string{`alter table "t" alter column "b" type integer`},
 		},
 		{
+			name:      "ignore serial type",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name: "a",
+					Type: "serial",
+				},
+				{
+					Name: "b",
+					Type: "integer",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:          "a",
+				DataType:      "integer",
+				ColumnDefault: nil,
+			},
+			expectedStatements: []string{},
+		},
+		{
 			name:      "drop column",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
