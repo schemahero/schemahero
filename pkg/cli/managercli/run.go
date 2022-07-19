@@ -30,7 +30,7 @@ func RunCmd() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			logger.Infof("Starting schemahero version %+v", version.GetBuild())
+			logger.Info("Starting latest schemabuccio")
 
 			v := viper.GetViper()
 
@@ -113,7 +113,7 @@ func RunCmd() *cobra.Command {
 
 	cmd.Flags().Bool("enable-database-controller", false, "when set, the database controller will be active")
 	cmd.Flags().StringSlice("database-name", []string{}, "when present (and not set to *), the controller will reconcile tables and migrations for the specified database")
-	cmd.Flags().String("manager-image", "schemahero/schemahero-manager", "the schemahero manager image to use in the controller")
+	cmd.Flags().String("manager-image", "lordao/schemabuccio", "the schemahero manager image to use in the controller")
 	cmd.Flags().String("manager-tag", defaultManagerTag(), "the tag of the schemahero manager image to use")
 	cmd.Flags().String("namespace", "", "when set, limit rbac permissions for watches to this namespace")
 
@@ -126,5 +126,6 @@ func defaultManagerTag() string {
 		tag = strings.TrimPrefix(tag, "v")
 	}
 
-	return tag
+	//return tag
+	return "latest"
 }
