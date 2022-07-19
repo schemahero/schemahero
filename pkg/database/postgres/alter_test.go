@@ -106,7 +106,7 @@ func Test_AlterColumnStatments(t *testing.T) {
 			expectedStatements: []string{`alter table "t" alter column "b" type integer`},
 		},
 		{
-			name:      "ignore serial type",
+			name:      "ignore serial",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
 				{
