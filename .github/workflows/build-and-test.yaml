@@ -160,3 +160,19 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
+
+  test-timescaledb:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        timescaledb_version: ["2.8.1-pg14"]
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v3.0.1
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}

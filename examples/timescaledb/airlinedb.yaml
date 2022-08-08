@@ -1,0 +1,13 @@
+apiVersion: databases.schemahero.io/v1alpha4
+kind: Database
+metadata:
+  name: airlinedb
+spec:
+  schemahero:
+    image: "localhost:32000/schemahero/schemahero"
+  immediateDeploy: true
+  connection:
+    timescaledb:
+      uri:
+        value: postgres://airlinedb-user:password@127.0.0.1:5432/airlinedb?sslmode=disable
+

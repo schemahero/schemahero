@@ -1,0 +1,19 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: flight-status
+spec:
+  database: airlinedb
+  name: flight_status
+  schema:
+    timescaledb:
+      hypertable:
+        timeColumnName: time
+      columns:
+        - name: time
+          type: timestamp without time zone
+        - name: flight_number
+          type: varchar (40)
+        - name: status
+          type: varchar(40)
+

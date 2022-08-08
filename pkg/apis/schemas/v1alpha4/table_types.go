@@ -26,12 +26,13 @@ import (
 )
 
 type TableSchema struct {
-	Postgres    *PostgresqlTableSchema `json:"postgres,omitempty" yaml:"postgres,omitempty"`
-	Mysql       *MysqlTableSchema      `json:"mysql,omitempty" yaml:"mysql,omitempty"`
-	CockroachDB *PostgresqlTableSchema `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
-	Cassandra   *CassandraTableSchema  `json:"cassandra,omitempty" yaml:"cassandra,omitempty"`
-	SQLite      *SqliteTableSchema     `json:"sqlite,omitempty" yaml:"sqlite,omitempty"`
-	RQLite      *RqliteTableSchema     `json:"rqlite,omitempty" yaml:"rqlite,omitempty"`
+	Postgres    *PostgresqlTableSchema  `json:"postgres,omitempty" yaml:"postgres,omitempty"`
+	Mysql       *MysqlTableSchema       `json:"mysql,omitempty" yaml:"mysql,omitempty"`
+	CockroachDB *PostgresqlTableSchema  `json:"cockroachdb,omitempty" yaml:"cockroachdb,omitempty"`
+	Cassandra   *CassandraTableSchema   `json:"cassandra,omitempty" yaml:"cassandra,omitempty"`
+	TimescaleDB *TimescaleDBTableSchema `json:"timescaledb,omitempty" yaml:"timescaledb,omitempty"`
+	SQLite      *SqliteTableSchema      `json:"sqlite,omitempty" yaml:"sqlite,omitempty"`
+	RQLite      *RqliteTableSchema      `json:"rqlite,omitempty" yaml:"rqlite,omitempty"`
 }
 
 // TableSpec defines the desired state of Table

@@ -14,6 +14,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/database/sqlite"
+	"github.com/schemahero/schemahero/pkg/database/timescaledb"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
@@ -127,6 +128,17 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, createStatements...)
+		} else if d.Driver == "timescaledb" {
+			if spec.Schema.TimescaleDB == nil {
+				return nil
+			}
+
+			createStatements, err := timescaledb.CreateTableStatements(spec.Name, spec.Schema.TimescaleDB)
+			if err != nil {
+				return err
+			}
+
+			statements = append(statements, createStatements...)
 		} else if d.Driver == "cassandra" {
 			return errors.New("not implemented")
 		}
@@ -212,6 +224,8 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, seedData)
 	} else if d.Driver == "rqlite" {
 		return rqlite.PlanRqliteTable(d.URI, spec.Name, spec.Schema.RQLite, seedData)
+	} else if d.Driver == "timescaledb" {
+		return timescaledb.PlanTimescaleDBTable(d.URI, spec.Name, spec.Schema.TimescaleDB, seedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -234,6 +248,8 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 		return sqlite.SeedDataStatements(spec.Name, spec.SeedData)
 	} else if d.Driver == "rqlite" {
 		return rqlite.SeedDataStatements(spec.Name, spec.SeedData)
+	} else if d.Driver == "timescaledb" {
+		return timescaledb.SeedDataStatements(spec.Name, spec.Schema.TimescaleDB, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -285,6 +301,9 @@ func (d *Database) ApplySync(statements []string) error {
 		return sqlite.DeploySqliteStatements(d.URI, statements)
 	} else if d.Driver == "rqlite" {
 		return rqlite.DeployRqliteStatements(d.URI, statements)
+	} else if d.Driver == "timescaledb" {
+		return postgres.DeployPostgresStatements(d.URI, statements)
 	}
+
 	return errors.Errorf("unknown database driver: %q", d.Driver)
 }

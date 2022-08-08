@@ -1,0 +1,57 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  timescaledb:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: login
+        type: varchar(255)
+      - name: name
+        type: varchar(255)
+        constraints:
+          notNull: true
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: login
+        value:
+          str: test
+      - column: name
+        value:
+          str: test2
+    - columns:
+      - column: id
+        value:
+          int: 2
+      - column: login
+        value:
+          str: other
+      - column: name
+        value:
+          str: test2
+    - columns:
+      - column: id
+        value:
+          int: 3
+      - column: login
+        value:
+          str: yet
+      - column: name
+        value:
+          str: someone
+    - columns:
+      - column: id
+        value:
+          int: 4
+      - column: login
+        value:
+          str: another
+      - column: name
+        value:
+          str: more

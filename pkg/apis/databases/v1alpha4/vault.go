@@ -37,6 +37,9 @@ func (d Database) UsingVault() bool {
 	if d.Spec.Connection.RQLite != nil {
 		return d.Spec.Connection.RQLite.URI.HasVaultSecret()
 	}
+	if d.Spec.Connection.TimescaleDB != nil {
+		return d.Spec.Connection.TimescaleDB.URI.HasVaultSecret()
+	}
 	return false
 }
 
@@ -49,6 +52,9 @@ func (d Database) getVaultDetails() (*Vault, error) {
 	}
 	if d.Spec.Connection.Postgres != nil {
 		return d.Spec.Connection.Postgres.URI.GetVaultDetails()
+	}
+	if d.Spec.Connection.TimescaleDB != nil {
+		return d.Spec.Connection.TimescaleDB.URI.GetVaultDetails()
 	}
 	if d.Spec.Connection.Mysql != nil {
 		return d.Spec.Connection.Mysql.URI.GetVaultDetails()
@@ -75,6 +81,13 @@ func (d Database) getDbType() (string, error) {
 	if d.Spec.Connection.RQLite != nil {
 		return "rqlite", nil
 	}
+	if d.Spec.Connection.SQLite != nil {
+		return "sqlite", nil
+	}
+	if d.Spec.Connection.TimescaleDB != nil {
+		return "timescaledb", nil
+	}
+
 	return "", fmt.Errorf("no database connection configured for database: %s", d.Name)
 }
 
@@ -112,7 +125,7 @@ func (d *Database) GetVaultAnnotations() (map[string]string, error) {
 
 	} else {
 		switch db {
-		case "postgres", "cockroachdb":
+		case "postgres", "cockroachdb", "timescaledb":
 			template = fmt.Sprintf(`
 {{- with secret "database/creds/%s" -}}
 postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/%s{{- end }}`, v.Role, d.Name)

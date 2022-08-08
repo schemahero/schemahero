@@ -47,6 +47,8 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 		isParamBased = true
 	} else if driver == "rqlite" {
 		isParamBased = d.Spec.Connection.RQLite.URI.IsEmpty()
+	} else if driver == "timescaledb" {
+		isParamBased = d.Spec.Connection.TimescaleDB.URI.IsEmpty()
 	}
 
 	if isParamBased {
@@ -215,6 +217,53 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			protocol = "http"
 		}
 		uri = fmt.Sprintf("%s://%s:%s@%s:%s/", protocol, user, password, hostname, port)
+	} else if driver == "timescaledb" {
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.Host)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read timescale hostname")
+		}
+
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.Port)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read timescale port")
+		}
+
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.User)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read timescale user")
+		}
+
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.Password)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read timescale password")
+		}
+
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.DBName)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to read timescale dbname")
+		}
+
+		authInfo := url.UserPassword(user, password).String()
+		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
+
+		queryStringCharacter := "?"
+		if !d.Spec.Connection.TimescaleDB.SSLMode.IsEmpty() {
+			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.SSLMode)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read timescale ssl mode")
+			}
+			uri = fmt.Sprintf("%s%ssslmode=%s", uri, queryStringCharacter, sslMode)
+			queryStringCharacter = "&"
+		}
+
+		if !d.Spec.Connection.TimescaleDB.CurrentSchema.IsEmpty() {
+			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.CurrentSchema)
+			if err != nil {
+				return "", "", errors.Wrap(err, "failed to read timescale currentSchema")
+			}
+			uri = fmt.Sprintf("%s%scurrentSchema=%s", uri, queryStringCharacter, currentSchema)
+			queryStringCharacter = "&"
+		}
 	}
 
 	return driver, uri, nil
@@ -239,7 +288,10 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 		valueOrValueFrom = d.Spec.Connection.Mysql.URI
 	} else if driver == "rqlite" {
 		valueOrValueFrom = d.Spec.Connection.RQLite.URI
+	} else if driver == "timescaledb" {
+		valueOrValueFrom = d.Spec.Connection.TimescaleDB.URI
 	}
+
 	value, err := d.getValueFromValueOrValueFrom(ctx, driver, valueOrValueFrom)
 	return driver, value, err
 }
