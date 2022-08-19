@@ -2194,6 +2194,10 @@ spec:
                       additionalProperties:
                         type: string
                       type: object
+                    annotations:
+                      additionalProperties:
+                        type: string
+                      type: object
                     name:
                       type: string
                     namespace:
