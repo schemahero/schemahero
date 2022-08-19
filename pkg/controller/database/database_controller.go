@@ -88,15 +88,17 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 
 	serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
 	labels := createLabels(databaseInstance)
+	annotations := createAnnotations(databaseInstance)
 	desiredStatefulSet := appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
 			Kind:       "StatefulSet",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      statefulsetName,
-			Namespace: databaseInstance.Namespace,
-			Labels:    *labels,
+			Name:        statefulsetName,
+			Namespace:   databaseInstance.Namespace,
+			Labels:      *labels,
+			Annotations: *annotations,
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Selector: &metav1.LabelSelector{
@@ -214,6 +216,18 @@ func createLabels(db *databasesv1alpha4.Database) *map[string]string {
 	}
 
 	return &l
+}
+
+func createAnnotations(db *databasesv1alpha4.Database) *map[string]string {
+	a := map[string]string{}
+
+	if db.Spec.Template != nil {
+		for k, v := range db.Spec.Template.ObjectMeta.Annotations {
+			a[k] = v
+		}
+	}
+
+	return &a
 }
 
 func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1alpha4.Database, error) {
