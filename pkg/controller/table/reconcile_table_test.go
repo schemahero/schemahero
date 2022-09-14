@@ -71,6 +71,20 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 			},
 			expect: false,
 		},
+		{
+			name: "is rqlite",
+			connection: databasesv1alpha4.DatabaseConnection{
+				RQLite: &databasesv1alpha4.RqliteConnection{
+					URI: databasesv1alpha4.ValueOrValueFrom{
+						Value: "test",
+					},
+				},
+			},
+			tableSchema: schemasv1alpha4.TableSchema{
+				RQLite: &schemasv1alpha4.RqliteTableSchema{},
+			},
+			expect: true,
+		},
 	}
 
 	for _, test := range tests {

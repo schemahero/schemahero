@@ -69,7 +69,7 @@ spec:
   description: |
     SchemaHero is a database schema migration tool that converts a schema
     definition into migration scripts to be applied to a database engine
-    (with current support for Postgres, Mysql and CockroachDB).
+    (with current support for Postgres, Mysql, rqlite and CockroachDB).
 
     SchemaHero allows developers to define a database table schema as a
     declarative Kubernetes object and then apply the definition to the

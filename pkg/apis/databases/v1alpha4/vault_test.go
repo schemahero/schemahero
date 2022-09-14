@@ -118,6 +118,32 @@ postgres://{{ .Data.username }}:{{ .Data.password }}@postgres:5432/testdb{{- end
 {{- with secret "database/creds/test" -}}
 postgres://{{ .username }}:{{ .password }}@postgres:1234/userdb{{- end }}`,
 		},
+		{
+			name: "rqlite",
+			db: &Database{
+				ObjectMeta: v1.ObjectMeta{
+					Name: "testdb",
+				},
+				Spec: DatabaseSpec{
+					Connection: DatabaseConnection{
+						RQLite: &RqliteConnection{
+							URI: ValueOrValueFrom{
+								ValueFrom: &ValueFrom{
+									Vault: &Vault{
+										AgentInject: true,
+										Role:        "test",
+										Secret:      "database/creds/test",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: `
+{{- with secret "database/creds/test" -}}
+http://{{ .Data.username }}:{{ .Data.password }}@rqlite:4001/{{- end }}`,
+		},
 	}
 
 	for _, test := range tests {

@@ -79,3 +79,26 @@ func ColumnToPostgresqlSchemaColumn(column *Column) (*schemasv1alpha4.Postgresql
 
 	return schemaColumn, nil
 }
+
+func ColumnToRqliteSchemaColumn(column *Column) (*schemasv1alpha4.RqliteTableColumn, error) {
+	schemaColumn := &schemasv1alpha4.RqliteTableColumn{
+		Name: column.Name,
+		Type: column.DataType,
+	}
+
+	if column.Constraints != nil {
+		schemaColumn.Constraints = &schemasv1alpha4.RqliteTableColumnConstraints{
+			NotNull: column.Constraints.NotNull,
+		}
+	}
+
+	if column.Attributes != nil {
+		schemaColumn.Attributes = &schemasv1alpha4.RqliteTableColumnAttributes{
+			AutoIncrement: column.Attributes.AutoIncrement,
+		}
+	}
+
+	schemaColumn.Default = column.ColumnDefault
+
+	return schemaColumn, nil
+}

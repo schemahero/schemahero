@@ -1,0 +1,16 @@
+database: schemahero
+name: user_projects
+schema:
+  rqlite:
+    primaryKey:
+    - user_id
+    - project_id
+    columns:
+      - name: user_id
+        type: integer
+        constraints:
+          notNull: true
+      - name: project_id
+        type: integer
+        constraints:
+          notNull: true

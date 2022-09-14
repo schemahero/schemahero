@@ -9,6 +9,7 @@ import (
 	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
+	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/shell"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -76,7 +77,6 @@ func ShellCmd() *cobra.Command {
 
 			podImage := v.GetString("image")
 			podCommand := []string{}
-			// podArgs := []string{}
 
 			if database.Spec.Connection.Postgres != nil {
 				if podImage == "" {
@@ -139,6 +139,48 @@ func ShellCmd() *cobra.Command {
 					"-D",
 					database,
 					"-P",
+					port,
+				}
+			} else if database.Spec.Connection.RQLite != nil {
+				if podImage == "" {
+					// TODO versions
+					podImage = "rqlite/rqlite:latest"
+				}
+
+				_, connectionURL, err := database.GetConnection(ctx)
+				if err != nil {
+					return err
+				}
+
+				username, err := rqlite.UsernameFromURL(connectionURL)
+				if err != nil {
+					return err
+				}
+
+				password, err := rqlite.PasswordFromURL(connectionURL)
+				if err != nil {
+					return err
+				}
+
+				hostname, err := rqlite.HostnameFromURL(connectionURL)
+				if err != nil {
+					return err
+				}
+
+				port, err := rqlite.PortFromURL(connectionURL)
+				if err != nil {
+					return err
+				}
+
+				podCommand = []string{
+					"rqlite",
+					"-u",
+					username,
+					":",
+					password,
+					"-H",
+					hostname,
+					"-p",
 					port,
 				}
 			}

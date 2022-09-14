@@ -12,6 +12,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/interfaces"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
+	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	"gopkg.in/yaml.v2"
 )
@@ -39,6 +40,12 @@ func (g *Generator) RunSync() error {
 			return errors.Wrap(err, "failed to connect to mysql")
 		}
 		db = mysqlDb
+	} else if g.Driver == "rqlite" {
+		rqliteDb, err := rqlite.Connect(g.URI)
+		if err != nil {
+			return errors.Wrap(err, "failed to connect to mysql")
+		}
+		db = rqliteDb
 	}
 
 	tables, err := db.ListTables()
@@ -127,7 +134,9 @@ func generateTableYAML(driver string, dbName string, table *types.Table, primary
 	if driver == "mysql" {
 		return generateMysqlTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
 	}
-
+	if driver == "rqlite" {
+		return generateRqliteTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
+	}
 	return generatePostgresqlTableYAML(driver, dbName, table, primaryKey, foreignKeys, indexes, columns)
 }
 
@@ -148,7 +157,6 @@ func generateMysqlTableYAML(dbName string, table *types.Table, primaryKey []stri
 	for _, column := range columns {
 		schemaTableColumn, err := types.ColumnToMysqlSchemaColumn(column)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
 			return "", err
 		}
 
@@ -183,7 +191,6 @@ func generateMysqlTableYAML(dbName string, table *types.Table, primaryKey []stri
 
 	b, err := yaml.Marshal(&specDoc)
 	if err != nil {
-		fmt.Printf("%#v\n", err)
 		return "", err
 	}
 
@@ -215,7 +222,6 @@ func generatePostgresqlTableYAML(driver string, dbName string, table *types.Tabl
 	for _, column := range columns {
 		schemaTableColumn, err := types.ColumnToPostgresqlSchemaColumn(column)
 		if err != nil {
-			fmt.Printf("%#v\n", err)
 			return "", err
 		}
 
@@ -252,7 +258,6 @@ func generatePostgresqlTableYAML(driver string, dbName string, table *types.Tabl
 
 	b, err := yaml.Marshal(&specDoc)
 	if err != nil {
-		fmt.Printf("%#v\n", err)
 		return "", err
 	}
 
@@ -265,6 +270,67 @@ metadata:
 
 	return tableDoc, nil
 
+}
+
+func generateRqliteTableYAML(dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
+	schemaForeignKeys := make([]*schemasv1alpha4.RqliteTableForeignKey, 0)
+	for _, foreignKey := range foreignKeys {
+		schemaForeignKey := types.ForeignKeyToRqliteSchemaForeignKey(foreignKey)
+		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
+	}
+
+	schemaIndexes := make([]*schemasv1alpha4.RqliteTableIndex, 0)
+	for _, index := range indexes {
+		schemaIndex := types.IndexToRqliteSchemaIndex(index)
+		schemaIndexes = append(schemaIndexes, schemaIndex)
+	}
+
+	schemaTableColumns := make([]*schemasv1alpha4.RqliteTableColumn, 0)
+	for _, column := range columns {
+		schemaTableColumn, err := types.ColumnToRqliteSchemaColumn(column)
+		if err != nil {
+			return "", err
+		}
+
+		schemaTableColumns = append(schemaTableColumns, schemaTableColumn)
+	}
+
+	tableSchema := &schemasv1alpha4.RqliteTableSchema{
+		PrimaryKey:  primaryKey,
+		Columns:     schemaTableColumns,
+		ForeignKeys: schemaForeignKeys,
+		Indexes:     schemaIndexes,
+	}
+
+	schema := &schemasv1alpha4.TableSchema{}
+	schema.RQLite = tableSchema
+
+	schemaHeroResource := schemasv1alpha4.TableSpec{
+		Database: dbName,
+		Name:     table.Name,
+		Requires: []string{},
+		Schema:   schema,
+	}
+
+	specDoc := struct {
+		Spec schemasv1alpha4.TableSpec `yaml:"spec"`
+	}{
+		schemaHeroResource,
+	}
+
+	b, err := yaml.Marshal(&specDoc)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO consider marshaling this instead of inline
+	tableDoc := fmt.Sprintf(`apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: %s
+%s`, sanitizeName(table.Name), b)
+
+	return tableDoc, nil
 }
 
 func sanitizeName(name string) string {

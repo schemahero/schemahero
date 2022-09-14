@@ -1,0 +1,17 @@
+database: schemahero
+name: projects
+schema:
+  rqlite:
+    primaryKey: [id]
+    indexes:
+    - columns: [email]
+      isUnique: true
+    columns:
+    - name: id
+      type: integer
+      constraints:
+        notNull: true
+    - name: email
+      type: text
+      constraints:
+        notNull: true

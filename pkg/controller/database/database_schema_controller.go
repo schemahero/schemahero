@@ -49,6 +49,12 @@ func (r *ReconcileDatabaseSchema) Reconcile(ctx context.Context, request reconci
 		return reconcile.Result{}, err
 	}
 
+	// SchemaHero does not current support any database-wide schema properties in rqlite
+	if databaseInstance.Spec.Connection.RQLite != nil {
+		logger.Debug("ignoring rqlite database schema reconcile request")
+		return reconcile.Result{}, nil
+	}
+
 	// SchemaHero does not current support any database-wide schema properties in postgresql
 	if databaseInstance.Spec.Connection.Postgres != nil {
 		logger.Debug("ignoring postgres database schema reconcile request")

@@ -12,6 +12,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/cassandra"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
+	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/database/sqlite"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
@@ -104,6 +105,17 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, createStatements...)
+		} else if d.Driver == "rqlite" {
+			if spec.Schema.RQLite == nil {
+				return nil
+			}
+
+			createStatements, err := rqlite.CreateTableStatements(spec.Name, spec.Schema.RQLite)
+			if err != nil {
+				return err
+			}
+
+			statements = append(statements, createStatements...)
 		} else if d.Driver == "cassandra" {
 			return errors.New("not implemented")
 		}
@@ -113,7 +125,6 @@ func (d *Database) CreateFixturesSync() error {
 
 	err := filepath.Walk(d.InputDir, handleFile)
 	if err != nil {
-		fmt.Printf("%#v\n", err)
 		return err
 	}
 
@@ -126,7 +137,6 @@ func (d *Database) CreateFixturesSync() error {
 
 	err = ioutil.WriteFile(filepath.Join(d.OutputDir, "fixtures.sql"), []byte(output), 0600)
 	if err != nil {
-		fmt.Printf("%#v\n", err)
 		return err
 	}
 
@@ -189,6 +199,8 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, seedData)
 	} else if d.Driver == "sqlite" {
 		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, seedData)
+	} else if d.Driver == "rqlite" {
+		return rqlite.PlanRqliteTable(d.URI, spec.Name, spec.Schema.RQLite, seedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -209,6 +221,8 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 		return nil, errors.New("cassandra seed data is not implemented")
 	} else if d.Driver == "sqlite" {
 		return sqlite.SeedDataStatements(spec.Name, spec.SeedData)
+	} else if d.Driver == "rqlite" {
+		return rqlite.SeedDataStatements(spec.Name, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -258,6 +272,8 @@ func (d *Database) ApplySync(statements []string) error {
 		return cassandra.DeployCassandraStatements(d.Hosts, d.Username, d.Password, d.Keyspace, statements)
 	} else if d.Driver == "sqlite" {
 		return sqlite.DeploySqliteStatements(d.URI, statements)
+	} else if d.Driver == "rqlite" {
+		return rqlite.DeployRqliteStatements(d.URI, statements)
 	}
 	return errors.Errorf("unknown database driver: %q", d.Driver)
 }

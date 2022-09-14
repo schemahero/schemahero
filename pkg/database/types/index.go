@@ -61,6 +61,16 @@ func IndexToPostgresqlSchemaIndex(index *Index) *schemasv1alpha4.PostgresqlTable
 	return &schemaIndex
 }
 
+func IndexToRqliteSchemaIndex(index *Index) *schemasv1alpha4.RqliteTableIndex {
+	schemaIndex := schemasv1alpha4.RqliteTableIndex{
+		Columns:  index.Columns,
+		Name:     index.Name,
+		IsUnique: index.IsUnique,
+	}
+
+	return &schemaIndex
+}
+
 func MysqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.MysqlTableIndex) *Index {
 	index := Index{
 		Columns:  schemaIndex.Columns,
@@ -81,6 +91,16 @@ func PostgresqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.PostgresqlTableIn
 	return &index
 }
 
+func RqliteSchemaIndexToIndex(schemaIndex *schemasv1alpha4.RqliteTableIndex) *Index {
+	index := Index{
+		Columns:  schemaIndex.Columns,
+		Name:     schemaIndex.Name,
+		IsUnique: schemaIndex.IsUnique,
+	}
+
+	return &index
+}
+
 func GenerateMysqlIndexName(tableName string, schemaIndex *schemasv1alpha4.MysqlTableIndex) string {
 	indexName := fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
 	if len(indexName) > 64 {
@@ -90,5 +110,9 @@ func GenerateMysqlIndexName(tableName string, schemaIndex *schemasv1alpha4.Mysql
 }
 
 func GeneratePostgresqlIndexName(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
+	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
+}
+
+func GenerateRqliteIndexName(tableName string, schemaIndex *schemasv1alpha4.RqliteTableIndex) string {
 	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
 }
