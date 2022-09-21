@@ -122,7 +122,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        sqlite_version: ["3.33.0"]
+        sqlite_version: ["3.39.3"]
     steps:
       - uses: actions/checkout@v2
       - name: Download kubectl-schemahero binary
