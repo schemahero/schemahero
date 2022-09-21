@@ -1,0 +1,13 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  rqlite:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: name
+        type: text

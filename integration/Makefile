@@ -22,6 +22,10 @@ cockroach:
 .PHONY: sqlite
 sqlite:
 	make -C tests/sqlite run
+
+.PHONY: rqlite
+rqlite:
+	make -C tests/rqlite run
 	
 .PHONY: build
 build: docker-build

@@ -1,0 +1,29 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  rqlite:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: login
+        type: text
+      - name: name
+        type: text
+        constraints:
+          notNull: true
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: login
+        value:
+          str: test
+      - column: name
+        value:
+          str: test2

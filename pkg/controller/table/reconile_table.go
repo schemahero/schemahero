@@ -144,6 +144,8 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, 
 		return tableSchema.Mysql != nil
 	} else if connection.CockroachDB != nil {
 		return tableSchema.CockroachDB != nil
+	} else if connection.RQLite != nil {
+		return tableSchema.RQLite != nil
 	}
 
 	return false
