@@ -9,9 +9,8 @@ schema:
         constraints:
           notNull: true
       - name: name
-        type: varchar(255)
+        type: text
         constraints:
           notNull: true
       - name: icon_uri
-        type: varchar(255)
-
+        type: text

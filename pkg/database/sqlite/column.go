@@ -10,6 +10,7 @@ import (
 func schemaColumnToColumn(schemaColumn *schemasv1alpha4.SqliteTableColumn) (*types.Column, error) {
 	column := &types.Column{
 		Name:          schemaColumn.Name,
+		DataType:      schemaColumn.Type,
 		ColumnDefault: schemaColumn.Default,
 	}
 
@@ -25,33 +26,7 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha4.SqliteTableColumn) (*typ
 		}
 	}
 
-	requestedType := schemaColumn.Type
-	unaliasedColumnType := unaliasUnparameterizedColumnType(requestedType)
-	if unaliasedColumnType != "" {
-		requestedType = unaliasedColumnType
-	}
-
-	unaliasedColumnType = unaliasParameterizedColumnType(requestedType)
-	if unaliasedColumnType != "" {
-		requestedType = unaliasedColumnType
-	}
-
-	if !isParameterizedColumnType(requestedType) {
-		column.DataType = requestedType
-		return column, nil
-	}
-
-	columnType, err := maybeParseParameterizedColumnType(requestedType)
-	if err != nil {
-		return nil, err
-	}
-
-	if columnType != "" {
-		column.DataType = columnType
-		return column, nil
-	}
-
-	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
+	return column, nil
 }
 
 func sqliteColumnAsInsert(column *schemasv1alpha4.SqliteTableColumn) (string, error) {
@@ -60,11 +35,8 @@ func sqliteColumnAsInsert(column *schemasv1alpha4.SqliteTableColumn) (string, er
 		return "", err
 	}
 
-	formatted := fmt.Sprintf("`%s` %s", column.Name, sqliteColumn.DataType)
+	formatted := fmt.Sprintf(`"%s" %s`, column.Name, sqliteColumn.DataType)
 
-	if sqliteColumn.Charset != "" {
-		formatted = fmt.Sprintf("%s character set %s", formatted, sqliteColumn.Charset)
-	}
 	if sqliteColumn.Collation != "" {
 		formatted = fmt.Sprintf("%s collate %s", formatted, sqliteColumn.Collation)
 	}
@@ -78,23 +50,11 @@ func sqliteColumnAsInsert(column *schemasv1alpha4.SqliteTableColumn) (string, er
 	}
 
 	if sqliteColumn.Attributes != nil && sqliteColumn.Attributes.AutoIncrement != nil && *sqliteColumn.Attributes.AutoIncrement {
-		formatted = fmt.Sprintf("%s auto_increment", formatted)
+		formatted = fmt.Sprintf("%s autoincrement", formatted)
 	}
 
 	if sqliteColumn.ColumnDefault != nil {
-		quoteDefaultValue := true
-
-		if sqliteColumn.DataType == "datetime" || sqliteColumn.DataType == "timestamp" {
-			if *sqliteColumn.ColumnDefault == "CURRENT_TIMESTAMP" {
-				quoteDefaultValue = false
-			}
-		}
-
-		if quoteDefaultValue {
-			formatted = fmt.Sprintf("%s default '%s'", formatted, *sqliteColumn.ColumnDefault)
-		} else {
-			formatted = fmt.Sprintf("%s default %s", formatted, *sqliteColumn.ColumnDefault)
-		}
+		formatted = fmt.Sprintf("%s default '%s'", formatted, *sqliteColumn.ColumnDefault)
 	}
 
 	return formatted, nil
@@ -106,7 +66,12 @@ func InsertColumnStatement(tableName string, desiredColumn *schemasv1alpha4.Sqli
 		return "", err
 	}
 
-	statement := fmt.Sprintf("alter table `%s` add column %s", tableName, columnFields)
+	statement := fmt.Sprintf(`alter table "%s" add column %s`, tableName, columnFields)
 
+	return statement, nil
+}
+
+func DropColumnStatement(tableName string, existingColumn types.Column) (string, error) {
+	statement := fmt.Sprintf(`alter table "%s" drop column "%s"`, tableName, existingColumn.Name)
 	return statement, nil
 }

@@ -43,7 +43,7 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Sqlite
 	if len(tableSchema.PrimaryKey) > 0 {
 		primaryKeyColumns := []string{}
 		for _, primaryKeyColumn := range tableSchema.PrimaryKey {
-			primaryKeyColumns = append(primaryKeyColumns, fmt.Sprintf("`%s`", primaryKeyColumn))
+			primaryKeyColumns = append(primaryKeyColumns, fmt.Sprintf(`"%s"`, primaryKeyColumn))
 		}
 
 		columns = append(columns, fmt.Sprintf("primary key (%s)", strings.Join(primaryKeyColumns, ", ")))
@@ -53,10 +53,17 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Sqlite
 		for _, foreignKey := range tableSchema.ForeignKeys {
 			columns = append(columns, foreignKeyConstraintClause(tableName, foreignKey))
 		}
-
 	}
 
-	query := fmt.Sprintf("create table `%s` (%s)", tableName, strings.Join(columns, ", "))
+	query := fmt.Sprintf(`create table "%s" (%s)`, tableName, strings.Join(columns, ", "))
+	if tableSchema.Strict {
+		query = fmt.Sprintf("%s strict", query)
+	}
 
-	return []string{query}, nil
+	statements := []string{query}
+	for _, index := range tableSchema.Indexes {
+		statements = append(statements, AddIndexStatement(tableName, index))
+	}
+
+	return statements, nil
 }

@@ -1,0 +1,31 @@
+database: schemahero
+name: other
+requires: []
+schema:
+  sqlite:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: something
+        type: text
+        constraints:
+          notNull: true
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: something
+        value:
+          str: one
+    - columns:
+      - column: id
+        value:
+          int: 2
+      - column: something
+        value:
+          str: two

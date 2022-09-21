@@ -1,0 +1,32 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  sqlite:
+    primaryKey: [id]
+    indexes:
+      - columns: [email]
+        name: custom_idx_users_email
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: email
+        type: text
+        constraints:
+          notNull: true
+      - name: phone
+        type: text
+        constraints:
+          notNull: true
+        default: ""
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: email
+        value:
+          str: salah@replicated.com

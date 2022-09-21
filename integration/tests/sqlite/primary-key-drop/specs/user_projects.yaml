@@ -4,10 +4,10 @@ schema:
   sqlite:
     columns:
       - name: user_id
-        type: int
+        type: integer
         constraints:
           notNull: true
       - name: project_id
-        type: int
+        type: integer
         constraints:
           notNull: true
