@@ -1,8 +1,6 @@
 package rqlite
 
 import (
-	"database/sql"
-
 	"github.com/pkg/errors"
 	"github.com/rqlite/gorqlite"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -212,7 +210,7 @@ func (r *RqliteConnection) GetTableSchema(tableName string) ([]*types.Column, er
 		column := types.Column{}
 
 		var notNull bool
-		var columnDefault sql.NullString
+		var columnDefault gorqlite.NullString
 
 		if err := rows.Scan(&column.Name, &column.DataType, &columnDefault, &notNull); err != nil {
 			return nil, err
