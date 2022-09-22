@@ -105,6 +105,17 @@ func (d *Database) CreateFixturesSync() error {
 			}
 
 			statements = append(statements, createStatements...)
+		} else if d.Driver == "sqlite" {
+			if spec.Schema.SQLite == nil {
+				return nil
+			}
+
+			createStatements, err := sqlite.CreateTableStatements(spec.Name, spec.Schema.SQLite)
+			if err != nil {
+				return err
+			}
+
+			statements = append(statements, createStatements...)
 		} else if d.Driver == "rqlite" {
 			if spec.Schema.RQLite == nil {
 				return nil

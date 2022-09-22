@@ -124,6 +124,18 @@ func PostgresqlSchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.Po
 	return &foreignKey
 }
 
+func SqliteSchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.SqliteTableForeignKey) *ForeignKey {
+	foreignKey := ForeignKey{
+		ChildColumns:  schemaForeignKey.Columns,
+		ParentTable:   schemaForeignKey.References.Table,
+		ParentColumns: schemaForeignKey.References.Columns,
+		Name:          schemaForeignKey.Name,
+		OnDelete:      schemaForeignKey.OnDelete,
+	}
+
+	return &foreignKey
+}
+
 func RqliteSchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.RqliteTableForeignKey) *ForeignKey {
 	foreignKey := ForeignKey{
 		ChildColumns:  schemaForeignKey.Columns,

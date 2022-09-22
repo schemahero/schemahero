@@ -25,7 +25,7 @@ func RecreateTableStatements(tableName string, sqliteTableSchema *schemasv1alpha
 
 	tempTableName := fmt.Sprintf("%s_%x", tableName, sum)
 
-	statements = append(statements, fmt.Sprintf("alter table `%s` rename to `%s`", tableName, tempTableName))
+	statements = append(statements, fmt.Sprintf(`alter table "%s" rename to "%s"`, tableName, tempTableName))
 
 	createTableStatement, err := CreateTableStatements(tableName, sqliteTableSchema)
 	if err != nil {
@@ -47,12 +47,48 @@ func RecreateTableStatements(tableName string, sqliteTableSchema *schemasv1alpha
 	return statements, nil
 }
 
-func columnsMatch(col1 types.Column, col2 types.Column) bool {
-	if col1.DataType != col2.DataType {
-		return false
+func BuildAlterIndexStatements(r *SqliteConnection, tableName string, sqliteTableSchema *schemasv1alpha4.SqliteTableSchema) ([]string, error) {
+	indexStatements := []string{}
+
+	currentIndexes, err := r.ListTableIndexes("", tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list table indexes")
 	}
 
-	if col1.Charset != col2.Charset {
+desiredIndexesLoop:
+	for _, desiredIndex := range sqliteTableSchema.Indexes {
+		if desiredIndex.Name == "" {
+			desiredIndex.Name = types.GenerateSqliteIndexName(tableName, desiredIndex)
+		}
+		for _, currentIndex := range currentIndexes {
+			if currentIndex.Equals(types.SqliteSchemaIndexToIndex(desiredIndex)) {
+				continue desiredIndexesLoop
+			}
+			if currentIndex.Name == desiredIndex.Name {
+				// we already checked if the index is a constraint when detecting if the table needs to be recreated, so we don't need to check again
+				indexStatements = append(indexStatements, RemoveIndexStatement(tableName, currentIndex))
+			}
+		}
+		indexStatements = append(indexStatements, AddIndexStatement(tableName, desiredIndex))
+	}
+
+currentIndexesLoop:
+	for _, currentIndex := range currentIndexes {
+		for _, desiredIndex := range sqliteTableSchema.Indexes {
+			if currentIndex.Name == desiredIndex.Name {
+				// if index changed, we already handled it above
+				continue currentIndexesLoop
+			}
+		}
+		// we already checked if the index is a constraint when detecting if the table needs to be recreated, so we don't need to check again
+		indexStatements = append(indexStatements, RemoveIndexStatement(tableName, currentIndex))
+	}
+
+	return indexStatements, nil
+}
+
+func columnsMatch(col1 types.Column, col2 types.Column) bool {
+	if !strings.EqualFold(col1.DataType, col2.DataType) {
 		return false
 	}
 

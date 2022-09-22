@@ -1,6 +1,6 @@
 begin transaction;
-alter table `projects` rename to `projects_4af4d804ad6edd0ca84e50bf32fa5413e3542e2a26d6076851ef1fee7318aadf`;
-create table `projects` (`id` int (11), `name` varchar (255) not null default 'name me', `icon_uri` varchar (255), primary key (`id`));
-insert into projects (id, name, icon_uri) select id, name, icon_uri from projects_4af4d804ad6edd0ca84e50bf32fa5413e3542e2a26d6076851ef1fee7318aadf;
-drop table projects_4af4d804ad6edd0ca84e50bf32fa5413e3542e2a26d6076851ef1fee7318aadf;
+alter table "projects" rename to "projects_af391bf9bfeed3d6608216e29e9b14f7ad57b637cb9de9598ed4135294b7fe99";
+create table "projects" ("id" integer not null, "name" text not null default 'unnamed', "icon_uri" text, primary key ("id"));
+insert into projects (id, name, icon_uri) select id, name, icon_uri from projects_af391bf9bfeed3d6608216e29e9b14f7ad57b637cb9de9598ed4135294b7fe99;
+drop table projects_af391bf9bfeed3d6608216e29e9b14f7ad57b637cb9de9598ed4135294b7fe99;
 commit;

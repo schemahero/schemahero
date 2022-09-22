@@ -1,0 +1,22 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  sqlite:
+    primaryKey: [id]
+    indexes:
+      - columns: [email]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: email
+        type: text
+        constraints:
+          notNull: true
+      - name: phone
+        type: text
+        constraints:
+          notNull: true
+        default: ""

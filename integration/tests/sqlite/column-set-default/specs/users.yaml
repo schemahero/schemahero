@@ -1,0 +1,21 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  sqlite:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: email
+        type: text
+        constraints:
+          notNull: true
+      - name: account_type
+        type: text
+        default: trial
+      - name: num_seats
+        type: integer
+        default: "5"

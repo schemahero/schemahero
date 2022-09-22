@@ -4,6 +4,9 @@ SHELL := /bin/bash
 export IMAGE
 export GO111MODULE=on
 
+.PHONY: run
+run: 7.6.1 6.10.2
+
 .PHONY: 7.6.1
 7.6.1: export RQLITE_VERSION = 7.6.1
 7.6.1:

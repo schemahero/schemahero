@@ -1,0 +1,11 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  sqlite:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true

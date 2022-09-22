@@ -1,0 +1,12 @@
+database: schemahero
+name: org
+schema:
+  sqlite:
+    primaryKey: [id]
+    columns:
+    - name: id
+      type: integer
+      constraints:
+        notNull: true
+    - name: project_id
+      type: integer

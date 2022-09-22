@@ -1,0 +1,25 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  sqlite:
+    strict: true
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: login
+        type: text
+      - name: name
+        type: text
+        constraints:
+          notNull: true
+        default: salah
+      - name: ts_1
+        type: integer
+      - name: ts_2
+        type: real
+      - name: ts_3
+        type: text

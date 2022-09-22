@@ -57,4 +57,5 @@ type SqliteTableSchema struct {
 	Indexes     []*SqliteTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
 	Columns     []*SqliteTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                     `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
+	Strict      bool                     `json:"strict,omitempty" yaml:"strict,omitempty"`
 }

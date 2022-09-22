@@ -6,11 +6,13 @@ schema:
     columns:
       - name: id
         type: integer
+        constraints:
+          notNull: true
       - name: name
-        type: varchar(255)
-        default: "name me"
+        type: text
+        default: "unnamed"
         constraints:
           notNull: true
       - name: icon_uri
-        type: varchar(255)
+        type: text
 

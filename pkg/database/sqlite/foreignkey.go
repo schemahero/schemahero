@@ -8,14 +8,6 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func RemoveForeignKeyStatement(tableName string, foreignKey *types.ForeignKey) string {
-	return fmt.Sprintf("alter table %s drop constraint %s", tableName, foreignKey.Name)
-}
-
-func AddForeignKeyStatement(tableName string, schemaForeignKey *schemasv1alpha4.SqliteTableForeignKey) string {
-	return fmt.Sprintf("alter table %s add %s", tableName, foreignKeyConstraintClause(tableName, schemaForeignKey))
-}
-
 func foreignKeyConstraintClause(tableName string, schemaForeignKey *schemasv1alpha4.SqliteTableForeignKey) string {
 	onDelete := ""
 	if schemaForeignKey.OnDelete != "" {
