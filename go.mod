@@ -13,7 +13,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/onsi/gomega v1.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/rqlite/gorqlite v0.0.0-20220917155659-fa5ab9eb60ec
+	github.com/rqlite/gorqlite v0.0.0-20221014144312-9438489c35a3
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.11.0

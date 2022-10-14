@@ -322,8 +322,12 @@ func executeStatements(r *RqliteConnection, statements []string) error {
 		fmt.Println(statement)
 	}
 
-	if _, err := r.db.Write(filteredStatements); err != nil {
-		return errors.Wrap(err, "failed to write")
+	if wrs, err := r.db.Write(filteredStatements); err != nil {
+		wrErrs := []error{}
+		for _, wr := range wrs {
+			wrErrs = append(wrErrs, wr.Err)
+		}
+		return fmt.Errorf("failed to write: %v: %v", err, wrErrs)
 	}
 
 	return nil
