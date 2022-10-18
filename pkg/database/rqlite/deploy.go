@@ -317,6 +317,10 @@ func executeStatements(r *RqliteConnection, statements []string) error {
 		filteredStatements = append(filteredStatements, statement)
 	}
 
+	if len(filteredStatements) == 0 {
+		return nil
+	}
+
 	fmt.Println("Executing the following statements:")
 	for _, statement := range filteredStatements {
 		fmt.Println(statement)
