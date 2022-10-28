@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v2.1.5
         with:
-          go-version: "1.17.2"
+          go-version: "1.19.2"
 
       - name: Checkout
         uses: actions/checkout@v3.1.0
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v2.1.5
         with:
-          go-version: "1.17.2"
+          go-version: "1.19.2"
 
       - name: Checkout
         uses: actions/checkout@v3.1.0
