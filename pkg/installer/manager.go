@@ -22,6 +22,16 @@ import (
 var tenSeconds = int64(10)
 var defaultMode = int32(420)
 
+func namespaceYAML(name string) ([]byte, error) {
+	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	var result bytes.Buffer
+	if err := s.Encode(namespace(name), &result); err != nil {
+		return nil, errors.Wrap(err, "failed to marshal namespace")
+	}
+
+	return result.Bytes(), nil
+}
+
 func ensureNamespace(ctx context.Context, clientset *kubernetes.Clientset, name string) error {
 	_, err := clientset.CoreV1().Namespaces().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
