@@ -70,7 +70,7 @@ func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.C
 	client := ssm.NewFromConfig(cfg)
 
 	params := ssm.GetParameterInput{
-		WithDecryption: valueOrValueFrom.ValueFrom.SSM.WithDecryption,
+		WithDecryption: &valueOrValueFrom.ValueFrom.SSM.WithDecryption,
 		Name:           aws.String(valueOrValueFrom.ValueFrom.SSM.Name),
 	}
 	out, err := client.GetParameter(ctx, &params)
