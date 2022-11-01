@@ -10,3 +10,4 @@
 - Andrew Lavery (@laverya, Replicated)
 - Salah Aldeen Al Saleh (@sgalsaleh, Replicated)
 - Chris Gianelloni (@wolf31o2, Applause)
+- Ales Verbic (@verbotenj, Applause)
