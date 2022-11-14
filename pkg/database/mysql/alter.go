@@ -26,6 +26,11 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				ensureColumnConstraintsNotNullTrue(column)
 			}
 
+			// this is a pretty rough hack for now
+			if column.Collation == "" && existingColumn.Collation != "" {
+				column.Collation = existingColumn.Collation
+			}
+
 			if columnsMatch(*existingColumn, *column, defaultCharset, defaultCollation) {
 				return []string{}, nil
 			}

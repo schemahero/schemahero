@@ -1,0 +1,52 @@
+database: replicated
+name: table1
+schema:
+  mysql:
+    defaultCharset: latin1
+    primaryKey:
+    - channel_id
+    - channel_sequence
+    indexes:
+    - columns:
+      - channel_id
+      - release_sequence
+      name: idx_channel_id_release_sequence
+    columns:
+    - name: channel_id
+      type: varchar (255)
+      constraints:
+        notNull: true
+    - name: created_at
+      type: datetime
+      constraints:
+        notNull: true
+    - name: updated_at
+      type: datetime
+      constraints:
+        notNull: false
+    - name: version_label
+      type: varchar (255)
+      constraints:
+        notNull: false
+    - name: release_notes
+      charset: utf8mb4
+      type: text (65535)
+      constraints:
+        notNull: false
+    - name: release_sequence
+      type: bigint (19, 0)
+      constraints:
+        notNull: true
+    - name: channel_sequence
+      type: bigint (19, 0)
+      constraints:
+        notNull: true
+    - name: airgap_locked_at
+      type: datetime
+      constraints:
+        notNull: false
+    - name: force_airgap_build
+      type: tinyint (3, 0)
+      constraints:
+        notNull: true
+      default: "0"
