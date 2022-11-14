@@ -107,7 +107,7 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 			if err != nil {
 				return "", "", errors.Wrap(err, "failed to read postgres currentSchema")
 			}
-			uri = fmt.Sprintf("%s%scurrentSchema=%s", uri, queryStringCharacter, currentSchema)
+			uri = fmt.Sprintf("%s%ssearch_path=%s", uri, queryStringCharacter, currentSchema)
 			queryStringCharacter = "&"
 		}
 	} else if driver == "cockroachdb" {
