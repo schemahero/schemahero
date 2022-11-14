@@ -97,3 +97,13 @@ func parsePostgresVersion(reportedVersion string) (string, error) {
 
 	return fmt.Sprintf("%s.%s.%s", major, minor, patch), nil
 }
+
+type IdentifierArray []pgx.Identifier
+
+func (idents IdentifierArray) SanitizeArray() []string {
+	var idents_ []string
+	for _, ident := range idents {
+		idents_ = append(idents_, ident.Sanitize())
+	}
+	return idents_
+}
