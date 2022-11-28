@@ -37,6 +37,12 @@ func Error(err error) {
 	sugar.Error(err)
 }
 
+func Warnf(template string, args ...interface{}) {
+	defer log.Sync()
+	sugar := log.Sugar()
+	sugar.Warnf(template, args)
+}
+
 func Info(msg string, fields ...zap.Field) {
 	defer log.Sync()
 	sugar := log.Sugar()

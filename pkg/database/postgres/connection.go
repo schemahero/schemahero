@@ -27,6 +27,10 @@ func (p *PostgresConnection) EngineVersion() string {
 	return p.engineVersion
 }
 
+func (p *PostgresConnection) GetConnection() *pgx.Conn {
+	return p.conn
+}
+
 func Connect(uri string) (*PostgresConnection, error) {
 	conn, err := pgx.Connect(context.Background(), uri)
 	if err != nil {

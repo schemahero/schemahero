@@ -55,28 +55,28 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	statements := []string{}
 
 	// table needs to be altered?
-	columnStatements, err := buildColumnStatements(p, tableName, postgresTableSchema)
+	columnStatements, err := BuildColumnStatements(p, tableName, postgresTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build column statement")
 	}
 	statements = append(statements, columnStatements...)
 
 	// primary key changes
-	primaryKeyStatements, err := buildPrimaryKeyStatements(p, tableName, postgresTableSchema)
+	primaryKeyStatements, err := BuildPrimaryKeyStatements(p, tableName, postgresTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build primary key statements")
 	}
 	statements = append(statements, primaryKeyStatements...)
 
 	// foreign key changes
-	foreignKeyStatements, err := buildForeignKeyStatements(p, tableName, postgresTableSchema)
+	foreignKeyStatements, err := BuildForeignKeyStatements(p, tableName, postgresTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build foreign key statements")
 	}
 	statements = append(statements, foreignKeyStatements...)
 
 	// index changes
-	indexStatements, err := buildIndexStatements(p, tableName, postgresTableSchema)
+	indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build index statements")
 	}
@@ -116,7 +116,7 @@ func executeStatements(p *PostgresConnection, statements []string) error {
 	return nil
 }
 
-func buildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+func BuildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	query := `select
 column_name, column_default, is_nullable, data_type, udt_name, character_maximum_length
 from information_schema.columns
@@ -194,7 +194,7 @@ where table_name = $1`
 	return alterAndDropStatements, nil
 }
 
-func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+func BuildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	currentPrimaryKey, err := p.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -223,7 +223,7 @@ func buildPrimaryKeyStatements(p *PostgresConnection, tableName string, postgres
 	return statements, nil
 }
 
-func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+func BuildForeignKeyStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	foreignKeyStatements := []string{}
 	droppedKeys := []string{}
 	currentForeignKeys, err := p.ListTableForeignKeys(p.databaseName, tableName)
@@ -279,7 +279,7 @@ func buildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	return foreignKeyStatements, nil
 }
 
-func buildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)

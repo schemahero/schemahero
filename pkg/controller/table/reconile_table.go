@@ -72,6 +72,7 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 
 	tableSHA = tableSHA[:7]
 
+	// look for an already calculated migration spec for this table
 	migration, err := r.getMigrationSpec(instance.Namespace, tableSHA)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get migration spec")
@@ -98,7 +99,7 @@ func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha
 	return v1alpha4instance, nil
 }
 
-// getMigrationSpec will find a migration spec fot this exact table object
+// getMigrationSpec will find a migration spec for this exact table object
 func (r *ReconcileTable) getMigrationSpec(namespace string, tableSHA string) (*schemasv1alpha4.Migration, error) {
 	logger.Debug("getting migration spec",
 		zap.String("namespace", namespace),
@@ -146,6 +147,10 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, 
 		return tableSchema.CockroachDB != nil
 	} else if connection.RQLite != nil {
 		return tableSchema.RQLite != nil
+	} else if connection.TimescaleDB != nil {
+		return tableSchema.TimescaleDB != nil
+	} else if connection.SQLite != nil {
+		return tableSchema.SQLite != nil
 	}
 
 	return false
@@ -187,6 +192,10 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 	}
 
 	if len(schemaStatements) == 0 && len(seedStatements) == 0 {
+		logger.Debug("no statements generated for migration",
+			zap.String("databaseName", databaseInstance.Name),
+			zap.String("tableName", tableInstance.Name))
+
 		return reconcile.Result{}, nil
 	}
 

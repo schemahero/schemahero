@@ -1,0 +1,18 @@
+database: schemahero
+name: projects
+schema:
+  timescaledb:
+    primaryKey:
+    - id
+    indexes:
+    - columns: [name]
+      isUnique: true
+    columns:
+    - name: id
+      type: integer
+      constraints:
+        notNull: true
+    - name: name
+      type: varchar(255)
+      constraints:
+        notNull: true
