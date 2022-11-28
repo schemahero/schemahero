@@ -429,6 +429,86 @@ spec:
                           type: string
                         type: array
                     type: object
+                  rqlite:
+                    properties:
+                      columns:
+                        items:
+                          properties:
+                            attributes:
+                              properties:
+                                autoIncrement:
+                                  type: boolean
+                              type: object
+                            constraints:
+                              properties:
+                                notNull:
+                                  type: boolean
+                              type: object
+                            default:
+                              type: string
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - name
+                          - type
+                          type: object
+                        type: array
+                      foreignKeys:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              type: string
+                            onDelete:
+                              type: string
+                            references:
+                              properties:
+                                columns:
+                                  items:
+                                    type: string
+                                  type: array
+                                table:
+                                  type: string
+                              required:
+                              - columns
+                              - table
+                              type: object
+                          required:
+                          - columns
+                          - references
+                          type: object
+                        type: array
+                      indexes:
+                        items:
+                          properties:
+                            columns:
+                              items:
+                                type: string
+                              type: array
+                            isUnique:
+                              type: boolean
+                            name:
+                              type: string
+                            type:
+                              type: string
+                          required:
+                          - columns
+                          type: object
+                        type: array
+                      isDeleted:
+                        type: boolean
+                      primaryKey:
+                        items:
+                          type: string
+                        type: array
+                      strict:
+                        type: boolean
+                    type: object
                   sqlite:
                     properties:
                       columns:
@@ -506,6 +586,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      strict:
+                        type: boolean
                     type: object
                 type: object
               seedData:
