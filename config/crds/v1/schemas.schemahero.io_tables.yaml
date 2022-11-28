@@ -586,6 +586,8 @@ spec:
                         items:
                           type: string
                         type: array
+                      strict:
+                        type: boolean
                     type: object
                 type: object
               seedData:

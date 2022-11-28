@@ -64,7 +64,7 @@ func Test_AddForeignKeyStatement(t *testing.T) {
 					},
 				},
 			},
-			expectedStatement: `alter table t2 add constraint t2_c2_c22_fkey foreign key ("c2", "c22") references t1 ("c1", "c11")`,
+			expectedStatement: `alter table t2 add constraint t2_c2_c22_fkey foreign key ("c2", "c22") references "t1" ("c1", "c11")`,
 		},
 		{
 			name:      "no name, one column, on delete cascade",

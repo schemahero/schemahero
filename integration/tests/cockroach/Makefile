@@ -5,7 +5,7 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: v19.2.12 v20.1.13 v20.2.6 v21.1.2
+run: v19.2.12 v20.2.19 v21.2.17 v22.1.11
 
 .PHONY: v19.2.12
 v19.2.2: export COCKROACHDB_VBERSION = v19.2.12
@@ -22,9 +22,9 @@ v19.2.2:
 	make -C primary-key-add run
 	make -C primary-key-drop run
 
-.PHONY: v20.1.13
-v20.1.13: export COCKROACHDB_VBERSION = v20.1.13
-v20.1.13:
+.PHONY: v20.2.19
+v20.2.19: export COCKROACHDB_VBERSION = v20.2.19
+v20.2.19:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -37,9 +37,9 @@ v20.1.13:
 	make -C primary-key-add run
 	make -C primary-key-drop run
 
-.PHONY: v20.2.6
-v20.2.6: export COCKROACHDB_VBERSION = v20.2.6
-v20.2.6:
+.PHONY: v21.2.17
+v21.2.17: export COCKROACHDB_VBERSION = v21.2.17
+v21.2.17:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -52,9 +52,9 @@ v20.2.6:
 	make -C primary-key-add run
 	make -C primary-key-drop run
 
-.PHONY: v21.1.2
-v21.1.2: export COCKROACHDB_VBERSION = v21.1.2
-v21.1.2:
+.PHONY: v22.1.11
+v22.1.11: export COCKROACHDB_VBERSION = v22.1.11
+v22.1.11:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run

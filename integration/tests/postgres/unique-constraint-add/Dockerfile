@@ -1,4 +1,4 @@
-FROM postgres:10.7
+FROM postgres
 
 ENV POSTGRES_USER=schemahero
 ENV POSTGRES_DB=schemahero
