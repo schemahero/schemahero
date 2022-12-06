@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -103,11 +104,39 @@ func (r *ReconcileMigration) Reconcile(ctx context.Context, request reconcile.Re
 		return reconcile.Result{}, err
 	}
 
+	isThisController, err := r.isMigrationManagedByThisController(instance)
+	if err != nil {
+		return reconcile.Result{}, err
+	}
+
+	if !isThisController {
+		logger.Debug("table instance is not managed by this controller",
+			zap.String("table", instance.Name),
+			zap.Strings("databaseNames", r.databaseNames))
+		return reconcile.Result{}, nil
+	}
+
 	result, err := r.reconcileMigration(ctx, instance)
 	if err != nil {
 		logger.Error(err)
 	}
 	return result, err
+}
+
+func (r *ReconcileMigration) isMigrationManagedByThisController(instance *schemasv1alpha4.Migration) (bool, error) {
+	databaseName := instance.Spec.DatabaseName
+
+	for _, managedDatabaseName := range r.databaseNames {
+		if managedDatabaseName == databaseName {
+			return true, nil
+		}
+
+		if managedDatabaseName == "*" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (r *ReconcileMigration) getInstance(request reconcile.Request) (*schemasv1alpha4.Migration, error) {
