@@ -14,7 +14,7 @@ run:
 	# the $ is doubled due to make :-(
 	docker run -p 15432:5432 --rm -d -e POSTGRES_PASSWORD='!@#$$%^&*(){}'\''";' -e POSTGRES_HOST_AUTH_METHOD=md5 --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)
 	while ! docker exec $(DATABASE_CONTAINER_NAME) pg_isready --quiet; do sleep 1; done
-	@sleep 1
+	@sleep 10
 
 	# Plan
 	../../../../bin/kubectl-schemahero plan --seed-data --driver=$(DRIVER) --uri="$(URI)" --spec-file $(SPEC_FILE) > out.sql
