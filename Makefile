@@ -109,7 +109,7 @@ vet:
 	go vet ./pkg/... ./cmd/...
 
 .PHONY: generate
-generate: controller-gen client-gen
+generate: controller-gen client-gen lister-gen informer-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/apis/...
 	$(CLIENT_GEN) \
 		--output-package=github.com/schemahero/schemahero/pkg/client \
@@ -118,6 +118,18 @@ generate: controller-gen client-gen
 		--input databases/v1alpha4 \
 		--input schemas/v1alpha4 \
 		-h ./hack/boilerplate.go.txt
+
+	$(LISTER_GEN) \
+        --input-dirs github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4,github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4 \
+		--output-package=github.com/schemahero/schemahero/pkg/client/schemaherolisters \
+        -h ./hack/boilerplate.go.txt
+
+	$(INFORMER_GEN) \
+		--output-package=github.com/schemahero/schemahero/pkg/client/schemaheroinformers \
+		--listers-package=github.com/schemahero/schemahero/pkg/client/schemaherolisters \
+		--versioned-clientset-package github.com/schemahero/schemahero/pkg/client/schemaheroclientset \
+        --input-dirs github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4,github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4 \
+        -h ./hack/boilerplate.go.txt
 
 .PHONY: bin/kubectl-schemahero
 bin/kubectl-schemahero:
@@ -149,10 +161,28 @@ endif
 .PHONY: client-gen
 client-gen:
 ifeq (, $(shell which client-gen))
-	go install k8s.io/code-generator/cmd/client-gen@kubernetes-1.20.0
+	go install k8s.io/code-generator/cmd/client-gen@kubernetes-1.25.3
 CLIENT_GEN=$(shell go env GOPATH)/bin/client-gen
 else
 CLIENT_GEN=$(shell which client-gen)
+endif
+
+.PHONY: lister-gen
+lister-gen:
+ifeq (, $(shell which lister-gen))
+	go install k8s.io/code-generator/cmd/lister-gen@kubernetes-1.25.3
+LISTER_GEN=$(shell go env GOPATH)/bin/lister-gen
+else
+LISTER_GEN=$(shell which lister-gen)
+endif
+
+.PHONY: informer-gen
+informer-gen:
+ifeq (, $(shell which informer-gen))
+	go install k8s.io/code-generator/cmd/informer-gen@kubernetes-1.25.3
+INFORMER_GEN=$(shell go env GOPATH)/bin/informer-gen
+else
+INFORMER_GEN=$(shell which informer-gen)
 endif
 
 .PHONY: sbom
