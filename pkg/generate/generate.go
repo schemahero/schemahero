@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -14,6 +15,9 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/database/types"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"gopkg.in/yaml.v2"
 )
 
@@ -24,7 +28,11 @@ type Generator struct {
 	OutputDir string
 }
 
-func (g *Generator) RunSync() error {
+func (g *Generator) RunSync(ctx context.Context) error {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "RunSync")
+	defer span.End()
+
 	fmt.Printf("connecting to %s\n", g.URI)
 
 	var db interfaces.SchemaHeroDatabaseConnection
@@ -35,7 +43,7 @@ func (g *Generator) RunSync() error {
 		}
 		db = pgDb
 	} else if g.Driver == "mysql" {
-		mysqlDb, err := mysql.Connect(g.URI)
+		mysqlDb, err := mysql.Connect(ctx, g.URI)
 		if err != nil {
 			return errors.Wrap(err, "failed to connect to mysql")
 		}

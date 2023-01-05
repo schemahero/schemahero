@@ -2,13 +2,16 @@ package schemaherokubectlcli
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/trace"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.opentelemetry.io/otel"
 )
 
 func ApplyCmd() *cobra.Command {
@@ -21,6 +24,9 @@ func ApplyCmd() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, span := otel.Tracer(trace.TraceName).Start(context.Background(), "ApplyCmd")
+			defer span.End()
+
 			v := viper.GetViper()
 
 			// to support automaticenv, we can't use cobra required flags
@@ -99,7 +105,7 @@ func ApplyCmd() *cobra.Command {
 					return err
 				}
 
-				if err := db.ApplySync(commands); err != nil {
+				if err := db.ApplySync(ctx, commands); err != nil {
 					return err
 				}
 
@@ -123,7 +129,7 @@ func ApplyCmd() *cobra.Command {
 					return err
 				}
 
-				return db.ApplySync(commands)
+				return db.ApplySync(ctx, commands)
 			}
 		},
 	}

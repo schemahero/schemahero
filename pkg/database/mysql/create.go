@@ -1,14 +1,22 @@
 package mysql
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func SeedDataStatements(ctx context.Context, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "SeedDataStatements")
+	defer span.End()
+
 	statements := []string{}
 
 	for _, row := range seedData.Rows {
@@ -45,7 +53,11 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 	return statements, nil
 }
 
-func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func CreateTableStatements(ctx context.Context, tableName string, tableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "CreateTableStatements")
+	defer span.End()
+
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
 		columnFields, err := mysqlColumnAsInsert(desiredColumn)

@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha4
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
@@ -71,7 +72,7 @@ type Table struct {
 	Status TableStatus `json:"status,omitempty"`
 }
 
-func (t Table) GetSHA() (string, error) {
+func (t Table) GetSHA(ctx context.Context) (string, error) {
 	// ignoring the status, json marshal the spec and the metadata
 	o := struct {
 		Spec TableSpec `json:"spec,omitempty"`

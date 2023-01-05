@@ -23,12 +23,19 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/config"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
 // GetConnection returns driver name, uri, and any error
 func (d Database) GetConnection(ctx context.Context) (string, string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "GetConnection")
+	defer span.End()
+
 	isParamBased := false
 
 	// if the connection parameters are not supplied via URI, assume parameter based
@@ -59,6 +66,10 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 }
 
 func (d Database) getConnectionFromParams(ctx context.Context) (string, string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "getConnectionFromParams")
+	defer span.End()
+
 	driver, err := d.getDbType()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")
@@ -273,6 +284,10 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 // is compatible with any way that the uri was set.
 // TODO refactor this to be shorter, simpler and more testable
 func (d Database) getConnectionFromURI(ctx context.Context) (string, string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "getConnectionFromURI")
+	defer span.End()
+
 	driver, err := d.getDbType()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")
@@ -298,6 +313,9 @@ func (d Database) getConnectionFromURI(ctx context.Context) (string, string, err
 
 // getValueFromValueOrValueFrom returns the resolved value, or an error
 func (d Database) getValueFromValueOrValueFrom(ctx context.Context, driver string, valueOrValueFrom ValueOrValueFrom) (string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "getValueFromValueOrValueFrom")
+	defer span.End()
 
 	// if the value is static, return it
 	if valueOrValueFrom.Value != "" {

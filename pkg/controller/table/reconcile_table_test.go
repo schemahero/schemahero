@@ -1,6 +1,7 @@
 package table
 
 import (
+	"context"
 	"testing"
 
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
@@ -89,7 +90,7 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual := checkDatabaseTypeMatches(&test.connection, &test.tableSchema)
+			actual := checkDatabaseTypeMatches(context.TODO(), &test.connection, &test.tableSchema)
 			assert.Equal(t, test.expect, actual)
 		})
 	}

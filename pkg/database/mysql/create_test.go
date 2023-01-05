@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"context"
 	"testing"
 
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
@@ -170,7 +171,7 @@ func Test_CreateTableStatement(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			req := require.New(t)
 
-			createTableStatements, err := CreateTableStatements(test.tableName, test.tableSchema)
+			createTableStatements, err := CreateTableStatements(context.Background(), test.tableName, test.tableSchema)
 			req.NoError(err)
 
 			assert.Equal(t, test.expectedStatements, createTableStatements)

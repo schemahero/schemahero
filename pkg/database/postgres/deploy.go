@@ -9,9 +9,16 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func PlanPostgresTable(ctx context.Context, uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "PlanPostgresTable")
+	defer span.End()
+
 	p, err := Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to postgres")

@@ -23,6 +23,8 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/logger"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	kubeinformers "k8s.io/client-go/informers"
@@ -101,12 +103,16 @@ func (r *ReconcileTable) Reconcile(ctx context.Context, request reconcile.Reques
 	// because of the informer that we have set up
 	// The behavior here is pretty different depending on the type
 	// so this function is simply an entrypoint that executes the right reconcile loop
-	instance, err := r.getInstance(request)
+
+	traceCtx, span := otel.Tracer(trace.TraceName).Start(ctx, "Reconcile")
+	defer span.End()
+
+	instance, err := r.getInstance(traceCtx, request)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
-	isThisController, err := r.isTableManagedByThisController(instance)
+	isThisController, err := r.isTableManagedByThisController(traceCtx, instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -118,7 +124,7 @@ func (r *ReconcileTable) Reconcile(ctx context.Context, request reconcile.Reques
 		return reconcile.Result{}, nil
 	}
 
-	result, err := r.reconcileTable(ctx, instance)
+	result, err := r.reconcileTable(traceCtx, instance)
 	if err != nil {
 		logger.Error(err)
 	}
@@ -126,7 +132,7 @@ func (r *ReconcileTable) Reconcile(ctx context.Context, request reconcile.Reques
 	return result, err
 }
 
-func (r *ReconcileTable) isTableManagedByThisController(instance *schemasv1alpha4.Table) (bool, error) {
+func (r *ReconcileTable) isTableManagedByThisController(ctx context.Context, instance *schemasv1alpha4.Table) (bool, error) {
 	databaseName := instance.Spec.Database
 
 	for _, managedDatabaseName := range r.databaseNames {

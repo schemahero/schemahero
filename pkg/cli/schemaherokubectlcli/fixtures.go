@@ -1,7 +1,11 @@
 package schemaherokubectlcli
 
 import (
+	"context"
+
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,6 +20,9 @@ func FixturesCmd() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, span := otel.Tracer(trace.TraceName).Start(context.Background(), "FixturesCmd")
+			defer span.End()
+
 			v := viper.GetViper()
 
 			db := database.Database{
@@ -24,7 +31,7 @@ func FixturesCmd() *cobra.Command {
 				Driver:    v.GetString("driver"),
 				URI:       v.GetString("uri")}
 
-			return db.CreateFixturesSync()
+			return db.CreateFixturesSync(ctx)
 		},
 	}
 

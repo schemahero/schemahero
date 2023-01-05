@@ -8,9 +8,16 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-func PlanTimescaleDBTable(uri string, tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func PlanTimescaleDBTable(ctx context.Context, uri string, tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "PlanTimescaleDBTable")
+	defer span.End()
+
 	p, err := postgres.Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to timescaledb")

@@ -9,6 +9,9 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/schemahero/schemahero/pkg/logger"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -16,6 +19,10 @@ import (
 )
 
 func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *schemasv1alpha4.Migration) (reconcile.Result, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "reconcileMigration")
+	defer span.End()
+
 	logger.Debug("reconciling migration",
 		zap.String("name", instance.Name),
 		zap.String("tableName", instance.Spec.TableName))
@@ -42,7 +49,7 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 		}
 
 		statements := strings.Split(instance.Spec.GeneratedDDL, "\n")
-		if err := db.ApplySync(statements); err != nil {
+		if err := db.ApplySync(ctx, statements); err != nil {
 			return reconcile.Result{}, err
 		}
 

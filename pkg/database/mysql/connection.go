@@ -1,12 +1,16 @@
 package mysql
 
 import (
+	"context"
 	"database/sql"
 	"strings"
 
 	// import the mysql driver
 	mysqldriver "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 type MysqlConnection struct {
@@ -27,7 +31,11 @@ func (m *MysqlConnection) EngineVersion() string {
 	return m.engineVersion
 }
 
-func Connect(uri string) (*MysqlConnection, error) {
+func Connect(ctx context.Context, uri string) (*MysqlConnection, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "Connect")
+	defer span.End()
+
 	db, err := sql.Open("mysql", uri)
 	if err != nil {
 		return nil, err

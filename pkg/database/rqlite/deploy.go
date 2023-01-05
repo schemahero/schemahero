@@ -1,6 +1,7 @@
 package rqlite
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -8,9 +9,16 @@ import (
 	"github.com/rqlite/gorqlite"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-func PlanRqliteTable(url string, tableName string, rqliteTableSchema *schemasv1alpha4.RqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func PlanRqliteTable(ctx context.Context, url string, tableName string, rqliteTableSchema *schemasv1alpha4.RqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "PlanRqliteTable")
+	defer span.End()
+
 	r, err := Connect(url)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to rqlite")

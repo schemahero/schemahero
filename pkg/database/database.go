@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -16,6 +17,9 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/sqlite"
 	"github.com/schemahero/schemahero/pkg/database/timescaledb"
 	"github.com/schemahero/schemahero/pkg/logger"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
@@ -32,7 +36,11 @@ type Database struct {
 	DeploySeedData bool
 }
 
-func (d *Database) CreateFixturesSync() error {
+func (d *Database) CreateFixturesSync(ctx context.Context) error {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "CreateFixturesSync")
+	defer span.End()
+
 	logger.Info("generating fixtures",
 		zap.String("input-dir", d.InputDir))
 
@@ -89,7 +97,7 @@ func (d *Database) CreateFixturesSync() error {
 				return nil
 			}
 
-			createStatements, err := mysql.CreateTableStatements(spec.Name, spec.Schema.Mysql)
+			createStatements, err := mysql.CreateTableStatements(ctx, spec.Name, spec.Schema.Mysql)
 			if err != nil {
 				return err
 			}
@@ -166,22 +174,22 @@ func (d *Database) CreateFixturesSync() error {
 	return nil
 }
 
-func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string, error) {
+func (d *Database) PlanSyncFromFile(ctx context.Context, filename string, specType string) ([]string, error) {
 	specContents, err := ioutil.ReadFile(filepath.Clean(filename))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read file")
 	}
 
 	if specType == "table" {
-		return d.planTableSync(specContents)
+		return d.planTableSync(ctx, specContents)
 	} else if specType == "type" {
-		return d.planTypeSync(specContents)
+		return d.planTypeSync(ctx, specContents)
 	}
 
 	return nil, errors.New("unknown spec type")
 }
 
-func (d *Database) planTableSync(specContents []byte) ([]string, error) {
+func (d *Database) planTableSync(ctx context.Context, specContents []byte) ([]string, error) {
 	var spec *schemasv1alpha4.TableSpec
 	parsedK8sObject := schemasv1alpha4.Table{}
 	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
@@ -199,10 +207,14 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 		spec = &plainSpec
 	}
 
-	return d.PlanSyncTableSpec(spec)
+	return d.PlanSyncTableSpec(ctx, spec)
 }
 
-func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+func (d *Database) PlanSyncTableSpec(ctx context.Context, spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "PlanSyncTableSpec")
+	defer span.End()
+
 	if spec.Schema == nil {
 		return []string{}, nil
 	}
@@ -213,25 +225,29 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 	}
 
 	if d.Driver == "postgres" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres, seedData)
+		return postgres.PlanPostgresTable(ctx, d.URI, spec.Name, spec.Schema.Postgres, seedData)
 	} else if d.Driver == "mysql" {
-		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql, seedData)
+		return mysql.PlanMysqlTable(ctx, d.URI, spec.Name, spec.Schema.Mysql, seedData)
 	} else if d.Driver == "cockroachdb" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB, seedData)
+		return postgres.PlanPostgresTable(ctx, d.URI, spec.Name, spec.Schema.CockroachDB, seedData)
 	} else if d.Driver == "cassandra" {
-		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, seedData)
+		return cassandra.PlanCassandraTable(ctx, d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, seedData)
 	} else if d.Driver == "sqlite" {
-		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, seedData)
+		return sqlite.PlanSqliteTable(ctx, d.URI, spec.Name, spec.Schema.SQLite, seedData)
 	} else if d.Driver == "rqlite" {
-		return rqlite.PlanRqliteTable(d.URI, spec.Name, spec.Schema.RQLite, seedData)
+		return rqlite.PlanRqliteTable(ctx, d.URI, spec.Name, spec.Schema.RQLite, seedData)
 	} else if d.Driver == "timescaledb" {
-		return timescaledb.PlanTimescaleDBTable(d.URI, spec.Name, spec.Schema.TimescaleDB, seedData)
+		return timescaledb.PlanTimescaleDBTable(ctx, d.URI, spec.Name, spec.Schema.TimescaleDB, seedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
 }
 
-func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+func (d *Database) PlanSyncSeedData(ctx context.Context, spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "PlanSyncSeedData")
+	defer span.End()
+
 	if spec.SeedData == nil {
 		return []string{}, nil
 	}
@@ -239,7 +255,7 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 	if d.Driver == "postgres" {
 		return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
 	} else if d.Driver == "mysql" {
-		return mysql.SeedDataStatements(spec.Name, spec.SeedData)
+		return mysql.SeedDataStatements(ctx, spec.Name, spec.SeedData)
 	} else if d.Driver == "cockroachdb" {
 		return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
 	} else if d.Driver == "cassandra" {
@@ -255,7 +271,7 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
 }
 
-func (d *Database) planTypeSync(specContents []byte) ([]string, error) {
+func (d *Database) planTypeSync(ctx context.Context, specContents []byte) ([]string, error) {
 	var spec *schemasv1alpha4.DataTypeSpec
 	parsedK8sObject := schemasv1alpha4.DataType{}
 	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
@@ -288,11 +304,15 @@ func (d *Database) PlanSyncTypeSpec(spec *schemasv1alpha4.DataTypeSpec) ([]strin
 	return nil, errors.Errorf("planning types is not supported for driver %q", d.Driver)
 }
 
-func (d *Database) ApplySync(statements []string) error {
+func (d *Database) ApplySync(ctx context.Context, statements []string) error {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "ApplySync")
+	defer span.End()
+
 	if d.Driver == "postgres" {
 		return postgres.DeployPostgresStatements(d.URI, statements)
 	} else if d.Driver == "mysql" {
-		return mysql.DeployMysqlStatements(d.URI, statements)
+		return mysql.DeployMysqlStatements(ctx, d.URI, statements)
 	} else if d.Driver == "cockroachdb" {
 		return postgres.DeployPostgresStatements(d.URI, statements)
 	} else if d.Driver == "cassandra" {

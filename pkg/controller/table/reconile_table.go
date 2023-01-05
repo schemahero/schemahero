@@ -12,6 +12,9 @@ import (
 	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/schemahero/schemahero/pkg/logger"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,8 +32,12 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 		zap.String("database", instance.Spec.Database),
 		zap.String("lastPlannedTableSpecSHA", instance.Status.LastPlannedTableSpecSHA))
 
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "reconcileTable")
+	defer span.End()
+
 	// early exit if the sha of the spec hasn't changed
-	currentTableSpecSHA, err := instance.GetSHA()
+	currentTableSpecSHA, err := instance.GetSHA(ctx)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get instance sha")
 	}
@@ -58,14 +65,14 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 		}, nil
 	}
 
-	matchingType := checkDatabaseTypeMatches(&database.Spec.Connection, instance.Spec.Schema)
+	matchingType := checkDatabaseTypeMatches(ctx, &database.Spec.Connection, instance.Spec.Schema)
 	if !matchingType {
 		// TODO add a status field with this state
 		return reconcile.Result{}, errors.New("unable to deploy table to connection of different type")
 	}
 
 	// Look for a migration with for this table
-	tableSHA, err := instance.GetSHA()
+	tableSHA, err := instance.GetSHA(ctx)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get table sha")
 	}
@@ -73,7 +80,7 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	tableSHA = tableSHA[:7]
 
 	// look for an already calculated migration spec for this table
-	migration, err := r.getMigrationSpec(instance.Namespace, tableSHA)
+	migration, err := r.getMigrationSpec(ctx, instance.Namespace, tableSHA)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get migration spec")
 	}
@@ -89,7 +96,7 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	return r.plan(ctx, database, instance)
 }
 
-func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha4.Table, error) {
+func (r *ReconcileTable) getInstance(ctx context.Context, request reconcile.Request) (*schemasv1alpha4.Table, error) {
 	v1alpha4instance := &schemasv1alpha4.Table{}
 	err := r.Get(context.Background(), request.NamespacedName, v1alpha4instance)
 	if err != nil {
@@ -100,7 +107,7 @@ func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha
 }
 
 // getMigrationSpec will find a migration spec for this exact table object
-func (r *ReconcileTable) getMigrationSpec(namespace string, tableSHA string) (*schemasv1alpha4.Migration, error) {
+func (r *ReconcileTable) getMigrationSpec(ctx context.Context, namespace string, tableSHA string) (*schemasv1alpha4.Migration, error) {
 	logger.Debug("getting migration spec",
 		zap.String("namespace", namespace),
 		zap.String("tableSHA", tableSHA))
@@ -138,7 +145,7 @@ func (r *ReconcileTable) getDatabaseInstance(ctx context.Context, namespace stri
 	return database, nil
 }
 
-func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, tableSchema *schemasv1alpha4.TableSchema) bool {
+func checkDatabaseTypeMatches(ctx context.Context, connection *databasesv1alpha4.DatabaseConnection, tableSchema *schemasv1alpha4.TableSchema) bool {
 	if connection.Postgres != nil {
 		return tableSchema.Postgres != nil
 	} else if connection.Mysql != nil {
@@ -163,6 +170,10 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 		zap.String("databaseName", databaseInstance.Name),
 		zap.String("tableName", tableInstance.Name))
 
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "plan")
+	defer span.End()
+
 	driver, connectionURI, err := databaseInstance.GetConnection(ctx)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get connection details for database")
@@ -175,7 +186,7 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 	}
 
 	// plan the schema
-	schemaStatements, err := db.PlanSyncTableSpec(&tableInstance.Spec)
+	schemaStatements, err := db.PlanSyncTableSpec(ctx, &tableInstance.Spec)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to plan sync")
 	}
@@ -183,7 +194,7 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 	// plan the seed data
 	seedStatements := []string{}
 	if databaseInstance.Spec.DeploySeedData {
-		stmts, err := db.PlanSyncSeedData(&tableInstance.Spec)
+		stmts, err := db.PlanSyncSeedData(ctx, &tableInstance.Spec)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrap(err, "failed to plan seed")
 		}
@@ -199,7 +210,7 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 		return reconcile.Result{}, nil
 	}
 
-	tableSHA, err := tableInstance.GetSHA()
+	tableSHA, err := tableInstance.GetSHA(ctx)
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get sha of table")
 	}

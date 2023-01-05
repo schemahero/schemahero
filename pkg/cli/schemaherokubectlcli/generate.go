@@ -1,12 +1,15 @@
 package schemaherokubectlcli
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/schemahero/schemahero/pkg/generate"
+	"github.com/schemahero/schemahero/pkg/trace"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.opentelemetry.io/otel"
 )
 
 func GenerateCmd() *cobra.Command {
@@ -19,6 +22,9 @@ func GenerateCmd() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, span := otel.Tracer(trace.TraceName).Start(context.Background(), "GenerateCmd")
+			defer span.End()
+
 			v := viper.GetViper()
 
 			uri := v.GetString("uri")
@@ -36,7 +42,7 @@ func GenerateCmd() *cobra.Command {
 				DBName:    dbName,
 				OutputDir: v.GetString("output-dir"),
 			}
-			return g.RunSync()
+			return g.RunSync(ctx)
 
 		},
 	}

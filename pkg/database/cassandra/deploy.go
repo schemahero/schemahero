@@ -1,6 +1,7 @@
 package cassandra
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -47,7 +48,7 @@ func PlanCassandraType(hosts []string, username string, password string, keyspac
 	return nil, errors.New("not implemented")
 }
 
-func PlanCassandraTable(hosts []string, username string, password string, keyspace string, tableName string, cassandraTableSchema *schemasv1alpha4.CassandraTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func PlanCassandraTable(ctx context.Context, hosts []string, username string, password string, keyspace string, tableName string, cassandraTableSchema *schemasv1alpha4.CassandraTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	c, err := Connect(hosts, username, password, keyspace)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to cassandra")

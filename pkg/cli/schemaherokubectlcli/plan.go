@@ -1,6 +1,7 @@
 package schemaherokubectlcli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,8 +9,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/schemahero/schemahero/pkg/files"
+	"github.com/schemahero/schemahero/pkg/trace"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.opentelemetry.io/otel"
 )
 
 func PlanCmd() *cobra.Command {
@@ -22,6 +25,9 @@ func PlanCmd() *cobra.Command {
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, span := otel.Tracer(trace.TraceName).Start(context.Background(), "PlanCmd")
+			defer span.End()
+
 			v := viper.GetViper()
 
 			// to support automaticenv, we can't use cobra required flags
@@ -106,7 +112,7 @@ func PlanCmd() *cobra.Command {
 						return nil
 					}
 
-					statements, err := db.PlanSyncFromFile(path, v.GetString("spec-type"))
+					statements, err := db.PlanSyncFromFile(ctx, path, v.GetString("spec-type"))
 					if err != nil {
 						return err
 					}
@@ -128,7 +134,7 @@ func PlanCmd() *cobra.Command {
 
 				return err
 			} else {
-				statements, err := db.PlanSyncFromFile(v.GetString("spec-file"), v.GetString("spec-type"))
+				statements, err := db.PlanSyncFromFile(ctx, v.GetString("spec-file"), v.GetString("spec-type"))
 				if err != nil {
 					return fmt.Errorf("plan sync from file %q: %w", v.GetString("spec-file"), err)
 				}

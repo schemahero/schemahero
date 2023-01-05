@@ -9,10 +9,17 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
+	"github.com/schemahero/schemahero/pkg/trace"
+	"go.opentelemetry.io/otel"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
-	m, err := Connect(uri)
+func PlanMysqlTable(ctx context.Context, uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "PlanMysqlTable")
+	defer span.End()
+
+	m, err := Connect(ctx, uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to mysql")
 	}
@@ -36,7 +43,7 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 
 	seedDataStatements := []string{}
 	if seedData != nil {
-		seedDataStatements, err = SeedDataStatements(tableName, seedData)
+		seedDataStatements, err = SeedDataStatements(ctx, tableName, seedData)
 		if err != nil {
 			return nil, errors.Wrap(err, "create seed data statements")
 		}
@@ -44,7 +51,7 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 
 	if tableExists == 0 {
 		// shortcut to just create it
-		queries, err := CreateTableStatements(tableName, mysqlTableSchema)
+		queries, err := CreateTableStatements(ctx, tableName, mysqlTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
 		}
@@ -55,49 +62,49 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 	statements := []string{}
 
 	// first, if the table charset or collation changed, add
-	charsetAndCollationStatements, err := buildTableCharsetAndCollationStatements(m, tableName, mysqlTableSchema)
+	charsetAndCollationStatements, err := buildTableCharsetAndCollationStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build table charset and collation statements")
 	}
 	statements = append(statements, charsetAndCollationStatements...)
 
 	// remove primary keys before removing columns
-	removePrimaryKeyStatements, err := buildRemovePrimaryKeyStatements(m, tableName, mysqlTableSchema)
+	removePrimaryKeyStatements, err := buildRemovePrimaryKeyStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build remove primary key statements")
 	}
 	statements = append(statements, removePrimaryKeyStatements...)
 
 	// indexes need to be removed before columns are removed
-	removeIndexStatements, err := buildRemoveIndexStatements(m, tableName, mysqlTableSchema)
+	removeIndexStatements, err := buildRemoveIndexStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build remove index statements")
 	}
 	statements = append(statements, removeIndexStatements...)
 
 	// table needs to be altered?
-	columnStatements, err := buildColumnStatements(m, tableName, mysqlTableSchema)
+	columnStatements, err := buildColumnStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build column statements")
 	}
 	statements = append(statements, columnStatements...)
 
 	// primary key changes
-	addPrimaryKeyStatements, err := buildAddPrimaryKeyStatements(m, tableName, mysqlTableSchema)
+	addPrimaryKeyStatements, err := buildAddPrimaryKeyStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build add primary key statements")
 	}
 	statements = append(statements, addPrimaryKeyStatements...)
 
 	// foreign key changes
-	foreignKeyStatements, err := buildForeignKeyStatements(m, tableName, mysqlTableSchema)
+	foreignKeyStatements, err := buildForeignKeyStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build foreign key statements")
 	}
 	statements = append(statements, foreignKeyStatements...)
 
 	// add indexes after columns are added
-	addIndexStatements, err := buildAddIndexStatements(m, tableName, mysqlTableSchema)
+	addIndexStatements, err := buildAddIndexStatements(ctx, m, tableName, mysqlTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build add index statements")
 	}
@@ -108,22 +115,30 @@ func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alp
 	return statements, nil
 }
 
-func DeployMysqlStatements(uri string, statements []string) error {
-	m, err := Connect(uri)
+func DeployMysqlStatements(ctx context.Context, uri string, statements []string) error {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "DeployMysqlStatements")
+	defer span.End()
+
+	m, err := Connect(ctx, uri)
 	if err != nil {
 		return err
 	}
 	defer m.db.Close()
 
 	// execute
-	if err := executeStatements(m, statements); err != nil {
+	if err := executeStatements(ctx, m, statements); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func executeStatements(m *MysqlConnection, statements []string) error {
+func executeStatements(ctx context.Context, m *MysqlConnection, statements []string) error {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "executeStatements")
+	defer span.End()
+
 	for _, statement := range statements {
 		if statement == "" {
 			continue
@@ -140,7 +155,11 @@ func executeStatements(m *MysqlConnection, statements []string) error {
 // buildTableCharsetAndCollationStatements will return the
 // statements needed to modify a TABLE's charset or collation
 // (not a column or a database, those are separate)
-func buildTableCharsetAndCollationStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func buildTableCharsetAndCollationStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildTableCharsetAndCollationStatements")
+	defer span.End()
+
 	query := `select
 t.TABLE_COLLATION,
 c.character_set_name FROM information_schema.TABLES t,
@@ -224,7 +243,11 @@ WHERE schema_name = ?`
 }
 
 // getDefaultCharsetAndCollationForTable will return the applied charset, collation for the specifed table
-func getDefaultCharsetAndCollationForTable(m *MysqlConnection, tableName string) (string, string, error) {
+func getDefaultCharsetAndCollationForTable(ctx context.Context, m *MysqlConnection, tableName string) (string, string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "getDefaultCharsetAndCollationForTable")
+	defer span.End()
+
 	query := `SELECT default_character_set_name, default_collation_name FROM information_schema.SCHEMATA WHERE schema_name = ?`
 	row := m.db.QueryRow(query, m.databaseName)
 
@@ -262,8 +285,12 @@ AND t.table_name = ?`
 	return mostSpecificCharset, mostSpecificCollation, nil
 }
 
-func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
-	defaultCharset, defaultCollation, err := getDefaultCharsetAndCollationForTable(m, tableName)
+func buildColumnStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildColumnStatements")
+	defer span.End()
+
+	defaultCharset, defaultCollation, err := getDefaultCharsetAndCollationForTable(ctx, m, tableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "get default charset and collation")
 	}
@@ -372,7 +399,11 @@ where TABLE_NAME = ?`
 	return alterAndDropStatements, nil
 }
 
-func buildRemovePrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func buildRemovePrimaryKeyStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildRemovePrimaryKeyStatements")
+	defer span.End()
+
 	currentPrimaryKey, err := m.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -400,7 +431,11 @@ func buildRemovePrimaryKeyStatements(m *MysqlConnection, tableName string, mysql
 	return statements, nil
 }
 
-func buildAddPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func buildAddPrimaryKeyStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildAddPrimaryKeyStatements")
+	defer span.End()
+
 	currentPrimaryKey, err := m.GetTablePrimaryKey(tableName)
 	if err != nil {
 		return nil, err
@@ -429,7 +464,11 @@ func buildAddPrimaryKeyStatements(m *MysqlConnection, tableName string, mysqlTab
 	return statements, nil
 }
 
-func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func buildForeignKeyStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildForeignKeyStatements")
+	defer span.End()
+
 	foreignKeyStatements := []string{}
 	currentForeignKeys, err := m.ListTableForeignKeys(m.databaseName, tableName)
 	if err != nil {
@@ -477,7 +516,11 @@ func buildForeignKeyStatements(m *MysqlConnection, tableName string, mysqlTableS
 	return foreignKeyStatements, nil
 }
 
-func buildRemoveIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func buildRemoveIndexStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildRemoveIndexStatements")
+	defer span.End()
+
 	indexStatements := []string{}
 	currentIndexes, err := m.ListTableIndexes(m.databaseName, tableName)
 	if err != nil {
@@ -504,7 +547,11 @@ func buildRemoveIndexStatements(m *MysqlConnection, tableName string, mysqlTable
 	return indexStatements, nil
 }
 
-func buildAddIndexStatements(m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+func buildAddIndexStatements(ctx context.Context, m *MysqlConnection, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema) ([]string, error) {
+	var span oteltrace.Span
+	ctx, span = otel.Tracer(trace.TraceName).Start(ctx, "buildAddIndexStatements")
+	defer span.End()
+
 	indexStatements := []string{}
 	currentIndexes, err := m.ListTableIndexes(m.databaseName, tableName)
 	if err != nil {
