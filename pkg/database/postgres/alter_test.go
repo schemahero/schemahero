@@ -319,6 +319,69 @@ func Test_AlterColumnStatments(t *testing.T) {
 				`alter table "t" alter column "a" set not null`,
 			},
 		},
+		{
+			name:      "ignore server side modification over serial type",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name: "s",
+					Type: "serial",
+					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "s",
+				DataType: "serial",
+				Constraints: &types.ColumnConstraints{
+					NotNull: &falseValue,
+				},
+			},
+			expectedStatements: []string{},
+		},
+		{
+			name:      "ignore server side modification over bigserial type",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name: "s",
+					Type: "bigserial",
+					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "s",
+				DataType: "bigserial",
+				Constraints: &types.ColumnConstraints{
+					NotNull: &falseValue,
+				},
+			},
+			expectedStatements: []string{},
+		},
+		{
+			name:      "ignore server side modification over smallserial type",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name: "s",
+					Type: "smallserial",
+					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "s",
+				DataType: "smallserial",
+				Constraints: &types.ColumnConstraints{
+					NotNull: &falseValue,
+				},
+			},
+			expectedStatements: []string{},
+		},
 	}
 
 	for _, test := range tests {
