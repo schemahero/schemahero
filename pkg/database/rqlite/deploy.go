@@ -10,6 +10,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
+func PlanRQLiteView(url string, viewName string, rqliteViewSchema *schemasv1alpha4.NotImplementedViewSchema) ([]string, error) {
+	return nil, errors.New("not implemented")
+}
+
 func PlanRqliteTable(url string, tableName string, rqliteTableSchema *schemasv1alpha4.RqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	r, err := Connect(url)
 	if err != nil {

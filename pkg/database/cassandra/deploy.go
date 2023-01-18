@@ -47,6 +47,10 @@ func PlanCassandraType(hosts []string, username string, password string, keyspac
 	return nil, errors.New("not implemented")
 }
 
+func PlanCassandraView(hosts []string, username string, password string, keyspace string, viewName string, cassandraViewSchema *schemasv1alpha4.NotImplementedViewSchema) ([]string, error) {
+	return nil, errors.New("not implemented")
+}
+
 func PlanCassandraTable(hosts []string, username string, password string, keyspace string, tableName string, cassandraTableSchema *schemasv1alpha4.CassandraTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	c, err := Connect(hosts, username, password, keyspace)
 	if err != nil {

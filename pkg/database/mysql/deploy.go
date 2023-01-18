@@ -11,6 +11,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
+func PlanMysqlView(uri string, viewName string, mysqlViewSchema *schemasv1alpha4.NotImplementedViewSchema) ([]string, error) {
+	return nil, errors.New("not implemented")
+}
+
 func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	m, err := Connect(uri)
 	if err != nil {

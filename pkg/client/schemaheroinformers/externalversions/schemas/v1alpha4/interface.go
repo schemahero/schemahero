@@ -30,6 +30,8 @@ type Interface interface {
 	Migrations() MigrationInformer
 	// Tables returns a TableInformer.
 	Tables() TableInformer
+	// Views returns a ViewInformer.
+	Views() ViewInformer
 }
 
 type version struct {
@@ -56,4 +58,9 @@ func (v *version) Migrations() MigrationInformer {
 // Tables returns a TableInformer.
 func (v *version) Tables() TableInformer {
 	return &tableInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// Views returns a ViewInformer.
+func (v *version) Views() ViewInformer {
+	return &viewInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

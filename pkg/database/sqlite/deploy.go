@@ -11,6 +11,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
+func PlanSqliteView(dsn string, viewName string, sqliteViewSchema *schemasv1alpha4.NotImplementedViewSchema) ([]string, error) {
+	return nil, errors.New("not implemented")
+}
+
 func PlanSqliteTable(dsn string, tableName string, sqliteTableSchema *schemasv1alpha4.SqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	s, err := Connect(dsn)
 	if err != nil {

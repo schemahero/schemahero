@@ -29,6 +29,7 @@ type SchemasV1alpha4Interface interface {
 	DataTypesGetter
 	MigrationsGetter
 	TablesGetter
+	ViewsGetter
 }
 
 // SchemasV1alpha4Client is used to interact with features provided by the schemas.schemahero.io group.
@@ -46,6 +47,10 @@ func (c *SchemasV1alpha4Client) Migrations(namespace string) MigrationInterface 
 
 func (c *SchemasV1alpha4Client) Tables(namespace string) TableInterface {
 	return newTables(c, namespace)
+}
+
+func (c *SchemasV1alpha4Client) Views(namespace string) ViewInterface {
+	return newViews(c, namespace)
 }
 
 // NewForConfig creates a new SchemasV1alpha4Client for the given config.

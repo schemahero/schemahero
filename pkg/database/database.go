@@ -202,6 +202,29 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	return d.PlanSyncTableSpec(spec)
 }
 
+func (d *Database) PlanSyncViewSpec(spec *schemasv1alpha4.ViewSpec) ([]string, error) {
+	if spec.Schema == nil {
+		return []string{}, nil
+	}
+
+	if d.Driver == "postgres" {
+		return postgres.PlanPostgresView(d.URI, spec.Name, spec.Schema.Postgres)
+	} else if d.Driver == "mysql" {
+		return mysql.PlanMysqlView(d.URI, spec.Name, spec.Schema.Mysql)
+	} else if d.Driver == "cockroachdb" {
+		return postgres.PlanPostgresView(d.URI, spec.Name, spec.Schema.CockroachDB)
+	} else if d.Driver == "sqlite" {
+		return sqlite.PlanSqliteView(d.URI, spec.Name, spec.Schema.SQLite)
+	} else if d.Driver == "rqlite" {
+		return rqlite.PlanRQLiteView(d.URI, spec.Name, spec.Schema.RQLite)
+	} else if d.Driver == "timescaledb" {
+		return timescaledb.PlanTimescaleDBView(d.URI, spec.Name, spec.Schema.TimescaleDB)
+	} else if d.Driver == "cassandra" {
+		return cassandra.PlanCassandraView(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+	}
+
+	return nil, errors.New("unknown driver")
+}
 func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
 	if spec.Schema == nil {
 		return []string{}, nil

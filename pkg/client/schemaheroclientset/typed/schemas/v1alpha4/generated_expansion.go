@@ -23,3 +23,5 @@ type DataTypeExpansion interface{}
 type MigrationExpansion interface{}
 
 type TableExpansion interface{}
+
+type ViewExpansion interface{}

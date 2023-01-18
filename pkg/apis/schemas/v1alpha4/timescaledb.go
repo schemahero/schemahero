@@ -54,3 +54,10 @@ type TimescaleDBTableSchema struct {
 	Triggers    []*PostgresqlTableTrigger    `json:"triggers,omitempty" yaml:"triggers,omitempty"`
 	Hypertable  *TimescaleDBHypertable       `json:"hypertable,omitempty" yaml:"hypertable,omitempty"`
 }
+
+type TimescaleDBViewSchema struct {
+	IsContinuousAggregate *bool  `json:"isContinuousAggregate,omitempty" yaml:"isContinuousAggregate,omitempty"`
+	WithNoData            *bool  `json:"withNoData,omitempty" yaml:"withNoData,omitempty"`
+	Query                 string `json:"query,omitempty" yaml:"query,omitempty"`
+	IsDeleted             bool   `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
+}

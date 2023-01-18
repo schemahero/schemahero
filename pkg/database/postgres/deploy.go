@@ -11,6 +11,10 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
+func PlanPostgresView(uri string, viewName string, postgresViewSchema *schemasv1alpha4.NotImplementedViewSchema) ([]string, error) {
+	return nil, errors.New("not implemented")
+}
+
 func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	p, err := Connect(uri)
 	if err != nil {

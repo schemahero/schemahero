@@ -9,6 +9,7 @@ import (
 	databasecontroller "github.com/schemahero/schemahero/pkg/controller/database"
 	migrationcontroller "github.com/schemahero/schemahero/pkg/controller/migration"
 	tablecontroller "github.com/schemahero/schemahero/pkg/controller/table"
+	viewcontroller "github.com/schemahero/schemahero/pkg/controller/view"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/schemahero/schemahero/pkg/version"
 	"github.com/schemahero/schemahero/pkg/webhook"
@@ -84,6 +85,11 @@ func RunCmd() *cobra.Command {
 				}
 
 				if err := tablecontroller.Add(mgr, v.GetStringSlice("database-name")); err != nil {
+					logger.Error(err)
+					os.Exit(1)
+				}
+
+				if err := viewcontroller.Add(mgr, v.GetStringSlice("database-name")); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}

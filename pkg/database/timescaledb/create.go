@@ -10,6 +10,29 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 )
 
+func CreateViewStatements(viewName string, viewSchema *schemasv1alpha4.TimescaleDBViewSchema) ([]string, error) {
+	if viewSchema.IsContinuousAggregate != nil && *viewSchema.IsContinuousAggregate {
+		// continuous aggregate views are created with "create materialized view"
+		withDataStatement := "with data"
+		if viewSchema.WithNoData != nil && *viewSchema.WithNoData {
+			withDataStatement = "with no data"
+		}
+
+		statements := []string{
+			fmt.Sprintf(`create materialized view %s with (timescaledb.continuous) as %s %s`,
+				pgx.Identifier{viewName}.Sanitize(),
+				viewSchema.Query,
+				withDataStatement),
+		}
+
+		return statements, nil
+	}
+
+	// create the views as a postgres view
+	// TODO
+	return nil, errors.New("not implemented")
+}
+
 func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema) ([]string, error) {
 	postgresSchema := toPostgresTableSchema(tableSchema)
 	statements, err := postgres.CreateTableStatements(tableName, postgresSchema)

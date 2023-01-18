@@ -41,3 +41,11 @@ type TableListerExpansion interface{}
 // TableNamespaceListerExpansion allows custom methods to be added to
 // TableNamespaceLister.
 type TableNamespaceListerExpansion interface{}
+
+// ViewListerExpansion allows custom methods to be added to
+// ViewLister.
+type ViewListerExpansion interface{}
+
+// ViewNamespaceListerExpansion allows custom methods to be added to
+// ViewNamespaceLister.
+type ViewNamespaceListerExpansion interface{}
