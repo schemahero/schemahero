@@ -67,6 +67,40 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			}
 			columnType = fmt.Sprintf("char (%d)", max)
 		}
+	} else if strings.HasPrefix(requestedType, "datetime") {
+		r := regexp.MustCompile(`datetime\s*\((?P<max>\d*)\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "", fmt.Errorf("invalid datetime precision")
+		} else {
+			maxStr := matchGroups[1]
+			max, err := strconv.Atoi(maxStr)
+			if err != nil {
+				return "", err
+			}
+			if max < 0 || max > 6 {
+				return "", fmt.Errorf("invalid datetime precision %d", max)
+			}
+			columnType = fmt.Sprintf("datetime (%d)", max)
+		}
+	} else if strings.HasPrefix(requestedType, "timestamp") {
+		r := regexp.MustCompile(`timestamp\s*\((?P<max>\d*)\)`)
+
+		matchGroups := r.FindStringSubmatch(requestedType)
+		if len(matchGroups) == 0 {
+			return "", fmt.Errorf("invalid timestamp precision")
+		} else {
+			maxStr := matchGroups[1]
+			max, err := strconv.Atoi(maxStr)
+			if err != nil {
+				return "", err
+			}
+			if max < 0 || max > 6 {
+				return "", fmt.Errorf("invalid timestamp precision %d", max)
+			}
+			columnType = fmt.Sprintf("timestamp (%d)", max)
+		}
 	} else if strings.HasPrefix(requestedType, "tinyint") {
 		r := regexp.MustCompile(`tinyint\s*\((?P<max>\d*)\)`)
 

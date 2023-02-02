@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,9 +10,10 @@ import (
 
 func Test_maybeParseParameterizedColumnType(t *testing.T) {
 	tests := []struct {
-		name               string
-		requestedType      string
-		expectedColumnType string
+		name                string
+		requestedType       string
+		expectedColumnType  string
+		expectedErrorSubstr string
 	}{
 		{
 			name:               "fake",
@@ -158,13 +160,51 @@ func Test_maybeParseParameterizedColumnType(t *testing.T) {
 			requestedType:      "char (36)",
 			expectedColumnType: "char (36)",
 		},
+		{
+			name:               "datetime (0)",
+			requestedType:      "datetime (0)",
+			expectedColumnType: "datetime (0)",
+		},
+		{
+			name:               "datetime (6)",
+			requestedType:      "datetime (6)",
+			expectedColumnType: "datetime (6)",
+		},
+		{
+			name:                "datetime (7)",
+			requestedType:       "datetime (7)",
+			expectedColumnType:  "",
+			expectedErrorSubstr: "invalid datetime precision 7",
+		},
+		{
+			name:               "timestamp (0)",
+			requestedType:      "timestamp (0)",
+			expectedColumnType: "timestamp (0)",
+		},
+		{
+			name:               "timestamp (6)",
+			requestedType:      "timestamp (6)",
+			expectedColumnType: "timestamp (6)",
+		},
+		{
+			name:                "timestamp (7)",
+			requestedType:       "timestamp (7)",
+			expectedColumnType:  "",
+			expectedErrorSubstr: "invalid timestamp precision 7",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			columnType, err := maybeParseParameterizedColumnType(test.requestedType)
 			req := require.New(t)
-			req.NoError(err)
+			columnType, err := maybeParseParameterizedColumnType(test.requestedType)
+
+			if test.expectedErrorSubstr == "" {
+				req.NoError(err)
+			} else {
+				req.Error(err)
+				assert.True(t, strings.Contains(err.Error(), test.expectedErrorSubstr))
+			}
 			assert.Equal(t, test.expectedColumnType, columnType)
 		})
 	}
