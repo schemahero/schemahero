@@ -39,13 +39,13 @@ jobs:
       - name: Build schemahero image from Dockerfile
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
-          docker build -t schemahero/schemahero:${{ github.sha }} -f ./deploy/Dockerfile.schemahero .
-          
+          docker build -t schemahero/schemahero:${{ github.sha }} -f ./deploy/Dockerfile.multiarch --target schemahero .
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'schemahero/schemahero:${{ github.sha }}'
-          format: 'sarif'          
+          format: 'sarif'
           output: 'trivy-results.sarif'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
@@ -68,13 +68,13 @@ jobs:
       - name: Build schemahero-manager image from Dockerfile
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/manager
-          docker build -t schemahero/schemahero-manager:${{ github.sha }} -f ./deploy/Dockerfile.manager .
+          docker build -t schemahero/schemahero-manager:${{ github.sha }} -f ./deploy/Dockerfile.multiarch --target manager .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'schemahero/schemahero-manager:${{ github.sha }}'
-          format: 'sarif'          
+          format: 'sarif'
           output: 'trivy-results.sarif'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'

@@ -46,12 +46,12 @@ run: 3.39.3
 	make -C unique-index-drop run
 	make -C unique-index-named-no-change run
 	make -C unique-index-no-change run
-		
+
 .PHONY: build
 build: docker-build
 	docker push $(IMAGE)
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(IMAGE) -f ../Dockerfile.schemahero ..
+	docker build -t $(IMAGE) -f ../Dockerfile.multiarch --target --schemahero ..
 	@echo "export IMAGE=$(IMAGE)"

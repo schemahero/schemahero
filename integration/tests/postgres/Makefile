@@ -120,5 +120,5 @@ build: docker-build
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(IMAGE) -f ../Dockerfile.schemahero ..
+	docker build -t $(IMAGE) -f ../Dockerfile.multiarch --target --schemahero ..
 	@echo "export IMAGE=$(IMAGE)"

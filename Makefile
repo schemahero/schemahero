@@ -142,7 +142,7 @@ bin/kubectl-schemahero:
 
 .PHONY: local
 local: bin/kubectl-schemahero manager
-	docker build -t schemahero/schemahero-manager -f ./Dockerfile.manager .
+	docker build -t schemahero/schemahero-manager -f ./Dockerfile.multiarch --target manager .
 	docker tag schemahero/schemahero-manager localhost:32000/schemahero/schemahero-manager:latest
 	docker push localhost:32000/schemahero/schemahero-manager:latest
 

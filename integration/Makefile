@@ -26,12 +26,12 @@ sqlite:
 .PHONY: rqlite
 rqlite:
 	make -C tests/rqlite run
-	
+
 .PHONY: build
 build: docker-build
 	docker push $(IMAGE)
 
 .PHONY: docker-build
 docker-build:
-	docker build -t $(IMAGE) -f ../Dockerfile.schemahero ..
+	docker build -t $(IMAGE) -f ../Dockerfile.multiarch --target --schemahero ..
 	@echo "export IMAGE=$(IMAGE)"
