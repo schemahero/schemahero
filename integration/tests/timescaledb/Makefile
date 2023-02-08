@@ -5,11 +5,13 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 2.8.1-pg14
+run: 2.9.3-pg14
 
-.PHONY: 2.8.1-pg14
-2.8.1-pg14: export TIMESCALEDB_VERSION = 2.8.1-pg14
-2.8.1-pg14:
+.PHONY: 2.9.3-pg14
+2.9.3-pg14: export TIMESCALEDB_VERSION = 2.9.3-pg14
+2.9.3-pg14:
+	make -C create-materialized-view run
+	make -C drop-materialized-view run
 	make -C alter-column-timezone run
 	make -C column-set-default run
 	make -C column-unset-default run
@@ -30,7 +32,7 @@ run: 2.8.1-pg14
 
 
 .PHONY: seed
-seed: export TIMESCALEDB_VERSION = 2.8.1-pg14
+seed: export TIMESCALEDB_VERSION = 2.9.3-pg14
 seed:
 	make -C basic-seed run
 	make -C seed-with-many-rows run

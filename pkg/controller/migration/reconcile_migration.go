@@ -2,7 +2,6 @@ package migration
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -41,9 +40,10 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 			URI:    connectionURI,
 		}
 
-		statements := strings.Split(instance.Spec.GeneratedDDL, "\n")
+		statements := db.GetStatementsFromDDL(instance.Spec.GeneratedDDL)
+
 		if err := db.ApplySync(statements); err != nil {
-			return reconcile.Result{}, err
+			return reconcile.Result{}, errors.Wrap(err, "failed to apply statements")
 		}
 
 		// update the status to applied
@@ -68,7 +68,7 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *s
 					return reconcile.Result{}, errors.Wrap(err, "failed to update")
 				}
 			} else {
-				return reconcile.Result{}, err
+				return reconcile.Result{}, errors.Wrap(err, "failed to update")
 			}
 		}
 

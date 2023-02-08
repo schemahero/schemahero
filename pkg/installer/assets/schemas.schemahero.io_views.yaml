@@ -60,44 +60,29 @@ spec:
                 type: array
               schema:
                 properties:
+                  cassandra:
+                    type: object
+                  cockroachdb:
+                    type: object
+                  mysql:
+                    type: object
+                  postgres:
+                    type: object
+                  rqlite:
+                    type: object
+                  sqlite:
+                    type: object
                   timescaledb:
                     properties:
                       isContinuousAggregate:
+                        type: boolean
+                      isDeleted:
                         type: boolean
                       query:
                         type: string
                       withNoData:
                         type: boolean
                     type: object
-                type: object
-              seedData:
-                properties:
-                  rows:
-                    items:
-                      properties:
-                        columns:
-                          items:
-                            properties:
-                              column:
-                                type: string
-                              value:
-                                properties:
-                                  int:
-                                    type: integer
-                                  str:
-                                    type: string
-                                type: object
-                            required:
-                            - column
-                            - value
-                            type: object
-                          type: array
-                      required:
-                      - columns
-                      type: object
-                    type: array
-                required:
-                - rows
                 type: object
             required:
             - database

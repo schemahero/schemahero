@@ -295,6 +295,7 @@ func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 		return nil, errors.Wrap(err, "failed to list table constraints")
 	}
 
+DesiredIndexLoop:
 	for _, index := range postgresTableSchema.Indexes {
 		if index.Name == "" {
 			index.Name = types.GeneratePostgresqlIndexName(tableName, index)
@@ -304,7 +305,7 @@ func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 		var matchedIndex *types.Index
 		for _, currentIndex := range currentIndexes {
 			if currentIndex.Equals(types.PostgresqlSchemaIndexToIndex(index)) {
-				goto Next
+				continue DesiredIndexLoop
 			}
 
 			if currentIndex.Name == index.Name {
@@ -332,23 +333,22 @@ func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 
 		statement = AddIndexStatement(tableName, index)
 		indexStatements = append(indexStatements, statement)
-
-	Next:
 	}
 
+ExistingIndexLoop:
 	for _, currentIndex := range currentIndexes {
 		var statement string
 		isConstraint := false
 
 		for _, index := range postgresTableSchema.Indexes {
 			if currentIndex.Equals(types.PostgresqlSchemaIndexToIndex(index)) {
-				goto NextCurrentIdx
+				continue ExistingIndexLoop
 			}
 		}
 
 		for _, droppedIndex := range droppedIndexes {
 			if droppedIndex == currentIndex.Name {
-				goto NextCurrentIdx
+				continue ExistingIndexLoop
 			}
 		}
 
@@ -365,8 +365,6 @@ func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 		}
 
 		indexStatements = append(indexStatements, statement)
-
-	NextCurrentIdx:
 	}
 
 	return indexStatements, nil

@@ -3,8 +3,16 @@ name: users
 requires: []
 schema:
   timescaledb:
-    primaryKey: [id]
+    hypertable:
+      timeColumnName: created_at
+    primaryKey:
+      - created_at
+      - id
     columns:
+      - name: created_at
+        type: timestamp without time zone
+        constraints:
+          notNull: true
       - name: id
         type: integer
       - name: login

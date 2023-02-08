@@ -49,7 +49,6 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Timesc
 		if stmt != "" {
 			statements = append(statements, stmt)
 		}
-
 	}
 
 	// check for compression

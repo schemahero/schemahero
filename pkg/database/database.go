@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
 	"github.com/schemahero/schemahero/pkg/database/cassandra"
 	"github.com/schemahero/schemahero/pkg/database/mysql"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
@@ -172,18 +173,61 @@ func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string,
 		return nil, errors.Wrap(err, "failed to read file")
 	}
 
+	// Try GVK first and fall back to plain spec for backwards compatibility
+	plan, err := d.planGVKSync(specContents)
+	if err == nil {
+		return plan, nil
+	}
+
+	logger.Debugf("failed to plan using GVK, falling back on spec type parameter: %s", err)
+
 	if specType == "table" {
-		return d.planTableSync(specContents)
+		plan, err := d.planTableSync(specContents)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan table sync from %s", filename)
+		}
+		return plan, nil
 	} else if specType == "type" {
-		return d.planTypeSync(specContents)
+		plan, err := d.planTypeSync(specContents)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan type sync from %s", filename)
+		}
+		return plan, nil
 	}
 
 	return nil, errors.New("unknown spec type")
 }
 
+func (d *Database) planGVKSync(specContents []byte) ([]string, error) {
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+
+	obj, gvk, err := decode(specContents, nil, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode spec")
+	}
+
+	if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "Table" {
+		table := obj.(*schemasv1alpha4.Table)
+		plan, err := d.PlanSyncTableSpec(&table.Spec)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan table %s", table.Name)
+		}
+		return plan, nil
+	} else if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "View" {
+		view := obj.(*schemasv1alpha4.View)
+		plan, err := d.PlanSyncViewSpec(&view.Spec)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan view %s", view.Name)
+		}
+		return plan, nil
+	} else {
+		return nil, errors.Errorf("unknown gvk %s", gvk)
+	}
+}
+
 func (d *Database) planTableSync(specContents []byte) ([]string, error) {
-	var spec *schemasv1alpha4.TableSpec
 	parsedK8sObject := schemasv1alpha4.Table{}
+	var spec *schemasv1alpha4.TableSpec
 	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
 		if parsedK8sObject.Spec.Schema != nil {
 			spec = &parsedK8sObject.Spec
@@ -193,7 +237,7 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	if spec == nil {
 		plainSpec := schemasv1alpha4.TableSpec{}
 		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshal spec")
+			return nil, errors.Wrap(err, "failed to unmarshal table spec")
 		}
 
 		spec = &plainSpec
@@ -290,7 +334,7 @@ func (d *Database) planTypeSync(specContents []byte) ([]string, error) {
 	if spec == nil {
 		plainSpec := schemasv1alpha4.DataTypeSpec{}
 		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshal spec")
+			return nil, errors.Wrap(err, "failed to unmarshal type sync spec")
 		}
 
 		spec = &plainSpec
@@ -329,4 +373,34 @@ func (d *Database) ApplySync(statements []string) error {
 	}
 
 	return errors.Errorf("unknown database driver: %q", d.Driver)
+}
+
+// Combine lines that don't terminate with a semicolon.
+// Semicolon on the last line is optional.
+func (d *Database) GetStatementsFromDDL(ddl string) []string {
+	lines := strings.Split(ddl, "\n")
+
+	statements := []string{}
+
+	statement := ""
+	for i, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		if i == len(lines)-1 || strings.HasSuffix(line, ";") {
+			statement = statement + " " + line
+			statements = append(statements, strings.TrimSpace(statement))
+			statement = ""
+		} else {
+			statement = statement + " " + line
+		}
+	}
+
+	if statement != "" {
+		statements = append(statements, strings.TrimSpace(statement))
+	}
+
+	return statements
 }

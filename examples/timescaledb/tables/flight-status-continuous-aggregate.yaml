@@ -1,0 +1,15 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: View
+metadata:
+  name: flight-status-daily
+spec:
+  database: airlinedb
+  name: flight_status_daily
+  requires: []
+  schema:
+    timescaledb:
+      isContinuousAggregate: true
+      query: |
+        select time_bucket('1 day'::interval, time) as daily_time, status, count(1) as total
+        from flight_status
+        group by daily_time, status

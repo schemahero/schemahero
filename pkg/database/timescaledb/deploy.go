@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/postgres"
+	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
 func PlanTimescaleDBView(uri string, viewName string, viewSchema *schemasv1alpha4.TimescaleDBViewSchema) ([]string, error) {
@@ -54,6 +55,8 @@ func PlanTimescaleDBView(uri string, viewName string, viewSchema *schemasv1alpha
 				fmt.Sprintf(`drop materialized view %s`, pgx.Identifier{viewName}.Sanitize()),
 			}, nil
 		}
+	} else if viewExists > 0 && !viewSchema.IsDeleted {
+		// TODO: Alter view.  Some properties can be altered, but to alter the SQL, a new view should be created.
 	}
 
 	// if the view doesn't exist, shortcut to create
@@ -136,7 +139,7 @@ func PlanTimescaleDBTable(uri string, tableName string, tableSchema *schemasv1al
 	statements = append(statements, foreignKeyStatements...)
 
 	// index changes
-	indexStatements, err := postgres.BuildIndexStatements(p, tableName, postgresTableSchema)
+	indexStatements, err := BuildIndexStatements(p, tableName, tableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build index statements")
 	}
@@ -145,4 +148,101 @@ func PlanTimescaleDBTable(uri string, tableName string, tableSchema *schemasv1al
 	statements = append(statements, seedDataStatements...)
 
 	return statements, nil
+}
+
+// This is slightly different than the postgres version because we need to handle indices created for hypertables
+func BuildIndexStatements(p *postgres.PostgresConnection, tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema) ([]string, error) {
+	postgresTableSchema := toPostgresTableSchema(tableSchema)
+
+	indexStatements := []string{}
+	droppedIndexes := []string{}
+	currentIndexes, err := p.ListTableIndexes(p.DatabaseName(), tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list table indexes")
+	}
+	currentConstraints, err := p.ListTableConstraints(p.DatabaseName(), tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list table constraints")
+	}
+
+DesiredIndexLoop:
+	for _, index := range postgresTableSchema.Indexes {
+		if index.Name == "" {
+			index.Name = types.GeneratePostgresqlIndexName(tableName, index)
+		}
+
+		var statement string
+		var matchedIndex *types.Index
+		for _, currentIndex := range currentIndexes {
+			if currentIndex.Equals(types.PostgresqlSchemaIndexToIndex(index)) {
+				continue DesiredIndexLoop
+			}
+
+			if currentIndex.Name == index.Name {
+				matchedIndex = currentIndex
+			}
+		}
+
+		// drop and readd? pg supports a little bit of alter index we should support (rename)
+		if matchedIndex != nil {
+			isConstraint := false
+			for _, currentConstraint := range currentConstraints {
+				if matchedIndex.Name == currentConstraint {
+					isConstraint = true
+				}
+			}
+
+			if isConstraint {
+				statement = postgres.RemoveConstraintStatement(tableName, matchedIndex)
+			} else {
+				statement = postgres.RemoveIndexStatement(tableName, matchedIndex)
+			}
+			droppedIndexes = append(droppedIndexes, matchedIndex.Name)
+			indexStatements = append(indexStatements, statement)
+		}
+
+		statement = postgres.AddIndexStatement(tableName, index)
+		indexStatements = append(indexStatements, statement)
+	}
+
+ExistingIndexLoop:
+	for _, currentIndex := range currentIndexes {
+		var statement string
+		isConstraint := false
+
+		for _, index := range postgresTableSchema.Indexes {
+			if currentIndex.Equals(types.PostgresqlSchemaIndexToIndex(index)) {
+				continue ExistingIndexLoop
+			}
+		}
+
+		for _, droppedIndex := range droppedIndexes {
+			if droppedIndex == currentIndex.Name {
+				continue ExistingIndexLoop
+			}
+		}
+
+		// This check does not exist in the postgres version
+		if tableSchema.Hypertable != nil && tableSchema.Hypertable.TimeColumnName != nil {
+			if len(currentIndex.Columns) == 1 && currentIndex.Columns[0] == *tableSchema.Hypertable.TimeColumnName {
+				continue ExistingIndexLoop
+			}
+		}
+
+		for _, currentConstraint := range currentConstraints {
+			if currentIndex.Name == currentConstraint {
+				isConstraint = true
+			}
+		}
+
+		if isConstraint {
+			statement = postgres.RemoveConstraintStatement(tableName, currentIndex)
+		} else {
+			statement = postgres.RemoveIndexStatement(tableName, currentIndex)
+		}
+
+		indexStatements = append(indexStatements, statement)
+	}
+
+	return indexStatements, nil
 }

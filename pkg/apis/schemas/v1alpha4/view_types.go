@@ -44,8 +44,7 @@ type ViewSpec struct {
 	Name     string   `json:"name" yaml:"name"`
 	Requires []string `json:"requires,omitempty" yaml:"requires,omitempty"`
 
-	Schema   *ViewSchema `json:"schema,omitempty" yaml:"schema,omitempty"`
-	SeedData *SeedData   `json:"seedData,omitempty" yaml:"seedData,omitempty"`
+	Schema *ViewSchema `json:"schema,omitempty" yaml:"schema,omitempty"`
 }
 
 // ViewStatus defines the observed state of View

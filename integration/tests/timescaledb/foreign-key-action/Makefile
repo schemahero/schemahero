@@ -1,4 +1,4 @@
 include ../common.mk
 
-TEST_NAME := postgres-foreign-key-action
+TEST_NAME := timescaledb-foreign-key-action
 SPEC_FILE := ./specs/user-project.yaml
