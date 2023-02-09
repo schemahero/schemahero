@@ -184,7 +184,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY}}/${{ env.IMAGE_SCHEMAHERO_MANAGER_NAME }}
           flavor: |
             latest=false
           tags: |
@@ -238,7 +238,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ env.REGISTRY}}/${{ env.IMAGE_NAME }}
+            ${{ env.REGISTRY}}/${{ env.IMAGE_SCHEMAHERO_NAME }}
           flavor: |
             latest=false
           tags: |
