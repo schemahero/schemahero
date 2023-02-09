@@ -40,6 +40,10 @@ func (c *FakeSchemasV1alpha4) Tables(namespace string) v1alpha4.TableInterface {
 	return &FakeTables{c, namespace}
 }
 
+func (c *FakeSchemasV1alpha4) Views(namespace string) v1alpha4.ViewInterface {
+	return &FakeViews{c, namespace}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeSchemasV1alpha4) RESTClient() rest.Interface {

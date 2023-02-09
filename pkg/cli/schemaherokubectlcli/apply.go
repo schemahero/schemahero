@@ -1,11 +1,12 @@
 package schemaherokubectlcli
 
 import (
-	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,7 +51,7 @@ func ApplyCmd() *cobra.Command {
 
 			fi, err := os.Stat(v.GetString("ddl"))
 			if err != nil {
-				return err
+				return errors.Wrap(err, "failed to stat ddl file")
 			}
 
 			db := database.Database{
@@ -64,8 +65,8 @@ func ApplyCmd() *cobra.Command {
 				Keyspace:  v.GetString("keyspace"),
 			}
 
+			commands := []string{}
 			if fi.Mode().IsDir() {
-				commands := []string{}
 				err := filepath.Walk(v.GetString("ddl"), func(path string, info os.FileInfo, err error) error {
 					if err != nil {
 						return err
@@ -74,57 +75,37 @@ func ApplyCmd() *cobra.Command {
 						return nil
 					}
 
-					f, err := os.Open(filepath.Clean(path))
+					ddl, err := ioutil.ReadFile(filepath.Clean(path))
 					if err != nil {
-						return err
-					}
-					defer func() {
-						f.Close()
-					}()
-
-					commands := []string{}
-					scanner := bufio.NewScanner(f)
-					for scanner.Scan() {
-						commands = append(commands, scanner.Text())
+						return errors.Wrap(err, "failed to read file in directory")
 					}
 
-					if err := scanner.Err(); err != nil {
-						return err
-					}
+					statements := db.GetStatementsFromDDL(string(ddl))
+					commands = append(commands, statements...)
 
 					return nil
 				})
 
 				if err != nil {
-					return err
-				}
-
-				if err := db.ApplySync(commands); err != nil {
-					return err
+					return errors.Wrap(err, "failed to walk ddl directory")
 				}
 
 				return nil
 			} else {
-				f, err := os.Open(v.GetString("ddl"))
+				ddl, err := ioutil.ReadFile(v.GetString("ddl"))
 				if err != nil {
-					return err
-				}
-				defer func() {
-					f.Close()
-				}()
-
-				commands := []string{}
-				scanner := bufio.NewScanner(f)
-				for scanner.Scan() {
-					commands = append(commands, scanner.Text())
+					return errors.Wrap(err, "failed to read file")
 				}
 
-				if err := scanner.Err(); err != nil {
-					return err
-				}
-
-				return db.ApplySync(commands)
+				statements := db.GetStatementsFromDDL(string(ddl))
+				commands = append(commands, statements...)
 			}
+
+			if err := db.ApplySync(commands); err != nil {
+				return errors.Wrap(err, "failed to apply commands")
+			}
+
+			return nil
 		},
 	}
 

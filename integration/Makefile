@@ -5,11 +5,15 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: postgres mysql cockroach
+run: timescaledb postgres mysql cockroach
 
 .PHONY: postgres
 postgres:
 	make -C tests/postgres run
+
+.PHONY: timescaledb
+timescaledb:
+	make -C tests/timescaledb run
 
 .PHONY: mysql
 mysql:

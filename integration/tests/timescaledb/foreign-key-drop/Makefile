@@ -1,4 +1,4 @@
 include ../common.mk
 
-TEST_NAME := postgres-foreign-key-drop
+TEST_NAME := timescaledb-foreign-key-drop
 SPEC_FILE := ./specs/org.yaml

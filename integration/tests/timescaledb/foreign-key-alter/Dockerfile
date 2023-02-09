@@ -1,4 +1,4 @@
-FROM timescale/timescaledb:latest-pg14
+FROM timescale/timescaledb:2.9.3-pg14
 
 ENV POSTGRES_USER=schemahero
 ENV POSTGRES_DB=schemahero

@@ -1,4 +1,4 @@
 include ../common.mk
 
-TEST_NAME := postgres-column-set-default
+TEST_NAME := timescaledb-column-set-default
 SPEC_FILE := ./specs/users.yaml

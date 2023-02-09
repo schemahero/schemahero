@@ -1,0 +1,16 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: View
+metadata:
+  name: some-data-view
+spec:
+  database: schemahero
+  name: some_data_view
+  requires: []
+  schema:
+    timescaledb:
+      isContinuousAggregate: true
+      isDeleted: true
+      query: |
+        select time_bucket('1 minute'::interval, created_at) as minute_bucket, id, sum(something) as total
+        from some_data
+        group by minute_bucket, id

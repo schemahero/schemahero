@@ -1,0 +1,28 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: some-data
+spec:
+  database: schemahero
+  name: some_data
+  requires: []
+  schema:
+    timescaledb:
+      hypertable:
+        timeColumnName: created_at
+      primaryKey:
+        - created_at
+        - id
+      columns:
+        - name: created_at
+          type: timestamp without time zone
+          constraints:
+            notNull: true
+        - name: id
+          type: integer
+          constraints:
+            notNull: true
+        - name: something
+          type: integer
+          constraints:
+            notNull: true

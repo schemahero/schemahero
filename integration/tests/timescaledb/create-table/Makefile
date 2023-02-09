@@ -1,4 +1,4 @@
 include ../common.mk
 
-TEST_NAME := postgres-create-table
+TEST_NAME := timescaledb-create-table
 SPEC_FILE := ./specs

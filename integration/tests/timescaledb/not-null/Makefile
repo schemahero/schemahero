@@ -1,4 +1,4 @@
 include ../common.mk
 
-TEST_NAME := postgres-not-null
+TEST_NAME := timescaledb-not-null
 SPEC_FILE := ./specs/projects.yaml
