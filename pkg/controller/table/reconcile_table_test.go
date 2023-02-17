@@ -85,6 +85,18 @@ func Test_checkDatabaseTypeMatches(t *testing.T) {
 			},
 			expect: true,
 		},
+		{
+			name: "is cassandra",
+			connection: databasesv1alpha4.DatabaseConnection{
+				Cassandra: &databasesv1alpha4.CassandraConnection{
+					Hosts: []string{"test"},
+				},
+			},
+			tableSchema: schemasv1alpha4.TableSchema{
+				Cassandra: &schemasv1alpha4.CassandraTableSchema{},
+			},
+			expect: true,
+		},
 	}
 
 	for _, test := range tests {

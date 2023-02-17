@@ -151,6 +151,8 @@ func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, 
 		return tableSchema.TimescaleDB != nil
 	} else if connection.SQLite != nil {
 		return tableSchema.SQLite != nil
+	} else if connection.Cassandra != nil {
+		return tableSchema.Cassandra != nil
 	}
 
 	return false
