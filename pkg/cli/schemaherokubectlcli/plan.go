@@ -2,11 +2,13 @@ package schemaherokubectlcli
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/types"
 	"github.com/schemahero/schemahero/pkg/files"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -88,6 +90,7 @@ func PlanCmd() *cobra.Command {
 				DeploySeedData: v.GetBool("seed-data"),
 			}
 
+			specsFromFiles := []types.Spec{}
 			if fi.Mode().IsDir() {
 				err := filepath.Walk(v.GetString("spec-file"), func(path string, info os.FileInfo, err error) error {
 					isHidden, err := files.IsHidden(path)
@@ -106,9 +109,28 @@ func PlanCmd() *cobra.Command {
 						return nil
 					}
 
-					statements, err := db.PlanSyncFromFile(path, v.GetString("spec-type"))
+					specContents, err := ioutil.ReadFile(filepath.Clean(path))
 					if err != nil {
-						return err
+						return errors.Wrap(err, "failed to read file")
+					}
+					specsFromFiles = append(specsFromFiles, types.Spec{
+						SourceFilename: path,
+						Spec:           specContents,
+					})
+
+					return nil
+				})
+
+				if err != nil {
+					return errors.Wrap(err, "failed to walk directory")
+				}
+
+				db.SortSpecs(specsFromFiles)
+
+				for _, spec := range specsFromFiles {
+					statements, err := db.PlanSync(spec.Spec, v.GetString("spec-type"))
+					if err != nil {
+						return fmt.Errorf("plan sync from file %q: %w", spec.SourceFilename, err)
 					}
 
 					if f != nil {
@@ -122,11 +144,9 @@ func PlanCmd() *cobra.Command {
 							fmt.Printf("%s;\n", statement)
 						}
 					}
+				}
 
-					return nil
-				})
-
-				return err
+				return nil
 			} else {
 				statements, err := db.PlanSyncFromFile(v.GetString("spec-file"), v.GetString("spec-type"))
 				if err != nil {
