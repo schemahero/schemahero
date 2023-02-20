@@ -23,6 +23,12 @@ func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	}
 	manifests["tables_crd.yaml"] = manifest
 
+	manifest, err = viewsCRDYAML()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get views crd")
+	}
+	manifests["views_crd.yaml"] = manifest
+
 	manifest, err = migrationsCRDYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get migrations crd")
@@ -88,6 +94,10 @@ func InstallOperator(namespace string) (bool, error) {
 
 	if err := ensureTablesCRD(ctx, cfg); err != nil {
 		return false, errors.Wrap(err, "failed to create tables crd")
+	}
+
+	if err := ensureViewsCRD(ctx, cfg); err != nil {
+		return false, errors.Wrap(err, "failed to create views crd")
 	}
 
 	if err := ensureMigrationsCRD(ctx, cfg); err != nil {
