@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -16,6 +17,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/database/sqlite"
 	"github.com/schemahero/schemahero/pkg/database/timescaledb"
+	"github.com/schemahero/schemahero/pkg/database/types"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
@@ -173,6 +175,15 @@ func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string,
 		return nil, errors.Wrap(err, "failed to read file")
 	}
 
+	plan, err := d.PlanSync(specContents, specType)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to plan sync")
+	}
+
+	return plan, nil
+}
+
+func (d *Database) PlanSync(specContents []byte, specType string) ([]string, error) {
 	// Try GVK first and fall back to plain spec for backwards compatibility
 	plan, err := d.planGVKSync(specContents)
 	if err == nil {
@@ -184,13 +195,13 @@ func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string,
 	if specType == "table" {
 		plan, err := d.planTableSync(specContents)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to plan table sync from %s", filename)
+			return nil, errors.Wrapf(err, "failed to plan table sync")
 		}
 		return plan, nil
 	} else if specType == "type" {
 		plan, err := d.planTypeSync(specContents)
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to plan type sync from %s", filename)
+			return nil, errors.Wrapf(err, "failed to plan type sync")
 		}
 		return plan, nil
 	}
@@ -244,6 +255,13 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	}
 
 	return d.PlanSyncTableSpec(spec)
+}
+
+func (d *Database) SortSpecs(specs []types.Spec) {
+	switch d.Driver {
+	case "postgres", "timescaledb":
+		sort.Sort(types.Specs(specs))
+	}
 }
 
 func (d *Database) PlanSyncViewSpec(spec *schemasv1alpha4.ViewSpec) ([]string, error) {

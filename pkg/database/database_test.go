@@ -3,6 +3,7 @@ package database
 import (
 	"testing"
 
+	"github.com/schemahero/schemahero/pkg/database/types"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -52,6 +53,116 @@ func Test_GetStatementsFromDDL(t *testing.T) {
 			gotStatements := db.GetStatementsFromDDL(test.ddl)
 
 			assert.Equal(t, test.wantStatements, gotStatements)
+		})
+	}
+}
+
+// Test the SortSpecs function
+func TestSortSpecs(t *testing.T) {
+	tests := []struct {
+		name   string
+		driver string
+		specs  []types.Spec
+		want   []types.Spec
+	}{
+		{
+			name:   "sort views and table",
+			driver: "postgres",
+			specs: []types.Spec{
+				{
+					SourceFilename: "table1.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: table1
+spec: {}`,
+					),
+				},
+				{
+					SourceFilename: "view1.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: View
+metadata:
+  name: view1
+spec:{}`,
+					),
+				},
+				{
+					SourceFilename: "table2.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: table2
+spec: {}`,
+					),
+				},
+				{
+					SourceFilename: "view2.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: View
+metadata:
+  name: view2
+spec:{}`,
+					),
+				},
+			},
+			want: []types.Spec{
+				{
+					SourceFilename: "table1.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: table1
+spec: {}`,
+					),
+				},
+				{
+					SourceFilename: "table2.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: table2
+spec: {}`,
+					),
+				},
+				{
+					SourceFilename: "view1.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: View
+metadata:
+  name: view1
+spec:{}`,
+					),
+				},
+				{
+					SourceFilename: "view2.yaml",
+					Spec: []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: View
+metadata:
+  name: view2
+spec:{}`,
+					),
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			db := &Database{
+				Driver: test.driver,
+			}
+			db.SortSpecs(test.specs)
+
+			assert.Equal(t, test.want, test.specs)
 		})
 	}
 }
