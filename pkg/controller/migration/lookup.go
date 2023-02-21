@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	schemasClient   *schemasclientv1alpha4.SchemasV1alpha4Client
-	databasesClient *databasesclientv1alpha4.DatabasesV1alpha4Client
+	schemasClient   schemasclientv1alpha4.SchemasV1alpha4Interface
+	databasesClient databasesclientv1alpha4.DatabasesV1alpha4Interface
 )
 
-func getSchemasClient() (*schemasclientv1alpha4.SchemasV1alpha4Client, error) {
+func getSchemasClient() (schemasclientv1alpha4.SchemasV1alpha4Interface, error) {
 	if schemasClient != nil {
 		return schemasClient, nil
 	}
@@ -35,7 +35,7 @@ func getSchemasClient() (*schemasclientv1alpha4.SchemasV1alpha4Client, error) {
 	return schemasClient, nil
 }
 
-func getDatabasesClient() (*databasesclientv1alpha4.DatabasesV1alpha4Client, error) {
+func getDatabasesClient() (databasesclientv1alpha4.DatabasesV1alpha4Interface, error) {
 	if databasesClient != nil {
 		return databasesClient, nil
 	}
@@ -74,6 +74,34 @@ func DatabaseFromTable(ctx context.Context, table *schemasv1alpha4.Table) (*data
 	}
 
 	database, err := databasesClient.Databases(table.Namespace).Get(ctx, table.Spec.Database, metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get database")
+	}
+
+	return database, nil
+}
+
+func ViewFromMigration(ctx context.Context, migration *schemasv1alpha4.Migration) (*schemasv1alpha4.View, error) {
+	schemasClient, err := getSchemasClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get schemas client")
+	}
+
+	table, err := schemasClient.Views(migration.Spec.TableNamespace).Get(ctx, migration.Spec.TableName, metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get view")
+	}
+
+	return table, nil
+}
+
+func DatabaseFromView(ctx context.Context, view *schemasv1alpha4.View) (*databasesv1alpha4.Database, error) {
+	databasesClient, err := getDatabasesClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get databases client")
+	}
+
+	database, err := databasesClient.Databases(view.Namespace).Get(ctx, view.Spec.Database, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get database")
 	}

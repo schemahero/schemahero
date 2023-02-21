@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database"
 	"github.com/schemahero/schemahero/pkg/logger"
@@ -14,65 +15,89 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-func (r *ReconcileMigration) reconcileMigration(ctx context.Context, instance *schemasv1alpha4.Migration) (reconcile.Result, error) {
-	logger.Debug("reconciling migration",
-		zap.String("name", instance.Name),
-		zap.String("tableName", instance.Spec.TableName))
+func (r *ReconcileMigration) reconcileMigration(ctx context.Context, migration *schemasv1alpha4.Migration) (reconcile.Result, error) {
+	logger.Debug("checking migration",
+		zap.String("name", migration.Name),
+		zap.String("tableName", migration.Spec.TableName))
 
-	if instance.Status.ApprovedAt > 0 && instance.Status.ExecutedAt == 0 {
-		tableInstance, err := TableFromMigration(ctx, instance)
-		if err != nil {
-			return reconcile.Result{}, nil
-		}
+	if migration.Status.ApprovedAt == 0 && migration.Status.ExecutedAt > 0 {
+		logger.Debug("migration not yet approved or already executed",
+			zap.String("name", migration.Name),
+			zap.String("tableName", migration.Spec.TableName))
+		return reconcile.Result{}, nil
+	}
 
-		databaseInstance, err := DatabaseFromTable(ctx, tableInstance)
-		if err != nil {
-			return reconcile.Result{}, nil
-		}
+	databaseInstance, err := getDatabaseFromMigration(ctx, migration)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrapf(err, "failed to get database from migration %s", migration.Name)
+	}
 
-		driver, connectionURI, err := databaseInstance.GetConnection(ctx)
-		if err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to get connection details for database")
-		}
+	driver, connectionURI, err := databaseInstance.GetConnection(ctx)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get connection details for database")
+	}
 
-		db := database.Database{
-			Driver: driver,
-			URI:    connectionURI,
-		}
+	db := database.Database{
+		Driver: driver,
+		URI:    connectionURI,
+	}
 
-		statements := db.GetStatementsFromDDL(instance.Spec.GeneratedDDL)
+	statements := db.GetStatementsFromDDL(migration.Spec.GeneratedDDL)
 
-		if err := db.ApplySync(statements); err != nil {
-			return reconcile.Result{}, errors.Wrap(err, "failed to apply statements")
-		}
+	if err := db.ApplySync(statements); err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to apply statements")
+	}
 
-		// update the status to applied
-		instance.Status.ExecutedAt = time.Now().Unix()
-		instance.Status.Phase = schemasv1alpha4.Executed
-		err = r.Update(context.Background(), instance)
+	// update the status to applied
+	migration.Status.ExecutedAt = time.Now().Unix()
+	migration.Status.Phase = schemasv1alpha4.Executed
+	err = r.Update(context.Background(), migration)
 
-		if err != nil {
-			if kuberneteserrors.IsConflict(err) {
-				updatedInstance := &schemasv1alpha4.Migration{}
-				err := r.Get(context.Background(), types.NamespacedName{
-					Name:      instance.Name,
-					Namespace: instance.Namespace,
-				}, updatedInstance)
-				if err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to get updated instance")
-				}
+	if err != nil {
+		if kuberneteserrors.IsConflict(err) {
+			updatedMigration := &schemasv1alpha4.Migration{}
+			err := r.Get(context.Background(), types.NamespacedName{
+				Name:      migration.Name,
+				Namespace: migration.Namespace,
+			}, updatedMigration)
+			if err != nil {
+				return reconcile.Result{}, errors.Wrap(err, "failed to get updated instance")
+			}
 
-				updatedInstance.Status.ExecutedAt = time.Now().Unix()
-				instance.Status.Phase = schemasv1alpha4.Executed
-				if err := r.Update(context.Background(), updatedInstance); err != nil {
-					return reconcile.Result{}, errors.Wrap(err, "failed to update")
-				}
-			} else {
+			updatedMigration.Status.ExecutedAt = time.Now().Unix()
+			migration.Status.Phase = schemasv1alpha4.Executed
+			if err := r.Update(context.Background(), updatedMigration); err != nil {
 				return reconcile.Result{}, errors.Wrap(err, "failed to update")
 			}
+		} else {
+			return reconcile.Result{}, errors.Wrap(err, "failed to update")
 		}
-
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func getDatabaseFromMigration(ctx context.Context, migration *schemasv1alpha4.Migration) (*databasesv1alpha4.Database, error) {
+	table, err := TableFromMigration(ctx, migration)
+	if err != nil {
+		if !kuberneteserrors.IsNotFound(err) {
+			return nil, errors.Wrap(err, "failed to get table")
+		}
+	} else {
+		database, err := DatabaseFromTable(ctx, table)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to get database from table %s", table.Name)
+		}
+		return database, nil
+	}
+
+	view, err := ViewFromMigration(ctx, migration)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get view")
+	}
+	database, err := DatabaseFromView(ctx, view)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get database from view %s", view.Name)
+	}
+	return database, nil
 }
