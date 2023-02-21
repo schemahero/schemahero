@@ -3,6 +3,7 @@ package migration
 import (
 	"context"
 	"testing"
+	"time"
 
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
@@ -85,6 +86,51 @@ func Test_getDatabaseFromMigration(t *testing.T) {
 			} else {
 				assert.Error(t, err)
 			}
+		})
+	}
+}
+
+func Test_shouldApplyMigration(t *testing.T) {
+	tests := []struct {
+		name      string
+		migration *schemasv1alpha4.Migration
+		want      bool
+	}{
+		{
+			name: "approved not executedm, should apply",
+			migration: &schemasv1alpha4.Migration{
+				Status: schemasv1alpha4.MigrationStatus{
+					ApprovedAt: time.Now().Unix(),
+					ExecutedAt: 0,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "approved and executed, should not aply",
+			migration: &schemasv1alpha4.Migration{
+				Status: schemasv1alpha4.MigrationStatus{
+					ApprovedAt: time.Now().Unix(),
+					ExecutedAt: time.Now().Unix(),
+				},
+			},
+			want: false,
+		},
+		{
+			name: "not approved, should not apply",
+			migration: &schemasv1alpha4.Migration{
+				Status: schemasv1alpha4.MigrationStatus{
+					ApprovedAt: 0,
+					ExecutedAt: 0,
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := shouldApplyMigration(tt.migration)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

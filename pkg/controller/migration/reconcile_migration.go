@@ -20,7 +20,7 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, migration *
 		zap.String("name", migration.Name),
 		zap.String("tableName", migration.Spec.TableName))
 
-	if migration.Status.ApprovedAt == 0 && migration.Status.ExecutedAt > 0 {
+	if !shouldApplyMigration(migration) {
 		logger.Debug("migration not yet approved or already executed",
 			zap.String("name", migration.Name),
 			zap.String("tableName", migration.Spec.TableName))
@@ -75,6 +75,13 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, migration *
 	}
 
 	return reconcile.Result{}, nil
+}
+
+func shouldApplyMigration(migration *schemasv1alpha4.Migration) bool {
+	if migration.Status.ApprovedAt > 0 && migration.Status.ExecutedAt == 0 {
+		return true
+	}
+	return false
 }
 
 func getDatabaseFromMigration(ctx context.Context, migration *schemasv1alpha4.Migration) (*databasesv1alpha4.Database, error) {
