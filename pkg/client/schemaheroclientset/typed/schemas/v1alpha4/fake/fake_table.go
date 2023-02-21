@@ -117,7 +117,7 @@ func (c *FakeTables) UpdateStatus(ctx context.Context, table *v1alpha4.Table, op
 // Delete takes name of the table and deletes it. Returns an error if one occurs.
 func (c *FakeTables) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(tablesResource, c.ns, name), &v1alpha4.Table{})
+		Invokes(testing.NewDeleteActionWithOptions(tablesResource, c.ns, name, opts), &v1alpha4.Table{})
 
 	return err
 }

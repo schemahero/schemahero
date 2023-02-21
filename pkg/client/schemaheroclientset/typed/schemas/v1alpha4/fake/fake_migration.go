@@ -117,7 +117,7 @@ func (c *FakeMigrations) UpdateStatus(ctx context.Context, migration *v1alpha4.M
 // Delete takes name of the migration and deletes it. Returns an error if one occurs.
 func (c *FakeMigrations) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(migrationsResource, c.ns, name), &v1alpha4.Migration{})
+		Invokes(testing.NewDeleteActionWithOptions(migrationsResource, c.ns, name, opts), &v1alpha4.Migration{})
 
 	return err
 }

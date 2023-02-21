@@ -117,7 +117,7 @@ func (c *FakeViews) UpdateStatus(ctx context.Context, view *v1alpha4.View, opts 
 // Delete takes name of the view and deletes it. Returns an error if one occurs.
 func (c *FakeViews) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(viewsResource, c.ns, name), &v1alpha4.View{})
+		Invokes(testing.NewDeleteActionWithOptions(viewsResource, c.ns, name, opts), &v1alpha4.View{})
 
 	return err
 }

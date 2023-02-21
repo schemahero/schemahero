@@ -117,7 +117,7 @@ func (c *FakeDataTypes) UpdateStatus(ctx context.Context, dataType *v1alpha4.Dat
 // Delete takes name of the dataType and deletes it. Returns an error if one occurs.
 func (c *FakeDataTypes) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(datatypesResource, c.ns, name), &v1alpha4.DataType{})
+		Invokes(testing.NewDeleteActionWithOptions(datatypesResource, c.ns, name, opts), &v1alpha4.DataType{})
 
 	return err
 }
