@@ -21,7 +21,7 @@ jobs:
           echo "::set-output name=go-build::$(go env GOCACHE)"
           echo "::set-output name=go-mod::$(go env GOMODCACHE)"
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
 
       - uses: actions/cache@v2
         with:
@@ -48,7 +48,7 @@ jobs:
       matrix:
         postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -64,7 +64,7 @@ jobs:
       matrix:
         mysql_version: ["5.6.51", "5.7.40", "8.0.31"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -80,7 +80,7 @@ jobs:
       matrix:
         cockroachdb_version: ["v19.2.12", "v20.2.19", "v21.2.17", "v22.1.11"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -96,7 +96,7 @@ jobs:
       matrix:
         cassandra_version: ["3.11.10"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -112,7 +112,7 @@ jobs:
       matrix:
         sqlite_version: ["3.39.3"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -128,7 +128,7 @@ jobs:
       matrix:
         rqlite_version: ["6.10.2", "7.6.1"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -144,7 +144,7 @@ jobs:
       matrix:
         timescaledb_version: ["2.9.3-pg14"]
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v3.0.1
         with:
@@ -167,7 +167,7 @@ jobs:
       digest: ${{ steps.release-manager.outputs.digest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -221,7 +221,7 @@ jobs:
       digest: ${{ steps.release-schemahero.outputs.digest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -281,7 +281,7 @@ jobs:
           echo "::set-output name=go-build::$(go env GOCACHE)"
           echo "::set-output name=go-mod::$(go env GOMODCACHE)"
 
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v3.5.0
 
       - uses: actions/cache@v2
         with:
@@ -324,7 +324,7 @@ jobs:
       - build-docker-manager
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -355,7 +355,7 @@ jobs:
       - github-release-tarballs
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.1.0
+        uses: actions/checkout@v3.5.0
       - name: Create new schemahero version in krew-index
         uses: rajatjindal/krew-release-bot@v0.0.43
         with:
