@@ -28,6 +28,7 @@ const (
 	Approved Phase = "APPROVED"
 	Executed Phase = "EXECUTED"
 	Invalid  Phase = "INVALID"
+	Rejected Phase = "REJECTED"
 )
 
 // MigrationSpec defines the desired state of Migration
