@@ -88,6 +88,16 @@ func Test_maybeParseParameterizedColumnType(t *testing.T) {
 			requestedType:      "numeric  (5,3)",
 			expectedColumnType: "numeric (5, 3)",
 		},
+		{
+			name:               "vector(1533)",
+			requestedType:      "vector(1533)",
+			expectedColumnType: "vector (1533)",
+		},
+		{
+			name:               "vector ( 3)",
+			requestedType:      "vector ( 3)",
+			expectedColumnType: "vector (3)",
+		},
 	}
 
 	for _, test := range tests {

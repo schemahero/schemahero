@@ -183,6 +183,15 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 		} else if len(precisionOnlyMatchGroups) == 2 {
 			columnType = fmt.Sprintf("numeric (%s)", precisionOnlyMatchGroups[1])
 		}
+	} else if strings.HasPrefix(requestedType, "vector") {
+		columnType = "vector"
+
+		size := regexp.MustCompile(`vector\s*\(\s*(?P<size>\d*)\s*\)`)
+		sizeMatchGroups := size.FindStringSubmatch(requestedType)
+
+		if len(sizeMatchGroups) == 2 {
+			columnType = fmt.Sprintf("vector (%s)", sizeMatchGroups[1])
+		}
 	}
 
 	return columnType, nil
