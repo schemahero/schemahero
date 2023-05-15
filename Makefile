@@ -226,8 +226,8 @@ build-schemahero:
 
 .PHONY: cosign-sign
 cosign-sign:
-	cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero@${DIGEST_SCHEMAHERO}
-	cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
+	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero@${DIGEST_SCHEMAHERO}
+	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
 	cosign sign --key ./cosign.key schemahero/schemahero@${DIGEST_SCHEMAHERO}
 	cosign sign --key ./cosign.key schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
 
