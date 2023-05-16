@@ -3565,6 +3565,20 @@ spec:
                     additionalProperties:
                       type: string
                     type: object
+                  tolerations:
+                  type: array
+                    items:
+                      type: object
+                      default: []
+                      properties:
+                        key:
+                          type: string
+                        operator:
+                          type: string
+                        value:
+                          type: string
+                        effect:
+                          type: string
                 type: object
               template:
                 properties:
