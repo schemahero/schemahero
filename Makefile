@@ -63,7 +63,7 @@ manager: fmt vet bin/manager
 
 .PHONY: bin/manager
 bin/manager:
-	go build \
+	GOOS=linux GOARCH=amd64 go build \
 	  -tags netgo -installsuffix netgo \
 		${LDFLAGS} \
 		-o bin/manager \
@@ -133,7 +133,7 @@ generate: controller-gen client-gen lister-gen informer-gen
 
 .PHONY: bin/kubectl-schemahero
 bin/kubectl-schemahero:
-	go build \
+	GOOS=linux GOARCH=amd64 go build \
 	  -tags netgo -installsuffix netgo \
 		${LDFLAGS} \
 		-o bin/kubectl-schemahero \

@@ -3564,12 +3564,13 @@ spec:
                   nodeSelector:
                     additionalProperties:
                       type: string
+                    default: {}
                     type: object
                   tolerations:
-                  type: array
+                    type: array
+                    default: []
                     items:
                       type: object
-                      default: []
                       properties:
                         key:
                           type: string
