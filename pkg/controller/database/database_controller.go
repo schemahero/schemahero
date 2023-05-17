@@ -67,7 +67,14 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		zap.String("name", databaseInstance.Name))
 
 	statefulsetName := fmt.Sprintf("%s-controller", databaseInstance.Name)
-	schemaHeroManagerImage := fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
+
+	// override default schemahero image for plans and applies, if present
+	var schemaHeroManagerImage string
+	if databaseInstance.Spec.SchemaHero.Image == "" {
+		schemaHeroManagerImage = fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
+	} else {
+		schemaHeroManagerImage = databaseInstance.Spec.SchemaHero.Image
+	}
 	vaultAnnotations, err := databaseInstance.GetVaultAnnotations()
 	if err != nil {
 		logger.Error(errors.Wrap(err, "failed to get vault annotations"))
@@ -86,11 +93,11 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 	// taking "tolerations" defined within schemahero section of the database object
 	var tolerations []corev1.Toleration
 	for _, toleration := range databaseInstance.Spec.SchemaHero.Tolerations {
-		tolerations = append(tolerations,corev1.Toleration{
-			Key: toleration.Key,
+		tolerations = append(tolerations, corev1.Toleration{
+			Key:      toleration.Key,
 			Operator: corev1.TolerationOperator(toleration.Operator),
-			Value: toleration.Value,
-			Effect: corev1.TaintEffect(toleration.Effect),
+			Value:    toleration.Value,
+			Effect:   corev1.TaintEffect(toleration.Effect),
 		})
 	}
 	// TODO detect k8s version and use appsv1 or appsv1beta
@@ -122,7 +129,8 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 					Annotations: vaultAnnotations,
 				},
 				Spec: corev1.PodSpec{
-					Tolerations: tolerations,
+					NodeSelector: databaseInstance.Spec.SchemaHero.NodeSelector,
+					Tolerations:  tolerations,
 					Affinity: &corev1.Affinity{
 						NodeAffinity: &corev1.NodeAffinity{
 							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
