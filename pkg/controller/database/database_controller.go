@@ -68,7 +68,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 
 	statefulsetName := fmt.Sprintf("%s-controller", databaseInstance.Name)
 
-	// override default schemahero image for plans and applies, if present
+	// Overriding schemahero image from database object
 	var schemaHeroManagerImage string
 	if databaseInstance.Spec.SchemaHero.Image == "" {
 		schemaHeroManagerImage = fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
@@ -90,7 +90,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		return reconcile.Result{}, err
 	}
 
-	// taking "tolerations" defined within schemahero section of the database object
+	// Using "tolerations" defined within schemahero object
 	var tolerations []corev1.Toleration
 	for _, toleration := range databaseInstance.Spec.SchemaHero.Tolerations {
 		tolerations = append(tolerations, corev1.Toleration{
