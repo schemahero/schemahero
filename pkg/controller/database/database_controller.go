@@ -89,6 +89,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 	serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
 	labels := createLabels(databaseInstance)
 	annotations := createAnnotations(databaseInstance)
+	nodeSelectors := createNodeSelectors(databaseInstance)
 	desiredStatefulSet := appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -139,6 +140,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 							},
 						},
 					},
+					NodeSelector:                  nodeSelectors,
 					TerminationGracePeriodSeconds: &tenSeconds,
 					ServiceAccountName:            serviceAccountName,
 					Containers: []corev1.Container{
@@ -228,6 +230,18 @@ func createAnnotations(db *databasesv1alpha4.Database) *map[string]string {
 	}
 
 	return &a
+}
+
+func createNodeSelectors(db *databasesv1alpha4.Database) map[string]string {
+	a := map[string]string{}
+
+	if db.Spec.SchemaHero != nil {
+		for k, v := range db.Spec.SchemaHero.NodeSelector {
+			a[k] = v
+		}
+	}
+
+	return a
 }
 
 func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1alpha4.Database, error) {
