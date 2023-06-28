@@ -1,0 +1,16 @@
+apiVersion: databases.schemahero.io/v1alpha4
+kind: Database
+metadata:
+  name: airlinedb
+  namespace: schemahero-e2e
+spec:
+  schemahero:
+    image: "localhost:32000/schemahero/schemahero"
+  immediateDeploy: true
+  connection:
+    postgres:
+      uri:
+        valueFrom:
+          secretKeyRef:
+            name: postgresql
+            key: uri

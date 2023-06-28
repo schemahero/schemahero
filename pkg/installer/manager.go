@@ -3,12 +3,9 @@ package installer
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
-	"github.com/schemahero/schemahero/pkg/version"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -149,17 +146,17 @@ func secret(namespace string) *corev1.Secret {
 	}
 }
 
-func managerYAML(namespace string) ([]byte, error) {
+func managerYAML(namespace string, managerImage string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
 	var result bytes.Buffer
-	if err := s.Encode(manager(namespace), &result); err != nil {
+	if err := s.Encode(manager(namespace, managerImage), &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal manager")
 	}
 
 	return result.Bytes(), nil
 }
 
-func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespace string) (bool, error) {
+func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespace string, managerImage string) (bool, error) {
 	existingManager, err := clientset.AppsV1().StatefulSets(namespace).Get(ctx, "schemahero", metav1.GetOptions{})
 
 	if err != nil && !kuberneteserrors.IsNotFound(err) {
@@ -167,7 +164,7 @@ func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespa
 	}
 
 	if kuberneteserrors.IsNotFound(err) {
-		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(namespace), metav1.CreateOptions{})
+		_, err := clientset.AppsV1().StatefulSets(namespace).Create(ctx, manager(namespace, managerImage), metav1.CreateOptions{})
 		if err != nil {
 			return false, errors.Wrap(err, "create manager statefulset")
 		}
@@ -177,7 +174,7 @@ func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespa
 
 	// update the existing manager, but it's a statefulset, so
 	// we can only mutate some fields
-	existingManager.Spec = manager(namespace).Spec
+	existingManager.Spec = manager(namespace, managerImage).Spec
 
 	_, err = clientset.AppsV1().StatefulSets(namespace).Update(ctx, existingManager, metav1.UpdateOptions{})
 	if err != nil {
@@ -187,7 +184,7 @@ func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespa
 	return true, nil
 }
 
-func manager(namespace string) *appsv1.StatefulSet {
+func manager(namespace string, managerImage string) *appsv1.StatefulSet {
 	env := []corev1.EnvVar{
 		{
 			Name: "POD_NAMESPACE",
@@ -202,12 +199,6 @@ func manager(namespace string) *appsv1.StatefulSet {
 			Value: "webhook-server-secret",
 		},
 	}
-
-	schemaheroTag := version.Version()
-	if strings.HasPrefix(schemaheroTag, "v") {
-		schemaheroTag = strings.TrimPrefix(schemaheroTag, "v")
-	}
-	schemaHeroManagerImage := fmt.Sprintf("schemahero/schemahero-manager:%s", schemaheroTag)
 
 	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
@@ -274,7 +265,7 @@ func manager(namespace string) *appsv1.StatefulSet {
 					},
 					Containers: []corev1.Container{
 						{
-							Image:           schemaHeroManagerImage,
+							Image:           managerImage,
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
 							Command:         []string{"/manager", "run", "--enable-database-controller"},
