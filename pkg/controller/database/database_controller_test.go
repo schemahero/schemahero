@@ -78,10 +78,12 @@ func TestDbControllerTest(t *testing.T) {
 	client := mgr.GetClient()
 
 	tests := []struct {
-		name           string
-		namespace      corev1.Namespace
-		expectedLabels map[string]string
-		customLabels   map[string]string
+		name                  string
+		namespace             corev1.Namespace
+		customLabels          map[string]string
+		expectedLabels        map[string]string
+		customNodeSelectors   map[string]string
+		expectedNodeSelectors map[string]string
 	}{
 		{
 			name: "creates_statefulset_with_default_labels",
@@ -99,6 +101,12 @@ func TestDbControllerTest(t *testing.T) {
 				"control-plane": "schemahero",
 				"database":      "test",
 				"custom":        "label",
+			},
+			customNodeSelectors: map[string]string{
+				"custom": "node-selector",
+			},
+			expectedNodeSelectors: map[string]string{
+				"custom": "node-selector",
 			},
 		},
 	}
@@ -131,6 +139,13 @@ func TestDbControllerTest(t *testing.T) {
 					},
 				}
 
+				// Use nil SchemaHero value in some tests to cover that case as well.
+				if len(test.customNodeSelectors) > 0 {
+					db.Spec.SchemaHero = &databasesv1alpha4.SchemaHero{
+						NodeSelector: test.customNodeSelectors,
+					}
+				}
+
 				err = client.Create(context.Background(), &db)
 				assert.NoError(t, err)
 
@@ -138,7 +153,10 @@ func TestDbControllerTest(t *testing.T) {
 				assert.NoError(t, err)
 
 				actualLabels := ss.Spec.Template.ObjectMeta.Labels
-				assert.True(t, HasLabels(test.expectedLabels, actualLabels), "Wanted: %v\ngot: %v", test.expectedLabels, actualLabels)
+				assert.True(t, MapHasValues(test.expectedLabels, actualLabels), "Wanted: %v\ngot: %v", test.expectedLabels, actualLabels)
+
+				actualNodeSelectors := ss.Spec.Template.Spec.NodeSelector
+				assert.True(t, MapHasValues(test.expectedNodeSelectors, actualNodeSelectors), "Wanted: %v\ngot: %v", test.expectedNodeSelectors, actualNodeSelectors)
 			})
 		}
 	})
@@ -186,7 +204,7 @@ func GetStatefulSet(client runtimeclient.Client, namespace string, name string, 
 	return ss, err
 }
 
-func HasLabels(expected map[string]string, actual map[string]string) bool {
+func MapHasValues(expected map[string]string, actual map[string]string) bool {
 	for ek, ev := range expected {
 		av, ok := actual[ek]
 		if !ok {

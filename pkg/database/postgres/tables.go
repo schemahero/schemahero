@@ -215,7 +215,7 @@ order by c.ordinal_position`
 func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
 	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1 and table_schema = $2"
 
-	rows, err := p.conn.Query(context.Background(), query, tableName, p.databaseName)
+	rows, err := p.conn.Query(context.Background(), query, tableName, "public")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query table schema")
 	}

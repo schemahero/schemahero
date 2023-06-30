@@ -67,7 +67,10 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		zap.String("name", databaseInstance.Name))
 
 	statefulsetName := fmt.Sprintf("%s-controller", databaseInstance.Name)
+	schemaHeroManagerImage := fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
 
+<<<<<<< HEAD
+=======
 	// Overriding schemahero image from database object
 	var schemaHeroManagerImage string
 	if databaseInstance.Spec.SchemaHero.Image == "" {
@@ -75,6 +78,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 	} else {
 		schemaHeroManagerImage = databaseInstance.Spec.SchemaHero.Image
 	}
+>>>>>>> 91044d9a (modified comments)
 	vaultAnnotations, err := databaseInstance.GetVaultAnnotations()
 	if err != nil {
 		logger.Error(errors.Wrap(err, "failed to get vault annotations"))
@@ -90,6 +94,8 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		return reconcile.Result{}, err
 	}
 
+<<<<<<< HEAD
+=======
 	// Using "tolerations" defined within schemahero object
 	var tolerations []corev1.Toleration
 	for _, toleration := range databaseInstance.Spec.SchemaHero.Tolerations {
@@ -100,11 +106,13 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 			Effect:   corev1.TaintEffect(toleration.Effect),
 		})
 	}
+>>>>>>> 91044d9a (modified comments)
 	// TODO detect k8s version and use appsv1 or appsv1beta
 
 	serviceAccountName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
 	labels := createLabels(databaseInstance)
 	annotations := createAnnotations(databaseInstance)
+	nodeSelectors := createNodeSelectors(databaseInstance)
 	desiredStatefulSet := appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -129,8 +137,6 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 					Annotations: vaultAnnotations,
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: databaseInstance.Spec.SchemaHero.NodeSelector,
-					Tolerations:  tolerations,
 					Affinity: &corev1.Affinity{
 						NodeAffinity: &corev1.NodeAffinity{
 							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
@@ -157,6 +163,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 							},
 						},
 					},
+					NodeSelector:                  nodeSelectors,
 					TerminationGracePeriodSeconds: &tenSeconds,
 					ServiceAccountName:            serviceAccountName,
 					Containers: []corev1.Container{
@@ -246,6 +253,18 @@ func createAnnotations(db *databasesv1alpha4.Database) *map[string]string {
 	}
 
 	return &a
+}
+
+func createNodeSelectors(db *databasesv1alpha4.Database) map[string]string {
+	a := map[string]string{}
+
+	if db.Spec.SchemaHero != nil {
+		for k, v := range db.Spec.SchemaHero.NodeSelector {
+			a[k] = v
+		}
+	}
+
+	return a
 }
 
 func (r *ReconcileDatabase) getInstance(request reconcile.Request) (*databasesv1alpha4.Database, error) {
