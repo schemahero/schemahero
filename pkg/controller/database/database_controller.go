@@ -127,13 +127,6 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 													"linux",
 												},
 											},
-											{
-												Key:      "kubernetes.io/arch",
-												Operator: corev1.NodeSelectorOpIn,
-												Values: []string{
-													"amd64",
-												},
-											},
 										},
 									},
 								},

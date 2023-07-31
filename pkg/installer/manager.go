@@ -247,13 +247,6 @@ func manager(namespace string) *appsv1.StatefulSet {
 													"linux",
 												},
 											},
-											{
-												Key:      "kubernetes.io/arch",
-												Operator: corev1.NodeSelectorOpIn,
-												Values: []string{
-													"amd64",
-												},
-											},
 										},
 									},
 								},
