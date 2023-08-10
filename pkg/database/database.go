@@ -77,7 +77,7 @@ func (d *Database) CreateFixturesSync() error {
 		}
 
 		if d.Driver == "postgres" {
-			if spec.Schema.Postgres == nil {
+			if spec.Schema.Postgres == nil || spec.Schema.Postgres.IsDeleted {
 				return nil
 			}
 
@@ -88,7 +88,7 @@ func (d *Database) CreateFixturesSync() error {
 
 			statements = append(statements, createStatements...)
 		} else if d.Driver == "mysql" {
-			if spec.Schema.Mysql == nil {
+			if spec.Schema.Mysql == nil || spec.Schema.Mysql.IsDeleted {
 				return nil
 			}
 
@@ -99,7 +99,7 @@ func (d *Database) CreateFixturesSync() error {
 
 			statements = append(statements, createStatements...)
 		} else if d.Driver == "cockroachdb" {
-			if spec.Schema.CockroachDB == nil {
+			if spec.Schema.CockroachDB == nil || spec.Schema.CockroachDB.IsDeleted {
 				return nil
 			}
 
@@ -110,7 +110,7 @@ func (d *Database) CreateFixturesSync() error {
 
 			statements = append(statements, createStatements...)
 		} else if d.Driver == "sqlite" {
-			if spec.Schema.SQLite == nil {
+			if spec.Schema.SQLite == nil || spec.Schema.SQLite.IsDeleted {
 				return nil
 			}
 
@@ -121,7 +121,7 @@ func (d *Database) CreateFixturesSync() error {
 
 			statements = append(statements, createStatements...)
 		} else if d.Driver == "rqlite" {
-			if spec.Schema.RQLite == nil {
+			if spec.Schema.RQLite == nil || spec.Schema.RQLite.IsDeleted {
 				return nil
 			}
 
@@ -132,7 +132,7 @@ func (d *Database) CreateFixturesSync() error {
 
 			statements = append(statements, createStatements...)
 		} else if d.Driver == "timescaledb" {
-			if spec.Schema.TimescaleDB == nil {
+			if spec.Schema.TimescaleDB == nil || spec.Schema.TimescaleDB.IsDeleted {
 				return nil
 			}
 
