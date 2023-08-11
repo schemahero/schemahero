@@ -31,6 +31,10 @@ sqlite:
 rqlite:
 	make -C tests/rqlite run
 
+.PHONY: fixtures
+fixtures:
+	make -C tests/fixtures run
+
 .PHONY: build
 build: docker-build
 	docker push $(IMAGE)

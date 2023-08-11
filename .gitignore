@@ -30,6 +30,7 @@ dist/
 
 vendor
 integration/**/out.sql
+integration/tests/fixtures/**/fixtures.sql
 sbom/
 cosign.key
 cosign.pub
