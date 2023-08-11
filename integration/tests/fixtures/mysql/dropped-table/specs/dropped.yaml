@@ -1,0 +1,10 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: dropped
+spec:
+  database: schemahero
+  name: dropped
+  schema:
+    mysql:
+      isDeleted: true

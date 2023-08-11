@@ -176,3 +176,16 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
+
+  test-fixtures:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v3.0.1
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - run: make -C integration/tests/fixtures run
