@@ -28,6 +28,7 @@ run: 5.6.51 5.7.40 8.0.31
 	make -C auto-increment-create run
 	make -C auto-increment-add run
 	make -C auto-increment-drop run
+	make -C primary-key-change run
 	make -C add-charset run
 	make -C add-collation run
 	make -C remove-charset run
@@ -62,6 +63,7 @@ run: 5.6.51 5.7.40 8.0.31
 	make -C auto-increment-create run
 	make -C auto-increment-add run
 	make -C auto-increment-drop run
+	make -C primary-key-change run
 	make -C add-charset run
 	make -C add-collation run
 	make -C remove-charset run
@@ -94,6 +96,7 @@ run: 5.6.51 5.7.40 8.0.31
 	make -C index-drop-add run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C primary-key-change run
 	make -C auto-increment-create run
 	make -C auto-increment-add run
 	make -C auto-increment-drop run

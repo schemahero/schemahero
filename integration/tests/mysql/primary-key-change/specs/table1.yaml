@@ -1,0 +1,38 @@
+database: replicated
+name: table1
+schema:
+  mysql:
+    defaultCharset: latin1
+    primaryKey:
+    - team_id
+    - namespace
+    - manifest_id
+    columns:
+    - name: manifest_id
+      type: varchar (255)
+      constraints:
+        notNull: true
+    - name: team_id
+      type: char (36)
+      constraints:
+        notNull: true
+    - name: namespace
+      type: varchar (255)
+      constraints:
+        notNull: true
+    - name: image_name
+      type: varchar (255)
+      constraints:
+        notNull: true
+    - name: image_tag
+      type: varchar (255)
+      constraints:
+        notNull: true
+    - name: signed_json
+      type: mediumtext
+      constraints:
+        notNull: true
+    - name: content_type
+      type: varchar (255)
+      constraints:
+        notNull: false

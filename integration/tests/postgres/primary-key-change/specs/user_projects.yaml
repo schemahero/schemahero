@@ -1,0 +1,26 @@
+database: schemahero
+name: user_projects
+schema:
+  postgres:
+    defaultCharset: latin1
+    primaryKey:
+    - team_id
+    - project_id
+    - manifest_id
+    columns:
+    - name: manifest_id
+      type: text
+      constraints:
+        notNull: true
+    - name: team_id
+      type: text
+      constraints:
+        notNull: true
+    - name: project_id
+      type: text
+      constraints:
+        notNull: true
+    - name: spec
+      type: text
+      constraints:
+        notNull: true
