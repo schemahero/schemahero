@@ -43,6 +43,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C primary-key-change run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
@@ -63,6 +64,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C primary-key-change run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
@@ -83,6 +85,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C primary-key-change run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
@@ -103,6 +106,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C index-create run
 	make -C primary-key-add run
 	make -C primary-key-drop run
+	make -C primary-key-change run
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
