@@ -239,3 +239,7 @@ scan:
 		--severity="HIGH,CRITICAL" \
 		--ignore-unfixed \
 		./
+
+.PHONY: c11y
+c11y:
+	go run ./ci/...
