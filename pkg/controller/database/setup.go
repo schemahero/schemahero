@@ -70,9 +70,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler, name string) error {
 	}
 
 	// Watch for changes to Database kinds
-	err = c.Watch(&source.Kind{
-		Type: &databasesv1alpha4.Database{},
-	}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &databasesv1alpha4.Database{}), &handler.EnqueueRequestForObject{})
 
 	return err
 }

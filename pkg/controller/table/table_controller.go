@@ -59,9 +59,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to Table
-	err = c.Watch(&source.Kind{
-		Type: &schemasv1alpha4.Table{},
-	}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &schemasv1alpha4.Table{}), &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start watch on tables")
 	}
