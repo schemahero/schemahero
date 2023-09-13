@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -127,7 +128,7 @@ func (s *stubClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ..
 	return nil
 }
 
-func (s *stubClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (s *stubClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	if val, ok := s.secret[key]; ok {
 		sec := obj.(*corev1.Secret)
 		val.DeepCopyInto(sec)
@@ -144,4 +145,16 @@ func (s *stubClient) Get(ctx context.Context, key client.ObjectKey, obj client.O
 
 func (s *stubClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	return nil
+}
+
+func (s *stubClient) SubResource(subResource string) client.SubResourceClient {
+	return nil
+}
+
+func (s *stubClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, nil
+}
+
+func (s *stubClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return false, nil
 }
