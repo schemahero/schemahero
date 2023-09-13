@@ -59,9 +59,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to View
-	err = c.Watch(&source.Kind{
-		Type: &schemasv1alpha4.View{},
-	}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &schemasv1alpha4.View{}), &handler.EnqueueRequestForObject{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start watch on views")
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
@@ -50,11 +51,11 @@ func RunCmd() *cobra.Command {
 
 			// Create a new Cmd to provide shared dependencies and start components
 			options := manager.Options{
-				MetricsBindAddress: v.GetString("metrics-addr"),
+				HealthProbeBindAddress: v.GetString("metrics-addr"),
 			}
 
 			if v.GetString("namespace") != "" {
-				options.Namespace = v.GetString("namespace")
+				options.Cache.DefaultNamespaces[v.GetString("namespace")] = cache.Config{}
 			}
 
 			mgr, err := manager.New(cfg, options)
