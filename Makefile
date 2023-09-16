@@ -240,6 +240,6 @@ scan:
 		--ignore-unfixed \
 		./
 
-.PHONY: c11y
-c11y:
+.PHONY: e2e
+e2e:
 	go run ./ci/...

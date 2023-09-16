@@ -43,9 +43,9 @@ func main() {
 	}
 
 	distributions := map[string][]string{
-		"kind": []string{"v1.25.8", "v1.26.3"},
-		"k3s":  []string{"v1.25", "v1.26"},
-		"eks":  []string{"1.26", "1.27"},
+		"kind": {"v1.25.8", "v1.26.3"},
+		"k3s":  {"v1.25", "v1.26"},
+		"eks":  {"1.26", "1.27"},
 	}
 
 	// for each distribution/version, create a cluster, run tests, and delete the cluster

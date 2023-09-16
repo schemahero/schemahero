@@ -1,6 +1,10 @@
 FROM golang:1.19.2 AS build
 WORKDIR /code
-COPY . .
+COPY go.mod .
+COPY go.sum .
+COPY Makefile .
+COPY ./pkg ./pkg
+COPY ./cmd ./cmd
 
 FROM build AS build-manager
 RUN make build-manager
