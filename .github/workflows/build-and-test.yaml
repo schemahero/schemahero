@@ -1,12 +1,12 @@
 name: "Build and test"
 on:
   push:
-    tags-ignore: ["*"] # tags run tagged-release workflow
-    branches: ["**"]
-
+    # tags-ignore: ["*"] # tags run tagged-release workflow
+    # branches: ["**"]
+    branches: [cmx]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/setup-go@v4.1.0
         with:
@@ -38,8 +38,8 @@ jobs:
           name: manager
           path: bin/manager
 
-  test:
-    runs-on: ubuntu-latest
+  unit-test:
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/setup-go@v4.1.0
         with:
@@ -65,8 +65,54 @@ jobs:
       - run: go mod tidy
       - run: make vet test
 
-  test-postgres:
-    runs-on: ubuntu-latest
+  e2e-tests-setup:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4.0.0
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - name: build and push operator image
+        run: make ttl.sh
+
+  e2e-tests:
+    runs-on: ubuntu-22.04
+    needs: e2e-tests-setup
+    strategy:
+      matrix:
+        cluster: [ {distribution: kind, version: v1.25.3}, {distribution: k3s, version: v1.26} ]
+    steps:
+      - uses: actions/checkout@v4.0.0
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v3.0.2
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - id: create-cluster
+        uses: replicatedhq/compatibility-actions/create-cluster@v1
+        with:
+          api-token: ${{ secrets.REPLICATED_TOKEN }}
+          kubernetes-distribution: ${{ matrix.cluster.distribution }}
+          kubernetes-version: ${{ matrix.cluster.version }}
+          ttl: 4h
+          cluster-name: schemahero-${{ matrix.cluster.distribution }}-${{ matrix.cluster.version }}-${{ steps.vars.outputs.sha_short }}
+      - id: install-operator
+        run: |
+          ./bin/kubectl-schemahero install --kubeconfig ${{ steps.create-cluster.outputs.kubeconfig }} --wait
+      - id: remove-cluster
+        uses: replicatedhq/compatibility-actions/remove-cluster@v1
+        with:
+          api-token: ${{ secrets.REPLICATED_TOKEN }}
+          cluster-id: ${{ steps.create-cluster.outputs.cluster-id }}
+
+  integration-test-postgres:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -81,8 +127,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
-  test-mysql:
-    runs-on: ubuntu-latest
+  integration-test-mysql:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -97,8 +143,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
-  test-cockroach:
-    runs-on: ubuntu-latest
+  integration-test-cockroach:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -113,8 +159,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
-  test-cassandra:
-    runs-on: ubuntu-latest
+  integration-test-cassandra:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -129,8 +175,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
 
-  test-sqlite:
-    runs-on: ubuntu-latest
+  integration-test-sqlite:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -145,8 +191,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
 
-  test-rqlite:
-    runs-on: ubuntu-latest
+  integration-test-rqlite:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -161,8 +207,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
 
-  test-timescaledb:
-    runs-on: ubuntu-latest
+  integration-test-timescaledb:
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       matrix:
@@ -177,8 +223,8 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
 
-  test-fixtures:
-    runs-on: ubuntu-latest
+  integration-test-fixtures:
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - uses: actions/checkout@v4.0.0
@@ -189,3 +235,4 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/fixtures run
+
