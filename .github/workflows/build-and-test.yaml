@@ -104,6 +104,7 @@ jobs:
           cluster-name: schemahero-${{ matrix.cluster.distribution }}-${{ matrix.cluster.version }}-${{ steps.vars.outputs.sha_short }}
       - id: install-operator
         run: |
+          chmod +x ./bin/kubectl-schemahero && \
           ./bin/kubectl-schemahero install --kubeconfig ${{ steps.create-cluster.outputs.kubeconfig }} --wait
       - id: remove-cluster
         uses: replicatedhq/compatibility-actions/remove-cluster@v1
