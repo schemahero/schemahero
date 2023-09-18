@@ -333,7 +333,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Set up Cosign
-        uses: sigstore/cosign-installer@v3.0.4
+        uses: sigstore/cosign-installer@v3.1.2
 
       - name: Get signing key
         run: |
