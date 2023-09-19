@@ -177,7 +177,7 @@ jobs:
 
       - name: Create meta data
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ env.REGISTRY}}/${{ env.IMAGE_SCHEMAHERO_MANAGER_NAME }}
@@ -231,7 +231,7 @@ jobs:
 
       - name: Create meta data
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ env.REGISTRY}}/${{ env.IMAGE_SCHEMAHERO_NAME }}
