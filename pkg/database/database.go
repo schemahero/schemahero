@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -49,7 +48,7 @@ func (d *Database) CreateFixturesSync() error {
 			return nil
 		}
 
-		fileData, err := ioutil.ReadFile(filepath.Join(d.InputDir, info.Name()))
+		fileData, err := os.ReadFile(filepath.Join(d.InputDir, info.Name()))
 		if err != nil {
 			return err
 		}
@@ -164,7 +163,7 @@ func (d *Database) CreateFixturesSync() error {
 		os.MkdirAll(d.OutputDir, 0750)
 	}
 
-	err = ioutil.WriteFile(filepath.Join(d.OutputDir, "fixtures.sql"), []byte(output), 0600)
+	err = os.WriteFile(filepath.Join(d.OutputDir, "fixtures.sql"), []byte(output), 0600)
 	if err != nil {
 		return err
 	}
@@ -173,7 +172,7 @@ func (d *Database) CreateFixturesSync() error {
 }
 
 func (d *Database) PlanSyncFromFile(filename string, specType string) ([]string, error) {
-	specContents, err := ioutil.ReadFile(filepath.Clean(filename))
+	specContents, err := os.ReadFile(filepath.Clean(filename))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read file")
 	}

@@ -3,7 +3,6 @@ package schemaherokubectlcli
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -43,7 +42,7 @@ For more control, use the --yaml flag to avoid making any changes to the cluster
 					}
 
 					for filename, manifest := range manifests {
-						if err := ioutil.WriteFile(filepath.Join(v.GetString("out-dir"), filename), manifest, 0600); err != nil {
+						if err := os.WriteFile(filepath.Join(v.GetString("out-dir"), filename), manifest, 0600); err != nil {
 							fmt.Printf("Error: %s\n", err.Error())
 							return err
 						}

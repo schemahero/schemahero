@@ -2,7 +2,6 @@ package generate
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -98,7 +97,7 @@ func (g *Generator) RunSync() error {
 
 		// If there was a outputdir set, write it, else print it
 		if g.OutputDir != "" {
-			if err := ioutil.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(table.Name))), []byte(tableYAML), 0600); err != nil {
+			if err := os.WriteFile(filepath.Join(g.OutputDir, fmt.Sprintf("%s.yaml", sanitizeName(table.Name))), []byte(tableYAML), 0600); err != nil {
 				return err
 			}
 
@@ -123,7 +122,7 @@ func (g *Generator) RunSync() error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(filepath.Join(g.OutputDir, "kustomization.yaml"), kustomizeDoc, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(g.OutputDir, "kustomization.yaml"), kustomizeDoc, 0644); err != nil {
 			return err
 		}
 	}
