@@ -305,6 +305,8 @@ func maybeParseParameterizedColumnType(requestedType string) (string, error) {
 			}
 			columnType = fmt.Sprintf("text (%d)", max)
 		}
+	} else if strings.HasPrefix(requestedType, "json") {
+		columnType = "json"
 	}
 
 	return columnType, nil

@@ -1,0 +1,15 @@
+database: schemahero
+name: other
+schema:
+  mysql:
+    primaryKey:
+      - id
+    columns:
+      - name: id
+        type: integer
+      - name: address
+        type: mediumtext
+      - name: complex_data
+        type: json
+        constraints:
+          notNull: true
