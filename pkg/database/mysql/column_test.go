@@ -67,6 +67,17 @@ func Test_mysqlColumnAsInsert(t *testing.T) {
 			},
 			expectedStatement: "`c` varchar (255) character set latin1 collate latin1_danish_ci not null default '11'",
 		},
+		{
+			name: "json field type",
+			column: &schemasv1alpha4.MysqlTableColumn{
+				Name: "obj",
+				Type: "json",
+				Constraints: &schemasv1alpha4.MysqlTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatement: "`obj` json not null",
+		},
 	}
 
 	for _, test := range tests {
@@ -132,6 +143,18 @@ func Test_InsertColumnStatement(t *testing.T) {
 			},
 			expectedStatement: "alter table `t` add column `a` int (11) auto_increment",
 		},
+		{
+			name:      "add json column",
+			tableName: "t",
+			desiredColumn: &schemasv1alpha4.MysqlTableColumn{
+				Name: "a",
+				Type: "json",
+				Constraints: &schemasv1alpha4.MysqlTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+			},
+			expectedStatement: "alter table `t` add column `a` json not null",
+		},
 	}
 
 	for _, test := range tests {
@@ -190,6 +213,17 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 				Attributes: &types.ColumnAttributes{
 					AutoIncrement: &trueValue,
 				},
+			},
+		},
+		{
+			name: "json",
+			schemaColumn: &schemasv1alpha4.MysqlTableColumn{
+				Name: "j",
+				Type: "json",
+			},
+			expectedColumn: &types.Column{
+				Name:     "j",
+				DataType: "json",
 			},
 		},
 	}
