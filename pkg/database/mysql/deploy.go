@@ -274,9 +274,10 @@ func buildColumnStatements(m *MysqlConnection, tableName string, mysqlTableSchem
 
 	query := `select
 COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, CHARACTER_SET_NAME, COLLATION_NAME
-from information_schema.COLUMNS
-where TABLE_NAME = ?`
-	rows, err := m.db.Query(query, tableName)
+FROM information_schema.COLUMNS
+WHERE TABLE_SCHEMA = ?
+AND TABLE_NAME = ?`
+	rows, err := m.db.Query(query, m.databaseName, tableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query from information_schema")
 	}
