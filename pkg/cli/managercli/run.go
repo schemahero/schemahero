@@ -55,6 +55,9 @@ func RunCmd() *cobra.Command {
 			}
 
 			if v.GetString("namespace") != "" {
+				if options.Cache.DefaultNamespaces == nil {
+					options.Cache.DefaultNamespaces = make(map[string]cache.Config)
+				}
 				options.Cache.DefaultNamespaces[v.GetString("namespace")] = cache.Config{}
 			}
 
