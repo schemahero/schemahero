@@ -2,7 +2,6 @@ package schemaherokubectlcli
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -75,7 +74,7 @@ func ApplyCmd() *cobra.Command {
 						return nil
 					}
 
-					ddl, err := ioutil.ReadFile(filepath.Clean(path))
+					ddl, err := os.ReadFile(filepath.Clean(path))
 					if err != nil {
 						return errors.Wrap(err, "failed to read file in directory")
 					}
@@ -92,7 +91,7 @@ func ApplyCmd() *cobra.Command {
 
 				return nil
 			} else {
-				ddl, err := ioutil.ReadFile(v.GetString("ddl"))
+				ddl, err := os.ReadFile(v.GetString("ddl"))
 				if err != nil {
 					return errors.Wrap(err, "failed to read file")
 				}

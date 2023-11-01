@@ -2,7 +2,6 @@ package schemaherokubectlcli
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -109,7 +108,7 @@ func PlanCmd() *cobra.Command {
 						return nil
 					}
 
-					specContents, err := ioutil.ReadFile(filepath.Clean(path))
+					specContents, err := os.ReadFile(filepath.Clean(path))
 					if err != nil {
 						return errors.Wrap(err, "failed to read file")
 					}

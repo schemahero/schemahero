@@ -21,8 +21,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -34,7 +35,7 @@ import (
 func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.Interface, driver string, valueOrValueFrom ValueOrValueFrom) (string, string, error) {
 	// if the value is in vault and we are using the vault injector, just read the file
 	if valueOrValueFrom.ValueFrom.Vault.AgentInject {
-		vaultInjectedFileContents, err := ioutil.ReadFile("/vault/secrets/schemaherouri")
+		vaultInjectedFileContents, err := os.ReadFile("/vault/secrets/schemaherouri")
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read vault injected file")
 		}
@@ -102,7 +103,7 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.
 		Auth: LoginResponseAuth{},
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to read response body")
 	}
@@ -133,7 +134,7 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.
 		Data: map[string]interface{}{},
 	}
 
-	b, err = ioutil.ReadAll(resp.Body)
+	b, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to read body")
 	}
@@ -197,7 +198,7 @@ func getConnectionURITemplate(vault *Vault, token string, dbName string) (string
 			Data: ConfigDataResponse{},
 		}
 
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to read body")
 		}
