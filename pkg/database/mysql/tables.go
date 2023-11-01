@@ -63,6 +63,7 @@ func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string
 	group_concat(column_name order by seq_in_index)
  	from information_schema.statistics
 	 where table_name = ?
+	 and table_schema = ?
 	 and index_name != 'PRIMARY'
 	 and index_name not in (
 	  select kcu.CONSTRAINT_NAME
@@ -73,9 +74,10 @@ func (m *MysqlConnection) ListTableIndexes(databaseName string, tableName string
 	    on rc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
 	  where tc.CONSTRAINT_TYPE = 'FOREIGN KEY'
 	  and kcu.TABLE_NAME = ?
+	  and kcu.TABLE_SCHEMA = ?		
         )
 	group by 1, 2`
-	rows, err := m.db.Query(query, tableName, tableName)
+	rows, err := m.db.Query(query, tableName, databaseName, tableName, databaseName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query indexes")
 	}
@@ -161,10 +163,10 @@ join information_schema.COLUMNS as c on c.TABLE_SCHEMA = tc.CONSTRAINT_SCHEMA
   and tc.TABLE_NAME = c.TABLE_NAME
   and kcu.TABLE_NAME = c.TABLE_NAME
   and kcu.COLUMN_NAME = c.COLUMN_NAME
-where tc.CONSTRAINT_TYPE = 'PRIMARY KEY' and tc.TABLE_NAME = ?
+where tc.CONSTRAINT_TYPE = 'PRIMARY KEY' and tc.TABLE_NAME = ? and tc.TABLE_SCHEMA = ?
 order by kcu.ORDINAL_POSITION`
 
-	rows, err := m.db.Query(query, tableName)
+	rows, err := m.db.Query(query, tableName, m.databaseName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query primary keys")
 	}
