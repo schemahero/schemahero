@@ -60,6 +60,18 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		return reconcile.Result{}, err
 	}
 
+	// Check if databaseInstance is nil
+	if databaseInstance == nil {
+		logger.Debug("databaseInstance is nil")
+		return reconcile.Result{}, errors.New("databaseInstance is nil")
+	}
+
+	// Check if SchemaHero is nil
+	if databaseInstance.Spec.SchemaHero == nil {
+		logger.Debug("SchemaHero is nil")
+		return reconcile.Result{}, errors.New("SchemaHero is nil")
+	}
+
 	// A "database" object is realized in the cluster as a deployment object,
 	// in the namespace specified in the custom resource,
 
@@ -130,8 +142,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 					Annotations: vaultAnnotations,
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector: databaseInstance.Spec.SchemaHero.NodeSelector,
-					Tolerations:  tolerations,
+					Tolerations: tolerations,
 					Affinity: &corev1.Affinity{
 						NodeAffinity: &corev1.NodeAffinity{
 							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{

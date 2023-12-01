@@ -149,7 +149,7 @@ func TestDbControllerTest(t *testing.T) {
 				err = client.Create(context.Background(), &db)
 				assert.NoError(t, err)
 
-				ss, err := GetStatefulSet(client, ns.Name, fmt.Sprintf("%s-controller", db.Name), 5, 1)
+				ss, err := GetStatefulSet(client, ns.Name, fmt.Sprintf("%s-controller", db.Name), 20, 2)
 				assert.NoError(t, err)
 
 				actualLabels := ss.Spec.Template.ObjectMeta.Labels
