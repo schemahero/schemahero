@@ -31,9 +31,17 @@ type DatabaseConnection struct {
 	TimescaleDB *PostgresConnection    `json:"timescaledb,omitempty"`
 }
 
+type Toleration struct {
+	Effect   string `json:"effect,omitempty"`
+	Key      string `json:"key,omitempty"`
+	Operator string `json:"operator,omitempty"`
+	Value    string `json:"value,omitempty"`
+}
+
 type SchemaHero struct {
 	Image        string            `json:"image,omitempty"`
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+	Tolerations  []Toleration      `json:"tolerations,omitempty"`
 }
 
 type DatabaseSpec struct {
