@@ -195,7 +195,7 @@ jobs:
 
       - name: Release manager
         id: release-manager
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: deploy/Dockerfile.multiarch
@@ -249,7 +249,7 @@ jobs:
 
       - name: Release schemahero
         id: release-schemahero
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: deploy/Dockerfile.multiarch
