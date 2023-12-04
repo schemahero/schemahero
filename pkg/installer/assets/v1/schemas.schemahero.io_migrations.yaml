@@ -87,6 +87,7 @@ spec:
                 - APPROVED
                 - EXECUTED
                 - INVALID
+                - REJECTED
                 type: string
               plannedAt:
                 description: PlannedAt is the unix nano timestamp when the plan was

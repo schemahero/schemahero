@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +kubebuilder:validation:Enum=PLANNED;APPROVED;EXECUTED;INVALID
+// +kubebuilder:validation:Enum=PLANNED;APPROVED;EXECUTED;INVALID;REJECTED
 type Phase string
 
 const (
