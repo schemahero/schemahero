@@ -67,7 +67,14 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 		zap.String("name", databaseInstance.Name))
 
 	statefulsetName := fmt.Sprintf("%s-controller", databaseInstance.Name)
-	schemaHeroManagerImage := fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
+
+	// override default schemahero image for plans and applies, if present
+	var schemaHeroManagerImage string
+	if databaseInstance.Spec.SchemaHero != nil && databaseInstance.Spec.SchemaHero.Image != "" {
+		schemaHeroManagerImage = databaseInstance.Spec.SchemaHero.Image
+	} else {
+		schemaHeroManagerImage = fmt.Sprintf("%s:%s", r.managerImage, r.managerTag)
+	}
 
 	vaultAnnotations, err := databaseInstance.GetVaultAnnotations()
 	if err != nil {
@@ -90,6 +97,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 	labels := createLabels(databaseInstance)
 	annotations := createAnnotations(databaseInstance)
 	nodeSelectors := createNodeSelectors(databaseInstance)
+	tolerations := createTolerations(databaseInstance)
 	desiredStatefulSet := appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -134,6 +142,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 						},
 					},
 					NodeSelector:                  nodeSelectors,
+					Tolerations:                   tolerations,
 					TerminationGracePeriodSeconds: &tenSeconds,
 					ServiceAccountName:            serviceAccountName,
 					Containers: []corev1.Container{
@@ -231,6 +240,24 @@ func createNodeSelectors(db *databasesv1alpha4.Database) map[string]string {
 	if db.Spec.SchemaHero != nil {
 		for k, v := range db.Spec.SchemaHero.NodeSelector {
 			a[k] = v
+		}
+	}
+
+	return a
+}
+
+func createTolerations(db *databasesv1alpha4.Database) []corev1.Toleration {
+	a := []corev1.Toleration{}
+
+	if db.Spec.SchemaHero != nil {
+		for k, v := range db.Spec.SchemaHero.Tolerations {
+			c := corev1.Toleration{
+				Effect:   corev1.TaintEffect(v.Effect),
+				Key:      v.Key,
+				Operator: corev1.TolerationOperator(v.Operator),
+				Value:    v.Value,
+			}
+			a[k] = c
 		}
 	}
 
