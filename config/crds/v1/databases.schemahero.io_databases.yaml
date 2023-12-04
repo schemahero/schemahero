@@ -3564,22 +3564,7 @@ spec:
                   nodeSelector:
                     additionalProperties:
                       type: string
-                    default: {}
                     type: object
-                  tolerations:
-                    type: array
-                    default: []
-                    items:
-                      type: object
-                      properties:
-                        key:
-                          type: string
-                        operator:
-                          type: string
-                        value:
-                          type: string
-                        effect:
-                          type: string
                 type: object
               template:
                 properties:
