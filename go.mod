@@ -19,7 +19,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
 	github.com/xo/dburl v0.19.1
-	go.uber.org/zap v1.25.0
+	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.2
 	k8s.io/apiextensions-apiserver v0.28.2
