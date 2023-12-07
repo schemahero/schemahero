@@ -1,0 +1,29 @@
+contents:
+  repositories:
+    - https://packages.wolfi.dev/os
+    - ./packages/
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    - ./melange.rsa.pub
+  packages:
+    - schemahero-manager-head  # This is expected to be built locally by `melange`.
+    - bash
+    - busybox
+    - curl
+    - wolfi-baselayout
+
+accounts:
+  groups:
+    - groupname: schemahero-manager
+      gid: 1001
+  users:
+    - username: schemahero-manager
+      uid: 1001
+      gid: 1001
+  run-as: schemahero-manager
+
+environment:
+  VERSION: ${GIT_TAG}
+
+entrypoint:
+  command: /manager run

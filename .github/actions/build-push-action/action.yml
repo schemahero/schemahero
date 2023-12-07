@@ -1,0 +1,60 @@
+name: 'Build and push images with Chainguard'
+description: 'Composite action for building and pushing images with Chainguard'
+inputs:
+  context:
+    description: 'Path to the context directory'
+    required: true
+
+  image-name:
+    description: 'Full destination image name'
+    required: true
+
+  git-tag:
+    description: 'Git tag'
+    required: true
+
+  registry-username:
+    description: 'Username to login to registry'
+    default: ''
+    required: false
+
+  registry-password:
+    description: 'Password to login to registry'
+    default: ''
+    required: false
+
+outputs:
+  digest:
+    description: "The digest of the pushed image"
+    value: ${{ steps.apko-publish.outputs.digest }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: template melange and apko configs
+      shell: bash
+      run: |
+        export GIT_TAG=${{ inputs.git-tag }}
+        envsubst '${GIT_TAG}' < ${{ inputs.context }}/melange.yaml.tmpl > ${{ inputs.context }}/melange.yaml
+        envsubst '${GIT_TAG}' < ${{ inputs.context }}/apko.yaml.tmpl > ${{ inputs.context }}/apko.yaml
+
+    - id: cache-dir
+      shell: bash
+      run: echo "cache_dir=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
+
+    - uses: chainguard-dev/actions/melange-build@main
+      with:
+        config: ${{ inputs.context }}/melange.yaml
+        archs: x86_64,amd64,arm64
+        sign-with-temporary-key: true
+        cache-dir: ${{ steps.cache-dir.outputs.cache_dir }}
+
+    - uses: chainguard-images/actions/apko-publish@main
+      id: apko-publish
+      with:
+        config: ${{ inputs.context }}/apko.yaml
+        tag: ${{ inputs.image-name }}
+        archs: x86_64,amd64,arm64
+        vcs-url: true
+        generic-user: ${{ inputs.registry-username }}
+        generic-pass: ${{ inputs.registry-password }}

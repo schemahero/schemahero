@@ -1,6 +1,6 @@
 
 SHELL := /bin/bash
-VERSION ?=`git describe --tags`
+VERSION ?= $(if $(GIT_TAG),$(GIT_TAG),$(shell git describe --tags))
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 VERSION_PACKAGE = github.com/schemahero/schemahero/pkg/version
 GIT_TREE = $(shell git rev-parse --is-inside-work-tree 2>/dev/null)
@@ -226,10 +226,10 @@ build-schemahero:
 
 .PHONY: cosign-sign
 cosign-sign:
-	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero@${DIGEST_SCHEMAHERO}
-	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
-	cosign sign --yes --key ./cosign.key schemahero/schemahero@${DIGEST_SCHEMAHERO}
-	cosign sign --yes --key ./cosign.key schemahero/schemahero-manager@${DIGEST_SCHEMAHERO_MANAGER}
+	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx ${DIGEST_SCHEMAHERO}
+	# cosign attach sbom --sbom ./sbom/bom-go-mod.spdx ${DIGEST_SCHEMAHERO_MANAGER}
+	cosign sign --yes --key ./cosign.key ${DIGEST_SCHEMAHERO}
+	cosign sign --yes --key ./cosign.key ${DIGEST_SCHEMAHERO_MANAGER}
 
 .PHONY: scan
 scan:
