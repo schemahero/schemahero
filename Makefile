@@ -1,6 +1,6 @@
 
 SHELL := /bin/bash
-VERSION ?=`git describe --tags`
+VERSION ?= $(if $(GIT_TAG),$(GIT_TAG),$(shell git describe --tags))
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 VERSION_PACKAGE = github.com/schemahero/schemahero/pkg/version
 GIT_TREE = $(shell git rev-parse --is-inside-work-tree 2>/dev/null)

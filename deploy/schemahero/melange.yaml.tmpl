@@ -25,5 +25,7 @@ pipeline:
       export DESTDIR="${{targets.destdir}}"
       mkdir -p "${DESTDIR}"
 
+      export GIT_TAG=${{package.version}}
+
       make build-schemahero
       mv bin/kubectl-schemahero "${DESTDIR}/schemahero"
