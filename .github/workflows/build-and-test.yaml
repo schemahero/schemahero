@@ -15,8 +15,7 @@ jobs:
           context: deploy/schemahero
           image-name: ttl.sh/automated-${{ github.run_id }}/schemahero:${{ github.sha }}
           git-tag: ${{ github.sha }}
-      - id: tar packages directory
-        run: |
+      - run: |
           ls -lah packages
           tar -czvf schemahero-packages.tar.gz packages
       - uses: actions/upload-artifact@v2
