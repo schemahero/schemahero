@@ -5,187 +5,206 @@ on:
     branches: ["**"]
 
 jobs:
-  build:
+  build-docker-schemahero:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v4.1.0
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/build-push-action
         with:
-          go-version: "1.19.2"
-
-      - id: go-cache-paths
+          context: deploy/schemahero
+          image-name: ttl.sh/automated-${{ github.run_id }}/schemahero:${{ github.sha }}
+          git-tag: ${{ github.sha }}
+      - id: tar packages directory
         run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
-
-      - uses: actions/checkout@v4.1.1
-
-      - uses: actions/cache@v2
+          ls -lah packages
+          tar -czvf schemahero-packages.tar.gz packages
+      - uses: actions/upload-artifact@v2
         with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
-      - uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-mod }}
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+          name: schemahero-packages
+          path: schemahero-packages.tar.gz
 
-      - run: make manifests bin/kubectl-schemahero manager
-      - uses: actions/upload-artifact@v3.1.3
-        with:
-          name: kubectl-schemahero
-          path: bin/kubectl-schemahero
-      - uses: actions/upload-artifact@v3.1.3
-        with:
-          name: manager
-          path: bin/manager
+  # build:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/setup-go@v4.1.0
+  #       with:
+  #         go-version: "1.19.2"
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-go@v4.1.0
-        with:
-          go-version: "1.19.2"
+  #     - id: go-cache-paths
+  #       run: |
+  #         echo "::set-output name=go-build::$(go env GOCACHE)"
+  #         echo "::set-output name=go-mod::$(go env GOMODCACHE)"
 
-      - id: go-cache-paths
-        run: |
-          echo "::set-output name=go-build::$(go env GOCACHE)"
-          echo "::set-output name=go-mod::$(go env GOMODCACHE)"
+  #     - uses: actions/checkout@v4.1.1
 
-      - uses: actions/checkout@v4.1.1
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: ${{ steps.go-cache-paths.outputs.go-build }}
+  #         key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: ${{ steps.go-cache-paths.outputs.go-mod }}
+  #         key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
-      - uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-build }}
-          key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
-      - uses: actions/cache@v2
-        with:
-          path: ${{ steps.go-cache-paths.outputs.go-mod }}
-          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+  #     - run: make manifests bin/kubectl-schemahero manager
+  #     - uses: actions/upload-artifact@v3.1.3
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/kubectl-schemahero
+  #     - uses: actions/upload-artifact@v3.1.3
+  #       with:
+  #         name: manager
+  #         path: bin/manager
 
-      - run: make fmt
-      - run: go mod tidy
-      - run: make vet test
+  # test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/setup-go@v4.1.0
+  #       with:
+  #         go-version: "1.19.2"
 
-  test-postgres:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
+  #     - id: go-cache-paths
+  #       run: |
+  #         echo "::set-output name=go-build::$(go env GOCACHE)"
+  #         echo "::set-output name=go-mod::$(go env GOMODCACHE)"
 
-  test-mysql:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        mysql_version: ["5.6.51", "5.7.40", "8.0.31"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
+  #     - uses: actions/checkout@v4.1.1
 
-  test-cockroach:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        cockroachdb_version: ["v19.2.12", "v20.2.19", "v21.2.17", "v22.1.11"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: ${{ steps.go-cache-paths.outputs.go-build }}
+  #         key: ${{ runner.os }}-go-build-${{ hashFiles('**/go.sum') }}
+  #     - uses: actions/cache@v2
+  #       with:
+  #         path: ${{ steps.go-cache-paths.outputs.go-mod }}
+  #         key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
-  test-cassandra:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        cassandra_version: ["3.11.10"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
+  #     - run: make fmt
+  #     - run: go mod tidy
+  #     - run: make vet test
 
-  test-sqlite:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        sqlite_version: ["3.39.3"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
+  # test-postgres:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
-  test-rqlite:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        rqlite_version: ["6.10.2", "7.6.1"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
+  # test-mysql:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       mysql_version: ["5.6.51", "5.7.40", "8.0.31"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
-  test-timescaledb:
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        timescaledb_version: ["2.9.3-pg14"]
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
+  # test-cockroach:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       cockroachdb_version: ["v19.2.12", "v20.2.19", "v21.2.17", "v22.1.11"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
-  test-fixtures:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4.1.1
-      - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v3.0.2
-        with:
-          name: kubectl-schemahero
-          path: bin/
-      - run: chmod +x bin/kubectl-schemahero
-      - run: make -C integration/tests/fixtures run
+  # test-cassandra:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       cassandra_version: ["3.11.10"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
+
+  # test-sqlite:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       sqlite_version: ["3.39.3"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
+
+  # test-rqlite:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       rqlite_version: ["6.10.2", "7.6.1"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
+
+  # test-timescaledb:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       timescaledb_version: ["2.9.3-pg14"]
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
+
+  # test-fixtures:
+  #   runs-on: ubuntu-latest
+  #   needs: build
+  #   steps:
+  #     - uses: actions/checkout@v4.1.1
+  #     - name: Download kubectl-schemahero binary
+  #       uses: actions/download-artifact@v3.0.2
+  #       with:
+  #         name: kubectl-schemahero
+  #         path: bin/
+  #     - run: chmod +x bin/kubectl-schemahero
+  #     - run: make -C integration/tests/fixtures run
