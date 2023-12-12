@@ -45,7 +45,7 @@ runs:
     - uses: chainguard-dev/actions/melange-build@main
       with:
         config: ${{ inputs.context }}/melange.yaml
-        archs: x86_64,amd64,arm64
+        archs: amd64,arm64
         sign-with-temporary-key: true
         cache-dir: ${{ steps.cache-dir.outputs.cache_dir }}
 
@@ -54,7 +54,7 @@ runs:
       with:
         config: ${{ inputs.context }}/apko.yaml
         tag: ${{ inputs.image-name }}
-        archs: x86_64,amd64,arm64
+        archs: amd64,arm64
         vcs-url: true
         generic-user: ${{ inputs.registry-username }}
         generic-pass: ${{ inputs.registry-password }}
