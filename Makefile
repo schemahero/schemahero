@@ -216,6 +216,10 @@ release-tarballs:
 
 	rm -rf ./kubectl-schemahero
 
+	# Include packages produced by melange so that they can be used when building images with apko in other projects.
+	mv schemahero-manager-packages.tar.gz ./release/schemahero-manager-packages.tar.gz
+	mv schemahero-packages.tar.gz ./release/schemahero-packages.tar.gz
+
 .PHONY: build-manager
 build-manager:
 	CGO_ENABLED=0 make bin/manager
