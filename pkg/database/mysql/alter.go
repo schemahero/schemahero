@@ -26,11 +26,6 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				ensureColumnConstraintsNotNullTrue(column)
 			}
 
-			// this is a pretty rough hack for now
-			if column.Collation == "" && existingColumn.Collation != "" {
-				column.Collation = existingColumn.Collation
-			}
-
 			if columnsMatch(*existingColumn, *column, defaultCharset, defaultCollation) {
 				return []string{}, nil
 			}
@@ -50,42 +45,41 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 	}.DDL(), nil
 }
 
-func columnsMatch(col1 types.Column, col2 types.Column, defaultCharset string, defaultCollation string) bool {
-	if col1.DataType != col2.DataType {
+func columnsMatch(existingCol types.Column, specCol types.Column, defaultCharset string, defaultCollation string) bool {
+	if existingCol.DataType != specCol.DataType {
 		return false
 	}
 
-	if col1.Charset == "" {
-		col1.Charset = defaultCharset
+	if existingCol.Charset == "" {
+		existingCol.Charset = defaultCharset
 	}
-	if col2.Charset == "" {
-		col2.Charset = defaultCharset
+	if specCol.Charset == "" {
+		specCol.Charset = defaultCharset
 	}
-	if col1.Collation == "" {
-		col1.Collation = defaultCollation
-	}
-	if col2.Collation == "" {
-		col2.Collation = defaultCollation
+
+	// Don't override collation in spec if it's not set. MySQL will select collation based on charset.
+	if existingCol.Collation == "" {
+		existingCol.Collation = defaultCollation
 	}
 
 	// now that we've applied defaults, let's see if they actually are different
-	if col1.Charset != col2.Charset {
+	if existingCol.Charset != specCol.Charset {
 		return false
 	}
 
-	if col1.Collation != col2.Collation {
+	if specCol.Collation != "" && existingCol.Collation != specCol.Collation {
 		return false
 	}
 
-	if col1.ColumnDefault != nil && col2.ColumnDefault == nil {
+	if existingCol.ColumnDefault != nil && specCol.ColumnDefault == nil {
 		return false
-	} else if col1.ColumnDefault == nil && col2.ColumnDefault != nil {
+	} else if existingCol.ColumnDefault == nil && specCol.ColumnDefault != nil {
 		return false
-	} else if col1.ColumnDefault != nil && col2.ColumnDefault != nil && *col1.ColumnDefault != *col2.ColumnDefault {
+	} else if existingCol.ColumnDefault != nil && specCol.ColumnDefault != nil && *existingCol.ColumnDefault != *specCol.ColumnDefault {
 		return false
 	}
 
-	col1Constraints, col2Constraints := col1.Constraints, col2.Constraints
+	col1Constraints, col2Constraints := existingCol.Constraints, specCol.Constraints
 	if col1Constraints == nil {
 		col1Constraints = &types.ColumnConstraints{}
 	}
@@ -97,7 +91,7 @@ func columnsMatch(col1 types.Column, col2 types.Column, defaultCharset string, d
 		return false
 	}
 
-	col1Attributes, col2Attributes := col1.Attributes, col2.Attributes
+	col1Attributes, col2Attributes := existingCol.Attributes, specCol.Attributes
 	if col1Attributes == nil {
 		col1Attributes = &types.ColumnAttributes{}
 	}
