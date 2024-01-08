@@ -10,3 +10,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"
