@@ -8,19 +8,19 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/config v1.26.3
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.14
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.44.6
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.44.7
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mattn/go-sqlite3 v1.14.19
-	github.com/onsi/gomega v1.29.0
+	github.com/onsi/gomega v1.30.0
 	github.com/pkg/errors v0.9.1
 	github.com/rqlite/gorqlite v0.0.0-20221028154453-256f31831ff3
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
-	github.com/xo/dburl v0.20.0
+	github.com/xo/dburl v0.20.2
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.29.0
@@ -28,7 +28,7 @@ require (
 	k8s.io/apimachinery v0.29.0
 	k8s.io/cli-runtime v0.29.0
 	k8s.io/client-go v0.29.0
-	sigs.k8s.io/controller-runtime v0.16.2
+	sigs.k8s.io/controller-runtime v0.16.3
 )
 
 require (
