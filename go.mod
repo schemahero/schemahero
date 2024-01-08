@@ -3,22 +3,22 @@ module github.com/schemahero/schemahero
 go 1.19
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.24.0
-	github.com/aws/aws-sdk-go-v2/config v1.18.40
-	github.com/aws/aws-sdk-go-v2/credentials v1.16.9
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.44.6
+	github.com/aws/aws-sdk-go-v2 v1.24.1
+	github.com/aws/aws-sdk-go-v2/config v1.26.3
+	github.com/aws/aws-sdk-go-v2/credentials v1.16.14
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.44.7
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/jackc/pgx/v4 v4.18.1
-	github.com/mattn/go-sqlite3 v1.14.18
-	github.com/onsi/gomega v1.29.0
+	github.com/mattn/go-sqlite3 v1.14.19
+	github.com/onsi/gomega v1.30.0
 	github.com/pkg/errors v0.9.1
 	github.com/rqlite/gorqlite v0.0.0-20221028154453-256f31831ff3
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
-	github.com/xo/dburl v0.20.0
+	github.com/xo/dburl v0.20.2
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.29.0
@@ -26,20 +26,20 @@ require (
 	k8s.io/apimachinery v0.29.0
 	k8s.io/cli-runtime v0.29.0
 	k8s.io/client-go v0.29.0
-	sigs.k8s.io/controller-runtime v0.16.2
+	sigs.k8s.io/controller-runtime v0.16.3
 )
 
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.9 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.9 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.9 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.3.42 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.8 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.18.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.26.2 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.11 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.10 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.10 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.7.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.18.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.6 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.26.7 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
