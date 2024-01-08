@@ -11,7 +11,7 @@ require (
 	github.com/gocql/gocql v0.0.0-20200815110948-5378c8f664e9
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/mattn/go-sqlite3 v1.14.19
-	github.com/onsi/gomega v1.29.0
+	github.com/onsi/gomega v1.30.0
 	github.com/pkg/errors v0.9.1
 	github.com/rqlite/gorqlite v0.0.0-20221028154453-256f31831ff3
 	github.com/spf13/cobra v1.8.0
