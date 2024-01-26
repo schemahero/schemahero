@@ -93,7 +93,7 @@ func PostgresqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.PostgresqlTableIn
 	}
 
 	index := Index{
-		Columns:  schemaIndex.Columns,
+		Columns:  cleanedCols,
 		Name:     schemaIndex.Name,
 		IsUnique: schemaIndex.IsUnique,
 	}
