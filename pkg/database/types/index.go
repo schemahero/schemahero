@@ -120,7 +120,12 @@ func GenerateMysqlIndexName(tableName string, schemaIndex *schemasv1alpha4.Mysql
 }
 
 func GeneratePostgresqlIndexName(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
-	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
+	safeCols := []string{}
+	for _, col := range schemaIndex.Columns {
+		safeCols = append(safeCols, strings.ReplaceAll(col, " ", "_"))
+	}
+
+	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(safeCols, "_"))
 }
 
 func GenerateSqliteIndexName(tableName string, schemaIndex *schemasv1alpha4.SqliteTableIndex) string {
