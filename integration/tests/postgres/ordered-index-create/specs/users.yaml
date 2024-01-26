@@ -5,9 +5,14 @@ schema:
   postgres:
     primaryKey: [id]
     indexes:
-      - columns:
+      - name: users_tz_priority_1 # this index already exists and should not be modified
+        columns:
           - tz_1 desc
           - tz_2 asc
+      - name: users_tz_priority_2 # this index should be created fresh
+        columns:
+          - tz_2 desc
+          - tz_3 asc
     columns:
       - name: id
         type: integer
@@ -18,4 +23,6 @@ schema:
       - name: tz_1
         type: timestamp
       - name: tz_2
-        type: timestamp with time zone
+        type: timestamp
+      - name: tz_3
+        type: timestamp
