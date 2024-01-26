@@ -180,7 +180,6 @@ DesiredIndexLoop:
 
 			if currentIndex.Name == index.Name {
 				matchedIndex = currentIndex
-				fmt.Printf("found existing index %v as match for %v\n", currentIndex, index)
 			}
 		}
 
