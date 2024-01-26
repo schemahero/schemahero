@@ -82,6 +82,16 @@ func MysqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.MysqlTableIndex) *Inde
 }
 
 func PostgresqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.PostgresqlTableIndex) *Index {
+	cleanedCols := []string{}
+
+	for _, col := range schemaIndex.Columns {
+		cleanedCol := col
+		cleanedCol = strings.TrimSuffix(cleanedCol, " ASC")
+		cleanedCol = strings.TrimSuffix(cleanedCol, " asc")
+
+		cleanedCols = append(cleanedCols, cleanedCol)
+	}
+
 	index := Index{
 		Columns:  schemaIndex.Columns,
 		Name:     schemaIndex.Name,
