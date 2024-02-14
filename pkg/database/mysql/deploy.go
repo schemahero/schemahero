@@ -188,7 +188,7 @@ WHERE schema_name = ?`
 			row = m.db.QueryRow(query, mysqlTableSchema.DefaultCharset)
 			var defaultCollationForCharset string
 			if err := row.Scan(&defaultCollationForCharset); err != nil {
-				return nil, errors.Wrap(err, "failed to read default collation for charset")
+				return nil, errors.Wrapf(err, "failed to read default collation for charset %s", mysqlTableSchema.DefaultCharset)
 			}
 			mysqlTableSchema.Collation = defaultCollationForCharset
 		}
@@ -200,7 +200,7 @@ WHERE schema_name = ?`
 		row = m.db.QueryRow(query, mysqlTableSchema.Collation)
 		var collationCharset string
 		if err := row.Scan(&collationCharset); err != nil {
-			return nil, errors.Wrap(err, "failed to read charset for collation")
+			return nil, errors.Wrapf(err, "failed to read charset for collation %s", mysqlTableSchema.Collation)
 		}
 		mysqlTableSchema.DefaultCharset = collationCharset
 	}
