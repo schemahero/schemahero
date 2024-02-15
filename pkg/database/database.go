@@ -257,7 +257,12 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 		spec = &plainSpec
 	}
 
-	return d.PlanSyncTableSpec(spec)
+	plan, err := d.PlanSyncTableSpec(spec)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to plan table sync for %s", spec.Name)
+	}
+
+	return plan, nil
 }
 
 func (d *Database) SortSpecs(specs []types.Spec) {
