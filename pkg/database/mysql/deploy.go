@@ -179,28 +179,26 @@ WHERE schema_name = ?`
 
 	// fill in defaults where needed
 	if mysqlTableSchema.Collation == "" {
+		// If charset didn't change, don't change collation. MySQL has it set to the default for the charset already.
+		if mysqlTableSchema.DefaultCharset == existingTableCharset {
+			return []string{}, nil
+		}
+
+		// If default charset is set, but not collation, let the database pick correct collation automatically
+		// Char sets that are aliases (like utf8) will not necessarily have a record in information_schema.character_sets,
+		// so we can't always look up the correct collation
 		if mysqlTableSchema.DefaultCharset == "" {
 			mysqlTableSchema.Collation = databaseCollation
 			mysqlTableSchema.DefaultCharset = databaseCharset
-		} else {
-			// get the default collation for the charset
-			query = `select DEFAULT_COLLATE_NAME from information_schema.character_sets where CHARACTER_SET_NAME = ?`
-			row = m.db.QueryRow(query, mysqlTableSchema.DefaultCharset)
-			var defaultCollationForCharset string
-			if err := row.Scan(&defaultCollationForCharset); err != nil {
-				return nil, errors.Wrap(err, "failed to read default collation for charset")
-			}
-			mysqlTableSchema.Collation = defaultCollationForCharset
 		}
-	}
-	if mysqlTableSchema.DefaultCharset == "" {
+	} else if mysqlTableSchema.DefaultCharset == "" {
 		// here the collation must have been set, but not the charset
 		// get the charset associated with the collation
 		query = `select CHARACTER_SET_NAME from information_schema.collations where COLLATION_NAME = ?`
 		row = m.db.QueryRow(query, mysqlTableSchema.Collation)
 		var collationCharset string
 		if err := row.Scan(&collationCharset); err != nil {
-			return nil, errors.Wrap(err, "failed to read charset for collation")
+			return nil, errors.Wrapf(err, "failed to read charset for collation %s", mysqlTableSchema.Collation)
 		}
 		mysqlTableSchema.DefaultCharset = collationCharset
 	}
@@ -222,9 +220,15 @@ WHERE schema_name = ?`
 		return []string{}, nil
 	}
 
-	return []string{
-		fmt.Sprintf("alter table %s convert to character set %s collate %s", tableName, mysqlTableSchema.DefaultCharset, mysqlTableSchema.Collation),
-	}, nil
+	if mysqlTableSchema.Collation == "" {
+		return []string{
+			fmt.Sprintf("alter table %s convert to character set %s", tableName, mysqlTableSchema.DefaultCharset),
+		}, nil
+	} else {
+		return []string{
+			fmt.Sprintf("alter table %s convert to character set %s collate %s", tableName, mysqlTableSchema.DefaultCharset, mysqlTableSchema.Collation),
+		}, nil
+	}
 }
 
 // getDefaultCharsetAndCollationForTable will return the applied charset, collation for the specifed table

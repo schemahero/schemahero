@@ -1,12 +1,15 @@
 database: schemahero
-name: projects
+name: users
 schema:
   mysql:
     primaryKey: [id]
-    defaultCharset: utf16
-    collation: utf16_general_ci
+    defaultCharset: utf8
     columns:
       - name: id
         type: integer
+        constraints:
+          notNull: true
+      - name: email
+        type: varchar (255)
         constraints:
           notNull: true
