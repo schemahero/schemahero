@@ -8,7 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
+func GenerateOperatorYAML(namespace string, managerImage string) (map[string][]byte, error) {
 	manifests := map[string][]byte{}
 
 	manifest, err := databasesCRDYAML()
@@ -65,7 +65,7 @@ func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	}
 	manifests["secret.yaml"] = manifest
 
-	manifest, err = managerYAML(namespace)
+	manifest, err = managerYAML(namespace, managerImage)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get manager")
 	}
@@ -74,7 +74,7 @@ func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	return manifests, nil
 }
 
-func InstallOperator(namespace string) (bool, error) {
+func InstallOperator(namespace string, managerImage string) (bool, error) {
 	// todo create and pass this from higher
 	ctx := context.Background()
 
@@ -124,7 +124,7 @@ func InstallOperator(namespace string) (bool, error) {
 		return false, errors.Wrap(err, "failed to create secret")
 	}
 
-	wasUpgraded, err := ensureManager(ctx, client, namespace)
+	wasUpgraded, err := ensureManager(ctx, client, namespace, managerImage)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to create manager")
 	}
