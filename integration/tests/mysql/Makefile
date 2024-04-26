@@ -10,9 +10,9 @@ run: 5.6.51 5.7.40 8.0.31
 .PHONY: 5.6.51
 5.6.51: export MYSQL_VERSION = 5.6.51
 5.6.51:
+	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
-	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -44,9 +44,9 @@ run: 5.6.51 5.7.40 8.0.31
 .PHONY: 5.7.40
 5.7.40: export MYSQL_VERSION = 5.7.40
 5.7.40:
+	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
-	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -78,9 +78,9 @@ run: 5.6.51 5.7.40 8.0.31
 .PHONY: 8.0.31
 8.0.31: export MYSQL_VERSION = 8.0.31
 8.0.31:
+	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
-	make -C medium-blob run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
