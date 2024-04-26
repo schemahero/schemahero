@@ -204,10 +204,5 @@ func (r *ReconcileDatabaseSchema) reconcileMysqlDatabaseSchema(databaseInstance 
 		return reconcile.Result{}, nil
 	}
 
-	query = fmt.Sprintf("alter database `%s` character set '%s' collate '%s'", cfg.DBName, defaultServerCharset, defaultServerCollation)
-	if _, err := db.Exec(query); err != nil {
-		return reconcile.Result{}, errors.Wrap(err, "failed to update database character set and collation")
-	}
-
 	return reconcile.Result{}, nil
 }
