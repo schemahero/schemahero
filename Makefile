@@ -239,3 +239,13 @@ scan:
 		--severity="HIGH,CRITICAL" \
 		--ignore-unfixed \
 		./
+
+.PHONY: e2e
+e2e:
+# e2e: bin/kubectl-schemahero manager
+	./hack/e2e.sh
+
+.PHONY: sync
+sync:
+	rsync -avz --exclude 'vendor' --exclude 'bin' --exclude '.git' \
+	. root@docker:/root/go/src/github.com/schemahero/schemahero
