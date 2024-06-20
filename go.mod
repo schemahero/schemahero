@@ -1,7 +1,6 @@
 module github.com/schemahero/schemahero
 
-go 1.21
-toolchain go1.22.4
+go 1.22.4
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.27.2
