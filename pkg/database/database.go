@@ -207,6 +207,12 @@ func (d *Database) PlanSync(specContents []byte, specType string) ([]string, err
 			return nil, errors.Wrapf(err, "failed to plan type sync")
 		}
 		return plan, nil
+	} else if specType == "view" {
+		plan, err := d.planViewSync(specContents)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan view sync")
+		}
+		return plan, nil
 	}
 
 	return nil, errors.New("unknown spec type")
@@ -260,6 +266,32 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 	plan, err := d.PlanSyncTableSpec(spec)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to plan table sync for %s", spec.Name)
+	}
+
+	return plan, nil
+}
+
+func (d *Database) planViewSync(specContents []byte) ([]string, error) {
+	parsedK8sObject := schemasv1alpha4.View{}
+	var spec *schemasv1alpha4.ViewSpec
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Schema != nil {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha4.ViewSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal view spec")
+		}
+
+		spec = &plainSpec
+	}
+
+	plan, err := d.PlanSyncViewSpec(spec)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to plan view sync for %s", spec.Name)
 	}
 
 	return plan, nil
