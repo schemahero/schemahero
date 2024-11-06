@@ -1,0 +1,92 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: timescale
+  labels:
+    app: timescale
+spec:
+  type: ClusterIP
+  ports:
+  - name: timescale
+    port: 5432
+    targetPort: timescale
+  selector:
+    app: timescale
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: timescale
+  labels:
+    app: timescale
+type: Opaque
+stringData:
+  uri: "postgresql://airlinedb-user:password@timescale/airlinedb?connect_timeout=10&application_name=schemahero&sslmode=disable"
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: timescale
+spec:
+  selector:
+    matchLabels:
+      app: timescale
+  serviceName: timescale
+  template:
+    metadata:
+      labels:
+        app: timescale
+    spec:
+      containers:
+      - name: timescale
+        image: timescale/timescaledb:2.9.3-pg14
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: POSTGRES_USER
+          value: airlinedb-user
+        - name: POSTGRES_PASSWORD
+          value: password
+        - name: POSTGRES_DB
+          value: airlinedb
+        ports:
+        - name: timescale
+          containerPort: 5432
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "airlinedb-user" -d "airlinedb" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "airlinedb-user" -d "airlinedb" -h 127.0.0.1 -p 5432
+          initialDelaySeconds: 1
+          timeoutSeconds: 1
+          periodSeconds: 1
+        volumeMounts:
+        - name: schemahero-timescale-datadir
+          mountPath: /var/lib/postgresql/data
+
+      volumes:
+      - name: schemahero-timescale-datadir
+        persistentVolumeClaim:
+          claimName: schemahero-timescale-datadir
+
+  volumeClaimTemplates:
+  - metadata:
+      name: schemahero-timescale-datadir
+    spec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 1Gi
