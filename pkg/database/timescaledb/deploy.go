@@ -145,6 +145,14 @@ func PlanTimescaleDBTable(uri string, tableName string, tableSchema *schemasv1al
 	}
 	statements = append(statements, indexStatements...)
 
+	// hypertable changes
+	hypertableStatements, err := BuildHypertableStatements(p, tableName, tableSchema)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to build hypertable statements")
+	}
+	statements = append(statements, hypertableStatements...)
+
+	// seed data
 	statements = append(statements, seedDataStatements...)
 
 	return statements, nil

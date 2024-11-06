@@ -2,7 +2,6 @@ package timescaledb
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
@@ -132,37 +131,6 @@ func toPostgresTableSchema(tableSchema *schemasv1alpha4.TimescaleDBTableSchema) 
 		IsDeleted:   tableSchema.IsDeleted,
 		Triggers:    tableSchema.Triggers,
 	}
-}
-
-func createHypertableStatement(tableName string, hypertable *schemasv1alpha4.TimescaleDBHypertable, columns []*schemasv1alpha4.PostgresqlTableColumn) (string, error) {
-	// if there isn't a time column name, abort
-	if hypertable.TimeColumnName == nil {
-		return "", nil
-	}
-
-	// if the time column name is not a column name, abort
-	if !columnExists(*hypertable.TimeColumnName, columns) {
-		return "", fmt.Errorf("cannot create hypertable on column %s because column not included in schema", *hypertable.TimeColumnName)
-	}
-
-	params, err := getHypertableParams(hypertable, columns)
-	if err != nil {
-		return "", errors.Wrap(err, "get hypertable params")
-	}
-
-	serializedParams := strings.Join(params, ", ")
-
-	stmt := fmt.Sprintf(`select create_hypertable(%s, %s`,
-		strings.ReplaceAll(pgx.Identifier{tableName}.Sanitize(), "\"", "'"),
-		strings.ReplaceAll(pgx.Identifier{*hypertable.TimeColumnName}.Sanitize(), "\"", "'"))
-
-	if len(serializedParams) > 0 {
-		stmt = fmt.Sprintf("%s, %s)", stmt, serializedParams)
-	} else {
-		stmt = fmt.Sprintf("%s)", stmt)
-	}
-
-	return stmt, nil
 }
 
 func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
