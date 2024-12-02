@@ -86,7 +86,7 @@ func createRetentionStatements(tableName string, hypertable *schemasv1alpha4.Tim
 				return nil, errors.New("invalid interval")
 			}
 
-			stmt := fmt.Sprintf(`select add_retention_policy(%s, interval '%s'`, pgx.Identifier{tableName}.Sanitize(), hypertable.Retention.Interval)
+			stmt := fmt.Sprintf(`select add_retention_policy(%s, interval '%s')`, pgx.Identifier{tableName}.Sanitize(), hypertable.Retention.Interval)
 			stmts = append(stmts, stmt)
 		}
 	}
