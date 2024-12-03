@@ -52,8 +52,15 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create table statement")
 		}
+		queries = append(queries, seedDataStatements...)
 
-		return append(queries, seedDataStatements...), nil
+		indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to build index statements")
+		}
+		queries = append(queries, indexStatements...)
+
+		return queries, nil
 	}
 
 	statements := []string{}
