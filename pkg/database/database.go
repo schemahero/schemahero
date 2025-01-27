@@ -462,3 +462,149 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 
 	return statements
 }
+
+func (d *Database) ValidateSpec(specContents []byte, specType string) error {
+	// Try GVK first and fall back to plain spec for backwards compatibility
+	if err := d.validateGVKSpec(specContents); err == nil {
+		return nil
+	}
+
+	if specType == "table" {
+		return d.validateTableSpec(specContents)
+	} else if specType == "view" {
+		return d.validateViewSpec(specContents)
+	}
+
+	return errors.New("unknown spec type")
+}
+
+func (d *Database) validateGVKSpec(specContents []byte) error {
+	decode := scheme.Codecs.UniversalDeserializer().Decode
+
+	obj, gvk, err := decode(specContents, nil, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to decode spec")
+	}
+
+	if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "Table" {
+		table := obj.(*schemasv1alpha4.Table)
+		return d.validateTableSchema(&table.Spec)
+	} else if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "View" {
+		view := obj.(*schemasv1alpha4.View)
+		return d.validateViewSchema(&view.Spec)
+	}
+
+	return errors.Errorf("unknown gvk %s", gvk)
+}
+
+func (d *Database) validateTableSpec(specContents []byte) error {
+	parsedK8sObject := schemasv1alpha4.Table{}
+	var spec *schemasv1alpha4.TableSpec
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Schema != nil {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha4.TableSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return errors.Wrap(err, "failed to unmarshal table spec")
+		}
+
+		spec = &plainSpec
+	}
+
+	return d.validateTableSchema(spec)
+}
+
+func (d *Database) validateTableSchema(spec *schemasv1alpha4.TableSpec) error {
+	if spec.Schema == nil {
+		return errors.New("missing schema definition")
+	}
+
+	if spec.Name == "" {
+		return errors.New("table name is required")
+	}
+
+	switch d.Driver {
+	case "postgres":
+		if spec.Schema.Postgres == nil {
+			return errors.New("postgres schema required for postgres driver")
+		}
+		return postgres.ValidateSchema(spec.Name, spec.Schema.Postgres)
+	case "mysql":
+		if spec.Schema.Mysql == nil {
+			return errors.New("mysql schema required for mysql driver")
+		}
+		return mysql.ValidateSchema(spec.Name, spec.Schema.Mysql)
+	case "cockroachdb":
+		if spec.Schema.CockroachDB == nil {
+			return errors.New("cockroachdb schema required for cockroachdb driver")
+		}
+		return postgres.ValidateSchema(spec.Name, spec.Schema.CockroachDB)
+	case "cassandra":
+		if spec.Schema.Cassandra == nil {
+			return errors.New("cassandra schema required for cassandra driver")
+		}
+		return cassandra.ValidateSchema(spec.Name, spec.Schema.Cassandra)
+	case "sqlite":
+		if spec.Schema.SQLite == nil {
+			return errors.New("sqlite schema required for sqlite driver")
+		}
+		return sqlite.ValidateSchema(spec.Name, spec.Schema.SQLite)
+	case "rqlite":
+		if spec.Schema.RQLite == nil {
+			return errors.New("rqlite schema required for rqlite driver")
+		}
+		return rqlite.ValidateSchema(spec.Name, spec.Schema.RQLite)
+	case "timescaledb":
+		if spec.Schema.TimescaleDB == nil {
+			return errors.New("timescaledb schema required for timescaledb driver")
+		}
+		return timescaledb.ValidateSchema(spec.Name, spec.Schema.TimescaleDB)
+	}
+
+	return errors.Errorf("unknown database driver: %q", d.Driver)
+}
+
+func (d *Database) validateViewSpec(specContents []byte) error {
+	parsedK8sObject := schemasv1alpha4.View{}
+	var spec *schemasv1alpha4.ViewSpec
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Schema != nil {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha4.ViewSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return errors.Wrap(err, "failed to unmarshal view spec")
+		}
+
+		spec = &plainSpec
+	}
+
+	return d.validateViewSchema(spec)
+}
+
+func (d *Database) validateViewSchema(spec *schemasv1alpha4.ViewSpec) error {
+	if spec.Schema == nil {
+		return errors.New("missing schema definition")
+	}
+
+	if spec.Name == "" {
+		return errors.New("view name is required")
+	}
+
+	switch d.Driver {
+	case "timescaledb":
+		if spec.Schema.TimescaleDB == nil {
+			return errors.New("timescale schema required for timescale driver")
+		}
+		return timescaledb.ValidateViewSchema(spec.Name, spec.Schema.TimescaleDB)
+	default:
+		return errors.Errorf("views are not implemented for driver %q", d.Driver)
+	}
+}
