@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"net/url"
 	"strings"
 
 	// import the mysql driver
@@ -28,6 +29,12 @@ func (m *MysqlConnection) EngineVersion() string {
 }
 
 func Connect(uri string) (*MysqlConnection, error) {
+	var err error
+	uri, err = ensureMultiStatementsTrue(uri)
+	if err != nil {
+		return nil, err
+	}
+
 	db, err := sql.Open("mysql", uri)
 	if err != nil {
 		return nil, err
@@ -111,4 +118,15 @@ func PortFromURI(uri string) (string, error) {
 		return addrAndPort[1], nil
 	}
 	return "3306", nil
+}
+
+func ensureMultiStatementsTrue(uri string) (string, error) {
+	parsed, err := url.Parse(uri)
+	if err != nil {
+		return uri, err
+	}
+	query := parsed.Query()
+	query.Set("multiStatements", "true")
+	parsed.RawQuery = query.Encode()
+	return parsed.String(), nil
 }

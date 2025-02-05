@@ -37,7 +37,7 @@ func (s AlterModifyColumnStatement) DDL() []string {
 
 // ddlIgnoringNotNull will NOT change the "nullability" of the colume
 func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) []string {
-	stmts := []string{
+	parts := []string{
 		fmt.Sprintf("alter table `%s` modify column `%s` %s", s.TableName, s.Column.Name, s.Column.DataType),
 	}
 
@@ -54,37 +54,44 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 		}
 
 		if len(stmt) > 0 {
-			stmts = append(stmts, stmt)
+			parts = append(parts, stmt)
 		}
 	}
 
 	if useConstraintsFromExistingColumn {
 		if s.ExistingColumn.Constraints != nil {
 			if *s.ExistingColumn.Constraints.NotNull {
-				stmts = append(stmts, "not null")
+				parts = append(parts, "not null")
 			} else {
-				stmts = append(stmts, "null")
+				parts = append(parts, "null")
 			}
 		}
 	} else {
 		if s.Column.Constraints != nil {
 			if *s.Column.Constraints.NotNull {
-				stmts = append(stmts, "not null")
+				parts = append(parts, "not null")
 			} else {
-				stmts = append(stmts, "null")
+				parts = append(parts, "null")
 			}
 		}
 	}
 
-	if s.Column.Attributes != nil && s.Column.Attributes.AutoIncrement != nil && *s.Column.Attributes.AutoIncrement {
-		stmts = append(stmts, "auto_increment")
-	}
-
 	if s.Column.ColumnDefault != nil {
-		stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
+		parts = append(parts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
 	}
 
-	return []string{strings.Join(stmts, " ")}
+	if s.Column.Attributes != nil && s.Column.Attributes.AutoIncrement != nil && *s.Column.Attributes.AutoIncrement {
+		stmt := strings.Replace(strings.Join(parts, " "), " modify column ", fmt.Sprintf(" change column `%s` ", s.Column.Name), 1)
+		parts = []string{
+			fmt.Sprintf("set @max = (select coalesce(max(`%s`), 0) + 1 from `%s`);", s.Column.Name, s.TableName),
+			fmt.Sprintf("set @alter_statement = concat('%s auto_increment, auto_increment=', @max);", stmt),
+			"prepare stmt from @alter_statement;",
+			"execute stmt;",
+			"deallocate prepare stmt",
+		}
+	}
+
+	return []string{strings.Join(parts, " ")}
 }
 
 func (s AlterModifyColumnStatement) ddlWithNotNull() []string {
