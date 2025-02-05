@@ -42,6 +42,7 @@ jobs:
         with:
           context: deploy/schemahero
           image-name: ttl.sh/automated-${{ github.run_id }}/schemahero:${{ github.sha }}
+          # tag regex required by apko: https://github.com/chainguard-dev/apko/blob/e1149d47d179f8dfeb4f095e207886b0f92e512d/pkg/apk/apk/version.go#L39
           git-tag: "0.0.0-${{ github.sha }}"
 
       - name: Run Trivy vulnerability scanner
@@ -74,6 +75,7 @@ jobs:
         with:
           context: deploy/manager
           image-name: ttl.sh/automated-${{ github.run_id }}/schemahero-manager:${{ github.sha }}
+          # tag regex required by apko: https://github.com/chainguard-dev/apko/blob/e1149d47d179f8dfeb4f095e207886b0f92e512d/pkg/apk/apk/version.go#L39
           git-tag: "0.0.0-${{ github.sha }}"
 
       - name: Run Trivy vulnerability scanner
