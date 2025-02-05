@@ -11,7 +11,7 @@ jobs:
     outputs:
       prs: ${{ steps.list-prs.outputs.prs }}
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.SCHEMAHERO_GH_PAT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.SCHEMAHERO_GH_PAT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
