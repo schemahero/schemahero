@@ -42,7 +42,7 @@ jobs:
         with:
           context: deploy/schemahero
           image-name: ttl.sh/automated-${{ github.run_id }}/schemahero:${{ github.sha }}
-          git-tag: ${{ github.sha }}
+          git-tag: "0.0.0-${{ github.sha }}"
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -74,7 +74,7 @@ jobs:
         with:
           context: deploy/manager
           image-name: ttl.sh/automated-${{ github.run_id }}/schemahero-manager:${{ github.sha }}
-          git-tag: ${{ github.sha }}
+          git-tag: "0.0.0-${{ github.sha }}"
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
