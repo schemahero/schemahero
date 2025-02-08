@@ -10,6 +10,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 .PHONY: 11.18
 11.18: export PG_VERSION = 11.18-alpine
 11.18:
+	make -C ordered-index-create run
 	make -C alter-column-timezone run
 	make -C column-set-default run
 	make -C column-unset-default run
@@ -31,6 +32,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 .PHONY: 12.13
 12.13: export PG_VERSION = 12.13
 12.13:
+	make -C ordered-index-create run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -52,6 +54,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 .PHONY: 13.9
 13.9: export PG_VERSION = 13.9
 13.9:
+	make -C ordered-index-create run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -73,6 +76,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 .PHONY: 14.6
 14.6: export PG_VERSION = 14.6
 14.6:
+	make -C ordered-index-create run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -94,6 +98,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 .PHONY: 15.1
 15.1: export PG_VERSION = 15.1
 15.1:
+	make -C ordered-index-create run
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
