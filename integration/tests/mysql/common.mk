@@ -11,7 +11,7 @@ URI := $(USERNAME):$(PASSWORD)@tcp(localhost:13306)/$(DATABASE)?tls=false
 run:
 	# Fixtures
 	@-docker rm -f $(DATABASE_CONTAINER_NAME) > /dev/null 2>&1 || true
-	docker build --no-cache -t $(DATABASE_IMAGE_NAME) .
+	docker build --build-arg MYSQL_VERSION=${MYSQL_VERSION} --no-cache -t $(DATABASE_IMAGE_NAME) .
 	docker run -p 13306:3306 --rm -d --name $(DATABASE_CONTAINER_NAME) $(DATABASE_IMAGE_NAME)
 	while ! docker exec $(DATABASE_CONTAINER_NAME) mysql -u$(USERNAME) -p$(PASSWORD) $(DATABASE) -N -s -e "show tables" 2> /dev/null; do sleep 1; done
 	@sleep 10
