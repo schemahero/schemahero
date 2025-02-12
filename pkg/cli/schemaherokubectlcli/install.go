@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/schemahero/schemahero/pkg/installer"
+	"github.com/schemahero/schemahero/pkg/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -30,7 +32,7 @@ For more control, use the --yaml flag to avoid making any changes to the cluster
 			v := viper.GetViper()
 
 			if v.GetBool("yaml") {
-				manifests, err := installer.GenerateOperatorYAML(v.GetString("namespace"))
+				manifests, err := installer.GenerateOperatorYAML(v.GetString("namespace"), v.GetString("manager-image"))
 				if err != nil {
 					fmt.Printf("Error: %s\n", err.Error())
 					return err
@@ -68,7 +70,7 @@ For more control, use the --yaml flag to avoid making any changes to the cluster
 				return nil
 			}
 
-			wasUpgraded, err := installer.InstallOperator(v.GetString("namespace"))
+			wasUpgraded, err := installer.InstallOperator(v.GetString("namespace"), v.GetString("manager-image"))
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				return err
@@ -88,6 +90,16 @@ For more control, use the --yaml flag to avoid making any changes to the cluster
 	cmd.Flags().String("out-dir", "", "If present and --yaml also specified, write all of the manifests to this directory")
 
 	cmd.Flags().StringP("namespace", "n", "schemahero-system", "The namespace to install SchemaHero Operator into")
+	cmd.Flags().String("manager-image", defaultManagerImage(), "The image to use for the SchemaHero operator")
 
 	return cmd
+}
+
+func defaultManagerImage() string {
+	schemaheroTag := version.Version()
+	if strings.HasPrefix(schemaheroTag, "v") {
+		schemaheroTag = strings.TrimPrefix(schemaheroTag, "v")
+	}
+	return fmt.Sprintf("schemahero/schemahero-manager:%s", schemaheroTag)
+
 }
