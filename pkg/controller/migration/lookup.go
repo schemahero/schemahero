@@ -47,7 +47,7 @@ func getDatabasesClient() (databasesclientv1alpha4.DatabasesV1alpha4Interface, e
 
 	databasesClient, err = databasesclientv1alpha4.NewForConfig(cfg)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create schemas client")
+		return nil, errors.Wrap(err, "failed to create databases client")
 	}
 
 	return databasesClient, nil

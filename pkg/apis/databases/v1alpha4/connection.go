@@ -28,7 +28,7 @@ import (
 )
 
 // GetConnection returns driver name, uri, and any error
-func (d Database) GetConnection(ctx context.Context) (string, string, error) {
+func (d *Database) GetConnection(ctx context.Context) (string, string, error) {
 	isParamBased := false
 
 	// if the connection parameters are not supplied via URI, assume parameter based
@@ -58,7 +58,7 @@ func (d Database) GetConnection(ctx context.Context) (string, string, error) {
 	return d.getConnectionFromURI(ctx)
 }
 
-func (d Database) getConnectionFromParams(ctx context.Context) (string, string, error) {
+func (d *Database) getConnectionFromParams(ctx context.Context) (string, string, error) {
 	driver, err := d.getDbType()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")
@@ -272,7 +272,7 @@ func (d Database) getConnectionFromParams(ctx context.Context) (string, string, 
 // getConnectionFromURI will return the driver, and a valid connection string for the database. This
 // is compatible with any way that the uri was set.
 // TODO refactor this to be shorter, simpler and more testable
-func (d Database) getConnectionFromURI(ctx context.Context) (string, string, error) {
+func (d *Database) getConnectionFromURI(ctx context.Context) (string, string, error) {
 	driver, err := d.getDbType()
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")

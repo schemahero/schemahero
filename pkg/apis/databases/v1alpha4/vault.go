@@ -24,7 +24,7 @@ import (
 
 // UsingVault determines whether the specific Database connection is
 // configured using a Vault secret
-func (d Database) UsingVault() bool {
+func (d *Database) UsingVault() bool {
 	if d.Spec.Connection.CockroachDB != nil {
 		return d.Spec.Connection.CockroachDB.URI.HasVaultSecret()
 	}
@@ -46,7 +46,7 @@ func (d Database) UsingVault() bool {
 // getVaultDetails finds the specified Vault details if configured for the
 // database connection, or returns an error if either the database
 // connection or Vault aren't configured
-func (d Database) getVaultDetails() (*Vault, error) {
+func (d *Database) getVaultDetails() (*Vault, error) {
 	if d.Spec.Connection.CockroachDB != nil {
 		return d.Spec.Connection.CockroachDB.URI.GetVaultDetails()
 	}
@@ -65,7 +65,7 @@ func (d Database) getVaultDetails() (*Vault, error) {
 	return nil, fmt.Errorf("no database connection configured for database: %s", d.Name)
 }
 
-func (d Database) getDbType() (string, error) {
+func (d *Database) getDbType() (string, error) {
 	if d.Spec.Connection.CockroachDB != nil {
 		return "cockroachdb", nil
 	}
