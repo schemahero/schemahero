@@ -4,6 +4,23 @@ import (
 	"github.com/pkg/errors"
 )
 
+func NewValue(value string) ValueOrValueFrom {
+	return ValueOrValueFrom{
+		Value: value,
+	}
+}
+
+func NewValueFromSecret(secretName string, secretKey string) ValueOrValueFrom {
+	return ValueOrValueFrom{
+		ValueFrom: &ValueFrom{
+			SecretKeyRef: &SecretKeyRef{
+				Name: secretName,
+				Key:  secretKey,
+			},
+		},
+	}
+}
+
 type ValueOrValueFrom struct {
 	Value     string     `json:"value,omitempty" yaml:"value,omitempty"`
 	ValueFrom *ValueFrom `json:"valueFrom,omitempty" yaml:"valueFrom,omitempty"`

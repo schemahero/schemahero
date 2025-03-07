@@ -19,12 +19,12 @@ package v1alpha4
 import (
 	"context"
 	"fmt"
-	"net/url"
-
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/config"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"net/url"
+	"strings"
 )
 
 // GetConnection returns driver name, uri, and any error
@@ -65,28 +65,30 @@ func (d *Database) getConnectionFromParams(ctx context.Context) (string, string,
 	}
 
 	uri := ""
+	var queryParams []string
+
 	if driver == "postgres" {
-		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.Host)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Postgres.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres hostname")
 		}
 
-		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.Port)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Postgres.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres port")
 		}
 
-		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.User)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Postgres.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres user")
 		}
 
-		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.Password)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Postgres.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres password")
 		}
 
-		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.DBName)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Postgres.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read postgres dbname")
 		}
@@ -94,46 +96,42 @@ func (d *Database) getConnectionFromParams(ctx context.Context) (string, string,
 		authInfo := url.UserPassword(user, password).String()
 		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
 
-		queryStringCharacter := "?"
-		if !d.Spec.Connection.Postgres.SSLMode.IsEmpty() {
-			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.SSLMode)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read postgres ssl mode")
-			}
-			uri = fmt.Sprintf("%s%ssslmode=%s", uri, queryStringCharacter, sslMode)
-			queryStringCharacter = "&"
+		err = d.addQueryStringParameter(ctx, driver, &queryParams,
+			"postgres ssl mode", "sslmode",
+			&d.Spec.Connection.Postgres.SSLMode)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to compute query string parameters")
 		}
 
-		if !d.Spec.Connection.Postgres.CurrentSchema.IsEmpty() {
-			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Postgres.CurrentSchema)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read postgres currentSchema")
-			}
-			uri = fmt.Sprintf("%s%ssearch_path=%s", uri, queryStringCharacter, currentSchema)
-			queryStringCharacter = "&"
+		err = d.addQueryStringParameter(ctx, driver, &queryParams,
+			"postgres currentSchema", "search_path",
+			&d.Spec.Connection.Postgres.CurrentSchema)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to compute query string parameters")
 		}
+
 	} else if driver == "cockroachdb" {
-		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Host)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.CockroachDB.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb hostname")
 		}
 
-		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Port)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.CockroachDB.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb port")
 		}
 
-		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.User)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.CockroachDB.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb user")
 		}
 
-		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.Password)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.CockroachDB.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb password")
 		}
 
-		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.DBName)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.CockroachDB.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read cockroachdb dbname")
 		}
@@ -141,48 +139,42 @@ func (d *Database) getConnectionFromParams(ctx context.Context) (string, string,
 		authInfo := url.UserPassword(user, password).String()
 		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
 
-		queryStringCharacter := "?"
-		if !d.Spec.Connection.CockroachDB.SSLMode.IsEmpty() {
-			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.SSLMode)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read cockroachdb ssl mode")
-			}
-			uri = fmt.Sprintf("%s%ssslmode=%s", uri, queryStringCharacter, sslMode)
-			queryStringCharacter = "&"
+		err = d.addQueryStringParameter(ctx, driver, &queryParams,
+			"cockroachdb ssl mode", "sslmode",
+			&d.Spec.Connection.CockroachDB.SSLMode)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to compute query string parameters")
 		}
-
-		if !d.Spec.Connection.CockroachDB.CurrentSchema.IsEmpty() {
-			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.CockroachDB.CurrentSchema)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read cockroachdb currentSchema")
-			}
-			uri = fmt.Sprintf("%s%ssearch_path=%s", uri, queryStringCharacter, currentSchema)
-			queryStringCharacter = "&"
+		err = d.addQueryStringParameter(ctx, driver, &queryParams,
+			"cockroachdb currentSchema", "search_path",
+			&d.Spec.Connection.CockroachDB.CurrentSchema)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to compute query string parameters")
 		}
 	} else if driver == "cassandra" {
 		return "", "", errors.New("not implemented")
 	} else if driver == "mysql" {
-		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.Host)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Mysql.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql hostname")
 		}
 
-		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.Port)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Mysql.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql port")
 		}
 
-		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.User)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Mysql.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql user")
 		}
 
-		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.Password)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Mysql.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql password")
 		}
 
-		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.Mysql.DBName)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.Mysql.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read mysql dbname")
 		}
@@ -192,22 +184,22 @@ func (d *Database) getConnectionFromParams(ctx context.Context) (string, string,
 			uri = fmt.Sprintf("%s?tls=false", uri)
 		}
 	} else if driver == "rqlite" {
-		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.RQLite.Host)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.RQLite.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read rqlite hostname")
 		}
 
-		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.RQLite.Port)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.RQLite.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read rqlite port")
 		}
 
-		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.RQLite.User)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.RQLite.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read rqlite user")
 		}
 
-		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.RQLite.Password)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.RQLite.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read rqlite password")
 		}
@@ -218,27 +210,27 @@ func (d *Database) getConnectionFromParams(ctx context.Context) (string, string,
 		}
 		uri = fmt.Sprintf("%s://%s:%s@%s:%s/", protocol, user, password, hostname, port)
 	} else if driver == "timescaledb" {
-		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.Host)
+		hostname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.TimescaleDB.Host)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read timescale hostname")
 		}
 
-		port, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.Port)
+		port, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.TimescaleDB.Port)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read timescale port")
 		}
 
-		user, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.User)
+		user, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.TimescaleDB.User)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read timescale user")
 		}
 
-		password, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.Password)
+		password, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.TimescaleDB.Password)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read timescale password")
 		}
 
-		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.DBName)
+		dbname, err := d.getValueFromValueOrValueFrom(ctx, driver, &d.Spec.Connection.TimescaleDB.DBName)
 		if err != nil {
 			return "", "", errors.Wrap(err, "failed to read timescale dbname")
 		}
@@ -246,24 +238,21 @@ func (d *Database) getConnectionFromParams(ctx context.Context) (string, string,
 		authInfo := url.UserPassword(user, password).String()
 		uri = fmt.Sprintf("postgres://%s@%s:%s/%s", authInfo, hostname, port, dbname)
 
-		queryStringCharacter := "?"
-		if !d.Spec.Connection.TimescaleDB.SSLMode.IsEmpty() {
-			sslMode, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.SSLMode)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read timescale ssl mode")
-			}
-			uri = fmt.Sprintf("%s%ssslmode=%s", uri, queryStringCharacter, sslMode)
-			queryStringCharacter = "&"
+		err = d.addQueryStringParameter(ctx, driver, &queryParams,
+			"timescale ssl mode", "sslmode",
+			&d.Spec.Connection.TimescaleDB.SSLMode)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to compute query string parameters")
 		}
-
-		if !d.Spec.Connection.TimescaleDB.CurrentSchema.IsEmpty() {
-			currentSchema, err := d.getValueFromValueOrValueFrom(ctx, driver, d.Spec.Connection.TimescaleDB.CurrentSchema)
-			if err != nil {
-				return "", "", errors.Wrap(err, "failed to read timescale currentSchema")
-			}
-			uri = fmt.Sprintf("%s%scurrentSchema=%s", uri, queryStringCharacter, currentSchema)
-			queryStringCharacter = "&"
+		err = d.addQueryStringParameter(ctx, driver, &queryParams,
+			"timescale currentSchema", "currentSchema",
+			&d.Spec.Connection.TimescaleDB.CurrentSchema)
+		if err != nil {
+			return "", "", errors.Wrap(err, "failed to compute query string parameters")
 		}
+	}
+	if len(queryParams) > 0 {
+		uri = fmt.Sprintf("%s?%s", uri, strings.Join(queryParams, "&"))
 	}
 
 	return driver, uri, nil
@@ -277,27 +266,38 @@ func (d *Database) getConnectionFromURI(ctx context.Context) (string, string, er
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to get database type")
 	}
-	var valueOrValueFrom ValueOrValueFrom
+	var valueOrValueFrom *ValueOrValueFrom
 	if driver == "postgres" {
-		valueOrValueFrom = d.Spec.Connection.Postgres.URI
+		valueOrValueFrom = &d.Spec.Connection.Postgres.URI
 	} else if driver == "cockroachdb" {
-		valueOrValueFrom = d.Spec.Connection.CockroachDB.URI
+		valueOrValueFrom = &d.Spec.Connection.CockroachDB.URI
 	} else if driver == "cassandra" {
 		return "", "", errors.New("reading cassandra connecting from uri is not supported")
 	} else if driver == "mysql" {
-		valueOrValueFrom = d.Spec.Connection.Mysql.URI
+		valueOrValueFrom = &d.Spec.Connection.Mysql.URI
 	} else if driver == "rqlite" {
-		valueOrValueFrom = d.Spec.Connection.RQLite.URI
+		valueOrValueFrom = &d.Spec.Connection.RQLite.URI
 	} else if driver == "timescaledb" {
-		valueOrValueFrom = d.Spec.Connection.TimescaleDB.URI
+		valueOrValueFrom = &d.Spec.Connection.TimescaleDB.URI
 	}
 
 	value, err := d.getValueFromValueOrValueFrom(ctx, driver, valueOrValueFrom)
 	return driver, value, err
 }
 
+func (d *Database) addQueryStringParameter(ctx context.Context, driver string, queryParams *[]string, label string, key string, valueOrValueFrom *ValueOrValueFrom) error {
+	if !valueOrValueFrom.IsEmpty() {
+		value, err := d.getValueFromValueOrValueFrom(ctx, driver, valueOrValueFrom)
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to read %s", label))
+		}
+		*queryParams = append(*queryParams, fmt.Sprintf("%s=%s", key, value))
+	}
+	return nil
+}
+
 // getValueFromValueOrValueFrom returns the resolved value, or an error
-func (d Database) getValueFromValueOrValueFrom(ctx context.Context, driver string, valueOrValueFrom ValueOrValueFrom) (string, error) {
+func (d *Database) getValueFromValueOrValueFrom(ctx context.Context, driver string, valueOrValueFrom *ValueOrValueFrom) (string, error) {
 
 	// if the value is static, return it
 	if valueOrValueFrom.Value != "" {

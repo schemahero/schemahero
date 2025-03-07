@@ -29,7 +29,7 @@ import (
 )
 
 // getSSMConnection returns the driver, the resolved value, and any error
-func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.Clientset, driver string, valueOrValueFrom ValueOrValueFrom) (string, string, error) {
+func (d *Database) getSSMConnection(ctx context.Context, clientset *kubernetes.Clientset, driver string, valueOrValueFrom *ValueOrValueFrom) (string, string, error) {
 	region := valueOrValueFrom.ValueFrom.SSM.Region
 	if region == "" {
 		region = "us-east-1"
