@@ -19,12 +19,14 @@ package v1alpha4
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/schemahero/schemahero/pkg/config"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"net/url"
 	"strings"
+
+	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+
+	"github.com/schemahero/schemahero/pkg/config"
 )
 
 // GetConnection returns driver name, uri, and any error

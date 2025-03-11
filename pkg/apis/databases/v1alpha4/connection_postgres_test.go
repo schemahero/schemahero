@@ -2,8 +2,9 @@ package v1alpha4
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDatabase_Postgres_GetConnection_SimpleURI(t *testing.T) {
