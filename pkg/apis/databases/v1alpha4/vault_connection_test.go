@@ -19,14 +19,14 @@ func TestGetConnectionURIFromTemplate(t *testing.T) {
 		driver           string
 		tmpUser          string
 		tmpPassword      string
-		valueOrValueFrom ValueOrValueFrom
+		valueOrValueFrom *ValueOrValueFrom
 	}{
 		{
 			name:        "uses_specified_template",
 			driver:      "mysql",
 			tmpUser:     "someuser",
 			tmpPassword: "p@ssw0rd",
-			valueOrValueFrom: ValueOrValueFrom{
+			valueOrValueFrom: &ValueOrValueFrom{
 				ValueFrom: &ValueFrom{
 					Vault: &Vault{
 						ConnectionTemplate: "postgresql://{{ .username }}:{{ .password }}@postgresql:5432/schema",
@@ -80,7 +80,7 @@ func TestGetConnectionURIFromTemplate(t *testing.T) {
 			test.valueOrValueFrom.ValueFrom.Vault.Endpoint = srv.URL
 
 			d := &Database{}
-			_, uri, err := d.getVaultConnection(context.TODO(), fake.NewSimpleClientset(sa, sc), test.driver, test.valueOrValueFrom)
+			_, uri, err := d.getVaultConnection(context.TODO(), fake.NewClientset(sa, sc), test.driver, test.valueOrValueFrom)
 			assert.NoError(t, err)
 
 			assert.Equal(t, fmt.Sprintf("postgresql://%s:%s@postgresql:5432/schema", test.tmpUser, test.tmpPassword), uri)
@@ -94,14 +94,14 @@ func TestGetConnectionURIFromVault(t *testing.T) {
 		driver           string
 		tmpUser          string
 		tmpPassword      string
-		valueOrValueFrom ValueOrValueFrom
+		valueOrValueFrom *ValueOrValueFrom
 	}{
 		{
 			name:        "uses_template_from_vault",
 			driver:      "mysql",
 			tmpUser:     "someuser",
 			tmpPassword: "p@ssw0rd",
-			valueOrValueFrom: ValueOrValueFrom{
+			valueOrValueFrom: &ValueOrValueFrom{
 				ValueFrom: &ValueFrom{
 					Vault: &Vault{
 						Secret: "secret",
@@ -164,7 +164,7 @@ func TestGetConnectionURIFromVault(t *testing.T) {
 
 			test.valueOrValueFrom.ValueFrom.Vault.Endpoint = s.URL
 
-			_, uri, err := d.getVaultConnection(context.TODO(), fake.NewSimpleClientset(sa, sc), test.driver, test.valueOrValueFrom)
+			_, uri, err := d.getVaultConnection(context.TODO(), fake.NewClientset(sa, sc), test.driver, test.valueOrValueFrom)
 			assert.NoError(t, err)
 
 			assert.Equal(t, fmt.Sprintf("postgresql://%s:%s@postgresql:5432/schema", test.tmpUser, test.tmpPassword), uri)
@@ -177,12 +177,12 @@ func TestKubernetesAuthEndpoint(t *testing.T) {
 		name                     string
 		kubernetesAuthEndpoint   string
 		expectedKubeAuthEndpoint string
-		valueOrValueFrom         ValueOrValueFrom
+		valueOrValueFrom         *ValueOrValueFrom
 	}{
 		{
 			name:                     "uses_default_endpoint",
 			expectedKubeAuthEndpoint: "/v1/auth/kubernetes/login",
-			valueOrValueFrom: ValueOrValueFrom{
+			valueOrValueFrom: &ValueOrValueFrom{
 				ValueFrom: &ValueFrom{
 					Vault: &Vault{
 						ConnectionTemplate: "postgresql://{{ .username }}:{{ .password }}@postgresql:5432/schema",
@@ -194,7 +194,7 @@ func TestKubernetesAuthEndpoint(t *testing.T) {
 		{
 			name:                     "uses_specified_endpoint",
 			expectedKubeAuthEndpoint: "/v1/auth/kubernetes_custom/login",
-			valueOrValueFrom: ValueOrValueFrom{
+			valueOrValueFrom: &ValueOrValueFrom{
 				ValueFrom: &ValueFrom{
 					Vault: &Vault{
 						ConnectionTemplate:     "postgresql://{{ .username }}:{{ .password }}@postgresql:5432/schema",
@@ -248,7 +248,7 @@ func TestKubernetesAuthEndpoint(t *testing.T) {
 				},
 			}
 
-			_, _, err := d.getVaultConnection(context.TODO(), fake.NewSimpleClientset(sa, sc), "postgresql", test.valueOrValueFrom)
+			_, _, err := d.getVaultConnection(context.TODO(), fake.NewClientset(sa, sc), "postgresql", test.valueOrValueFrom)
 
 			assert.NoError(t, err)
 			assert.True(t, endpointReached, "Expected endpoint %s to be hit, but instead we called %s", test.expectedKubeAuthEndpoint, actualEndpoint)
