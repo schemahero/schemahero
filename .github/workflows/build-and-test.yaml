@@ -1,4 +1,4 @@
-name: "Build and test" # this name is used by .github/workflows/automated-prs-manager.yaml
+name: "Build and test"
 on:
   push:
     tags-ignore: ["*"] # tags run tagged-release workflow
@@ -189,32 +189,3 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/fixtures run
-
-  validate-pr-tests:
-    runs-on: ubuntu-latest
-    needs:
-      - test
-      - test-postgres
-      - test-mysql
-      - test-cockroach
-      - test-cassandra
-      - test-sqlite
-      - test-rqlite
-      - test-timescaledb
-      - test-fixtures
-    steps:
-      - run: echo "All PR tests passed"
-
-  validate-success:
-    name: Validate success # this name is used by .github/workflows/automated-prs-manager.yaml
-    runs-on: ubuntu-latest
-    needs:
-      - validate-pr-tests
-    if: always()
-    steps:
-      - name: fail if validate-pr-tests job was not successful
-        if: needs.validate-pr-tests.result != 'success'
-        run: exit 1
-      - name: succeed if validate-pr-tests job succeeded
-        if: needs.validate-pr-tests.result == 'success'
-        run: echo "Validation succeeded"
