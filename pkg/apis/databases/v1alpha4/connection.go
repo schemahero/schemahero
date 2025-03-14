@@ -288,6 +288,10 @@ func (d *Database) getConnectionFromURI(ctx context.Context) (string, string, er
 }
 
 func (d *Database) addQueryStringParameter(ctx context.Context, driver string, queryParams *[]string, label string, key string, valueOrValueFrom *ValueOrValueFrom) error {
+	if valueOrValueFrom == nil {
+		return errors.New("valueOrValueFrom must not be nil")
+	}
+
 	if !valueOrValueFrom.IsEmpty() {
 		value, err := d.getValueFromValueOrValueFrom(ctx, driver, valueOrValueFrom)
 		if err != nil {
@@ -300,6 +304,9 @@ func (d *Database) addQueryStringParameter(ctx context.Context, driver string, q
 
 // getValueFromValueOrValueFrom returns the resolved value, or an error
 func (d *Database) getValueFromValueOrValueFrom(ctx context.Context, driver string, valueOrValueFrom *ValueOrValueFrom) (string, error) {
+	if valueOrValueFrom == nil {
+		return "", errors.New("valueOrValueFrom must not be nil")
+	}
 
 	// if the value is static, return it
 	if valueOrValueFrom.Value != "" {
