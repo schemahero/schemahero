@@ -1,0 +1,17 @@
+database: schemahero-db
+name: users
+requires: []
+schema:
+  postgres:
+    primaryKey:
+      - col_one
+      - col_two
+    columns:
+      - name: col_one
+        type: "bytea"
+        constraints:
+          notNull: true
+      - name: col_two
+        type: "bytea"
+        constraints:
+          notNull: true
