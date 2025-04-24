@@ -54,7 +54,8 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 		}
 		queries = append(queries, seedDataStatements...)
 
-		indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema)
+		// Skip unique index statements for a new table as they're already added as constraints
+		indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema, false)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to build index statements")
 		}
@@ -87,7 +88,7 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	statements = append(statements, foreignKeyStatements...)
 
 	// index changes
-	indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema)
+	indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build index statements")
 	}
@@ -290,7 +291,7 @@ func BuildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	return foreignKeyStatements, nil
 }
 
-func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, includeUniqueIndexes bool) ([]string, error) {
 	indexStatements := []string{}
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)
@@ -304,6 +305,10 @@ func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 
 DesiredIndexLoop:
 	for _, index := range postgresTableSchema.Indexes {
+		if !includeUniqueIndexes && index.IsUnique {
+			continue
+		}
+
 		if index.Name == "" {
 			index.Name = types.GeneratePostgresqlIndexName(tableName, index)
 		}
