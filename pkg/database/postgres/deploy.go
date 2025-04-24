@@ -23,16 +23,14 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	defer p.Close()
 
 	// determine if the table exists
-	query := `select count(1) from information_schema.tables where table_name = $1`
-	row := p.conn.QueryRow(context.Background(), query, tableName)
-	tableExists := 0
-	if err := row.Scan(&tableExists); err != nil {
-		return nil, errors.Wrap(err, "failed to scan")
+	tableExists, err := CheckIfTableExists(p, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
 	}
 
-	if tableExists == 0 && postgresTableSchema.IsDeleted {
+	if !tableExists && postgresTableSchema.IsDeleted {
 		return []string{}, nil
-	} else if tableExists > 0 && postgresTableSchema.IsDeleted {
+	} else if tableExists && postgresTableSchema.IsDeleted {
 		return []string{
 			fmt.Sprintf(`drop table %s`, pgx.Identifier{tableName}.Sanitize()),
 		}, nil
@@ -46,7 +44,7 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 		}
 	}
 
-	if tableExists == 0 {
+	if !tableExists {
 		// shortcut to just create it
 		queries, err := CreateTableStatements(tableName, postgresTableSchema)
 		if err != nil {
@@ -54,8 +52,7 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 		}
 		queries = append(queries, seedDataStatements...)
 
-		// Skip unique index statements for a new table as they're already added as constraints
-		indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema, false)
+		indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to build index statements")
 		}
@@ -88,7 +85,7 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	statements = append(statements, foreignKeyStatements...)
 
 	// index changes
-	indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema, true)
+	indexStatements, err := BuildIndexStatements(p, tableName, postgresTableSchema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to build index statements")
 	}
@@ -291,7 +288,7 @@ func BuildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 	return foreignKeyStatements, nil
 }
 
-func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, includeUniqueIndexes bool) ([]string, error) {
+func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	indexStatements := []string{}
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)
@@ -303,9 +300,15 @@ func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTable
 		return nil, errors.Wrap(err, "failed to list table constraints")
 	}
 
+	tableExists, err := CheckIfTableExists(p, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+
 DesiredIndexLoop:
 	for _, index := range postgresTableSchema.Indexes {
-		if !includeUniqueIndexes && index.IsUnique {
+		// Skip unique indexes for new tables as they're already added as constraints in CREATE TABLE
+		if !tableExists && index.IsUnique {
 			continue
 		}
 
@@ -380,4 +383,16 @@ ExistingIndexLoop:
 	}
 
 	return indexStatements, nil
+}
+
+// CheckIfTableExists returns whether the specified table exists in the database
+func CheckIfTableExists(p *PostgresConnection, tableName string) (bool, error) {
+	query := `select count(1) from information_schema.tables where table_name = $1`
+	row := p.conn.QueryRow(context.Background(), query, tableName)
+	tableExists := 0
+	if err := row.Scan(&tableExists); err != nil {
+		return false, errors.Wrap(err, "failed to scan")
+	}
+
+	return tableExists > 0, nil
 }
