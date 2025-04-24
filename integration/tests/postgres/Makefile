@@ -14,6 +14,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
+	make -C create-table-with-index run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
 	make -C foreign-key-drop run
@@ -34,6 +35,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
+	make -C create-table-with-index run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
 	make -C foreign-key-drop run
@@ -55,6 +57,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
+	make -C create-table-with-index run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
 	make -C foreign-key-drop run
@@ -76,6 +79,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
+	make -C create-table-with-index run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
 	make -C foreign-key-drop run
@@ -97,6 +101,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
+	make -C create-table-with-index run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
 	make -C foreign-key-drop run
