@@ -21,8 +21,18 @@ run:
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)
-	if ! diff -B expect.sql out.sql; then \
-		docker logs $(DATABASE_CONTAINER_NAME); \
+	if [ -d "expect/${MYSQL_VERSION}" ] && [ -f "expect/${MYSQL_VERSION}/expect.sql" ]; then \
+		if ! diff -B expect/${MYSQL_VERSION}/expect.sql out.sql; then \
+			docker logs $(DATABASE_CONTAINER_NAME); \
+			exit 1; \
+		fi \
+	elif [ -f "expect.sql" ]; then \
+		if ! diff -B expect.sql out.sql; then \
+			docker logs $(DATABASE_CONTAINER_NAME); \
+			exit 1; \
+		fi \
+	else \
+		echo "No expect.sql file found for version ${MYSQL_VERSION}"; \
 		exit 1; \
 	fi
 
