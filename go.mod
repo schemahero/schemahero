@@ -133,7 +133,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace (
-	github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
-	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.11.1
-)
+replace github.com/appscode/jsonpatch => github.com/gomodules/jsonpatch v2.0.1+incompatible
