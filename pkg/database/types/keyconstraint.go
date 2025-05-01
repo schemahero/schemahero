@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -25,6 +26,28 @@ func (k *KeyConstraint) Equals(other *KeyConstraint) bool {
 		return false
 	}
 
+	// For primary keys, we don't care about the order of columns
+	if k.IsPrimary {
+		// Create sorted copies of the column slices
+		kColumns := make([]string, len(k.Columns))
+		otherColumns := make([]string, len(other.Columns))
+		
+		copy(kColumns, k.Columns)
+		copy(otherColumns, other.Columns)
+		
+		sort.Strings(kColumns)
+		sort.Strings(otherColumns)
+		
+		// Compare the sorted slices
+		for i, column := range kColumns {
+			if column != otherColumns[i] {
+				return false
+			}
+		}
+		return true
+	}
+
+	// For non-primary keys, order matters
 	for i, column := range k.Columns {
 		if column != other.Columns[i] {
 			return false
