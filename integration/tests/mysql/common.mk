@@ -21,7 +21,12 @@ run:
 
 	# Verify
 	@echo Verifying results for $(TEST_NAME)
-	if [ -d "expect/${MYSQL_VERSION}" ] && [ -f "expect/${MYSQL_VERSION}/expect.sql" ]; then \
+	if [ -f "expect-${MYSQL_VERSION}.sql" ]; then \
+		if ! diff -B expect-${MYSQL_VERSION}.sql out.sql; then \
+			docker logs $(DATABASE_CONTAINER_NAME); \
+			exit 1; \
+		fi \
+	elif [ -d "expect/${MYSQL_VERSION}" ] && [ -f "expect/${MYSQL_VERSION}/expect.sql" ]; then \
 		if ! diff -B expect/${MYSQL_VERSION}/expect.sql out.sql; then \
 			docker logs $(DATABASE_CONTAINER_NAME); \
 			exit 1; \
