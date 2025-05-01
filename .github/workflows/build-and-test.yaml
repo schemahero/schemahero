@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -92,7 +92,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -108,7 +108,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -124,7 +124,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -140,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -156,7 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -172,7 +172,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -185,7 +185,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
