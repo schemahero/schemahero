@@ -35,8 +35,7 @@ func GenerateCmd() *cobra.Command {
 				URI:       uri,
 				DBName:    dbName,
 				OutputDir: v.GetString("output-dir"),
-				Schema:    v.GetString("schema"),
-				Schemas:   v.GetString("schemas"),
+				Schemas:   v.GetStringSlice("schema"),
 			}
 			return g.RunSync()
 
@@ -52,8 +51,7 @@ func GenerateCmd() *cobra.Command {
 	cmd.Flags().String("uri", "", "connection string uri (required)")
 	cmd.Flags().String("driver", "", "name of the database driver to run (required)")
 	cmd.Flags().String("dbname", "", "schemahero database name to write in the yaml (required)")
-	cmd.Flags().String("schema", "public", "PostgreSQL schema to use (default: public)")
-	cmd.Flags().String("schemas", "", "Comma-separated list of PostgreSQL schemas to scan")
+	cmd.Flags().StringSlice("schema", []string{"public"}, "PostgreSQL schema(s) to scan (can be specified multiple times)")
 
 	cmd.MarkFlagRequired("uri")
 	cmd.MarkFlagRequired("driver")

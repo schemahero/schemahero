@@ -22,8 +22,7 @@ type Generator struct {
 	URI       string
 	DBName    string
 	OutputDir string
-	Schema    string
-	Schemas   string
+	Schemas   []string
 }
 
 func (g *Generator) RunSync() error {
@@ -32,18 +31,21 @@ func (g *Generator) RunSync() error {
 	var db interfaces.SchemaHeroDatabaseConnection
 	if g.Driver == "postgres" {
 		uri := g.URI
-		if !strings.Contains(uri, "schema=") && !strings.Contains(uri, "schemas=") {
-			if g.Schemas != "" {
+		if !strings.Contains(uri, "schema=") && !strings.Contains(uri, "schemas=") && len(g.Schemas) > 0 {
+			schemasStr := strings.Join(g.Schemas, ",")
+			
+			// If there's only one schema and it's not "public", use schema parameter
+			if len(g.Schemas) == 1 && g.Schemas[0] != "public" {
 				if strings.Contains(uri, "?") {
-					uri = fmt.Sprintf("%s&schemas=%s", uri, g.Schemas)
+					uri = fmt.Sprintf("%s&schema=%s", uri, g.Schemas[0])
 				} else {
-					uri = fmt.Sprintf("%s?schemas=%s", uri, g.Schemas)
+					uri = fmt.Sprintf("%s?schema=%s", uri, g.Schemas[0])
 				}
-			} else if g.Schema != "" && g.Schema != "public" {
+			} else if len(g.Schemas) > 1 || (len(g.Schemas) == 1 && g.Schemas[0] != "public") {
 				if strings.Contains(uri, "?") {
-					uri = fmt.Sprintf("%s&schema=%s", uri, g.Schema)
+					uri = fmt.Sprintf("%s&schemas=%s", uri, schemasStr)
 				} else {
-					uri = fmt.Sprintf("%s?schema=%s", uri, g.Schema)
+					uri = fmt.Sprintf("%s?schemas=%s", uri, schemasStr)
 				}
 			}
 		}
