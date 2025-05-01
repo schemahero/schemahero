@@ -1,4 +1,5 @@
-FROM mysql:8.0
+ARG MYSQL_VERSION=8.0
+FROM mysql:${MYSQL_VERSION}
 
 ENV MYSQL_USER=schemahero
 ENV MYSQL_PASSWORD=password
