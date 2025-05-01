@@ -174,13 +174,15 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 
 func (p *PostgresConnection) GetTablePrimaryKey(tableName string) (*types.KeyConstraint, error) {
 	// TODO we should be adding a database name on this select
-	query := `select tc.constraint_name, c.column_name
-from information_schema.table_constraints tc
-join information_schema.constraint_column_usage as ccu using (constraint_schema, constraint_name)
-join information_schema.columns as c on c.table_schema = tc.constraint_schema
-  and tc.table_name = c.table_name and ccu.column_name = c.column_name
-where constraint_type = 'PRIMARY KEY' and tc.table_name = $1
-order by c.ordinal_position`
+	query := `SELECT tc.constraint_name, kcu.column_name
+FROM information_schema.table_constraints  AS tc
+JOIN information_schema.key_column_usage   AS kcu
+  ON  kcu.constraint_catalog  = tc.constraint_catalog
+  AND kcu.constraint_schema   = tc.constraint_schema
+  AND kcu.constraint_name     = tc.constraint_name
+WHERE tc.constraint_type = 'PRIMARY KEY'
+  AND tc.table_name      = $1
+ORDER BY kcu.ordinal_position`
 
 	rows, err := p.conn.Query(context.Background(), query, tableName)
 	if err != nil {

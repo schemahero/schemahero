@@ -29,6 +29,8 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-drop run
 	make -C basic-seed run
 	make -C seed-with-many-rows run
+	make -C two-column-pk run
+	make -C two-column-pk-reversed-order run
 
 .PHONY: 12.13
 12.13: export PG_VERSION = 12.13
@@ -52,6 +54,8 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-drop run
 	make -C basic-seed run
 	make -C seed-with-many-rows run
+	make -C two-column-pk run
+	make -C two-column-pk-reversed-order run
 
 .PHONY: 13.9
 13.9: export PG_VERSION = 13.9
@@ -75,6 +79,8 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-drop run
 	make -C basic-seed run
 	make -C seed-with-many-rows run
+	make -C two-column-pk run
+	make -C two-column-pk-reversed-order run
 
 .PHONY: 14.6
 14.6: export PG_VERSION = 14.6
@@ -98,6 +104,8 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-drop run
 	make -C basic-seed run
 	make -C seed-with-many-rows run
+	make -C two-column-pk run
+	make -C two-column-pk-reversed-order run
 
 .PHONY: 15.1
 15.1: export PG_VERSION = 15.1
@@ -121,6 +129,8 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-drop run
 	make -C basic-seed run
 	make -C seed-with-many-rows run
+	make -C two-column-pk run
+	make -C two-column-pk-reversed-order run
 
 .PHONY: seed
 seed: export PG_VERSION = 15.1
