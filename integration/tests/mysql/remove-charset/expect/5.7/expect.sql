@@ -1,1 +1,1 @@
-alter table projects convert to character set utf8mb4 collate utf8mb4_unicode_ci;
+alter table projects convert to character set latin1 collate latin1_swedish_ci;
