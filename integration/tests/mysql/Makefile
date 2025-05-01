@@ -5,13 +5,83 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 8.0.31
+run: 8.0.31 8.4.5 9.3.0
 
 
 
 .PHONY: 8.0.31
 8.0.31: export MYSQL_VERSION = 8.0.31
 8.0.31:
+	make -C medium-blob run
+	make -C decimal run
+	make -C medium-text run
+	make -C column-set-default run
+	make -C column-unset-default run
+	make -C create-table run
+	make -C foreign-key-create run
+	make -C foreign-key-action run
+	make -C foreign-key-drop run
+	make -C foreign-key-alter run
+	make -C not-null run
+	make -C index-create run
+	make -C index-add run
+	make -C index-drop-add run
+	make -C primary-key-add run
+	make -C primary-key-drop run
+	make -C primary-key-change run
+	make -C auto-increment-create run
+	make -C auto-increment-add run
+	make -C auto-increment-drop run
+	make -C add-collation run
+	make -C remove-charset run
+	make -C add-charset run
+	make -C create-with-charset run
+	make -C no-modify-charset run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
+	make -C multiline-seed run
+	make -C multi-column-index run
+	make -C primary-key-keep run
+	make -C unchanged-charset run
+
+.PHONY: 8.4.5
+8.4.5: export MYSQL_VERSION = 8.4.5
+8.4.5:
+	make -C medium-blob run
+	make -C decimal run
+	make -C medium-text run
+	make -C column-set-default run
+	make -C column-unset-default run
+	make -C create-table run
+	make -C foreign-key-create run
+	make -C foreign-key-action run
+	make -C foreign-key-drop run
+	make -C foreign-key-alter run
+	make -C not-null run
+	make -C index-create run
+	make -C index-add run
+	make -C index-drop-add run
+	make -C primary-key-add run
+	make -C primary-key-drop run
+	make -C primary-key-change run
+	make -C auto-increment-create run
+	make -C auto-increment-add run
+	make -C auto-increment-drop run
+	make -C add-collation run
+	make -C remove-charset run
+	make -C add-charset run
+	make -C create-with-charset run
+	make -C no-modify-charset run
+	make -C basic-seed run
+	make -C seed-with-many-rows run
+	make -C multiline-seed run
+	make -C multi-column-index run
+	make -C primary-key-keep run
+	make -C unchanged-charset run
+
+.PHONY: 9.3.0
+9.3.0: export MYSQL_VERSION = 9.3.0
+9.3.0:
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
