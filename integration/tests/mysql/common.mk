@@ -26,13 +26,13 @@ run:
 			docker logs $(DATABASE_CONTAINER_NAME); \
 			exit 1; \
 		fi \
-	elif [ -d "expect" ] && [ -d "expect/${MYSQL_VERSION%%.*}.${MYSQL_VERSION#*.}" ] && [ -f "expect/${MYSQL_VERSION%%.*}.${MYSQL_VERSION#*.}/expect.sql" ]; then \
-		if ! diff -B "expect/${MYSQL_VERSION%%.*}.${MYSQL_VERSION#*.}/expect.sql" out.sql; then \
+	elif [ -d "expect" ] && [ -d "expect/$(shell echo ${MYSQL_VERSION} | cut -d. -f1).$(shell echo ${MYSQL_VERSION} | cut -d. -f2)" ] && [ -f "expect/$(shell echo ${MYSQL_VERSION} | cut -d. -f1).$(shell echo ${MYSQL_VERSION} | cut -d. -f2)/expect.sql" ]; then \
+		if ! diff -B "expect/$(shell echo ${MYSQL_VERSION} | cut -d. -f1).$(shell echo ${MYSQL_VERSION} | cut -d. -f2)/expect.sql" out.sql; then \
 			docker logs $(DATABASE_CONTAINER_NAME); \
 			exit 1; \
 		fi \
-	elif [ -d "expect" ] && [ -d "expect/${MYSQL_VERSION%%.*}" ] && [ -f "expect/${MYSQL_VERSION%%.*}/expect.sql" ]; then \
-		if ! diff -B "expect/${MYSQL_VERSION%%.*}/expect.sql" out.sql; then \
+	elif [ -d "expect" ] && [ -d "expect/$(shell echo ${MYSQL_VERSION} | cut -d. -f1)" ] && [ -f "expect/$(shell echo ${MYSQL_VERSION} | cut -d. -f1)/expect.sql" ]; then \
+		if ! diff -B "expect/$(shell echo ${MYSQL_VERSION} | cut -d. -f1)/expect.sql" out.sql; then \
 			docker logs $(DATABASE_CONTAINER_NAME); \
 			exit 1; \
 		fi \
