@@ -61,7 +61,7 @@ func Connect(uri string) (*PostgresConnection, error) {
 
 	schema := "public" // Default to public
 	schemas := []string{"public"}
-	
+
 	parsed, err := dburl.Parse(uri)
 	if err == nil {
 		if parsed.Query().Get("schema") != "" {
@@ -78,7 +78,7 @@ func Connect(uri string) (*PostgresConnection, error) {
 				schemas = []string{schema}
 			}
 		}
-		
+
 		if parsed.Query().Get("schemas") != "" {
 			schemasList := parsed.Query().Get("schemas")
 			schemas = []string{}

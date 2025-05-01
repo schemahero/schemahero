@@ -33,7 +33,7 @@ func (g *Generator) RunSync() error {
 		uri := g.URI
 		if !strings.Contains(uri, "schema=") && !strings.Contains(uri, "schemas=") && len(g.Schemas) > 0 {
 			schemasStr := strings.Join(g.Schemas, ",")
-			
+
 			// If there's only one schema and it's not "public", use schema parameter
 			if len(g.Schemas) == 1 && g.Schemas[0] != "public" {
 				if strings.Contains(uri, "?") {
@@ -49,7 +49,7 @@ func (g *Generator) RunSync() error {
 				}
 			}
 		}
-		
+
 		pgDb, err := postgres.Connect(uri)
 		if err != nil {
 			return errors.Wrap(err, "failed to connect to postgres")

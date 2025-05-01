@@ -17,7 +17,7 @@ var (
 
 func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
 	tables := []*types.Table{}
-	
+
 	for _, schema := range p.schemas {
 		query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
 
@@ -25,7 +25,7 @@ func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to list tables in schema %s", schema))
 		}
-		
+
 		for rows.Next() {
 			tableName := ""
 			if err := rows.Scan(&tableName); err != nil {
@@ -52,13 +52,13 @@ func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
 func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName string) ([]string, error) {
 	schema := p.schema // Default to connection schema
 	actualTableName := tableName
-	
+
 	if strings.Contains(tableName, ".") {
 		parts := strings.SplitN(tableName, ".", 2)
 		schema = parts[0]
 		actualTableName = parts[1]
 	}
-	
+
 	query := `select constraint_name from information_schema.table_constraints
 		where table_catalog = $1 and table_name = $2 and table_schema = $3`
 	rows, err := p.conn.Query(context.Background(), query, databaseName, actualTableName, schema)
@@ -83,18 +83,18 @@ func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName
 func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
 	schema := p.schema // Default to connection schema
 	actualTableName := tableName
-	
+
 	if strings.Contains(tableName, ".") {
 		parts := strings.SplitN(tableName, ".", 2)
 		schema = parts[0]
 		actualTableName = parts[1]
 	}
-	
+
 	qualifiedTableName := actualTableName
 	if schema != "public" {
 		qualifiedTableName = fmt.Sprintf("%s.%s", schema, actualTableName)
 	}
-	
+
 	// started with this: https://stackoverflow.com/questions/6777456/list-all-index-names-column-names-and-its-table-name-of-a-postgresql-database
 	query := `select
 	i.relname as indname,
@@ -136,13 +136,13 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
 	schema := p.schema // Default to connection schema
 	actualTableName := tableName
-	
+
 	if strings.Contains(tableName, ".") {
 		parts := strings.SplitN(tableName, ".", 2)
 		schema = parts[0]
 		actualTableName = parts[1]
 	}
-	
+
 	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
 	query := `select
 	att2.attname as "child_column",
@@ -225,13 +225,13 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 func (p *PostgresConnection) GetTablePrimaryKey(tableName string) (*types.KeyConstraint, error) {
 	schema := p.schema // Default to connection schema
 	actualTableName := tableName
-	
+
 	if strings.Contains(tableName, ".") {
 		parts := strings.SplitN(tableName, ".", 2)
 		schema = parts[0]
 		actualTableName = parts[1]
 	}
-	
+
 	query := `SELECT tc.constraint_name, kcu.column_name
 FROM information_schema.table_constraints  AS tc
 JOIN information_schema.key_column_usage   AS kcu
@@ -277,13 +277,13 @@ ORDER BY kcu.ordinal_position`
 func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
 	schema := p.schema // Default to connection schema
 	actualTableName := tableName
-	
+
 	if strings.Contains(tableName, ".") {
 		parts := strings.SplitN(tableName, ".", 2)
 		schema = parts[0]
 		actualTableName = parts[1]
 	}
-	
+
 	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1 and table_schema = $2 and table_catalog = $3"
 
 	rows, err := p.conn.Query(context.Background(), query, actualTableName, schema, p.databaseName)
