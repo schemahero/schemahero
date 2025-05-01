@@ -22,6 +22,7 @@ type Generator struct {
 	URI       string
 	DBName    string
 	OutputDir string
+	Schemas   []string
 }
 
 func (g *Generator) RunSync() error {
@@ -29,7 +30,27 @@ func (g *Generator) RunSync() error {
 
 	var db interfaces.SchemaHeroDatabaseConnection
 	if g.Driver == "postgres" {
-		pgDb, err := postgres.Connect(g.URI)
+		uri := g.URI
+		if !strings.Contains(uri, "schema=") && !strings.Contains(uri, "schemas=") && len(g.Schemas) > 0 {
+			schemasStr := strings.Join(g.Schemas, ",")
+			
+			// If there's only one schema and it's not "public", use schema parameter
+			if len(g.Schemas) == 1 && g.Schemas[0] != "public" {
+				if strings.Contains(uri, "?") {
+					uri = fmt.Sprintf("%s&schema=%s", uri, g.Schemas[0])
+				} else {
+					uri = fmt.Sprintf("%s?schema=%s", uri, g.Schemas[0])
+				}
+			} else if len(g.Schemas) > 1 || (len(g.Schemas) == 1 && g.Schemas[0] != "public") {
+				if strings.Contains(uri, "?") {
+					uri = fmt.Sprintf("%s&schemas=%s", uri, schemasStr)
+				} else {
+					uri = fmt.Sprintf("%s?schemas=%s", uri, schemasStr)
+				}
+			}
+		}
+		
+		pgDb, err := postgres.Connect(uri)
 		if err != nil {
 			return errors.Wrap(err, "failed to connect to postgres")
 		}

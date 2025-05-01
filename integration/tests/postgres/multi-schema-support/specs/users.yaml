@@ -1,0 +1,27 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: users
+spec:
+  database: schemahero
+  name: users
+  requires: []
+  schema:
+    postgres:
+      schema: public
+      primaryKey:
+      - id
+      columns:
+      - name: id
+        type: serial
+      - name: name
+        type: text
+        constraints:
+          notNull: true
+      - name: email
+        type: text
+        constraints:
+          notNull: true
+      - name: created_at
+        type: timestamp
+        default: CURRENT_TIMESTAMP

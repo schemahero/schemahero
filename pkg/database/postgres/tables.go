@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -15,33 +16,52 @@ var (
 )
 
 func (p *PostgresConnection) ListTables() ([]*types.Table, error) {
-	query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
-
-	rows, err := p.conn.Query(context.Background(), query, p.databaseName, "public")
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to list tables")
-	}
-	defer rows.Close()
-
 	tables := []*types.Table{}
-	for rows.Next() {
-		tableName := ""
-		if err := rows.Scan(&tableName); err != nil {
-			return nil, errors.Wrap(err, "failed to scan row")
-		}
+	
+	for _, schema := range p.schemas {
+		query := "select table_name from information_schema.tables where table_catalog = $1 and table_schema = $2"
 
-		tables = append(tables, &types.Table{
-			Name: tableName,
-		})
+		rows, err := p.conn.Query(context.Background(), query, p.databaseName, schema)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("failed to list tables in schema %s", schema))
+		}
+		
+		for rows.Next() {
+			tableName := ""
+			if err := rows.Scan(&tableName); err != nil {
+				rows.Close()
+				return nil, errors.Wrap(err, "failed to scan row")
+			}
+
+			qualifiedName := tableName
+			if schema != "public" {
+				qualifiedName = fmt.Sprintf("%s.%s", schema, tableName)
+			}
+
+			tables = append(tables, &types.Table{
+				Name:   qualifiedName,
+				Schema: schema,
+			})
+		}
+		rows.Close()
 	}
 
 	return tables, nil
 }
 
 func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName string) ([]string, error) {
+	schema := p.schema // Default to connection schema
+	actualTableName := tableName
+	
+	if strings.Contains(tableName, ".") {
+		parts := strings.SplitN(tableName, ".", 2)
+		schema = parts[0]
+		actualTableName = parts[1]
+	}
+	
 	query := `select constraint_name from information_schema.table_constraints
-		where table_catalog = $1 and table_name = $2`
-	rows, err := p.conn.Query(context.Background(), query, databaseName, tableName)
+		where table_catalog = $1 and table_name = $2 and table_schema = $3`
+	rows, err := p.conn.Query(context.Background(), query, databaseName, actualTableName, schema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list constraints")
 	}
@@ -61,6 +81,20 @@ func (p *PostgresConnection) ListTableConstraints(databaseName string, tableName
 }
 
 func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName string) ([]*types.Index, error) {
+	schema := p.schema // Default to connection schema
+	actualTableName := tableName
+	
+	if strings.Contains(tableName, ".") {
+		parts := strings.SplitN(tableName, ".", 2)
+		schema = parts[0]
+		actualTableName = parts[1]
+	}
+	
+	qualifiedTableName := actualTableName
+	if schema != "public" {
+		qualifiedTableName = fmt.Sprintf("%s.%s", schema, actualTableName)
+	}
+	
 	// started with this: https://stackoverflow.com/questions/6777456/list-all-index-names-column-names-and-its-table-name-of-a-postgresql-database
 	query := `select
 	i.relname as indname,
@@ -76,7 +110,7 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	join pg_am as am on i.relam = am.oid
 	where idx.indrelid = $1::regclass
 	and idx.indisprimary = false`
-	rows, err := p.conn.Query(context.Background(), query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, qualifiedTableName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query indexes")
 	}
@@ -100,15 +134,23 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 }
 
 func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName string) ([]*types.ForeignKey, error) {
+	schema := p.schema // Default to connection schema
+	actualTableName := tableName
+	
+	if strings.Contains(tableName, ".") {
+		parts := strings.SplitN(tableName, ".", 2)
+		schema = parts[0]
+		actualTableName = parts[1]
+	}
+	
 	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
-	// TODO SchemaHero implementation needs to include a schema (database) here
-	// this is pg specific because composite fks need to be handled and this might be the only way?
 	query := `select
 	att2.attname as "child_column",
 	cl.relname as "parent_table",
 	att.attname as "parent_column",
   	rc.delete_rule,
-	conname
+	conname,
+	ns2.nspname as "parent_schema"
     from
        (select
 	    unnest(con1.conkey) as "parent",
@@ -122,18 +164,21 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	    join pg_constraint con1 on con1.conrelid = cl.oid
 	where
 	    cl.relname = $1
+	    and ns.nspname = $2
 	    and con1.contype = 'f'
        ) con
        join pg_attribute att on
 	   att.attrelid = con.confrelid and att.attnum = con.child
        join pg_class cl on
 	   cl.oid = con.confrelid
+       join pg_namespace ns2 on
+       cl.relnamespace = ns2.oid
        join pg_attribute att2 on
 	   att2.attrelid = con.conrelid and att2.attnum = con.parent
        join information_schema.referential_constraints rc on
        rc.constraint_name = conname`
 
-	rows, err := p.conn.Query(context.Background(), query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, actualTableName, schema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query foreign keys")
 	}
@@ -141,15 +186,20 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 
 	foreignKeys := make([]*types.ForeignKey, 0)
 	for rows.Next() {
-		var childColumn, parentColumn, parentTable, name, deleteRule string
+		var childColumn, parentColumn, parentTable, name, deleteRule, parentSchema string
 
-		if err := rows.Scan(&childColumn, &parentTable, &parentColumn, &deleteRule, &name); err != nil {
+		if err := rows.Scan(&childColumn, &parentTable, &parentColumn, &deleteRule, &name, &parentSchema); err != nil {
 			return nil, err
+		}
+
+		qualifiedParentTable := parentTable
+		if parentSchema != "public" {
+			qualifiedParentTable = fmt.Sprintf("%s.%s", parentSchema, parentTable)
 		}
 
 		foreignKey := types.ForeignKey{
 			Name:          name,
-			ParentTable:   parentTable,
+			ParentTable:   qualifiedParentTable,
 			OnDelete:      deleteRule,
 			ChildColumns:  []string{childColumn},
 			ParentColumns: []string{parentColumn},
@@ -173,7 +223,15 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 }
 
 func (p *PostgresConnection) GetTablePrimaryKey(tableName string) (*types.KeyConstraint, error) {
-	// TODO we should be adding a database name on this select
+	schema := p.schema // Default to connection schema
+	actualTableName := tableName
+	
+	if strings.Contains(tableName, ".") {
+		parts := strings.SplitN(tableName, ".", 2)
+		schema = parts[0]
+		actualTableName = parts[1]
+	}
+	
 	query := `SELECT tc.constraint_name, kcu.column_name
 FROM information_schema.table_constraints  AS tc
 JOIN information_schema.key_column_usage   AS kcu
@@ -182,9 +240,11 @@ JOIN information_schema.key_column_usage   AS kcu
   AND kcu.constraint_name     = tc.constraint_name
 WHERE tc.constraint_type = 'PRIMARY KEY'
   AND tc.table_name      = $1
+  AND tc.table_schema    = $2
+  AND tc.constraint_catalog = $3
 ORDER BY kcu.ordinal_position`
 
-	rows, err := p.conn.Query(context.Background(), query, tableName)
+	rows, err := p.conn.Query(context.Background(), query, actualTableName, schema, p.databaseName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query primary keys")
 	}
@@ -215,9 +275,18 @@ ORDER BY kcu.ordinal_position`
 }
 
 func (p *PostgresConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
-	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1 and table_catalog = $2"
+	schema := p.schema // Default to connection schema
+	actualTableName := tableName
+	
+	if strings.Contains(tableName, ".") {
+		parts := strings.SplitN(tableName, ".", 2)
+		schema = parts[0]
+		actualTableName = parts[1]
+	}
+	
+	query := "select column_name, data_type, character_maximum_length, column_default, is_nullable from information_schema.columns where table_name = $1 and table_schema = $2 and table_catalog = $3"
 
-	rows, err := p.conn.Query(context.Background(), query, tableName, p.databaseName)
+	rows, err := p.conn.Query(context.Background(), query, actualTableName, schema, p.databaseName)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to query table schema")
 	}

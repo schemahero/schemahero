@@ -79,13 +79,18 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Postgr
 		}
 	}
 
+	qualifiedTableName := tableName
+	if tableSchema.Schema != "" && tableSchema.Schema != "public" {
+		qualifiedTableName = fmt.Sprintf("%s.%s", tableSchema.Schema, tableName)
+	}
+
 	queries := []string{
-		fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{tableName}.Sanitize(), strings.Join(columns, ", ")),
+		fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{qualifiedTableName}.Sanitize(), strings.Join(columns, ", ")),
 	}
 
 	// Add any triggers that are defined
 	for _, trigger := range tableSchema.Triggers {
-		statement, err := triggerCreateStatement(trigger, tableName)
+		statement, err := triggerCreateStatement(trigger, qualifiedTableName)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create trigger statement")
 		}

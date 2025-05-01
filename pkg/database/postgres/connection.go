@@ -15,6 +15,8 @@ import (
 type PostgresConnection struct {
 	databaseName  string
 	engineVersion string
+	schema        string   // Default schema to use
+	schemas       []string // All schemas to scan
 
 	conn *pgx.Conn
 }
@@ -57,9 +59,43 @@ func Connect(uri string) (*PostgresConnection, error) {
 		logger.Info(err.Error()) // NOTE: this doesnt work with cockroachdb
 	}
 
+	schema := "public" // Default to public
+	schemas := []string{"public"}
+	
+	parsed, err := dburl.Parse(uri)
+	if err == nil {
+		if parsed.Query().Get("schema") != "" {
+			schema = parsed.Query().Get("schema")
+			schemas = []string{schema}
+		} else if parsed.Query().Get("currentSchema") != "" {
+			schema = parsed.Query().Get("currentSchema")
+			schemas = []string{schema}
+		} else if parsed.Query().Get("search_path") != "" {
+			searchPath := parsed.Query().Get("search_path")
+			pathSchemas := strings.Split(searchPath, ",")
+			if len(pathSchemas) > 0 {
+				schema = strings.TrimSpace(pathSchemas[0])
+				schemas = []string{schema}
+			}
+		}
+		
+		if parsed.Query().Get("schemas") != "" {
+			schemasList := parsed.Query().Get("schemas")
+			schemas = []string{}
+			for _, s := range strings.Split(schemasList, ",") {
+				schemas = append(schemas, strings.TrimSpace(s))
+			}
+			if len(schemas) > 0 {
+				schema = schemas[0]
+			}
+		}
+	}
+
 	postgresConnection := PostgresConnection{
 		databaseName:  databaseName,
 		engineVersion: engineVersion,
+		schema:        schema,
+		schemas:       schemas,
 		conn:          conn,
 	}
 
