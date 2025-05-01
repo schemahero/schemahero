@@ -5,10 +5,10 @@ metadata:
 spec:
   database: schemahero
   name: users
-  schema: public
   requires: []
   schema:
     postgres:
+      schema: public
       primaryKey:
       - id
       columns:
