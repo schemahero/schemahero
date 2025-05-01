@@ -26,6 +26,11 @@ run:
 			docker logs $(DATABASE_CONTAINER_NAME); \
 			exit 1; \
 		fi \
+	elif [ -d "expect" ] && [ -d "expect/${MYSQL_VERSION%%.*}.${MYSQL_VERSION#*.}" ] && [ -f "expect/${MYSQL_VERSION%%.*}.${MYSQL_VERSION#*.}/expect.sql" ]; then \
+		if ! diff -B expect/${MYSQL_VERSION%%.*}.${MYSQL_VERSION#*.}/expect.sql out.sql; then \
+			docker logs $(DATABASE_CONTAINER_NAME); \
+			exit 1; \
+		fi \
 	elif [ -d "expect" ] && [ -d "expect/${MYSQL_VERSION%%.*}" ] && [ -f "expect/${MYSQL_VERSION%%.*}/expect.sql" ]; then \
 		if ! diff -B expect/${MYSQL_VERSION%%.*}/expect.sql out.sql; then \
 			docker logs $(DATABASE_CONTAINER_NAME); \
