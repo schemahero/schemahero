@@ -42,6 +42,15 @@ type DatabaseExtensionStatus struct {
 	Message string `json:"message,omitempty" yaml:"message,omitempty"`
 }
 
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DatabaseExtension is the Schema for the databaseextensions API
+// +kubebuilder:printcolumn:name="Database",type=string,JSONPath=`.spec.database`
+// +kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +k8s:openapi-gen=true
+// +kubebuilder:subresource:status
 type DatabaseExtension struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -50,8 +59,15 @@ type DatabaseExtension struct {
 	Status DatabaseExtensionStatus `json:"status,omitempty"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DatabaseExtensionList contains a list of DatabaseExtension
 type DatabaseExtensionList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []DatabaseExtension `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&DatabaseExtension{}, &DatabaseExtensionList{})
 }
