@@ -213,6 +213,12 @@ func (d *Database) PlanSync(specContents []byte, specType string) ([]string, err
 			return nil, errors.Wrapf(err, "failed to plan view sync")
 		}
 		return plan, nil
+	} else if specType == "extension" {
+		plan, err := d.planExtensionSync(specContents)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan extension sync")
+		}
+		return plan, nil
 	}
 
 	return nil, errors.New("unknown spec type")
@@ -238,6 +244,13 @@ func (d *Database) planGVKSync(specContents []byte) ([]string, error) {
 		plan, err := d.PlanSyncViewSpec(&view.Spec)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to plan view %s", view.Name)
+		}
+		return plan, nil
+	} else if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "DatabaseExtension" {
+		extension := obj.(*schemasv1alpha4.DatabaseExtension)
+		plan, err := d.PlanSyncDatabaseExtensionSpec(&extension.Spec)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan extension %s", extension.Name)
 		}
 		return plan, nil
 	} else {
@@ -461,4 +474,32 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 	}
 
 	return statements
+}
+func (d *Database) planExtensionSync(specContents []byte) ([]string, error) {
+	var spec *schemasv1alpha4.DatabaseExtensionSpec
+	parsedK8sObject := schemasv1alpha4.DatabaseExtension{}
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Database != "" {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha4.DatabaseExtensionSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal extension spec")
+		}
+
+		spec = &plainSpec
+	}
+
+	return d.PlanSyncDatabaseExtensionSpec(spec)
+}
+
+func (d *Database) PlanSyncDatabaseExtensionSpec(spec *schemasv1alpha4.DatabaseExtensionSpec) ([]string, error) {
+	if d.Driver == "postgres" && spec.Postgres != nil {
+		return postgres.CreateExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{spec.Postgres})
+	}
+
+	return nil, errors.Errorf("planning extensions is not supported for driver %q or extension type not specified", d.Driver)
 }

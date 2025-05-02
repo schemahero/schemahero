@@ -1,0 +1,23 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: embeddings
+spec:
+  database: postgres
+  name: embeddings
+  requires:
+    - vector-extension
+  schema:
+    postgres:
+      primaryKey: [id]
+      columns:
+        - name: id
+          type: serial
+          constraints:
+            notNull: true
+        - name: embedding
+          type: vector(1536)
+          constraints:
+            notNull: true
+        - name: metadata
+          type: text

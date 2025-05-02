@@ -1,0 +1,9 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: DatabaseExtension
+metadata:
+  name: vector-extension
+spec:
+  database: postgres
+  removeOnDeletion: true
+  postgres:
+    name: vector

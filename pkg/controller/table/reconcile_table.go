@@ -58,6 +58,44 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 		}, nil
 	}
 
+	if len(instance.Spec.Requires) > 0 {
+		for _, requiredExtension := range instance.Spec.Requires {
+			extension := &schemasv1alpha4.DatabaseExtension{}
+			err := r.Get(ctx, types.NamespacedName{
+				Name:      requiredExtension,
+				Namespace: instance.Namespace,
+			}, extension)
+
+			if err != nil {
+				if kuberneteserrors.IsNotFound(err) {
+					logger.Debug("requeuing table reconcile request for 10 seconds because required extension was not present",
+						zap.String("extension.name", requiredExtension),
+						zap.String("table.name", instance.Name),
+						zap.String("table.namespace", instance.Namespace))
+
+					return reconcile.Result{
+						Requeue:      true,
+						RequeueAfter: time.Second * 10,
+					}, nil
+				}
+				return reconcile.Result{}, errors.Wrapf(err, "failed to get required extension %s", requiredExtension)
+			}
+
+			if extension.Status.Phase != "Applied" {
+				logger.Debug("requeuing table reconcile request for 10 seconds because required extension is not yet applied",
+					zap.String("extension.name", requiredExtension),
+					zap.String("extension.phase", extension.Status.Phase),
+					zap.String("table.name", instance.Name),
+					zap.String("table.namespace", instance.Namespace))
+
+				return reconcile.Result{
+					Requeue:      true,
+					RequeueAfter: time.Second * 10,
+				}, nil
+			}
+		}
+	}
+
 	matchingType := checkDatabaseTypeMatches(&database.Spec.Connection, instance.Spec.Schema)
 	if !matchingType {
 		// TODO add a status field with this state

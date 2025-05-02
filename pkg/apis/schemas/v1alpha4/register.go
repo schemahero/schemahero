@@ -40,6 +40,14 @@ var (
 	AddToScheme = SchemeBuilder.AddToScheme
 )
 
+func init() {
+	SchemeBuilder.Register(&Table{}, &TableList{})
+	SchemeBuilder.Register(&Migration{}, &MigrationList{})
+	SchemeBuilder.Register(&View{}, &ViewList{})
+	SchemeBuilder.Register(&DataType{}, &DataTypeList{})
+	SchemeBuilder.Register(&DatabaseExtension{}, &DatabaseExtensionList{})
+}
+
 // Resource is required by pkg/client/listers/...
 func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
