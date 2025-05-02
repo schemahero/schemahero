@@ -24,7 +24,6 @@ type DatabaseExtensionSpec struct {
 	Database string `json:"database" yaml:"database"`
 
 	Postgres *PostgresDatabaseExtension `json:"postgres,omitempty" yaml:"postgres,omitempty"`
-
 }
 
 type PostgresDatabaseExtension struct {
@@ -43,7 +42,6 @@ type DatabaseExtensionStatus struct {
 	Message string `json:"message,omitempty" yaml:"message,omitempty"`
 }
 
-
 type DatabaseExtension struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -51,7 +49,6 @@ type DatabaseExtension struct {
 	Spec   DatabaseExtensionSpec   `json:"spec,omitempty"`
 	Status DatabaseExtensionStatus `json:"status,omitempty"`
 }
-
 
 type DatabaseExtensionList struct {
 	metav1.TypeMeta `json:",inline"`
