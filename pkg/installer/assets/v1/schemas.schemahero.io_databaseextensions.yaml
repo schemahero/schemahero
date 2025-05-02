@@ -14,9 +14,20 @@ spec:
     singular: databaseextension
   scope: Namespaced
   versions:
-  - name: v1alpha4
+  - additionalPrinterColumns:
+    - jsonPath: .spec.database
+      name: Database
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha4
     schema:
       openAPIV3Schema:
+        description: DatabaseExtension is the Schema for the databaseextensions API
         properties:
           apiVersion:
             description: |-
@@ -66,3 +77,5 @@ spec:
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
