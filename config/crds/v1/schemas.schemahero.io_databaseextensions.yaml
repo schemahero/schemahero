@@ -61,6 +61,8 @@ spec:
                 required:
                 - name
                 type: object
+              removeOnDeletion:
+                type: boolean
             required:
             - database
             type: object
