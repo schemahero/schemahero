@@ -34,6 +34,14 @@ EOF
 PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT * FROM pg_extension WHERE extname = 'vector';" | grep -q "vector" || (echo "Extension 'vector' not found in pgvector image" && exit 1)
 echo "Extension 'vector' successfully created in pgvector image"
 
+echo "Testing table creation that requires the vector extension..."
+./bin/kubectl-schemahero apply -f integration/tests/postgres/extensions/tables/embeddings-table.yaml
+
+sleep 5
+
+PGPASSWORD=${POSTGRES_PASSWORD} psql -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'embeddings';" | grep -q "embedding" || (echo "Table 'embeddings' not created properly" && exit 1)
+echo "Table 'embeddings' successfully created with vector column"
+
 echo "Testing with regular PostgreSQL image (extension not available)..."
 POSTGRES_URI="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5433/${POSTGRES_DB}?sslmode=disable"
 
