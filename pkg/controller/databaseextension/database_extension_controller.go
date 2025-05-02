@@ -26,9 +26,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -53,7 +51,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	err = c.Watch(&source.Kind{Type: &schemasv1alpha4.DatabaseExtension{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(mgr.GetCache(), &schemasv1alpha4.DatabaseExtension{}, &handler.TypedEnqueueRequestForObject[*schemasv1alpha4.DatabaseExtension]{}))
 	if err != nil {
 		return err
 	}
@@ -69,11 +67,10 @@ type ReconcileDatabaseExtension struct {
 }
 
 func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
-	log := logger.FromContext(ctx).With(
+	logger.Debug("reconciling database extension",
 		zap.String("kind", "databaseextension"),
 		zap.String("name", request.Name),
-		zap.String("namespace", request.Namespace),
-	)
+		zap.String("namespace", request.Namespace))
 
 	databaseExtension := &schemasv1alpha4.DatabaseExtension{}
 	err := r.Get(ctx, request.NamespacedName, databaseExtension)
@@ -84,10 +81,10 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 		return reconcile.Result{}, err
 	}
 
-	database, err := r.getDatabaseFromExtension(ctx, databaseExtension)
+	dbInstance, err := r.getDatabaseFromExtension(ctx, databaseExtension)
 	if err != nil {
 		if kuberneteserrors.IsNotFound(err) {
-			log.Info("database not found, requeuing", zap.String("database", databaseExtension.Spec.Database))
+			logger.Debug("database not found, requeuing", zap.String("database", databaseExtension.Spec.Database))
 			return reconcile.Result{
 				Requeue:      true,
 				RequeueAfter: time.Second * 10,
@@ -96,20 +93,20 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 		return reconcile.Result{}, err
 	}
 
-	driver, connectionURI, err := database.GetConnection(ctx)
+	driver, connectionURI, err := dbInstance.GetConnection(ctx)
 	if err != nil {
-		log.Error("failed to get database connection", zap.Error(err))
+		logger.Error(err)
 		return reconcile.Result{}, err
 	}
 
 	if driver != "postgres" || databaseExtension.Spec.Postgres == nil {
-		log.Info("not a postgres database or no postgres extension specified, skipping")
+		logger.Debug("not a postgres database or no postgres extension specified, skipping")
 		return reconcile.Result{}, nil
 	}
 
 	statements, err := postgres.CreateExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{databaseExtension.Spec.Postgres})
 	if err != nil {
-		log.Error("failed to generate extension statements", zap.Error(err))
+		logger.Error(err)
 		return reconcile.Result{}, err
 	}
 
@@ -122,10 +119,10 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 		databaseExtension.Status.Phase = "Failed"
 		databaseExtension.Status.Message = err.Error()
 		if updateErr := r.Status().Update(ctx, databaseExtension); updateErr != nil {
-			log.Error("failed to update status", zap.Error(updateErr))
+			logger.Error(updateErr)
 			return reconcile.Result{}, updateErr
 		}
-		log.Error("failed to apply extension", zap.Error(err))
+		logger.Error(err)
 		return reconcile.Result{}, err
 	}
 
@@ -134,11 +131,11 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 	databaseExtension.Status.Message = "Extension successfully applied"
 
 	if err := r.Status().Update(ctx, databaseExtension); err != nil {
-		log.Error("failed to update status", zap.Error(err))
+		logger.Error(err)
 		return reconcile.Result{}, err
 	}
 
-	log.Info("extension successfully applied")
+	logger.Debug("extension successfully applied")
 	return reconcile.Result{}, nil
 }
 
