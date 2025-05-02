@@ -4,5 +4,6 @@ metadata:
   name: vector-extension
 spec:
   database: postgres
+  removeOnDeletion: true
   postgres:
     name: vector

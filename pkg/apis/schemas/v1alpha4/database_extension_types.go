@@ -23,6 +23,8 @@ import (
 type DatabaseExtensionSpec struct {
 	Database string `json:"database" yaml:"database"`
 
+	RemoveOnDeletion bool `json:"removeOnDeletion,omitempty" yaml:"removeOnDeletion,omitempty"`
+
 	Postgres *PostgresDatabaseExtension `json:"postgres,omitempty" yaml:"postgres,omitempty"`
 }
 

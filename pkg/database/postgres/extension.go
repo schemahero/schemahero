@@ -43,3 +43,14 @@ func CreateExtensionStatements(extensions []*schemasv1alpha4.PostgresDatabaseExt
 
 	return statements, nil
 }
+
+func DropExtensionStatements(extensions []*schemasv1alpha4.PostgresDatabaseExtension) ([]string, error) {
+	statements := []string{}
+
+	for _, extension := range extensions {
+		statement := fmt.Sprintf("DROP EXTENSION IF EXISTS %s;", pgx.Identifier{extension.Name}.Sanitize())
+		statements = append(statements, statement)
+	}
+
+	return statements, nil
+}

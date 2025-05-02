@@ -66,6 +66,54 @@ type ReconcileDatabaseExtension struct {
 	scheme *runtime.Scheme
 }
 
+func (r *ReconcileDatabaseExtension) dropExtension(ctx context.Context, databaseExtension *schemasv1alpha4.DatabaseExtension) error {
+	logger.Debug("dropping database extension",
+		zap.String("name", databaseExtension.Name),
+		zap.String("namespace", databaseExtension.Namespace))
+
+	dbInstance, err := r.getDatabaseFromExtension(ctx, databaseExtension)
+	if err != nil {
+		if kuberneteserrors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+
+	driver, connectionURI, err := dbInstance.GetConnection(ctx)
+	if err != nil {
+		return err
+	}
+
+	if driver != "postgres" || databaseExtension.Spec.Postgres == nil {
+		return nil
+	}
+
+	statements, err := postgres.DropExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{databaseExtension.Spec.Postgres})
+	if err != nil {
+		return err
+	}
+
+	db := database.Database{
+		Driver: driver,
+		URI:    connectionURI,
+	}
+
+	return db.ApplySync(statements)
+}
+
+func (r *ReconcileDatabaseExtension) getDatabaseFromExtension(ctx context.Context, databaseExtension *schemasv1alpha4.DatabaseExtension) (*databasesv1alpha4.Database, error) {
+	database := &databasesv1alpha4.Database{}
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      databaseExtension.Spec.Database,
+		Namespace: databaseExtension.Namespace,
+	}, database)
+	if err != nil {
+		return nil, err
+	}
+
+	return database, nil
+}
+
 func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger.Debug("reconciling database extension",
 		zap.String("kind", "databaseextension"),
@@ -79,6 +127,30 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 			return reconcile.Result{}, nil
 		}
 		return reconcile.Result{}, err
+	}
+
+	finalizerName := "databaseextensions.schemas.schemahero.io/finalizer"
+
+	if !databaseExtension.ObjectMeta.DeletionTimestamp.IsZero() {
+		if databaseExtension.Spec.RemoveOnDeletion && containsString(databaseExtension.ObjectMeta.Finalizers, finalizerName) {
+			if err := r.dropExtension(ctx, databaseExtension); err != nil {
+				return reconcile.Result{}, err
+			}
+
+			databaseExtension.ObjectMeta.Finalizers = removeString(databaseExtension.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(ctx, databaseExtension); err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+		return reconcile.Result{}, nil
+	}
+
+	if databaseExtension.Spec.RemoveOnDeletion && !containsString(databaseExtension.ObjectMeta.Finalizers, finalizerName) {
+		databaseExtension.ObjectMeta.Finalizers = append(databaseExtension.ObjectMeta.Finalizers, finalizerName)
+		if err := r.Update(ctx, databaseExtension); err != nil {
+			return reconcile.Result{}, err
+		}
+		return reconcile.Result{}, nil
 	}
 
 	dbInstance, err := r.getDatabaseFromExtension(ctx, databaseExtension)
@@ -137,17 +209,4 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 
 	logger.Debug("extension successfully applied")
 	return reconcile.Result{}, nil
-}
-
-func (r *ReconcileDatabaseExtension) getDatabaseFromExtension(ctx context.Context, databaseExtension *schemasv1alpha4.DatabaseExtension) (*databasesv1alpha4.Database, error) {
-	database := &databasesv1alpha4.Database{}
-	err := r.Get(ctx, types.NamespacedName{
-		Name:      databaseExtension.Spec.Database,
-		Namespace: databaseExtension.Namespace,
-	}, database)
-	if err != nil {
-		return nil, err
-	}
-
-	return database, nil
 }
