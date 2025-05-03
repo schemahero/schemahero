@@ -1,1 +1,1 @@
-alter table `users` modify column `id` int (11) not null auto_increment;
+set @max = (select coalesce(max(`id`), 0) + 1 from `users`); set @alter_statement = concat('alter table `users` change column `id` `id` int (11) not null auto_increment, auto_increment=', @max); prepare stmt from @alter_statement; execute stmt; deallocate prepare stmt;
