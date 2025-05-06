@@ -155,7 +155,7 @@ where table_name = $1`
 			Constraints: &types.ColumnConstraints{},
 		}
 
-		if dataType == "ARRAY" {
+		if dataType == "ARRAY" || dataType == "USER-DEFINED" {
 			existingColumn.IsArray = true
 			existingColumn.DataType = UDTNameToDataType(udtName)
 		}
