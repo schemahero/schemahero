@@ -114,6 +114,7 @@ run: 8.0.31 8.4.5 9.3.0
 	make -C primary-key-keep run
 	make -C unchanged-charset run
 
+
 .PHONY: build
 build: docker-build
 	docker push $(IMAGE)
