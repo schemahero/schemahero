@@ -73,7 +73,8 @@ jobs:
     needs: build
     strategy:
       matrix:
-        cockroachdb_version: ["v19.2.12", "v20.2.19", "v21.2.17", "v22.1.11"]
+        # "v19.2.12", "v20.2.19" are no longer supported
+        cockroachdb_version: ["v21.2.17", "v22.1.11"]
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download kubectl-schemahero binary
