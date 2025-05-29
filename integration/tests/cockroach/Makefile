@@ -8,8 +8,8 @@ export GO111MODULE=on
 run: v19.2.12 v20.2.19 v21.2.17 v22.1.11
 
 .PHONY: v19.2.12
-v19.2.2: export COCKROACHDB_VBERSION = v19.2.12
-v19.2.2:
+v19.2.12: export COCKROACHDB_VBERSION = v19.2.12
+v19.2.12:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
