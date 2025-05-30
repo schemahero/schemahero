@@ -7,7 +7,7 @@ on:
 
 jobs:
   scan_schemahero_files_systems:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.1
@@ -27,7 +27,7 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
   scan_schemahero_docker_image:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v5
         with:
@@ -35,7 +35,7 @@ jobs:
           cache: true
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Build schemahero image
         uses: ./.github/actions/build-push-action
@@ -60,7 +60,7 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
   scan_schemahero_manager_docker_image:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v5
         with:
@@ -68,7 +68,7 @@ jobs:
           cache: true
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.1
 
       - name: Build schemahero-manager image
         uses: ./.github/actions/build-push-action
