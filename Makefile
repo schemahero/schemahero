@@ -193,28 +193,41 @@ release-tarballs:
 	# Build the kubectl plugins
 
 	rm -rf ./bin/kubectl-schemahero
+
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_linux_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
+	mv ./kubectl-schemahero ./schemahero
+	tar czvf ./release/schemahero_linux_amd64.tar.gz ./schemahero README.md LICENSE
 
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_linux_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
+	mv ./kubectl-schemahero ./schemahero
+	tar czvf ./release/schemahero_linux_arm64.tar.gz ./schemahero README.md LICENSE
 
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero.exe
 	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./kubectl-schemahero.exe README.md LICENSE
-	rm kubectl-schemahero.exe
+	mv ./kubectl-schemahero.exe ./schemahero.exe
+	tar czvf ./release/schemahero_windows_amd64.tar.gz ./schemahero.exe README.md LICENSE
+	rm -rf ./kubectl-schemahero.exe
+	rm -rf ./schemahero.exe
 
 	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_darwin_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
+	mv ./kubectl-schemahero ./schemahero
+	tar czvf ./release/schemahero_darwin_amd64.tar.gz ./schemahero README.md LICENSE
 
 	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_darwin_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
+	mv ./kubectl-schemahero ./schemahero
+	tar czvf ./release/schemahero_darwin_arm64.tar.gz ./schemahero README.md LICENSE
 
 	rm -rf ./kubectl-schemahero
+	rm -rf ./schemahero
 
 .PHONY: build-manager
 build-manager:

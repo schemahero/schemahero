@@ -166,14 +166,20 @@ jobs:
         uses: actions/checkout@v4
       - id: get_version
         uses: battila7/get-version-action@v2
-      - uses: ./.github/actions/build-push-action
-        id: release-manager
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          context: deploy/manager
-          image-name: index.docker.io/schemahero/schemahero-manager:${{ steps.get_version.outputs.version-without-v }}
-          git-tag: ${{ steps.get_version.outputs.version-without-v }}
-          registry-username: schemaherodeploy
-          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: schemaherodeploy
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Build and push
+        id: release-manager
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.multiarch
+          target: manager
+          push: true
+          tags: index.docker.io/schemahero/schemahero-manager:${{ steps.get_version.outputs.version-without-v }}
 
   build-docker-schemahero:
     runs-on: ubuntu-latest
@@ -190,16 +196,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - id: get_version
         uses: battila7/get-version-action@v2
-      - uses: ./.github/actions/build-push-action
-        id: release-schemahero
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          context: deploy/schemahero
-          image-name: index.docker.io/schemahero/schemahero:${{ steps.get_version.outputs.version-without-v }}
-          git-tag: ${{ steps.get_version.outputs.version-without-v }}
-          registry-username: schemaherodeploy
-          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          username: schemaherodeploy
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push
+        id: release-schemahero
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deploy/Dockerfile.multiarch
+          target: schemahero
+          push: true
+          tags: index.docker.io/schemahero/schemahero:${{ steps.get_version.outputs.version-without-v }}
 
   github-release-tarballs:
     runs-on: ubuntu-latest
