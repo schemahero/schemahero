@@ -83,9 +83,13 @@ func DescribeMigrationCmd() *cobra.Command {
 				}
 
 				fmt.Printf("\nMigration Name: %s\n\n", foundMigration.Name)
-				
+
+				fmt.Printf("Generated DDL Statement (generated at %s): \n  %s\n",
+					time.Unix(foundMigration.Status.PlannedAt, 0).Format(time.RFC3339),
+					foundMigration.Spec.GeneratedDDL)
+
 				// Display status information
-				fmt.Printf("Status: %s\n", foundMigration.Status.Phase)
+				fmt.Printf("\nStatus: %s\n", foundMigration.Status.Phase)
 				if foundMigration.Status.ApprovedAt > 0 {
 					fmt.Printf("Approved at: %s\n", time.Unix(foundMigration.Status.ApprovedAt, 0).Format(time.RFC3339))
 				}
@@ -95,11 +99,6 @@ func DescribeMigrationCmd() *cobra.Command {
 				if foundMigration.Status.RejectedAt > 0 {
 					fmt.Printf("Rejected at: %s\n", time.Unix(foundMigration.Status.RejectedAt, 0).Format(time.RFC3339))
 				}
-				fmt.Println("")
-
-				fmt.Printf("Generated DDL Statement (generated at %s): \n  %s\n",
-					time.Unix(foundMigration.Status.PlannedAt, 0).Format(time.RFC3339),
-					foundMigration.Spec.GeneratedDDL)
 
 				// Only show approval/action commands for migrations that haven't been approved or applied
 				if foundMigration.Status.Phase == schemasv1alpha4.Planned {
