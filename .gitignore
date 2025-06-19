@@ -23,6 +23,7 @@ bin
 *.swp
 *.swo
 *~
+.claude
 
 dist/
 
