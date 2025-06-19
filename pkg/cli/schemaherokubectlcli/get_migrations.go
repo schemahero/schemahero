@@ -81,7 +81,8 @@ func GetMigrationsCmd() *cobra.Command {
 
 					table, err := schemasClient.Tables(m.Spec.TableNamespace).Get(ctx, m.Spec.TableName, metav1.GetOptions{})
 					if err != nil {
-						return err
+						// Skip migrations where the table no longer exists
+						continue
 					}
 
 					if table.Spec.Database == databaseNameFilter {
@@ -99,7 +100,8 @@ func GetMigrationsCmd() *cobra.Command {
 			for _, m := range matchingMigrations {
 				table, err := migration.TableFromMigration(ctx, &m)
 				if err != nil {
-					return err
+					// Skip migrations where the table no longer exists
+					continue
 				}
 
 				isIncluded := true
