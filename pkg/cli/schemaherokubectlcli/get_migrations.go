@@ -10,7 +10,6 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/config"
-	"github.com/schemahero/schemahero/pkg/controller/migration"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,12 +78,7 @@ func GetMigrationsCmd() *cobra.Command {
 						continue
 					}
 
-					table, err := schemasClient.Tables(m.Spec.TableNamespace).Get(ctx, m.Spec.TableName, metav1.GetOptions{})
-					if err != nil {
-						return err
-					}
-
-					if table.Spec.Database == databaseNameFilter {
+					if m.Spec.DatabaseName == databaseNameFilter {
 						matchingMigrations = append(matchingMigrations, m)
 					}
 				}
@@ -97,31 +91,15 @@ func GetMigrationsCmd() *cobra.Command {
 
 			rows := [][]string{}
 			for _, m := range matchingMigrations {
-				table, err := migration.TableFromMigration(ctx, &m)
-				if err != nil {
-					return err
-				}
-
-				isIncluded := true
-				// if m.Status.ExecutedAt > 0 {
-				// 	continue
-				// } else if m.Status.RejectedAt > 0 {
-				// 	continue
-				// } else if m.Status.ApprovedAt > 0 {
-				// 	continue
-				// }
-
-				if isIncluded {
-					rows = append(rows, []string{
-						m.Name,
-						table.Spec.Database,
-						table.Name,
-						timestampToAge(m.Status.PlannedAt),
-						timestampToAge(m.Status.ExecutedAt),
-						timestampToAge(m.Status.ApprovedAt),
-						timestampToAge(m.Status.RejectedAt),
-					})
-				}
+				rows = append(rows, []string{
+					m.Name,
+					m.Spec.DatabaseName,
+					m.Spec.TableName,
+					timestampToAge(m.Status.PlannedAt),
+					timestampToAge(m.Status.ExecutedAt),
+					timestampToAge(m.Status.ApprovedAt),
+					timestampToAge(m.Status.RejectedAt),
+				})
 			}
 
 			if len(rows) == 0 {
