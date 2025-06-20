@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	schemasclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/spf13/cobra"
@@ -82,24 +83,40 @@ func DescribeMigrationCmd() *cobra.Command {
 				}
 
 				fmt.Printf("\nMigration Name: %s\n\n", foundMigration.Name)
+
 				fmt.Printf("Generated DDL Statement (generated at %s): \n  %s\n",
 					time.Unix(foundMigration.Status.PlannedAt, 0).Format(time.RFC3339),
 					foundMigration.Spec.GeneratedDDL)
 
-				fmt.Println("")
-				fmt.Println("To apply this migration:")
-				fmt.Printf(`  %s approve migration %s`, baseCommand, foundMigration.Name)
-				fmt.Println("")
+				// Display status information
+				fmt.Printf("\nStatus: %s\n", foundMigration.Status.Phase)
+				if foundMigration.Status.ApprovedAt > 0 {
+					fmt.Printf("Approved at: %s\n", time.Unix(foundMigration.Status.ApprovedAt, 0).Format(time.RFC3339))
+				}
+				if foundMigration.Status.ExecutedAt > 0 {
+					fmt.Printf("Applied at: %s\n", time.Unix(foundMigration.Status.ExecutedAt, 0).Format(time.RFC3339))
+				}
+				if foundMigration.Status.RejectedAt > 0 {
+					fmt.Printf("Rejected at: %s\n", time.Unix(foundMigration.Status.RejectedAt, 0).Format(time.RFC3339))
+				}
 
-				fmt.Println("")
-				fmt.Println("To recalculate this migration against the current schema:")
-				fmt.Printf(`  %s recalculate migration %s`, baseCommand, foundMigration.Name)
-				fmt.Println("")
+				// Only show approval/action commands for migrations that haven't been approved or applied
+				if foundMigration.Status.Phase == schemasv1alpha4.Planned {
+					fmt.Println("")
+					fmt.Println("To apply this migration:")
+					fmt.Printf(`  %s approve migration %s`, baseCommand, foundMigration.Name)
+					fmt.Println("")
 
-				fmt.Println("")
-				fmt.Println("To deny and cancel this migration:")
-				fmt.Printf(`  %s reject migration %s`, baseCommand, foundMigration.Name)
-				fmt.Println("")
+					fmt.Println("")
+					fmt.Println("To recalculate this migration against the current schema:")
+					fmt.Printf(`  %s recalculate migration %s`, baseCommand, foundMigration.Name)
+					fmt.Println("")
+
+					fmt.Println("")
+					fmt.Println("To deny and cancel this migration:")
+					fmt.Printf(`  %s reject migration %s`, baseCommand, foundMigration.Name)
+					fmt.Println("")
+				}
 
 				return nil
 			}
