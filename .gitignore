@@ -23,6 +23,7 @@ bin
 *.swp
 *.swo
 *~
+.claude
 
 dist/
 
@@ -36,5 +37,4 @@ cosign.key
 cosign.pub
 
 .history
-
 release/
