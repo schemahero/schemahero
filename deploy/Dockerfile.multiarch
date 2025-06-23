@@ -1,4 +1,4 @@
-FROM golang:1.19.2 AS build
+FROM golang:1.24 AS build
 WORKDIR /code
 COPY . .
 
@@ -8,21 +8,21 @@ RUN make build-manager
 FROM build AS build-schemahero
 RUN make build-schemahero
 
-FROM ubuntu:latest as base
+FROM ubuntu:latest AS base
 RUN apt-get update -y && apt-get install -y ca-certificates
 
-# Schemahero manager
-FROM base as manager
+# Manager
+FROM base AS manager
 COPY --from=build-manager /code/bin/manager /manager
 RUN useradd -c 'schemahero-manager user' -m -d /home/schemahero-manager -s /bin/bash -u 1001 schemahero-manager
 USER schemahero-manager
-ENV HOME /home/schemahero-manager
+ENV HOME=/home/schemahero-manager
 ENTRYPOINT ["/manager", "run"]
 
-# Schemahero kubectl
-FROM base as schemahero
+# Schemahero
+FROM base AS schemahero
 COPY --from=build-schemahero /code/bin/kubectl-schemahero /schemahero
 RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 schemahero
 USER schemahero
-ENV HOME /home/schemahero
+ENV HOME=/home/schemahero
 ENTRYPOINT ["/schemahero"]

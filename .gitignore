@@ -37,3 +37,4 @@ cosign.key
 cosign.pub
 
 .history
+release/
