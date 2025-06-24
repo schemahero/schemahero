@@ -4,7 +4,7 @@ on:
     branches: [ main ]
   push:
     tags-ignore: ["*"] # tags run tagged-release workflow
-    branches: ["**"]
+    branches: [ main ] # run tests on main branch
 
 jobs:
   build:
@@ -199,3 +199,20 @@ jobs:
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/fixtures run
+
+  all-tests-passed:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - test
+      - test-postgres
+      - test-mysql
+      - test-cockroach
+      - test-cassandra
+      - test-sqlite
+      - test-rqlite
+      - test-timescaledb
+      - test-fixtures
+    steps:
+      - name: All tests passed
+        run: echo "All tests have passed successfully"
