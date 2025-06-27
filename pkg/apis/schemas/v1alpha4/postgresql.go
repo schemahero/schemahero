@@ -23,8 +23,14 @@ type PostgresqlTableTrigger struct {
 	ForEachStatement  *bool    `json:"forEachStatement,omitempty" yaml:"forEachStatement,omitempty"`
 	ForEachRow        *bool    `json:"forEachRun,omitempty" yaml:"forEachRow,omitempty"`
 	Condition         *string  `json:"condition,omitempty" yaml:"condition,omitempty"`
-	ExecuteProcedure  string   `json:"executeProcedure" yaml:"executeProcedure"`
-	Arguments         []string `json:"arguments,omitempty" yaml:"arguments,omitempty"`
+	//+kubebuilder:validation:Enum=Procedure;Function
+	//+kubebuilder:default:=Procedure
+	ExecuteType string `json:"executeType" yaml:"executeType"`
+	Execute     string `json:"execute" yaml:"execute"`
+	// Deprecated: we support multiple execute types from now on.
+	// You are encouraged to use ExecuteType and Execute instead.
+	ExecuteProcedure string   `json:"executeProcedure,omitempty" yaml:"executeProcedure,omitempty"`
+	Arguments        []string `json:"arguments,omitempty" yaml:"arguments,omitempty"`
 }
 
 type PostgresqlTableForeignKeyReferences struct {
@@ -70,4 +76,21 @@ type PostgresqlTableSchema struct {
 	Columns     []*PostgresqlTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                         `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 	Triggers    []*PostgresqlTableTrigger    `json:"json:triggers,omitempty" yaml:"triggers,omitempty"`
+}
+
+type PostgresqlFunctionSchema struct {
+	Schema string `json:"schema,omitempty" yaml:"schema,omitempty"`
+	//+kubebuilder:default:=PLpgSQL
+	Lang   string  `json:"lang" yaml:"lang"`
+	Return *string `json:"return,omitempty" yaml:"return,omitempty"`
+	// As represents the function logic. An example looks as follows:
+	// ```
+	// DECLARE
+	//     user_count bigint;
+	// BEGIN
+	//     SELECT COUNT(*) INTO user_count FROM users;
+	//     RETURN user_count;
+	// END;
+	// ```
+	As string `json:"as" yaml:"as"`
 }

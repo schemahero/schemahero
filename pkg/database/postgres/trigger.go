@@ -36,7 +36,14 @@ func triggerCreateStatement(trigger *schemasv1alpha4.PostgresqlTableTrigger, tab
 		stmt = fmt.Sprintf("%s when (%s)", stmt, *trigger.Condition)
 	}
 
-	stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.ExecuteProcedure)
+	switch trigger.ExecuteType {
+	case "Procedure":
+		stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.Execute)
+	case "Function":
+		stmt = fmt.Sprintf("%s execute function %s", stmt, trigger.Execute)
+	default:
+		stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.ExecuteProcedure)
+	}
 
 	return stmt, nil
 }

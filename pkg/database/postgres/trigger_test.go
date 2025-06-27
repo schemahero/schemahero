@@ -73,6 +73,20 @@ func Test_triggerCreateStatement(t *testing.T) {
 			tableName:         "a",
 			expectedStatement: `create constraint trigger "tt" before insert on "a" for each statement execute procedure fn()`,
 		},
+		{
+			name: "after insert execute function",
+			trigger: &schemasv1alpha4.PostgresqlTableTrigger{
+				Name: "tt",
+				Events: []string{
+					"after insert",
+				},
+				ForEachRow:       &trueValue,
+				ExecuteType:      "Function",
+				ExecuteProcedure: "fn()",
+			},
+			tableName:         "a",
+			expectedStatement: `create trigger "tt" after insert on "a" for each row execute function fn()`,
+		},
 	}
 
 	for _, test := range tests {
