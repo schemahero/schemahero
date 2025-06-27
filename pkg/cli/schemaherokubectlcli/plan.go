@@ -69,7 +69,7 @@ func PlanCmd() *cobra.Command {
 
 			var f *os.File
 			if v.GetString("out") != "" {
-				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+				f, err = os.OpenFile(v.GetString("out"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 				if err != nil {
 					return err
 				}
@@ -120,7 +120,6 @@ func PlanCmd() *cobra.Command {
 
 					return nil
 				})
-
 				if err != nil {
 					return errors.Wrap(err, "failed to walk directory")
 				}
@@ -180,7 +179,7 @@ func PlanCmd() *cobra.Command {
 	cmd.Flags().String("keyspace", "", "the keyspace to use for databases that support keyspaces")
 
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
-	cmd.Flags().String("spec-type", "table", "type of spec in spec-file (table, view, or extension)")
+	cmd.Flags().String("spec-type", "table", "type of spec in spec-file (table, view, function, or extension)")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 	cmd.Flags().Bool("overwrite", true, "when set, will overwrite the out file, if it already exists")
 

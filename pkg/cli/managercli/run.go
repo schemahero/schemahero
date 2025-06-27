@@ -8,6 +8,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/config"
 	databasecontroller "github.com/schemahero/schemahero/pkg/controller/database"
 	databaseextensioncontroller "github.com/schemahero/schemahero/pkg/controller/databaseextension"
+	functioncontroller "github.com/schemahero/schemahero/pkg/controller/function"
 	migrationcontroller "github.com/schemahero/schemahero/pkg/controller/migration"
 	tablecontroller "github.com/schemahero/schemahero/pkg/controller/table"
 	viewcontroller "github.com/schemahero/schemahero/pkg/controller/view"
@@ -105,6 +106,11 @@ func RunCmd() *cobra.Command {
 				}
 
 				if err := databaseextensioncontroller.Add(mgr); err != nil {
+					logger.Error(err)
+					os.Exit(1)
+				}
+
+				if err := functioncontroller.Add(mgr, v.GetStringSlice("database-name")); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}

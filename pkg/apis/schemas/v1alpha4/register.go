@@ -46,6 +46,7 @@ func init() {
 	SchemeBuilder.Register(&View{}, &ViewList{})
 	SchemeBuilder.Register(&DataType{}, &DataTypeList{})
 	SchemeBuilder.Register(&DatabaseExtension{}, &DatabaseExtensionList{})
+	SchemeBuilder.Register(&Function{}, &FunctionList{})
 }
 
 // Resource is required by pkg/client/listers/...

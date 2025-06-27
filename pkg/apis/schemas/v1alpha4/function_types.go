@@ -39,8 +39,9 @@ type FunctionSchema struct {
 
 // FunctionSpec defines the desired state of Function
 type FunctionSpec struct {
-	Database string `json:"database" yaml:"database"`
-	Name     string `json:"name" yaml:"name"`
+	Database         string `json:"database" yaml:"database"`
+	Name             string `json:"name" yaml:"name"`
+	RemoveOnDeletion bool   `json:"removeOnDeletion,omitempty" yaml:"removeOnDeletion,omitempty"`
 
 	Schema *FunctionSchema `json:"schema,omitempty" yaml:"schema,omitempty"`
 }
@@ -61,7 +62,6 @@ type FunctionStatus struct {
 // +kubebuilder:printcolumn:name="Namespace",type=string,JSONPath=`.metadata.namespace`,priority=1
 // +kubebuilder:printcolumn:name="Function",type=string,JSONPath=`.spec.name`
 // +kubebuilder:printcolumn:name="Database",type=string,JSONPath=`.spec.database`
-// +kubebuilder:printcolumn:name="Schema",type=string,JSONPath=`.spec.schema`
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 // +k8s:openapi-gen=true
 type Function struct {
