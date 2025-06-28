@@ -36,15 +36,15 @@ func getQualifiedExecuteName(functionName, schema string, params []*schemasv1alp
 func serializeExecuteParams(params []*schemasv1alpha4.PostgresqlExecuteParameter) string {
 	ps := []string{}
 	for _, param := range params {
-		p := ""
+		p := []string{}
 		if param.Mode != "" {
-			p = param.Mode
+			p = append(p, param.Mode)
 		}
 		if param.Name != "" {
-			p = fmt.Sprintf("%s %s", p, param.Name)
+			p = append(p, param.Name)
 		}
-		p = fmt.Sprintf("%s %s", p, param.Type)
-		ps = append(ps, p)
+		p = append(p, param.Type)
+		ps = append(ps, strings.Join(p, " "))
 	}
 	return strings.Join(ps, ", ")
 }

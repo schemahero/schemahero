@@ -35,7 +35,7 @@ func TestCreateFunctionStatements(t *testing.T) {
 				Schema:    "public",
 				Lang:      "PLpgSQL",
 				Params:    []*schemasv1alpha4.PostgresqlExecuteParameter{},
-				ReturnSet: true,
+				ReturnSet: false,
 				Return:    "bigint",
 				As: `DECLARE
   user_count bigint;
@@ -45,11 +45,42 @@ BEGIN
 END;`,
 			},
 			expected: []string{
-				`create function "get_user_count()" returns setof bigint as $$
+				`create function "get_user_count()" returns bigint as $$
 DECLARE
   user_count bigint;
 BEGIN
   SELECT COUNT(*) INTO user_count FROM users;
+  RETURN user_count;
+END;
+$$ language PLpgSQL;`,
+			},
+		},
+		{
+			name: "get_user_count_with_param",
+			function: schemasv1alpha4.PostgresqlFunctionSchema{
+				Schema: "public",
+				Lang:   "PLpgSQL",
+				Params: []*schemasv1alpha4.PostgresqlExecuteParameter{
+					{
+						Name: "users_table",
+						Type: "text",
+					},
+				},
+				ReturnSet: false,
+				Return:    "bigint",
+				As: `DECLARE
+  user_count bigint;
+BEGIN
+  SELECT COUNT(*) INTO user_count FROM $1;
+  RETURN user_count;
+END;`,
+			},
+			expected: []string{
+				`create function "get_user_count_with_param(users_table text)" returns bigint as $$
+DECLARE
+  user_count bigint;
+BEGIN
+  SELECT COUNT(*) INTO user_count FROM $1;
   RETURN user_count;
 END;
 $$ language PLpgSQL;`,
