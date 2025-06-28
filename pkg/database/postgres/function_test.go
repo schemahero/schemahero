@@ -86,6 +86,31 @@ END;
 $$ language PLpgSQL;`,
 			},
 		},
+		{
+			name: "find_film_by_id",
+			function: schemasv1alpha4.PostgresqlFunctionSchema{
+				Schema: "television",
+				Lang:   "PLpgSQL",
+				Params: []*schemasv1alpha4.PostgresqlExecuteParameter{
+					{
+						Name: "p_id",
+						Type: "int",
+					},
+				},
+				ReturnSet: true,
+				Return:    "film",
+				As: `BEGIN
+   RETURN query SELECT * FROM film WHERE film_id = p_id;
+END;`,
+			},
+			expected: []string{
+				`create function "television.find_film_by_id(p_id int)" returns setof film as $$
+BEGIN
+   RETURN query SELECT * FROM film WHERE film_id = p_id;
+END;
+$$ language PLpgSQL;`,
+			},
+		},
 	}
 
 	for _, tt := range tests {

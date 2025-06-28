@@ -89,6 +89,28 @@ func Test_triggerCreateStatement(t *testing.T) {
 			tableName:         "a",
 			expectedStatement: `create trigger "tt" after insert on "a" for each row execute function fn()`,
 		},
+		{
+			name: "after insert execute function with params",
+			trigger: &schemasv1alpha4.PostgresqlTableTrigger{
+				Name: "tt",
+				Events: []string{
+					"after insert",
+				},
+				ForEachRow: &trueValue,
+				Execute: &schemasv1alpha4.PostgresqlTableTriggerExecute{
+					Type: "Function",
+					Name: "fn",
+					Params: []*schemasv1alpha4.PostgresqlExecuteParameter{
+						{
+							Name: "paramName",
+							Type: "int",
+						},
+					},
+				},
+			},
+			tableName:         "a",
+			expectedStatement: `create trigger "tt" after insert on "a" for each row execute function fn(paramName int)`,
+		},
 	}
 
 	for _, test := range tests {
