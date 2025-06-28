@@ -80,9 +80,11 @@ func Test_triggerCreateStatement(t *testing.T) {
 				Events: []string{
 					"after insert",
 				},
-				ForEachRow:       &trueValue,
-				ExecuteType:      "Function",
-				ExecuteProcedure: "fn()",
+				ForEachRow: &trueValue,
+				Execute: &schemasv1alpha4.PostgresqlTableTriggerExecute{
+					Type: "Function",
+					Name: "fn",
+				},
 			},
 			tableName:         "a",
 			expectedStatement: `create trigger "tt" after insert on "a" for each row execute function fn()`,

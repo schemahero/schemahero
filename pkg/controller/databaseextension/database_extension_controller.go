@@ -18,6 +18,7 @@ package databaseextension
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
@@ -132,7 +133,7 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 	finalizerName := "databaseextensions.schemas.schemahero.io/finalizer"
 
 	if !databaseExtension.ObjectMeta.DeletionTimestamp.IsZero() {
-		if databaseExtension.Spec.RemoveOnDeletion && containsString(databaseExtension.ObjectMeta.Finalizers, finalizerName) {
+		if databaseExtension.Spec.RemoveOnDeletion && slices.Contains(databaseExtension.ObjectMeta.Finalizers, finalizerName) {
 			if err := r.dropExtension(ctx, databaseExtension); err != nil {
 				return reconcile.Result{}, err
 			}
@@ -145,7 +146,7 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 		return reconcile.Result{}, nil
 	}
 
-	if databaseExtension.Spec.RemoveOnDeletion && !containsString(databaseExtension.ObjectMeta.Finalizers, finalizerName) {
+	if databaseExtension.Spec.RemoveOnDeletion && !slices.Contains(databaseExtension.ObjectMeta.Finalizers, finalizerName) {
 		databaseExtension.ObjectMeta.Finalizers = append(databaseExtension.ObjectMeta.Finalizers, finalizerName)
 		if err := r.Update(ctx, databaseExtension); err != nil {
 			return reconcile.Result{}, err

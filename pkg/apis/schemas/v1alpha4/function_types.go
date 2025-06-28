@@ -17,11 +17,6 @@ limitations under the License.
 package v1alpha4
 
 import (
-	"crypto/sha256"
-	"encoding/json"
-	"fmt"
-
-	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,11 +43,11 @@ type FunctionSpec struct {
 
 // FunctionStatus defines the observed state of Function
 type FunctionStatus struct {
-	// We store the SHA of the function spec from the last time we executed a plan to
-	// make startup less noisy by skipping re-planning objects that have been planned
-	// we cannot use the resourceVersion or generation fields because updating them
-	// would cause the object to be modified again
-	LastPlannedFunctionSpecSHA string `json:"lastPlannedFunctionSpecSHA,omitempty" yaml:"lastPlannedFunctionSpecSHA,omitempty"`
+	AppliedAt int64 `json:"appliedAt,omitempty" yaml:"appliedAt,omitempty"`
+
+	Phase string `json:"phase,omitempty" yaml:"phase,omitempty"`
+
+	Message string `json:"message,omitempty" yaml:"message,omitempty"`
 }
 
 // +genclient
@@ -70,23 +65,6 @@ type Function struct {
 
 	Spec   FunctionSpec   `json:"spec,omitempty"`
 	Status FunctionStatus `json:"status,omitempty"`
-}
-
-func (v Function) GetSHA() (string, error) {
-	// ignoring the status, json marshal the spec and the metadata
-	o := struct {
-		Spec FunctionSpec `json:"spec,omitempty"`
-	}{
-		Spec: v.Spec,
-	}
-
-	b, err := json.Marshal(o)
-	if err != nil {
-		return "", errors.Wrap(err, "failed to marshal")
-	}
-
-	sum := sha256.Sum256(b)
-	return fmt.Sprintf("%x", sum), nil
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

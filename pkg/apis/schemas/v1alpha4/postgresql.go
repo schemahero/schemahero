@@ -18,20 +18,25 @@ package v1alpha4
 
 // +kubebuilder:validation:ExactlyOneOf=execute;executeProcedure
 type PostgresqlTableTrigger struct {
-	Name              string   `json:"name,omitempty" yaml:"name,omitempty"`
-	ConstraintTrigger *bool    `json:"constraintTrigger,omitempty" yaml:"constraintTrigger,omitempty"`
-	Events            []string `json:"events" yaml:"events"`
-	ForEachStatement  *bool    `json:"forEachStatement,omitempty" yaml:"forEachStatement,omitempty"`
-	ForEachRow        *bool    `json:"forEachRun,omitempty" yaml:"forEachRow,omitempty"`
-	Condition         *string  `json:"condition,omitempty" yaml:"condition,omitempty"`
+	Name              string                         `json:"name,omitempty" yaml:"name,omitempty"`
+	ConstraintTrigger *bool                          `json:"constraintTrigger,omitempty" yaml:"constraintTrigger,omitempty"`
+	Events            []string                       `json:"events" yaml:"events"`
+	ForEachStatement  *bool                          `json:"forEachStatement,omitempty" yaml:"forEachStatement,omitempty"`
+	ForEachRow        *bool                          `json:"forEachRun,omitempty" yaml:"forEachRow,omitempty"`
+	Condition         *string                        `json:"condition,omitempty" yaml:"condition,omitempty"`
+	Execute           *PostgresqlTableTriggerExecute `json:"execute,omitempty" yaml:"execute,omitempty"`
+	// Deprecated: we support multiple execute types from now on.
+	// You are encouraged to use Execute instead.
+	ExecuteProcedure string `json:"executeProcedure,omitempty" yaml:"executeProcedure,omitempty"`
+}
+
+type PostgresqlTableTriggerExecute struct {
 	//+kubebuilder:validation:Enum=Procedure;Function
 	//+kubebuilder:default:=Procedure
-	ExecuteType string `json:"executeType" yaml:"executeType"`
-	Execute     string `json:"execute,omitempty" yaml:"execute,omitempty"`
-	// Deprecated: we support multiple execute types from now on.
-	// You are encouraged to use ExecuteType and Execute instead.
-	ExecuteProcedure string   `json:"executeProcedure,omitempty" yaml:"executeProcedure,omitempty"`
-	Arguments        []string `json:"arguments,omitempty" yaml:"arguments,omitempty"`
+	Type   string                        `json:"type" yaml:"type"`
+	Schema string                        `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Name   string                        `json:"name" yaml:"name"`
+	Params []*PostgresqlExecuteParameter `json:"params,omitempty" yaml:"params,omitempty"`
 }
 
 type PostgresqlTableForeignKeyReferences struct {
@@ -78,7 +83,7 @@ type PostgresqlTableSchema struct {
 	Columns     []*PostgresqlTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                         `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 	// Deprecated: this field should be avoided and one should use Triggers without json prefix instead
-	JSONTriggers []*PostgresqlTableTrigger `json:"json:triggers,omitempty" yaml:"triggers,omitempty"`
+	JSONTriggers []*PostgresqlTableTrigger `json:"json:triggers,omitempty" yaml:"json:triggers,omitempty"`
 	Triggers     []*PostgresqlTableTrigger `json:"triggers,omitempty" yaml:"triggers,omitempty"`
 }
 
@@ -89,7 +94,7 @@ type PostgresqlFunctionSchema struct {
 	//+kubebuilder:default:=PLpgSQL
 	Lang string `json:"lang" yaml:"lang"`
 	// Params is a mapping between function parameter name and its respective type
-	Params []*PostgresqlFunctionParameter `json:"params,omitempty" yaml:"params,omitempty"`
+	Params []*PostgresqlExecuteParameter `json:"params,omitempty" yaml:"params,omitempty"`
 	// ReturnSet tells if the returned value is a set or not
 	ReturnSet bool `json:"returnSet,omitempty" yaml:"returnSet,omitempty"`
 	// Return, if defined, tells what type to return
@@ -106,7 +111,7 @@ type PostgresqlFunctionSchema struct {
 	As string `json:"as" yaml:"as"`
 }
 
-type PostgresqlFunctionParameter struct {
+type PostgresqlExecuteParameter struct {
 	//+kubebuilder:validation:Enum=IN;OUT;INOUT;VARIADIC
 	Mode string `json:"mode,omitempty" yaml:"mode,omitempty"`
 	Name string `json:"name,omitempty" yaml:"name,omitempty"`

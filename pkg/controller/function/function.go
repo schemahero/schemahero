@@ -14,14 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package databaseextension
+package function
 
-func removeString(slice []string, s string) []string {
-	result := []string{}
-	for _, item := range slice {
-		if item != s {
-			result = append(result, item)
-		}
-	}
-	return result
+import (
+	"github.com/schemahero/schemahero/pkg/controller"
+)
+
+func init() {
+	controller.AddToManagerFuncs = append(controller.AddToManagerFuncs, Add)
 }

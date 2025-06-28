@@ -110,7 +110,7 @@ func RunCmd() *cobra.Command {
 					os.Exit(1)
 				}
 
-				if err := functioncontroller.Add(mgr, v.GetStringSlice("database-name")); err != nil {
+				if err := functioncontroller.Add(mgr); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}

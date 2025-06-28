@@ -34,7 +34,7 @@ func TestCreateFunctionStatements(t *testing.T) {
 			function: schemasv1alpha4.PostgresqlFunctionSchema{
 				Schema:    "public",
 				Lang:      "PLpgSQL",
-				Params:    []*schemasv1alpha4.PostgresqlFunctionParameter{},
+				Params:    []*schemasv1alpha4.PostgresqlExecuteParameter{},
 				ReturnSet: true,
 				Return:    "bigint",
 				As: `DECLARE
