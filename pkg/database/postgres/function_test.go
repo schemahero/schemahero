@@ -45,14 +45,16 @@ BEGIN
 END;`,
 			},
 			expected: []string{
-				`create function "get_user_count()" returns bigint as $$
+				`create function get_user_count() returns bigint as
+$_SCHEMAHERO_$
 DECLARE
   user_count bigint;
 BEGIN
   SELECT COUNT(*) INTO user_count FROM users;
   RETURN user_count;
 END;
-$$ language PLpgSQL;`,
+$_SCHEMAHERO_$
+language PLpgSQL`,
 			},
 		},
 		{
@@ -76,14 +78,16 @@ BEGIN
 END;`,
 			},
 			expected: []string{
-				`create function "get_user_count_with_param(users_table text)" returns bigint as $$
+				`create function get_user_count_with_param(users_table text) returns bigint as
+$_SCHEMAHERO_$
 DECLARE
   user_count bigint;
 BEGIN
   SELECT COUNT(*) INTO user_count FROM $1;
   RETURN user_count;
 END;
-$$ language PLpgSQL;`,
+$_SCHEMAHERO_$
+language PLpgSQL`,
 			},
 		},
 		{
@@ -104,11 +108,13 @@ $$ language PLpgSQL;`,
 END;`,
 			},
 			expected: []string{
-				`create function "television.find_film_by_id(p_id int)" returns setof film as $$
+				`create function television.find_film_by_id(p_id int) returns setof film as
+$_SCHEMAHERO_$
 BEGIN
    RETURN query SELECT * FROM film WHERE film_id = p_id;
 END;
-$$ language PLpgSQL;`,
+$_SCHEMAHERO_$
+language PLpgSQL`,
 			},
 		},
 	}

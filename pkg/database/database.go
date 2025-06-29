@@ -460,6 +460,7 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 
 	statements := []string{}
 
+	functionTagOpen := false
 	statement := ""
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
@@ -467,7 +468,12 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 			continue
 		}
 
-		if i == len(lines)-1 || strings.HasSuffix(line, ";") {
+		// we assume the function tag to always have its own line and never be the last line for simplicity
+		if line == postgres.FunctionLogicTag {
+			functionTagOpen = !functionTagOpen
+		}
+
+		if !functionTagOpen && (i == len(lines)-1 || strings.HasSuffix(line, ";")) {
 			statement = statement + " " + line
 			statements = append(statements, strings.TrimSpace(statement))
 			statement = ""

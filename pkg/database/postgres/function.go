@@ -19,14 +19,16 @@ package postgres
 import (
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
+
+// NOTE: the following keyword is chosen since we assume users will never need it in a function
+const FunctionLogicTag = "$_SCHEMAHERO_$"
 
 func CreateFunctionStatements(functionName string, functionSchema *schemasv1alpha4.PostgresqlFunctionSchema) []string {
 	qualifiedFunctionName := getQualifiedExecuteName(functionName, functionSchema.Schema, functionSchema.Params)
 
-	statement := fmt.Sprintf("create function %s", pgx.Identifier{qualifiedFunctionName}.Sanitize())
+	statement := fmt.Sprintf("create function %s", qualifiedFunctionName)
 
 	if functionSchema.Return != "" {
 		statement = fmt.Sprintf("%s returns", statement)
@@ -37,7 +39,8 @@ func CreateFunctionStatements(functionName string, functionSchema *schemasv1alph
 	}
 
 	statements := []string{
-		fmt.Sprintf("%s as $$\n%s\n$$ language %s;", statement, functionSchema.As, functionSchema.Lang),
+		// it is important to keep the function logic tags on their own respective lines
+		fmt.Sprintf("%s as\n%s\n%s\n%s\nlanguage %s", statement, FunctionLogicTag, functionSchema.As, FunctionLogicTag, functionSchema.Lang),
 	}
 
 	return statements
@@ -47,7 +50,7 @@ func DropFunctionStatements(functionName string, functionSchema *schemasv1alpha4
 	qualifiedFunctionName := getQualifiedExecuteName(functionName, functionSchema.Schema, functionSchema.Params)
 
 	statements := []string{
-		fmt.Sprintf("drop function %s;", pgx.Identifier{qualifiedFunctionName}.Sanitize()),
+		fmt.Sprintf("drop function %s", qualifiedFunctionName),
 	}
 
 	return statements
