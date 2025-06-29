@@ -15,6 +15,29 @@ func PlanPostgresView(uri string, viewName string, postgresViewSchema *schemasv1
 	return nil, errors.New("not implemented")
 }
 
+func PlanPostgresFunction(uri string, functionName string, postgresFunctionSchema *schemasv1alpha4.PostgresqlFunctionSchema) ([]string, error) {
+	p, err := Connect(uri)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to postgres")
+	}
+	defer p.Close()
+
+	// determine if the function exists
+	functionExists, err := CheckIfFunctionExists(p, postgresFunctionSchema.Schema, functionName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if function exists")
+	}
+
+	queries := []string{}
+
+	if !functionExists {
+		// shortcut to just create it
+		queries = CreateFunctionStatements(functionName, postgresFunctionSchema)
+	}
+
+	return queries, nil
+}
+
 func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	p, err := Connect(uri)
 	if err != nil {
@@ -392,6 +415,18 @@ ExistingIndexLoop:
 func CheckIfTableExists(p *PostgresConnection, tableName string) (bool, error) {
 	query := `select count(1) from information_schema.tables where table_name = $1`
 	row := p.conn.QueryRow(context.Background(), query, tableName)
+	tableExists := 0
+	if err := row.Scan(&tableExists); err != nil {
+		return false, errors.Wrap(err, "failed to scan")
+	}
+
+	return tableExists > 0, nil
+}
+
+// CheckIfFunctionExists returns whether the specified function exists in the database
+func CheckIfFunctionExists(p *PostgresConnection, functionSchema string, functionName string) (bool, error) {
+	query := `select count(1) from information_schema.routines where routine_type = 'FUNCTION' AND routine_schema = $1 AND routine_name = $2`
+	row := p.conn.QueryRow(context.Background(), query, functionSchema, functionName)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
 		return false, errors.Wrap(err, "failed to scan")

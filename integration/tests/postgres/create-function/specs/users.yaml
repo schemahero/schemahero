@@ -1,0 +1,19 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Function
+metadata:
+  name: users
+spec:
+  database: schemahero
+  name: get_user_count
+  schema:
+    postgres:
+      schema: test
+      lang: PLpgSQL
+      return: bigint
+      as: |-
+        DECLARE
+            user_count bigint;
+        BEGIN
+            SELECT COUNT(*) INTO user_count FROM users;
+            RETURN user_count;
+        END;

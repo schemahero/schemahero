@@ -1,0 +1,22 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Function
+metadata:
+  name: other
+spec:
+  database: schemahero
+  name: get_user_count_with_parameter
+  schema:
+    postgres:
+      schema: test
+      lang: PLpgSQL
+      return: bigint
+      as: |-
+        DECLARE
+            user_count bigint;
+        BEGIN
+            SELECT COUNT(*) INTO user_count FROM table_name;
+            RETURN user_count;
+        END;
+      params:
+        - name: table_name
+          type: text

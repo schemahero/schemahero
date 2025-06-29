@@ -36,7 +36,27 @@ func triggerCreateStatement(trigger *schemasv1alpha4.PostgresqlTableTrigger, tab
 		stmt = fmt.Sprintf("%s when (%s)", stmt, *trigger.Condition)
 	}
 
-	stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.ExecuteProcedure)
+	if trigger.Execute == nil {
+		stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.ExecuteProcedure)
+	} else {
+		switch trigger.Execute.Type {
+		case "Procedure":
+			if trigger.Execute.Name != "" {
+				stmt = fmt.Sprintf("%s execute procedure %s", stmt, getQualifiedExecuteName(trigger.Execute.Name, trigger.Execute.Schema, trigger.Execute.Params))
+			} else if trigger.ExecuteProcedure != "" {
+				stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.ExecuteProcedure)
+			} else {
+				return "", errors.New("when using procedure execute type you have to define a procedure under execute")
+			}
+		case "Function":
+			if trigger.Execute.Name == "" {
+				return "", errors.New("when using function execute type you have to define a function under execute")
+			}
+			stmt = fmt.Sprintf("%s execute function %s", stmt, getQualifiedExecuteName(trigger.Execute.Name, trigger.Execute.Schema, trigger.Execute.Params))
+		default:
+			stmt = fmt.Sprintf("%s execute procedure %s", stmt, trigger.ExecuteProcedure)
+		}
+	}
 
 	return stmt, nil
 }

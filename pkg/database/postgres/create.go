@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
 
+	"github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
@@ -88,8 +89,15 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Postgr
 		fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{qualifiedTableName}.Sanitize(), strings.Join(columns, ", ")),
 	}
 
+	var triggers []*v1alpha4.PostgresqlTableTrigger
+	if tableSchema.JSONTriggers == nil || len(tableSchema.JSONTriggers) == 0 {
+		triggers = tableSchema.Triggers
+	} else {
+		triggers = tableSchema.JSONTriggers
+	}
+
 	// Add any triggers that are defined
-	for _, trigger := range tableSchema.Triggers {
+	for _, trigger := range triggers {
 		statement, err := triggerCreateStatement(trigger, qualifiedTableName)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create trigger statement")

@@ -26,6 +26,22 @@ type DataTypeListerExpansion interface{}
 // DataTypeNamespaceLister.
 type DataTypeNamespaceListerExpansion interface{}
 
+// DatabaseExtensionListerExpansion allows custom methods to be added to
+// DatabaseExtensionLister.
+type DatabaseExtensionListerExpansion interface{}
+
+// DatabaseExtensionNamespaceListerExpansion allows custom methods to be added to
+// DatabaseExtensionNamespaceLister.
+type DatabaseExtensionNamespaceListerExpansion interface{}
+
+// FunctionListerExpansion allows custom methods to be added to
+// FunctionLister.
+type FunctionListerExpansion interface{}
+
+// FunctionNamespaceListerExpansion allows custom methods to be added to
+// FunctionNamespaceLister.
+type FunctionNamespaceListerExpansion interface{}
+
 // MigrationListerExpansion allows custom methods to be added to
 // MigrationLister.
 type MigrationListerExpansion interface{}

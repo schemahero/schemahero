@@ -208,12 +208,10 @@ spec:
                       isDeleted:
                         type: boolean
                       json:triggers:
+                        description: 'Deprecated: this field should be avoided and
+                          one should use Triggers without json prefix instead'
                         items:
                           properties:
-                            arguments:
-                              items:
-                                type: string
-                              type: array
                             condition:
                               type: string
                             constraintTrigger:
@@ -222,7 +220,44 @@ spec:
                               items:
                                 type: string
                               type: array
+                            execute:
+                              properties:
+                                name:
+                                  type: string
+                                params:
+                                  items:
+                                    properties:
+                                      mode:
+                                        enum:
+                                        - IN
+                                        - OUT
+                                        - INOUT
+                                        - VARIADIC
+                                        type: string
+                                      name:
+                                        type: string
+                                      type:
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  type: array
+                                schema:
+                                  type: string
+                                type:
+                                  default: Procedure
+                                  enum:
+                                  - Procedure
+                                  - Function
+                                  type: string
+                              required:
+                              - name
+                              - type
+                              type: object
                             executeProcedure:
+                              description: |-
+                                Deprecated: we support multiple execute types from now on.
+                                You are encouraged to use Execute instead.
                               type: string
                             forEachRun:
                               type: boolean
@@ -232,7 +267,6 @@ spec:
                               type: string
                           required:
                           - events
-                          - executeProcedure
                           type: object
                         type: array
                       primaryKey:
@@ -241,6 +275,66 @@ spec:
                         type: array
                       schema:
                         type: string
+                      triggers:
+                        items:
+                          properties:
+                            condition:
+                              type: string
+                            constraintTrigger:
+                              type: boolean
+                            events:
+                              items:
+                                type: string
+                              type: array
+                            execute:
+                              properties:
+                                name:
+                                  type: string
+                                params:
+                                  items:
+                                    properties:
+                                      mode:
+                                        enum:
+                                        - IN
+                                        - OUT
+                                        - INOUT
+                                        - VARIADIC
+                                        type: string
+                                      name:
+                                        type: string
+                                      type:
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  type: array
+                                schema:
+                                  type: string
+                                type:
+                                  default: Procedure
+                                  enum:
+                                  - Procedure
+                                  - Function
+                                  type: string
+                              required:
+                              - name
+                              - type
+                              type: object
+                            executeProcedure:
+                              description: |-
+                                Deprecated: we support multiple execute types from now on.
+                                You are encouraged to use Execute instead.
+                              type: string
+                            forEachRun:
+                              type: boolean
+                            forEachStatement:
+                              type: boolean
+                            name:
+                              type: string
+                          required:
+                          - events
+                          type: object
+                        type: array
                     type: object
                   mysql:
                     properties:
@@ -402,12 +496,10 @@ spec:
                       isDeleted:
                         type: boolean
                       json:triggers:
+                        description: 'Deprecated: this field should be avoided and
+                          one should use Triggers without json prefix instead'
                         items:
                           properties:
-                            arguments:
-                              items:
-                                type: string
-                              type: array
                             condition:
                               type: string
                             constraintTrigger:
@@ -416,7 +508,44 @@ spec:
                               items:
                                 type: string
                               type: array
+                            execute:
+                              properties:
+                                name:
+                                  type: string
+                                params:
+                                  items:
+                                    properties:
+                                      mode:
+                                        enum:
+                                        - IN
+                                        - OUT
+                                        - INOUT
+                                        - VARIADIC
+                                        type: string
+                                      name:
+                                        type: string
+                                      type:
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  type: array
+                                schema:
+                                  type: string
+                                type:
+                                  default: Procedure
+                                  enum:
+                                  - Procedure
+                                  - Function
+                                  type: string
+                              required:
+                              - name
+                              - type
+                              type: object
                             executeProcedure:
+                              description: |-
+                                Deprecated: we support multiple execute types from now on.
+                                You are encouraged to use Execute instead.
                               type: string
                             forEachRun:
                               type: boolean
@@ -426,7 +555,6 @@ spec:
                               type: string
                           required:
                           - events
-                          - executeProcedure
                           type: object
                         type: array
                       primaryKey:
@@ -435,6 +563,66 @@ spec:
                         type: array
                       schema:
                         type: string
+                      triggers:
+                        items:
+                          properties:
+                            condition:
+                              type: string
+                            constraintTrigger:
+                              type: boolean
+                            events:
+                              items:
+                                type: string
+                              type: array
+                            execute:
+                              properties:
+                                name:
+                                  type: string
+                                params:
+                                  items:
+                                    properties:
+                                      mode:
+                                        enum:
+                                        - IN
+                                        - OUT
+                                        - INOUT
+                                        - VARIADIC
+                                        type: string
+                                      name:
+                                        type: string
+                                      type:
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  type: array
+                                schema:
+                                  type: string
+                                type:
+                                  default: Procedure
+                                  enum:
+                                  - Procedure
+                                  - Function
+                                  type: string
+                              required:
+                              - name
+                              - type
+                              type: object
+                            executeProcedure:
+                              description: |-
+                                Deprecated: we support multiple execute types from now on.
+                                You are encouraged to use Execute instead.
+                              type: string
+                            forEachRun:
+                              type: boolean
+                            forEachStatement:
+                              type: boolean
+                            name:
+                              type: string
+                          required:
+                          - events
+                          type: object
+                        type: array
                     type: object
                   rqlite:
                     properties:
@@ -724,10 +912,6 @@ spec:
                       triggers:
                         items:
                           properties:
-                            arguments:
-                              items:
-                                type: string
-                              type: array
                             condition:
                               type: string
                             constraintTrigger:
@@ -736,7 +920,44 @@ spec:
                               items:
                                 type: string
                               type: array
+                            execute:
+                              properties:
+                                name:
+                                  type: string
+                                params:
+                                  items:
+                                    properties:
+                                      mode:
+                                        enum:
+                                        - IN
+                                        - OUT
+                                        - INOUT
+                                        - VARIADIC
+                                        type: string
+                                      name:
+                                        type: string
+                                      type:
+                                        type: string
+                                    required:
+                                    - type
+                                    type: object
+                                  type: array
+                                schema:
+                                  type: string
+                                type:
+                                  default: Procedure
+                                  enum:
+                                  - Procedure
+                                  - Function
+                                  type: string
+                              required:
+                              - name
+                              - type
+                              type: object
                             executeProcedure:
+                              description: |-
+                                Deprecated: we support multiple execute types from now on.
+                                You are encouraged to use Execute instead.
                               type: string
                             forEachRun:
                               type: boolean
@@ -746,7 +967,6 @@ spec:
                               type: string
                           required:
                           - events
-                          - executeProcedure
                           type: object
                         type: array
                     type: object

@@ -105,6 +105,35 @@ func Test_CreateTableStatement(t *testing.T) {
 						Type: "integer",
 					},
 				},
+				JSONTriggers: []*schemasv1alpha4.PostgresqlTableTrigger{
+					{
+						Name: "tgr",
+						Events: []string{
+							"after insert",
+						},
+						ForEachRow:       &trueValue,
+						ExecuteProcedure: "test()",
+					},
+				},
+			},
+			tableName: "simple",
+			expectedStatements: []string{
+				`create table "simple" ("id" integer, primary key ("id"))`,
+				`create trigger "tgr" after insert on "simple" for each row execute procedure test()`,
+			},
+		},
+		{
+			name: "simple with non-deprecated trigger field",
+			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.PostgresqlTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+				},
 				Triggers: []*schemasv1alpha4.PostgresqlTableTrigger{
 					{
 						Name: "tgr",
