@@ -29,6 +29,8 @@ import (
 type SchemasV1alpha4Interface interface {
 	RESTClient() rest.Interface
 	DataTypesGetter
+	DatabaseExtensionsGetter
+	FunctionsGetter
 	MigrationsGetter
 	TablesGetter
 	ViewsGetter
@@ -41,6 +43,14 @@ type SchemasV1alpha4Client struct {
 
 func (c *SchemasV1alpha4Client) DataTypes(namespace string) DataTypeInterface {
 	return newDataTypes(c, namespace)
+}
+
+func (c *SchemasV1alpha4Client) DatabaseExtensions(namespace string) DatabaseExtensionInterface {
+	return newDatabaseExtensions(c, namespace)
+}
+
+func (c *SchemasV1alpha4Client) Functions(namespace string) FunctionInterface {
+	return newFunctions(c, namespace)
 }
 
 func (c *SchemasV1alpha4Client) Migrations(namespace string) MigrationInterface {

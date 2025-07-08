@@ -32,6 +32,14 @@ func (c *FakeSchemasV1alpha4) DataTypes(namespace string) v1alpha4.DataTypeInter
 	return &FakeDataTypes{c, namespace}
 }
 
+func (c *FakeSchemasV1alpha4) DatabaseExtensions(namespace string) v1alpha4.DatabaseExtensionInterface {
+	return &FakeDatabaseExtensions{c, namespace}
+}
+
+func (c *FakeSchemasV1alpha4) Functions(namespace string) v1alpha4.FunctionInterface {
+	return &FakeFunctions{c, namespace}
+}
+
 func (c *FakeSchemasV1alpha4) Migrations(namespace string) v1alpha4.MigrationInterface {
 	return &FakeMigrations{c, namespace}
 }

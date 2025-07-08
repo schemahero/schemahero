@@ -26,6 +26,10 @@ import (
 type Interface interface {
 	// DataTypes returns a DataTypeInformer.
 	DataTypes() DataTypeInformer
+	// DatabaseExtensions returns a DatabaseExtensionInformer.
+	DatabaseExtensions() DatabaseExtensionInformer
+	// Functions returns a FunctionInformer.
+	Functions() FunctionInformer
 	// Migrations returns a MigrationInformer.
 	Migrations() MigrationInformer
 	// Tables returns a TableInformer.
@@ -48,6 +52,16 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // DataTypes returns a DataTypeInformer.
 func (v *version) DataTypes() DataTypeInformer {
 	return &dataTypeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// DatabaseExtensions returns a DatabaseExtensionInformer.
+func (v *version) DatabaseExtensions() DatabaseExtensionInformer {
+	return &databaseExtensionInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// Functions returns a FunctionInformer.
+func (v *version) Functions() FunctionInformer {
+	return &functionInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Migrations returns a MigrationInformer.

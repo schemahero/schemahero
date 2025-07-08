@@ -16,15 +16,27 @@ limitations under the License.
 
 package v1alpha4
 
+// +kubebuilder:validation:ExactlyOneOf=execute;executeProcedure
 type PostgresqlTableTrigger struct {
-	Name              string   `json:"name,omitempty" yaml:"name,omitempty"`
-	ConstraintTrigger *bool    `json:"constraintTrigger,omitempty" yaml:"constraintTrigger,omitempty"`
-	Events            []string `json:"events" yaml:"events"`
-	ForEachStatement  *bool    `json:"forEachStatement,omitempty" yaml:"forEachStatement,omitempty"`
-	ForEachRow        *bool    `json:"forEachRun,omitempty" yaml:"forEachRow,omitempty"`
-	Condition         *string  `json:"condition,omitempty" yaml:"condition,omitempty"`
-	ExecuteProcedure  string   `json:"executeProcedure" yaml:"executeProcedure"`
-	Arguments         []string `json:"arguments,omitempty" yaml:"arguments,omitempty"`
+	Name              string                         `json:"name,omitempty" yaml:"name,omitempty"`
+	ConstraintTrigger *bool                          `json:"constraintTrigger,omitempty" yaml:"constraintTrigger,omitempty"`
+	Events            []string                       `json:"events" yaml:"events"`
+	ForEachStatement  *bool                          `json:"forEachStatement,omitempty" yaml:"forEachStatement,omitempty"`
+	ForEachRow        *bool                          `json:"forEachRun,omitempty" yaml:"forEachRow,omitempty"`
+	Condition         *string                        `json:"condition,omitempty" yaml:"condition,omitempty"`
+	Execute           *PostgresqlTableTriggerExecute `json:"execute,omitempty" yaml:"execute,omitempty"`
+	// Deprecated: we support multiple execute types from now on.
+	// You are encouraged to use Execute instead.
+	ExecuteProcedure string `json:"executeProcedure,omitempty" yaml:"executeProcedure,omitempty"`
+}
+
+type PostgresqlTableTriggerExecute struct {
+	//+kubebuilder:validation:Enum=Procedure;Function
+	//+kubebuilder:default:=Procedure
+	Type   string                        `json:"type" yaml:"type"`
+	Schema string                        `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Name   string                        `json:"name" yaml:"name"`
+	Params []*PostgresqlExecuteParameter `json:"params,omitempty" yaml:"params,omitempty"`
 }
 
 type PostgresqlTableForeignKeyReferences struct {
@@ -62,6 +74,7 @@ type PostgresqlTableColumn struct {
 	Default     *string                           `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
+// +kubebuilder:validation:ExactlyOneOf=triggers;json:triggers
 type PostgresqlTableSchema struct {
 	Schema      string                       `json:"schema,omitempty" yaml:"schema,omitempty"`
 	PrimaryKey  []string                     `json:"primaryKey,omitempty" yaml:"primaryKey,omitempty"`
@@ -69,5 +82,38 @@ type PostgresqlTableSchema struct {
 	Indexes     []*PostgresqlTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
 	Columns     []*PostgresqlTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                         `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
-	Triggers    []*PostgresqlTableTrigger    `json:"json:triggers,omitempty" yaml:"triggers,omitempty"`
+	// Deprecated: this field should be avoided and one should use Triggers without json prefix instead
+	JSONTriggers []*PostgresqlTableTrigger `json:"json:triggers,omitempty" yaml:"json:triggers,omitempty"`
+	Triggers     []*PostgresqlTableTrigger `json:"triggers,omitempty" yaml:"triggers,omitempty"`
+}
+
+type PostgresqlFunctionSchema struct {
+	// Schema is the schema the function should be saved in
+	Schema string `json:"schema,omitempty" yaml:"schema,omitempty"`
+	//+kubebuilder:validation:Enum=PLpgSQL;SQL
+	//+kubebuilder:default:=PLpgSQL
+	Lang string `json:"lang" yaml:"lang"`
+	// Params is a mapping between function parameter name and its respective type
+	Params []*PostgresqlExecuteParameter `json:"params,omitempty" yaml:"params,omitempty"`
+	// ReturnSet tells if the returned value is a set or not
+	ReturnSet bool `json:"returnSet,omitempty" yaml:"returnSet,omitempty"`
+	// Return, if defined, tells what type to return
+	Return string `json:"return,omitempty" yaml:"return,omitempty"`
+	// As represents the function logic. An example looks as follows:
+	// ```
+	// DECLARE
+	//     user_count bigint;
+	// BEGIN
+	//     SELECT COUNT(*) INTO user_count FROM users;
+	//     RETURN user_count;
+	// END;
+	// ```
+	As string `json:"as" yaml:"as"`
+}
+
+type PostgresqlExecuteParameter struct {
+	//+kubebuilder:validation:Enum=IN;OUT;INOUT;VARIADIC
+	Mode string `json:"mode,omitempty" yaml:"mode,omitempty"`
+	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+	Type string `json:"type" yaml:"type"`
 }
