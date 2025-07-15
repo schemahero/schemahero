@@ -5,6 +5,9 @@ schema:
   timescaledb:
     hypertable:
       timeColumnName: created_at
+      chunkTimeInterval: "1 day"
+      retention:
+        interval: "30 days"
     primaryKey:
       - created_at
       - id
