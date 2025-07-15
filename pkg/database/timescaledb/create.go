@@ -2,6 +2,7 @@ package timescaledb
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
@@ -86,7 +87,7 @@ func createRetentionStatements(tableName string, hypertable *schemasv1alpha4.Tim
 				return nil, errors.New("invalid interval")
 			}
 
-			stmt := fmt.Sprintf(`select add_retention_policy(%s, interval '%s')`, pgx.Identifier{tableName}.Sanitize(), hypertable.Retention.Interval)
+			stmt := fmt.Sprintf(`select add_retention_policy(%s, interval '%s')`, strings.ReplaceAll(pgx.Identifier{tableName}.Sanitize(), "\"", "'"), hypertable.Retention.Interval)
 			stmts = append(stmts, stmt)
 		}
 	}
@@ -115,7 +116,7 @@ func createCompressionStatements(tableName string, hypertable *schemasv1alpha4.T
 			return nil, errors.New("invalid interval")
 		}
 
-		stmt := fmt.Sprintf(`select add_compression_policy(%s, INTERVAL '%s')`, pgx.Identifier{tableName}.Sanitize(), *hypertable.Compression.Interval)
+		stmt := fmt.Sprintf(`select add_compression_policy(%s, INTERVAL '%s')`, strings.ReplaceAll(pgx.Identifier{tableName}.Sanitize(), "\"", "'"), *hypertable.Compression.Interval)
 		stmts = append(stmts, stmt)
 	}
 
@@ -180,7 +181,7 @@ func getHypertableParams(hypertable *schemasv1alpha4.TimescaleDBHypertable, colu
 			return nil, errors.New("invalid chunk time interval")
 		}
 
-		params = append(params, fmt.Sprintf("chunk_time_interval => '%s'", *hypertable.ChunkTimeInterval))
+		params = append(params, fmt.Sprintf("chunk_time_interval => INTERVAL '%s'", *hypertable.ChunkTimeInterval))
 	}
 
 	if hypertable.CreateDefaultIndexes != nil {

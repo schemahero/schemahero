@@ -9,9 +9,14 @@ spec:
     timescaledb:
       hypertable:
         timeColumnName: time
+        chunkTimeInterval: "1 day"
+        retention:
+          interval: "30 days"
       columns:
         - name: time
           type: timestamp without time zone
+          constraints:
+            notNull: true
         - name: flight_number
           type: varchar (40)
         - name: status
