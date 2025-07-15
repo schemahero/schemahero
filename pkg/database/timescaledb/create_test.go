@@ -88,7 +88,7 @@ func Test_createHypertableStatement(t *testing.T) {
 					Type: "timestamptz",
 				},
 			},
-			want: `select create_hypertable('table1', 'time', chunk_time_interval => '7 days')`,
+			want: `select create_hypertable('table1', 'time', chunk_time_interval => INTERVAL '7 days')`,
 		},
 		{
 			name:      "create default indexes",

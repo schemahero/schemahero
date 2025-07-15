@@ -180,7 +180,7 @@ func getHypertableParams(hypertable *schemasv1alpha4.TimescaleDBHypertable, colu
 			return nil, errors.New("invalid chunk time interval")
 		}
 
-		params = append(params, fmt.Sprintf("chunk_time_interval => '%s'", *hypertable.ChunkTimeInterval))
+		params = append(params, fmt.Sprintf("chunk_time_interval => INTERVAL '%s'", *hypertable.ChunkTimeInterval))
 	}
 
 	if hypertable.CreateDefaultIndexes != nil {
