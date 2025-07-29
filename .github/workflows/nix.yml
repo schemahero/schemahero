@@ -1,0 +1,120 @@
+name: Nix Package Test
+
+on:
+  push:
+    branches: [ main, nix ]
+    paths:
+      - 'nix/**'
+      - 'flake.nix'
+      - '.github/workflows/nix.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'nix/**'
+      - 'flake.nix'
+      - '.github/workflows/nix.yml'
+  release:
+    types: [published]
+
+jobs:
+  nix-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v25
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+
+    - name: Check flake
+      run: nix flake check --show-trace
+
+    - name: Build package
+      run: nix build .#schemahero --print-build-logs
+
+    - name: Test package
+      run: |
+        nix run .#schemahero -- --help
+        nix run .#kubectl-schemahero -- --help
+
+    - name: Run checks
+      run: nix flake check -v
+
+  nix-develop:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v25
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+
+    - name: Test development shell
+      run: |
+        nix develop --command bash -c "
+          echo 'Testing development environment...'
+          go version
+          make --version
+          kubectl version --client || true
+          schemahero --help
+        "
+
+  update-hashes:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v25
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+
+    - name: Update package version and hashes
+      run: |
+        # Extract version from tag
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "Updating to version: $VERSION"
+
+        # Update version in nix file
+        sed -i "s/version = \".*\";/version = \"$VERSION\";/" nix/schemahero.nix
+
+        # Try to get real hashes (this will fail first time, but show the correct hash)
+        echo "Getting source hash..."
+        nix-prefetch-url --unpack "https://github.com/schemahero/schemahero/archive/v${VERSION}.tar.gz" > source_hash.txt 2>&1 || true
+
+        # For now, we'll create a PR comment with instructions
+        echo "Version updated to $VERSION"
+        echo "Manual hash update required - check the Nix build logs for correct hashes"
+
+    - name: Create Pull Request
+      if: github.event_name == 'release'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "nix: update schemahero to ${{ github.ref_name }}"
+        title: "Update Nix package to ${{ github.ref_name }}"
+        body: |
+          Auto-generated update for SchemaHero Nix package to version ${{ github.ref_name }}.
+
+          Please update the hashes in `nix/schemahero.nix`:
+          1. Build the package to get the correct source hash
+          2. Update `vendorHash` by running the build and using the hash from the error
+
+          Test with:
+          ```bash
+          nix build .#schemahero
+          nix run .#schemahero -- --help
+          ```
+        branch: update-nix-${{ github.ref_name }}
+        delete-branch: true
