@@ -349,6 +349,10 @@ func (d *Database) PlanSyncViewSpec(spec *schemasv1alpha4.ViewSpec) ([]string, e
 
 func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
 	if spec.Schema == nil {
+		// If there's no schema but there is seed data, process only the seed data
+		if d.DeploySeedData && spec.SeedData != nil {
+			return d.PlanSyncSeedData(spec)
+		}
 		return []string{}, nil
 	}
 
@@ -382,11 +386,21 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 	}
 
 	if d.Driver == "postgres" {
-		return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+		// If schema is present, use it; otherwise, retrieve existing schema from database
+		if spec.Schema != nil && spec.Schema.Postgres != nil {
+			return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+		} else {
+			return postgres.SeedDataStatementsWithExistingSchema(d.URI, spec.Name, spec.SeedData)
+		}
 	} else if d.Driver == "mysql" {
 		return mysql.SeedDataStatements(spec.Name, spec.SeedData)
 	} else if d.Driver == "cockroachdb" {
-		return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+		// If schema is present, use it; otherwise, retrieve existing schema from database
+		if spec.Schema != nil && spec.Schema.Postgres != nil {
+			return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+		} else {
+			return postgres.SeedDataStatementsWithExistingSchema(d.URI, spec.Name, spec.SeedData)
+		}
 	} else if d.Driver == "cassandra" {
 		return nil, errors.New("cassandra seed data is not implemented")
 	} else if d.Driver == "sqlite" {
@@ -394,7 +408,12 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 	} else if d.Driver == "rqlite" {
 		return rqlite.SeedDataStatements(spec.Name, spec.SeedData)
 	} else if d.Driver == "timescaledb" {
-		return timescaledb.SeedDataStatements(spec.Name, spec.Schema.TimescaleDB, spec.SeedData)
+		// If schema is present, use it; otherwise, retrieve existing schema from database
+		if spec.Schema != nil && spec.Schema.TimescaleDB != nil {
+			return timescaledb.SeedDataStatements(spec.Name, spec.Schema.TimescaleDB, spec.SeedData)
+		} else {
+			return timescaledb.SeedDataStatementsWithExistingSchema(d.URI, spec.Name, spec.SeedData)
+		}
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)

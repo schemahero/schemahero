@@ -43,6 +43,40 @@ func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.Postgresq
 	return statements, nil
 }
 
+func SeedDataStatementsWithExistingSchema(uri string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// Connect to the database to retrieve existing schema
+	p, err := Connect(uri)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to postgres")
+	}
+	defer p.Close()
+
+	// Check if table exists
+	tableExists, err := CheckIfTableExists(p, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+
+	if !tableExists {
+		return nil, errors.Errorf("table %s does not exist, cannot apply seed data without schema", tableName)
+	}
+
+	// Get primary key to determine conflict inference spec
+	primaryKey, err := p.GetTablePrimaryKey(tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get table primary key")
+	}
+
+	// For seed data, we need to create a minimal PostgresqlTableSchema with just the primary key
+	// since that's what the conflict inference spec calculation needs
+	tableSchema := &schemasv1alpha4.PostgresqlTableSchema{}
+	if primaryKey != nil {
+		tableSchema.PrimaryKey = primaryKey.Columns
+	}
+
+	return SeedDataStatements(tableName, tableSchema, seedData)
+}
+
 func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	columns := []string{}
 	for _, desiredColumn := range tableSchema.Columns {
