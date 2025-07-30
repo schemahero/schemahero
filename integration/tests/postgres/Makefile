@@ -28,6 +28,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
@@ -54,6 +55,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
@@ -80,6 +82,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
@@ -106,6 +109,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
@@ -133,6 +137,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
@@ -142,6 +147,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 seed: export PG_VERSION = 15.1
 seed:
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 
 .PHONY: build

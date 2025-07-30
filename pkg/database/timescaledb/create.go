@@ -139,6 +139,11 @@ func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.Timescale
 	return postgres.SeedDataStatements(tableName, postgresTableSchema, seedData)
 }
 
+func SeedDataStatementsWithExistingSchema(uri string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// For TimescaleDB, we can delegate to PostgreSQL since TimescaleDB is built on PostgreSQL
+	return postgres.SeedDataStatementsWithExistingSchema(uri, tableName, seedData)
+}
+
 func columnExists(name string, columns []*schemasv1alpha4.PostgresqlTableColumn) bool {
 	for _, column := range columns {
 		if column.Name == name {
