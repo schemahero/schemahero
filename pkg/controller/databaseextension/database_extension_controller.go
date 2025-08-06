@@ -115,6 +115,13 @@ func (r *ReconcileDatabaseExtension) getDatabaseFromExtension(ctx context.Contex
 	return database, nil
 }
 
+// Reconcile reads that state of the cluster for a DatabaseExtension object and makes changes based on the state read
+// and what is in the DatabaseExtension.Spec
+// Automatically generate RBAC rules to allow the Controller to read and write Deployments
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=schemas.schemahero.io,resources=databaseextensions,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=schemas.schemahero.io,resources=databaseextensions/status,verbs=get;update;patch
 func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger.Debug("reconciling database extension",
 		zap.String("kind", "databaseextension"),

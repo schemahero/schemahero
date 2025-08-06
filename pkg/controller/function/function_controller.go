@@ -115,6 +115,13 @@ func (r *ReconcileFunction) getDatabaseFromFunction(ctx context.Context, functio
 	return database, nil
 }
 
+// Reconcile reads that state of the cluster for a Function object and makes changes based on the state read
+// and what is in the Function.Spec
+// Automatically generate RBAC rules to allow the Controller to read and write Deployments
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=schemas.schemahero.io,resources=functions,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=schemas.schemahero.io,resources=functions/status,verbs=get;update;patch
 func (r *ReconcileFunction) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	logger.Debug("reconciling function",
 		zap.String("kind", "function"),
