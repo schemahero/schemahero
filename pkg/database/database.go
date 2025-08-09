@@ -225,6 +225,12 @@ func (d *Database) PlanSync(specContents []byte, specType string) ([]string, err
 			return nil, errors.Wrapf(err, "failed to plan function sync")
 		}
 		return plan, nil
+	} else if specType == "datamigration" {
+		plan, err := d.planDataMigrationSync(specContents)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan data migration sync")
+		}
+		return plan, nil
 	}
 
 	return nil, errors.New("unknown spec type")
@@ -257,6 +263,13 @@ func (d *Database) planGVKSync(specContents []byte) ([]string, error) {
 		plan, err := d.PlanSyncDatabaseExtensionSpec(&extension.Spec)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed to plan extension %s", extension.Name)
+		}
+		return plan, nil
+	} else if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "DataMigration" {
+		dataMigration := obj.(*schemasv1alpha4.DataMigration)
+		plan, err := d.PlanSyncDataMigrationSpec(&dataMigration.Spec)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to plan data migration %s", dataMigration.Name)
 		}
 		return plan, nil
 	} else {
@@ -564,4 +577,49 @@ func (d *Database) PlanSyncFunctionSpec(spec *schemasv1alpha4.FunctionSpec) ([]s
 	}
 
 	return nil, errors.Errorf("planning functions is not supported for driver %q or function database schema not specified", d.Driver)
+}
+
+func (d *Database) planDataMigrationSync(specContents []byte) ([]string, error) {
+	var spec *schemasv1alpha4.DataMigrationSpec
+	parsedK8sObject := schemasv1alpha4.DataMigration{}
+	if err := yaml.Unmarshal(specContents, &parsedK8sObject); err == nil {
+		if parsedK8sObject.Spec.Database != "" {
+			spec = &parsedK8sObject.Spec
+		}
+	}
+
+	if spec == nil {
+		plainSpec := schemasv1alpha4.DataMigrationSpec{}
+		if err := yaml.Unmarshal(specContents, &plainSpec); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal data migration spec")
+		}
+
+		spec = &plainSpec
+	}
+
+	return d.PlanSyncDataMigrationSpec(spec)
+}
+
+func (d *Database) PlanSyncDataMigrationSpec(spec *schemasv1alpha4.DataMigrationSpec) ([]string, error) {
+	if spec.Schema == nil {
+		return []string{}, nil
+	}
+
+	if d.Driver == "postgres" {
+		return postgres.PlanPostgresDataMigration(d.URI, spec.Name, spec.Schema.Postgres)
+	} else if d.Driver == "mysql" {
+		return mysql.PlanMysqlDataMigration(d.URI, spec.Name, spec.Schema.Mysql)
+	} else if d.Driver == "cockroachdb" {
+		return postgres.PlanPostgresDataMigration(d.URI, spec.Name, spec.Schema.CockroachDB)
+	} else if d.Driver == "sqlite" {
+		return sqlite.PlanSqliteDataMigration(d.URI, spec.Name, spec.Schema.SQLite)
+	} else if d.Driver == "rqlite" {
+		return rqlite.PlanRqliteDataMigration(d.URI, spec.Name, spec.Schema.RQLite)
+	} else if d.Driver == "timescaledb" {
+		return timescaledb.PlanTimescaleDBDataMigration(d.URI, spec.Name, spec.Schema.TimescaleDB)
+	} else if d.Driver == "cassandra" {
+		return cassandra.PlanCassandraDataMigration(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+	}
+
+	return nil, errors.Errorf("data migrations are not supported for driver %q", d.Driver)
 }

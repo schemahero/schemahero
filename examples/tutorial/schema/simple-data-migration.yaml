@@ -1,0 +1,22 @@
+# Simple data migration without Kubernetes metadata (for CLI usage)
+database: airlinedb
+name: simple-data-migration
+executionOrder: after_schema
+idempotent: true
+schema:
+  postgres:
+    # Set default values for new columns
+    - staticUpdate:
+        table: airport
+        set:
+          status: "active"
+          region: "unknown"
+        where: "status IS NULL"
+    
+    # Calculate derived values
+    - calculatedUpdate:
+        table: reservation
+        calculations:
+          - column: full_name
+            expression: "TRIM(CONCAT(first_name, ' ', last_name))"
+        where: "full_name IS NULL AND first_name IS NOT NULL"

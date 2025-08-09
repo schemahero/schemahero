@@ -179,7 +179,7 @@ func PlanCmd() *cobra.Command {
 	cmd.Flags().String("keyspace", "", "the keyspace to use for databases that support keyspaces")
 
 	cmd.Flags().String("spec-file", "", "filename or directory name containing the spec(s) to apply")
-	cmd.Flags().String("spec-type", "table", "type of spec in spec-file (table, view, function, or extension)")
+	cmd.Flags().String("spec-type", "table", "type of spec in spec-file (table, view, function, extension, or datamigration)")
 	cmd.Flags().String("out", "", "filename to write DDL statements to, if not present output file be written to stdout")
 	cmd.Flags().Bool("overwrite", true, "when set, will overwrite the out file, if it already exists")
 
