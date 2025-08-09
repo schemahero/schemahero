@@ -1,0 +1,28 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: DataMigration
+metadata:
+  name: test-data-migration
+spec:
+  database: schemahero
+  name: test-data-migration
+  executionOrder: after_schema
+  idempotent: true
+  schema:
+    postgres:
+      # Test 1: Static updates - set default values
+      - staticUpdate:
+          table: test_users
+          set:
+            status: "active"
+            region: "us-east-1"
+          where: "status IS NULL"
+      
+      # Test 2: Calculated updates - create full names
+      - calculatedUpdate:
+          table: test_users
+          calculations:
+            - column: full_name
+              expression: "CONCAT(first_name, ' ', last_name)"
+            - column: display_email
+              expression: "LOWER(email)"
+          where: "full_name IS NULL OR display_email IS NULL"
