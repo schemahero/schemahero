@@ -7,6 +7,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/apis"
 	"github.com/schemahero/schemahero/pkg/config"
 	databasecontroller "github.com/schemahero/schemahero/pkg/controller/database"
+	datamigrationcontroller "github.com/schemahero/schemahero/pkg/controller/datamigration"
 	databaseextensioncontroller "github.com/schemahero/schemahero/pkg/controller/databaseextension"
 	functioncontroller "github.com/schemahero/schemahero/pkg/controller/function"
 	migrationcontroller "github.com/schemahero/schemahero/pkg/controller/migration"
@@ -111,6 +112,11 @@ func RunCmd() *cobra.Command {
 				}
 
 				if err := functioncontroller.Add(mgr); err != nil {
+					logger.Error(err)
+					os.Exit(1)
+				}
+
+				if err := datamigrationcontroller.Add(mgr); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}
