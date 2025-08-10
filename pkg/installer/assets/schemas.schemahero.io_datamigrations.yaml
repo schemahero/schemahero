@@ -1,0 +1,132 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.2
+  name: datamigrations.schemas.schemahero.io
+spec:
+  group: schemas.schemahero.io
+  names:
+    kind: DataMigration
+    listKind: DataMigrationList
+    plural: datamigrations
+    singular: datamigration
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.database
+      name: Database
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .status.migrationName
+      name: Migration
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: DataMigration is the Schema for the datamigrations API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DataMigrationSpec defines the desired state of DataMigration
+            properties:
+              database:
+                description: Reference to the database
+                type: string
+              migrations:
+                description: List of migration operations to perform
+                items:
+                  description: DataMigrationOperation defines a single data migration
+                    operation
+                  properties:
+                    column:
+                      description: Column to modify (for update and convert operations)
+                      type: string
+                    expression:
+                      description: Expression for calculated columns
+                      type: string
+                    from:
+                      description: From type (for convert operations)
+                      type: string
+                    table:
+                      description: Table to operate on
+                      type: string
+                    to:
+                      description: To type (for convert operations)
+                      type: string
+                    type:
+                      description: Type of the migration operation
+                      enum:
+                      - update
+                      - calculate
+                      - convert
+                      type: string
+                    value:
+                      description: Value to set (for update operations)
+                      type: string
+                    where:
+                      description: Where clause (for conditional operations)
+                      type: string
+                  required:
+                  - table
+                  - type
+                  type: object
+                type: array
+            required:
+            - database
+            - migrations
+            type: object
+          status:
+            description: DataMigrationStatus defines the observed state of DataMigration
+            properties:
+              error:
+                description: Error message if the migration failed
+                type: string
+              executedAt:
+                description: Timestamp when the migration was executed
+                format: int64
+                type: integer
+              migrationName:
+                description: Name of the associated Migration resource
+                type: string
+              phase:
+                description: Phase of the data migration
+                enum:
+                - PLANNED
+                - APPROVED
+                - EXECUTED
+                - INVALID
+                - REJECTED
+                type: string
+              plannedAt:
+                description: Timestamp when the plan was generated
+                format: int64
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
