@@ -24,6 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// DataMigrations returns a DataMigrationInformer.
+	DataMigrations() DataMigrationInformer
 	// DataTypes returns a DataTypeInformer.
 	DataTypes() DataTypeInformer
 	// DatabaseExtensions returns a DatabaseExtensionInformer.
@@ -47,6 +49,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// DataMigrations returns a DataMigrationInformer.
+func (v *version) DataMigrations() DataMigrationInformer {
+	return &dataMigrationInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // DataTypes returns a DataTypeInformer.

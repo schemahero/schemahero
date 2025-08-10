@@ -21,6 +21,7 @@ func DescribeCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(DescribeMigrationCmd())
+	cmd.AddCommand(DescribeDataMigrationCmd())
 
 	return cmd
 }

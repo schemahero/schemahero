@@ -35,8 +35,7 @@ type Interface interface {
 	SchemasV1alpha4() schemasv1alpha4.SchemasV1alpha4Interface
 }
 
-// Clientset contains the clients for groups. Each group has exactly one
-// version included in a Clientset.
+// Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
 	databasesV1alpha4 *databasesv1alpha4.DatabasesV1alpha4Client

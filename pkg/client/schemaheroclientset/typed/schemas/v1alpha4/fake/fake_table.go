@@ -24,7 +24,6 @@ import (
 	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,9 +35,9 @@ type FakeTables struct {
 	ns   string
 }
 
-var tablesResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha4", Resource: "tables"}
+var tablesResource = v1alpha4.SchemeGroupVersion.WithResource("tables")
 
-var tablesKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha4", Kind: "Table"}
+var tablesKind = v1alpha4.SchemeGroupVersion.WithKind("Table")
 
 // Get takes name of the table, and returns the corresponding table object, and an error if there is any.
 func (c *FakeTables) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.Table, err error) {

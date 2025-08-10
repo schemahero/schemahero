@@ -24,7 +24,6 @@ import (
 	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,9 +35,9 @@ type FakeDatabases struct {
 	ns   string
 }
 
-var databasesResource = schema.GroupVersionResource{Group: "databases.schemahero.io", Version: "v1alpha4", Resource: "databases"}
+var databasesResource = v1alpha4.SchemeGroupVersion.WithResource("databases")
 
-var databasesKind = schema.GroupVersionKind{Group: "databases.schemahero.io", Version: "v1alpha4", Kind: "Database"}
+var databasesKind = v1alpha4.SchemeGroupVersion.WithKind("Database")
 
 // Get takes name of the database, and returns the corresponding database object, and an error if there is any.
 func (c *FakeDatabases) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.Database, err error) {

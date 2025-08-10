@@ -24,7 +24,6 @@ import (
 	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,9 +35,9 @@ type FakeMigrations struct {
 	ns   string
 }
 
-var migrationsResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha4", Resource: "migrations"}
+var migrationsResource = v1alpha4.SchemeGroupVersion.WithResource("migrations")
 
-var migrationsKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha4", Kind: "Migration"}
+var migrationsKind = v1alpha4.SchemeGroupVersion.WithKind("Migration")
 
 // Get takes name of the migration, and returns the corresponding migration object, and an error if there is any.
 func (c *FakeMigrations) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.Migration, err error) {

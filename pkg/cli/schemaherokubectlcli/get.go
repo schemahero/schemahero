@@ -23,6 +23,7 @@ func GetCmd() *cobra.Command {
 	cmd.AddCommand(GetDatabasesCmd())
 	cmd.AddCommand(GetTablesCmd())
 	cmd.AddCommand(GetMigrationsCmd())
+	cmd.AddCommand(GetDataMigrationsCmd())
 
 	return cmd
 }

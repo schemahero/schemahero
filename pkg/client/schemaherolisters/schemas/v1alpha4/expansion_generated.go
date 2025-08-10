@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1alpha4
 
+// DataMigrationListerExpansion allows custom methods to be added to
+// DataMigrationLister.
+type DataMigrationListerExpansion interface{}
+
+// DataMigrationNamespaceListerExpansion allows custom methods to be added to
+// DataMigrationNamespaceLister.
+type DataMigrationNamespaceListerExpansion interface{}
+
 // DataTypeListerExpansion allows custom methods to be added to
 // DataTypeLister.
 type DataTypeListerExpansion interface{}

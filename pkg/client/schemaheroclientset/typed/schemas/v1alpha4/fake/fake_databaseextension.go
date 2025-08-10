@@ -24,7 +24,6 @@ import (
 	v1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -36,9 +35,9 @@ type FakeDatabaseExtensions struct {
 	ns   string
 }
 
-var databaseextensionsResource = schema.GroupVersionResource{Group: "schemas.schemahero.io", Version: "v1alpha4", Resource: "databaseextensions"}
+var databaseextensionsResource = v1alpha4.SchemeGroupVersion.WithResource("databaseextensions")
 
-var databaseextensionsKind = schema.GroupVersionKind{Group: "schemas.schemahero.io", Version: "v1alpha4", Kind: "DatabaseExtension"}
+var databaseextensionsKind = v1alpha4.SchemeGroupVersion.WithKind("DatabaseExtension")
 
 // Get takes name of the databaseExtension, and returns the corresponding databaseExtension object, and an error if there is any.
 func (c *FakeDatabaseExtensions) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha4.DatabaseExtension, err error) {

@@ -58,6 +58,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Databases().V1alpha4().Databases().Informer()}, nil
 
 		// Group=schemas.schemahero.io, Version=v1alpha4
+	case schemasv1alpha4.SchemeGroupVersion.WithResource("datamigrations"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Schemas().V1alpha4().DataMigrations().Informer()}, nil
 	case schemasv1alpha4.SchemeGroupVersion.WithResource("datatypes"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Schemas().V1alpha4().DataTypes().Informer()}, nil
 	case schemasv1alpha4.SchemeGroupVersion.WithResource("databaseextensions"):
