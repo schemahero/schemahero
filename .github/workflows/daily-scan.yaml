@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v5
 
       - name: Run Trivy vulnerability scanner in repo mode
         uses: aquasecurity/trivy-action@master
@@ -35,7 +35,7 @@ jobs:
           cache: true
 
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v5
 
       - name: Build schemahero image
         uses: ./.github/actions/build-push-action
@@ -68,7 +68,7 @@ jobs:
           cache: true
 
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v5
 
       - name: Build schemahero-manager image
         uses: ./.github/actions/build-push-action
