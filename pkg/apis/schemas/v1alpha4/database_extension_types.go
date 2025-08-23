@@ -34,6 +34,9 @@ type PostgresDatabaseExtension struct {
 	Version *string `json:"version,omitempty" yaml:"version,omitempty"`
 
 	Schema *string `json:"schema,omitempty" yaml:"schema,omitempty"`
+
+	// IsDeleted is used internally to mark extension for deletion during planning
+	IsDeleted bool `json:"-" yaml:"-"`
 }
 
 type DatabaseExtensionStatus struct {

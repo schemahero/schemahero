@@ -56,7 +56,29 @@ envtest:
 
 .PHONY: test
 test: fmt vet manifests envtest
-	go test ./pkg/... ./cmd/... -coverprofile cover.out
+	go test ./pkg/... ./cmd/...
+
+.PHONY: plugins
+plugins:
+	@echo "Building plugins..."
+	$(MAKE) -C plugins all
+
+.PHONY: install-dev
+install-dev: bin/kubectl-schemahero
+	@echo "Installing schemahero and postgres plugin for development..."
+	sudo mv bin/kubectl-schemahero /usr/local/bin/schemahero
+	$(MAKE) -C plugins postgres
+	sudo mkdir -p /var/lib/schemahero/plugins
+	sudo cp ./plugins/bin/schemahero-postgres /var/lib/schemahero/plugins
+	@echo "Fixing permissions and signing in place..."
+	sudo chmod 755 /var/lib/schemahero/plugins/schemahero-postgres
+	sudo codesign --force --deep -s - /var/lib/schemahero/plugins/schemahero-postgres
+	@echo "Installation complete."
+
+.PHONY: test-plugins
+test-plugins:
+	@echo "Testing plugins..."
+	$(MAKE) -C plugins test
 
 .PHONY: manager
 manager: fmt vet bin/manager

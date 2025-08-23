@@ -8,8 +8,7 @@ import (
 
 	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/config"
-	"github.com/schemahero/schemahero/pkg/database/mysql"
-	"github.com/schemahero/schemahero/pkg/database/rqlite"
+	"github.com/schemahero/schemahero/pkg/database/utils"
 	"github.com/schemahero/schemahero/pkg/shell"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -103,27 +102,27 @@ func ShellCmd() *cobra.Command {
 					return err
 				}
 
-				username, err := mysql.UsernameFromURI(connectionURI)
+				username, err := utils.MySQLUsernameFromURI(connectionURI)
 				if err != nil {
 					return err
 				}
 
-				password, err := mysql.PasswordFromURI(connectionURI)
+				password, err := utils.MySQLPasswordFromURI(connectionURI)
 				if err != nil {
 					return err
 				}
 
-				hostname, err := mysql.HostnameFromURI(connectionURI)
+				hostname, err := utils.MySQLHostnameFromURI(connectionURI)
 				if err != nil {
 					return err
 				}
 
-				port, err := mysql.PortFromURI(connectionURI)
+				port, err := utils.MySQLPortFromURI(connectionURI)
 				if err != nil {
 					return err
 				}
 
-				database, err := mysql.DatabaseNameFromURI(connectionURI)
+				database, err := utils.MySQLDatabaseNameFromURI(connectionURI)
 				if err != nil {
 					return err
 				}
@@ -152,22 +151,22 @@ func ShellCmd() *cobra.Command {
 					return err
 				}
 
-				username, err := rqlite.UsernameFromURL(connectionURL)
+				username, err := utils.UsernameFromURL(connectionURL)
 				if err != nil {
 					return err
 				}
 
-				password, err := rqlite.PasswordFromURL(connectionURL)
+				password, err := utils.PasswordFromURL(connectionURL)
 				if err != nil {
 					return err
 				}
 
-				hostname, err := rqlite.HostnameFromURL(connectionURL)
+				hostname, err := utils.HostnameFromURL(connectionURL)
 				if err != nil {
 					return err
 				}
 
-				port, err := rqlite.PortFromURL(connectionURL)
+				port, err := utils.PortFromURL(connectionURL)
 				if err != nil {
 					return err
 				}

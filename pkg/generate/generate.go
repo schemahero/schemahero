@@ -10,9 +10,6 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/interfaces"
-	"github.com/schemahero/schemahero/pkg/database/mysql"
-	"github.com/schemahero/schemahero/pkg/database/postgres"
-	"github.com/schemahero/schemahero/pkg/database/rqlite"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	"gopkg.in/yaml.v2"
 )
@@ -50,23 +47,11 @@ func (g *Generator) RunSync() error {
 			}
 		}
 
-		pgDb, err := postgres.Connect(uri)
-		if err != nil {
-			return errors.Wrap(err, "failed to connect to postgres")
-		}
-		db = pgDb
+		return errors.New("postgres driver requires plugin - generate command not yet updated for plugin architecture")
 	} else if g.Driver == "mysql" {
-		mysqlDb, err := mysql.Connect(g.URI)
-		if err != nil {
-			return errors.Wrap(err, "failed to connect to mysql")
-		}
-		db = mysqlDb
+		return errors.New("mysql driver requires plugin - generate command not yet updated for plugin architecture")
 	} else if g.Driver == "rqlite" {
-		rqliteDb, err := rqlite.Connect(g.URI)
-		if err != nil {
-			return errors.Wrap(err, "failed to connect to mysql")
-		}
-		db = rqliteDb
+		return errors.New("rqlite driver requires plugin - generate command not yet updated for plugin architecture")
 	}
 
 	tables, err := db.ListTables()
@@ -155,8 +140,9 @@ func generateTableYAML(driver string, dbName string, table *types.Table, primary
 	if driver == "mysql" {
 		return generateMysqlTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
 	}
+	// RQLite moved to plugin architecture - generate functionality not yet implemented
 	if driver == "rqlite" {
-		return generateRqliteTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
+		return "", errors.New("rqlite driver requires plugin - generate command not yet updated for plugin architecture")
 	}
 	return generatePostgresqlTableYAML(driver, dbName, table, primaryKey, foreignKeys, indexes, columns)
 }

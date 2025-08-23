@@ -24,7 +24,6 @@ import (
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database"
-	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -89,14 +88,28 @@ func (r *ReconcileDatabaseExtension) dropExtension(ctx context.Context, database
 		return nil
 	}
 
-	statements, err := postgres.DropExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{databaseExtension.Spec.Postgres})
-	if err != nil {
-		return err
-	}
-
 	db := database.Database{
 		Driver: driver,
 		URI:    connectionURI,
+	}
+
+	// Get a connection to plan the extension drop
+	conn, err := db.GetConnection(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// Use PlanExtensionSchema with a special marker to indicate drop
+	extensionSchema := &schemasv1alpha4.PostgresDatabaseExtension{
+		Name:      databaseExtension.Spec.Postgres.Name,
+		Version:   databaseExtension.Spec.Postgres.Version,
+		IsDeleted: true, // Special marker for drop operation
+	}
+
+	statements, err := conn.PlanExtensionSchema(databaseExtension.Spec.Postgres.Name, extensionSchema)
+	if err != nil {
+		return err
 	}
 
 	return db.ApplySync(statements)
@@ -184,15 +197,24 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 		return reconcile.Result{}, nil
 	}
 
-	statements, err := postgres.CreateExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{databaseExtension.Spec.Postgres})
+	db := database.Database{
+		Driver: driver,
+		URI:    connectionURI,
+	}
+
+	// Get a connection to plan the extension creation
+	conn, err := db.GetConnection(ctx)
 	if err != nil {
 		logger.Error(err)
 		return reconcile.Result{}, err
 	}
+	defer conn.Close()
 
-	db := database.Database{
-		Driver: driver,
-		URI:    connectionURI,
+	// Use PlanExtensionSchema to create statements
+	statements, err := conn.PlanExtensionSchema(databaseExtension.Spec.Postgres.Name, databaseExtension.Spec.Postgres)
+	if err != nil {
+		logger.Error(err)
+		return reconcile.Result{}, err
 	}
 
 	if err := db.ApplySync(statements); err != nil {

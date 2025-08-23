@@ -24,7 +24,6 @@ import (
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database"
-	"github.com/schemahero/schemahero/pkg/database/postgres"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -92,11 +91,32 @@ func (r *ReconcileFunction) dropFunction(ctx context.Context, function *schemasv
 		return nil
 	}
 
-	statements := postgres.DropFunctionStatements(function.Spec.Name, function.Spec.Schema.Postgres)
-
 	db := database.Database{
 		Driver: driver,
 		URI:    connectionURI,
+	}
+
+	// Get a connection to plan the function drop
+	conn, err := db.GetConnection(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// Mark function as deleted for drop operation
+	functionSchema := &schemasv1alpha4.PostgresqlFunctionSchema{
+		Schema:    function.Spec.Schema.Postgres.Schema,
+		Lang:      function.Spec.Schema.Postgres.Lang,
+		Params:    function.Spec.Schema.Postgres.Params,
+		ReturnSet: function.Spec.Schema.Postgres.ReturnSet,
+		Return:    function.Spec.Schema.Postgres.Return,
+		As:        function.Spec.Schema.Postgres.As,
+		IsDeleted: true, // Special marker for drop operation
+	}
+
+	statements, err := conn.PlanFunctionSchema(function.Spec.Name, functionSchema)
+	if err != nil {
+		return err
 	}
 
 	return db.ApplySync(statements)
@@ -186,11 +206,24 @@ func (r *ReconcileFunction) Reconcile(ctx context.Context, request reconcile.Req
 		return reconcile.Result{}, nil
 	}
 
-	statements := postgres.CreateFunctionStatements(function.Spec.Name, function.Spec.Schema.Postgres)
-
 	db := database.Database{
 		Driver: driver,
 		URI:    connectionURI,
+	}
+
+	// Get a connection to plan the function creation
+	conn, err := db.GetConnection(ctx)
+	if err != nil {
+		logger.Error(err)
+		return reconcile.Result{}, err
+	}
+	defer conn.Close()
+
+	// Use PlanFunctionSchema to create statements
+	statements, err := conn.PlanFunctionSchema(function.Spec.Name, function.Spec.Schema.Postgres)
+	if err != nil {
+		logger.Error(err)
+		return reconcile.Result{}, err
 	}
 
 	if err := db.ApplySync(statements); err != nil {

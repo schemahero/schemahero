@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	"github.com/schemahero/schemahero/pkg/files"
 	"github.com/spf13/cobra"
@@ -78,6 +79,9 @@ func PlanCmd() *cobra.Command {
 				}()
 			}
 
+			// Initialize plugin system
+			plugin.InitializePluginSystem()
+
 			db := database.Database{
 				InputDir:       v.GetString("input-dir"),
 				OutputDir:      v.GetString("output-dir"),
@@ -88,6 +92,11 @@ func PlanCmd() *cobra.Command {
 				Password:       v.GetString("password"),
 				Keyspace:       v.GetString("keyspace"),
 				DeploySeedData: v.GetBool("seed-data"),
+			}
+
+			// Set plugin manager
+			if pluginManager := plugin.GetGlobalPluginManager(); pluginManager != nil {
+				db.SetPluginManager(pluginManager)
 			}
 
 			specsFromFiles := []types.Spec{}
