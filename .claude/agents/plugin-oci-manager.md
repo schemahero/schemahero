@@ -13,7 +13,7 @@ SchemaHero plugins are distributed as OCI artifacts (not container images) using
 
 ### Registry Structure
 ```
-docker.io/schemahero/plugins/<plugin-name>:<version>
+docker.io/schemahero/plugin-<plugin-name>:<version>
 ```
 
 **Available plugins:**
@@ -58,7 +58,7 @@ mkdir -p ~/.schemahero/plugins
 cd ~/.schemahero/plugins
 
 # Pull the artifact (contains all platforms)
-oras pull docker.io/schemahero/plugins/postgres:latest
+oras pull docker.io/schemahero/plugin-postgres:latest
 
 # Check the index to see available platforms
 cat index.json | jq '.manifests[].platform'
@@ -78,7 +78,7 @@ chmod +x schemahero-postgres-${PLATFORM}-${ARCH}
 #### Download specific version:
 ```bash
 # Pull a specific version (still contains all platforms)
-oras pull docker.io/schemahero/plugins/postgres:0.0.1
+oras pull docker.io/schemahero/plugin-postgres:0.0.1
 
 # The artifact includes binaries for all supported platforms
 # You only extract the one you need
@@ -93,7 +93,7 @@ PLATFORM="linux-amd64" # or linux-arm64
 
 for plugin in $PLUGINS; do
   echo "Downloading $plugin..."
-  oras pull docker.io/schemahero/plugins/$plugin:$VERSION-$PLATFORM
+  oras pull docker.io/schemahero/plugin-$plugin:$VERSION-$PLATFORM
   tar -xzf schemahero-$plugin-$PLATFORM.tar.gz
   rm schemahero-$plugin-$PLATFORM.tar.gz*
 done
@@ -131,7 +131,7 @@ tar -czf schemahero-postgres-linux-amd64.tar.gz schemahero-postgres-linux-amd64
 sha256sum schemahero-postgres-linux-amd64.tar.gz > schemahero-postgres-linux-amd64.tar.gz.sha256
 
 # Push to registry
-oras push docker.io/schemahero/plugins/postgres:0.0.1-linux-amd64 \
+oras push docker.io/schemahero/plugin-postgres:0.0.1-linux-amd64 \
   --artifact-type application/vnd.schemahero.plugin.v1+tar \
   schemahero-postgres-linux-amd64.tar.gz:application/gzip \
   schemahero-postgres-linux-amd64.tar.gz.sha256:text/plain \
@@ -143,17 +143,17 @@ oras push docker.io/schemahero/plugins/postgres:0.0.1-linux-amd64 \
 
 #### View artifact manifest:
 ```bash
-oras manifest fetch docker.io/schemahero/plugins/postgres:latest | jq
+oras manifest fetch docker.io/schemahero/plugin-postgres:latest | jq
 ```
 
 #### List artifacts in repository:
 ```bash
-oras repo ls docker.io/schemahero/plugins/
+oras repo ls docker.io/schemahero/plugin-
 ```
 
 #### Show artifact tags:
 ```bash
-oras repo tags docker.io/schemahero/plugins/postgres
+oras repo tags docker.io/schemahero/plugin-postgres
 ```
 
 ### Registry Authentication
@@ -223,7 +223,7 @@ oras login docker.io
 **Solution:** Ensure repository exists or you have push permissions
 ```bash
 # Check if artifact exists
-oras manifest fetch docker.io/schemahero/plugins/postgres:latest
+oras manifest fetch docker.io/schemahero/plugin-postgres:latest
 ```
 
 ### Platform mismatch errors
@@ -233,7 +233,7 @@ oras manifest fetch docker.io/schemahero/plugins/postgres:latest
 uname -m  # x86_64 = amd64, aarch64 = arm64
 
 # Download matching version
-oras pull docker.io/schemahero/plugins/postgres:0.0.1-linux-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+oras pull docker.io/schemahero/plugin-postgres:0.0.1-linux-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
 ```
 
 ### Checksum verification failures
@@ -241,7 +241,7 @@ oras pull docker.io/schemahero/plugins/postgres:0.0.1-linux-$(uname -m | sed 's/
 ```bash
 # Re-download
 rm schemahero-postgres-*
-oras pull docker.io/schemahero/plugins/postgres:latest --overwrite
+oras pull docker.io/schemahero/plugin-postgres:latest --overwrite
 
 # Verify
 sha256sum -c *.sha256
@@ -257,7 +257,7 @@ go build -o schemahero-postgres .
 
 # Or use in Docker
 docker run --rm -v ~/.schemahero/plugins:/plugins alpine \
-  sh -c "apk add --no-cache oras && cd /plugins && oras pull docker.io/schemahero/plugins/postgres:latest"
+  sh -c "apk add --no-cache oras && cd /plugins && oras pull docker.io/schemahero/plugin-postgres:latest"
 ```
 
 ## Security Best Practices
@@ -272,16 +272,16 @@ sha256sum -c schemahero-postgres-linux-amd64.tar.gz.sha256
 Avoid `latest` in production:
 ```bash
 # Good
-oras pull docker.io/schemahero/plugins/postgres:0.0.1
+oras pull docker.io/schemahero/plugin-postgres:0.0.1
 
 # Avoid in production
-oras pull docker.io/schemahero/plugins/postgres:latest
+oras pull docker.io/schemahero/plugin-postgres:latest
 ```
 
 ### Signature verification (future)
 When cosign support is added:
 ```bash
-cosign verify docker.io/schemahero/plugins/postgres:0.0.1 \
+cosign verify docker.io/schemahero/plugin-postgres:0.0.1 \
   --certificate-identity=... \
   --certificate-oidc-issuer=...
 ```
@@ -325,8 +325,8 @@ mkdir schemahero-plugins-bundle
 cd schemahero-plugins-bundle
 
 for plugin in postgres mysql timescaledb sqlite rqlite cassandra; do
-  oras pull docker.io/schemahero/plugins/$plugin:0.0.1-linux-amd64
-  oras pull docker.io/schemahero/plugins/$plugin:0.0.1-linux-arm64
+  oras pull docker.io/schemahero/plugin-$plugin:0.0.1-linux-amd64
+  oras pull docker.io/schemahero/plugin-$plugin:0.0.1-linux-arm64
 done
 
 # Create bundle tarball
@@ -339,12 +339,12 @@ tar -czf schemahero-plugins-0.0.1-bundle.tar.gz schemahero-plugins-bundle/
 #!/bin/bash
 # Check for plugin updates
 CURRENT_VERSION="0.0.1"
-LATEST_VERSION=$(oras manifest fetch docker.io/schemahero/plugins/postgres:latest | jq -r '.annotations["org.opencontainers.image.version"]')
+LATEST_VERSION=$(oras manifest fetch docker.io/schemahero/plugin-postgres:latest | jq -r '.annotations["org.opencontainers.image.version"]')
 
 if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
   echo "Update available: $CURRENT_VERSION -> $LATEST_VERSION"
   # Download new version
-  oras pull docker.io/schemahero/plugins/postgres:$LATEST_VERSION
+  oras pull docker.io/schemahero/plugin-postgres:$LATEST_VERSION
 fi
 ```
 

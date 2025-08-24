@@ -148,7 +148,7 @@ runs:
       shell: bash
       run: |
         PLUGIN_NAME="schemahero-${{ inputs.plugin_name }}"
-        OCI_REPO="${{ inputs.registry }}/${{ inputs.registry_namespace }}/plugins/${{ inputs.plugin_name }}"
+        OCI_REPO="${{ inputs.registry }}/${{ inputs.registry_namespace }}/plugin-${{ inputs.plugin_name }}"
         
         # Create a single artifact that contains all platforms
         # This is the ORAS way - one artifact with multiple files
