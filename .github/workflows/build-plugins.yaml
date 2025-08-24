@@ -1,12 +1,12 @@
-name: Build and Push Plugins
+name: Build and Release Plugins
 
 on:
   push:
     branches:
-      - plugins  # Trigger on pushes to the plugins branch
+      - plugins  # Push to registry on merge/push to plugins branch
   pull_request:
     branches:
-      - plugins
+      - plugins  # Build and test on PRs to plugins branch
 
 env:
   REGISTRY: docker.io

@@ -46,6 +46,7 @@ runs:
       if: inputs.push == 'true'
       shell: bash
       run: |
+        echo "Logging in to DockerHub to push artifacts..."
         echo "${{ inputs.dockerhub_token }}" | docker login ${{ inputs.registry }} -u ${{ inputs.dockerhub_username }} --password-stdin
 
     - name: Build plugin for multiple platforms
@@ -143,10 +144,19 @@ runs:
         echo "Index content:"
         cat dist/index.json | jq .
 
+    - name: Skip push for pull request
+      if: inputs.push != 'true'
+      shell: bash
+      run: |
+        echo "Skipping push to registry (pull request build)"
+        echo "Artifacts built successfully and available as GitHub Actions artifacts"
+        echo "Will push to registry when merged to plugins branch"
+
     - name: Push to registry as OCI artifact with multi-platform support
       if: inputs.push == 'true'
       shell: bash
       run: |
+        echo "Pushing plugin to OCI registry (merge to plugins branch)..."
         PLUGIN_NAME="schemahero-${{ inputs.plugin_name }}"
         OCI_REPO="${{ inputs.registry }}/${{ inputs.registry_namespace }}/plugin-${{ inputs.plugin_name }}"
         
