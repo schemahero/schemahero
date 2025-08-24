@@ -3,7 +3,8 @@ name: Build and Push Plugins
 on:
   push:
     branches:
-      - plugins  # Only trigger on pushes to the plugins branch
+      - plugins-ci  # Trigger on pushes to the plugins-ci branch for testing
+      - plugins     # And the main plugins branch
   pull_request:
     branches:
       - plugins
@@ -78,7 +79,7 @@ jobs:
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/plugins' }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # MySQL Plugin
   build-mysql:
@@ -110,7 +111,7 @@ jobs:
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/plugins' }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # TimescaleDB Plugin
   build-timescaledb:
@@ -142,7 +143,7 @@ jobs:
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/plugins' }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # SQLite Plugin
   build-sqlite:
@@ -174,7 +175,7 @@ jobs:
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/plugins' }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # RQLite Plugin
   build-rqlite:
@@ -206,7 +207,7 @@ jobs:
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/plugins' }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # Cassandra Plugin
   build-cassandra:
@@ -238,4 +239,4 @@ jobs:
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/plugins' }}
+          push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
