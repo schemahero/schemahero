@@ -1,0 +1,169 @@
+name: Build and Push Plugin
+description: Build and push a SchemaHero plugin as OCI artifact
+
+inputs:
+  plugin_name:
+    description: 'Name of the plugin to build'
+    required: true
+  plugin_version:
+    description: 'Version of the plugin'
+    required: true
+  platforms:
+    description: 'Comma-separated list of platforms (e.g., linux/amd64,linux/arm64)'
+    required: true
+  registry:
+    description: 'OCI registry to push to'
+    required: true
+  registry_namespace:
+    description: 'Registry namespace/organization'
+    required: true
+  dockerhub_username:
+    description: 'DockerHub username for authentication'
+    required: false
+  dockerhub_token:
+    description: 'DockerHub token for authentication'
+    required: false
+  push:
+    description: 'Whether to push to registry'
+    required: true
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Install ORAS
+      shell: bash
+      run: |
+        VERSION="1.2.0"
+        curl -LO "https://github.com/oras-project/oras/releases/download/v${VERSION}/oras_${VERSION}_linux_amd64.tar.gz"
+        mkdir -p oras-install/
+        tar -zxf oras_${VERSION}_*.tar.gz -C oras-install/
+        sudo mv oras-install/oras /usr/local/bin/
+        rm -rf oras_${VERSION}_*.tar.gz oras-install/
+        oras version
+
+    - name: Log in to DockerHub
+      if: inputs.push == 'true'
+      shell: bash
+      run: |
+        echo "${{ inputs.dockerhub_token }}" | docker login ${{ inputs.registry }} -u ${{ inputs.dockerhub_username }} --password-stdin
+
+    - name: Build plugin for multiple platforms
+      shell: bash
+      run: |
+        PLUGIN_NAME="schemahero-${{ inputs.plugin_name }}"
+        PLATFORMS="${{ inputs.platforms }}"
+        
+        # Create output directory
+        mkdir -p dist
+        
+        # Build for each platform
+        IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
+        for platform in "${PLATFORM_ARRAY[@]}"; do
+          echo "Building ${{ inputs.plugin_name }} for $platform"
+          
+          # Parse platform
+          OS=$(echo $platform | cut -d'/' -f1)
+          ARCH=$(echo $platform | cut -d'/' -f2)
+          
+          # Build the plugin
+          cd plugins/${{ inputs.plugin_name }}
+          CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build \
+            -ldflags="-s -w -X main.version=${{ inputs.plugin_version }}" \
+            -o ../../dist/${PLUGIN_NAME}-${OS}-${ARCH} .
+          cd ../..
+          
+          # Create tarball for this platform
+          tar -czf dist/${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz -C dist ${PLUGIN_NAME}-${OS}-${ARCH}
+          
+          # Create checksums
+          cd dist
+          sha256sum ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz > ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz.sha256
+          cd ..
+        done
+        
+        # Create a manifest file
+        cat > dist/manifest.json <<EOF
+        {
+          "plugin": "${{ inputs.plugin_name }}",
+          "version": "${{ inputs.plugin_version }}",
+          "platforms": "${{ inputs.platforms }}",
+          "build_time": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+          "artifacts": [
+        EOF
+        
+        first=true
+        for platform in "${PLATFORM_ARRAY[@]}"; do
+          OS=$(echo $platform | cut -d'/' -f1)
+          ARCH=$(echo $platform | cut -d'/' -f2)
+          if [ "$first" = false ]; then
+            echo "," >> dist/manifest.json
+          fi
+          echo -n "      {\"platform\": \"$platform\", \"file\": \"${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz\"}" >> dist/manifest.json
+          first=false
+        done
+        
+        cat >> dist/manifest.json <<EOF
+        
+          ]
+        }
+        EOF
+
+    - name: List built artifacts
+      shell: bash
+      run: |
+        echo "Built artifacts for ${{ inputs.plugin_name }}:"
+        ls -la dist/
+        echo "Manifest content:"
+        cat dist/manifest.json | jq .
+
+    - name: Push to registry as OCI artifact
+      if: inputs.push == 'true'
+      shell: bash
+      run: |
+        PLUGIN_NAME="schemahero-${{ inputs.plugin_name }}"
+        OCI_REPO="${{ inputs.registry }}/${{ inputs.registry_namespace }}/plugins/${{ inputs.plugin_name }}"
+        
+        # Push each platform artifact
+        PLATFORMS="${{ inputs.platforms }}"
+        IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
+        
+        for platform in "${PLATFORM_ARRAY[@]}"; do
+          OS=$(echo $platform | cut -d'/' -f1)
+          ARCH=$(echo $platform | cut -d'/' -f2)
+          
+          echo "Pushing ${{ inputs.plugin_name }} $platform artifact to ${OCI_REPO}:${{ inputs.plugin_version }}-${OS}-${ARCH}"
+          
+          # Push the tarball and its checksum as OCI artifacts
+          oras push "${OCI_REPO}:${{ inputs.plugin_version }}-${OS}-${ARCH}" \
+            --artifact-type application/vnd.schemahero.plugin.v1+tar \
+            dist/${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz:application/gzip \
+            dist/${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz.sha256:text/plain \
+            dist/manifest.json:application/json \
+            --annotation "org.opencontainers.image.title=${PLUGIN_NAME}" \
+            --annotation "org.opencontainers.image.version=${{ inputs.plugin_version }}" \
+            --annotation "org.opencontainers.image.description=SchemaHero ${{ inputs.plugin_name }} database plugin" \
+            --annotation "org.opencontainers.image.source=https://github.com/schemahero/schemahero" \
+            --annotation "org.opencontainers.image.platform=${platform}"
+        done
+        
+        # Also create a multi-platform manifest tag
+        echo "Creating multi-platform tag at ${OCI_REPO}:${{ inputs.plugin_version }}"
+        
+        # Tag the first platform as the version tag
+        first_platform="${PLATFORM_ARRAY[0]}"
+        OS=$(echo $first_platform | cut -d'/' -f1)
+        ARCH=$(echo $first_platform | cut -d'/' -f2)
+        oras tag "${OCI_REPO}:${{ inputs.plugin_version }}-${OS}-${ARCH}" "${{ inputs.plugin_version }}"
+        
+        # Also tag as latest
+        oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" latest
+        
+        echo "Successfully pushed ${{ inputs.plugin_name }} version ${{ inputs.plugin_version }} to ${OCI_REPO}"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: plugin-${{ inputs.plugin_name }}-${{ inputs.plugin_version }}
+        path: dist/
+        retention-days: 7
