@@ -77,8 +77,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
-          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub_username: schemahero
+          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # MySQL Plugin
@@ -109,8 +109,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
-          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub_username: schemahero
+          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # TimescaleDB Plugin
@@ -141,8 +141,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
-          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub_username: schemahero
+          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # SQLite Plugin
@@ -173,8 +173,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
-          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub_username: schemahero
+          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # RQLite Plugin
@@ -205,8 +205,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
-          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub_username: schemahero
+          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # Cassandra Plugin
@@ -237,6 +237,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
-          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+          dockerhub_username: schemahero
+          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
