@@ -51,32 +51,37 @@ oras version
 
 ### Downloading Plugins
 
-#### Download latest version for current platform:
+#### Download multi-platform artifact (contains all platforms):
 ```bash
 # Create plugin directory
 mkdir -p ~/.schemahero/plugins
 cd ~/.schemahero/plugins
 
-# Pull the artifact
+# Pull the artifact (contains all platforms)
 oras pull docker.io/schemahero/plugins/postgres:latest
 
-# Extract the binary
-tar -xzf schemahero-postgres-linux-amd64.tar.gz
+# Check the index to see available platforms
+cat index.json | jq '.manifests[].platform'
+
+# Extract the binary for your platform
+PLATFORM=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
+tar -xzf schemahero-postgres-${PLATFORM}-${ARCH}.tar.gz
 
 # Verify checksum
-sha256sum -c schemahero-postgres-linux-amd64.tar.gz.sha256
+sha256sum -c schemahero-postgres-${PLATFORM}-${ARCH}.tar.gz.sha256
 
 # Make executable
-chmod +x schemahero-postgres-linux-amd64
+chmod +x schemahero-postgres-${PLATFORM}-${ARCH}
 ```
 
-#### Download specific version and platform:
+#### Download specific version:
 ```bash
-# For Linux AMD64
-oras pull docker.io/schemahero/plugins/postgres:0.0.1-linux-amd64
+# Pull a specific version (still contains all platforms)
+oras pull docker.io/schemahero/plugins/postgres:0.0.1
 
-# For Linux ARM64 (e.g., Apple Silicon in Docker)
-oras pull docker.io/schemahero/plugins/postgres:0.0.1-linux-arm64
+# The artifact includes binaries for all supported platforms
+# You only extract the one you need
 ```
 
 #### Download all plugins:
