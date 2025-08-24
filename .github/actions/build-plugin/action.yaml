@@ -161,29 +161,34 @@ runs:
         for platform in "${PLATFORM_ARRAY[@]}"; do
           OS=$(echo $platform | cut -d'/' -f1)
           ARCH=$(echo $platform | cut -d'/' -f2)
-          FILES="${FILES} dist/${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz:application/gzip"
-          FILES="${FILES} dist/${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz.sha256:text/plain"
+          FILES="${FILES} ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz:application/gzip"
+          FILES="${FILES} ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz.sha256:text/plain"
         done
         
         # Add the index and artifacts metadata
-        FILES="${FILES} dist/index.json:application/vnd.oci.image.index.v1+json"
-        FILES="${FILES} dist/artifacts.json:application/json"
+        FILES="${FILES} index.json:application/vnd.oci.image.index.v1+json"
+        FILES="${FILES} artifacts.json:application/json"
         
         echo "Pushing multi-platform artifact to ${OCI_REPO}:${{ inputs.plugin_version }}"
         
-        # Push all platform artifacts as a single OCI artifact
-        # The client will download the index and then fetch the appropriate platform
-        oras push "${OCI_REPO}:${{ inputs.plugin_version }}" \
-          --artifact-type application/vnd.schemahero.plugin.v1.multi+tar \
-          ${FILES} \
-          --annotation "org.opencontainers.image.title=${PLUGIN_NAME}" \
-          --annotation "org.opencontainers.image.version=${{ inputs.plugin_version }}" \
-          --annotation "org.opencontainers.image.description=SchemaHero ${{ inputs.plugin_name }} database plugin (multi-platform)" \
-          --annotation "org.opencontainers.image.source=https://github.com/schemahero/schemahero" \
-          --annotation "io.schemahero.plugin.platforms=${{ inputs.platforms }}"
-        
-        # Also tag as latest
-        oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" latest
+        # Push from dist directory to avoid directory prefix in artifact
+        (
+          cd dist
+          
+          # Push all platform artifacts as a single OCI artifact
+          # The client will download the index and then fetch the appropriate platform
+          oras push "${OCI_REPO}:${{ inputs.plugin_version }}" \
+            --artifact-type application/vnd.schemahero.plugin.v1.multi+tar \
+            ${FILES} \
+            --annotation "org.opencontainers.image.title=${PLUGIN_NAME}" \
+            --annotation "org.opencontainers.image.version=${{ inputs.plugin_version }}" \
+            --annotation "org.opencontainers.image.description=SchemaHero ${{ inputs.plugin_name }} database plugin (multi-platform)" \
+            --annotation "org.opencontainers.image.source=https://github.com/schemahero/schemahero" \
+            --annotation "io.schemahero.plugin.platforms=${{ inputs.platforms }}"
+          
+          # Also tag as latest
+          oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" latest
+        )
         
         echo "Successfully pushed multi-platform ${{ inputs.plugin_name }} version ${{ inputs.plugin_version }} to ${OCI_REPO}"
         echo ""
