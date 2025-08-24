@@ -109,6 +109,12 @@ type PostgresqlFunctionSchema struct {
 	// END;
 	// ```
 	As string `json:"as" yaml:"as"`
+	// Aliases for compatibility
+	Body     string `json:"-" yaml:"-"`
+	Returns  string `json:"-" yaml:"-"`
+	Language string `json:"-" yaml:"-"`
+	// IsDeleted is used internally to mark function for deletion during planning
+	IsDeleted bool `json:"-" yaml:"-"`
 }
 
 type PostgresqlExecuteParameter struct {

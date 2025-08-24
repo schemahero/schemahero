@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
@@ -16,4 +17,13 @@ type SchemaHeroDatabaseConnection interface {
 
 	GetTablePrimaryKey(string) (*types.KeyConstraint, error)
 	GetTableSchema(string) ([]*types.Column, error)
+
+	// Planning methods - generate SQL statements for schema changes
+	PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error)
+	PlanViewSchema(viewName string, viewSchema interface{}) ([]string, error)
+	PlanFunctionSchema(functionName string, functionSchema interface{}) ([]string, error)
+	PlanExtensionSchema(extensionName string, extensionSchema interface{}) ([]string, error)
+
+	// Deployment methods - execute SQL statements
+	DeployStatements(statements []string) error
 }

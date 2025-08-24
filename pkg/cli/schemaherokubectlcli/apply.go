@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -54,6 +55,9 @@ func ApplyCmd() *cobra.Command {
 				return errors.Wrap(err, "failed to stat ddl file")
 			}
 
+			// Initialize plugin system
+			plugin.InitializePluginSystem()
+
 			db := database.Database{
 				InputDir:  v.GetString("input-dir"),
 				OutputDir: v.GetString("output-dir"),
@@ -63,6 +67,11 @@ func ApplyCmd() *cobra.Command {
 				Username:  v.GetString("username"),
 				Password:  v.GetString("password"),
 				Keyspace:  v.GetString("keyspace"),
+			}
+
+			// Set plugin manager
+			if pluginManager := plugin.GetGlobalPluginManager(); pluginManager != nil {
+				db.SetPluginManager(pluginManager)
 			}
 
 			commands := []string{}
