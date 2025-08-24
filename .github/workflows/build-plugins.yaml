@@ -78,7 +78,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: schemahero
-          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerhub_token: ${{ secrets.DOCKER_OAT }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # MySQL Plugin
@@ -110,7 +110,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: schemahero
-          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerhub_token: ${{ secrets.DOCKER_OAT }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # TimescaleDB Plugin
@@ -142,7 +142,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: schemahero
-          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerhub_token: ${{ secrets.DOCKER_OAT }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # SQLite Plugin
@@ -174,7 +174,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: schemahero
-          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerhub_token: ${{ secrets.DOCKER_OAT }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # RQLite Plugin
@@ -206,7 +206,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: schemahero
-          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerhub_token: ${{ secrets.DOCKER_OAT }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
 
   # Cassandra Plugin
@@ -238,5 +238,5 @@ jobs:
           registry: ${{ env.REGISTRY }}
           registry_namespace: ${{ env.REGISTRY_NAMESPACE }}
           dockerhub_username: schemahero
-          dockerhub_token: ${{ secrets.DOCKERHUB_PASSWORD }}
+          dockerhub_token: ${{ secrets.DOCKER_OAT }}
           push: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/plugins' || github.ref == 'refs/heads/plugins-ci') }}
