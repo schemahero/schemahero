@@ -164,9 +164,16 @@ func (c *ConnectionProxy) PlanTableSchema(tableName string, tableSchema interfac
 	// that will be restored on the other side
 	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
 
-	// Check if this is a PostgreSQL schema and fix empty string defaults
+	// Check if this is a PostgreSQL or MySQL schema and fix empty string defaults
 	if pgSchema, ok := tableSchema.(*schemasv1alpha4.PostgresqlTableSchema); ok {
 		for _, col := range pgSchema.Columns {
+			if col.Default != nil && *col.Default == "" {
+				sentinel := emptyStringSentinel
+				col.Default = &sentinel
+			}
+		}
+	} else if mysqlSchema, ok := tableSchema.(*schemasv1alpha4.MysqlTableSchema); ok {
+		for _, col := range mysqlSchema.Columns {
 			if col.Default != nil && *col.Default == "" {
 				sentinel := emptyStringSentinel
 				col.Default = &sentinel
@@ -273,11 +280,20 @@ func (c *ConnectionProxy) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]s
 	// Apply the same sentinel value replacement for fixtures
 	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
 
-	if spec != nil && spec.Schema != nil && spec.Schema.Postgres != nil {
-		for _, col := range spec.Schema.Postgres.Columns {
-			if col.Default != nil && *col.Default == "" {
-				sentinel := emptyStringSentinel
-				col.Default = &sentinel
+	if spec != nil && spec.Schema != nil {
+		if spec.Schema.Postgres != nil {
+			for _, col := range spec.Schema.Postgres.Columns {
+				if col.Default != nil && *col.Default == "" {
+					sentinel := emptyStringSentinel
+					col.Default = &sentinel
+				}
+			}
+		} else if spec.Schema.Mysql != nil {
+			for _, col := range spec.Schema.Mysql.Columns {
+				if col.Default != nil && *col.Default == "" {
+					sentinel := emptyStringSentinel
+					col.Default = &sentinel
+				}
 			}
 		}
 	}
