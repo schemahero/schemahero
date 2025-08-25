@@ -29,6 +29,7 @@ func init() {
 	gob.Register(&schemasv1alpha4.SqliteTableSchema{})
 	gob.Register(&schemasv1alpha4.RqliteTableSchema{})
 	gob.Register(&schemasv1alpha4.NotImplementedViewSchema{})
+	gob.Register(&schemasv1alpha4.TimescaleDBViewSchema{})
 	gob.Register(&schemasv1alpha4.PostgresqlFunctionSchema{})
 	gob.Register(&schemasv1alpha4.NotImplementedFunctionSchema{})
 	gob.Register(&schemasv1alpha4.PostgresDatabaseExtension{})

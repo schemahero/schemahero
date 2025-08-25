@@ -15,6 +15,7 @@ func init() {
 	gob.Register(&schemasv1alpha4.PostgresqlTableSchema{})
 	gob.Register(&schemasv1alpha4.MysqlTableSchema{})
 	gob.Register(&schemasv1alpha4.TimescaleDBTableSchema{})
+	gob.Register(&schemasv1alpha4.TimescaleDBViewSchema{})
 	gob.Register(&schemasv1alpha4.CassandraTableSchema{})
 	gob.Register(&schemasv1alpha4.SqliteTableSchema{})
 	gob.Register(&schemasv1alpha4.RqliteTableSchema{})

@@ -243,7 +243,7 @@ func (d *Database) PlanSync(specContents []byte, specType string) ([]string, err
 		return plan, nil
 	}
 
-	logger.Debugf("failed to plan using GVK, falling back on spec type parameter: %s", err)
+	logger.Infof("failed to plan using GVK, falling back on spec type parameter: %s", err)
 
 	if specType == "table" {
 		plan, err := d.planTableSync(specContents)
@@ -287,6 +287,8 @@ func (d *Database) planGVKSync(specContents []byte) ([]string, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to decode spec")
 	}
+
+	logger.Debugf("Decoded GVK: Group=%s, Version=%s, Kind=%s", gvk.Group, gvk.Version, gvk.Kind)
 
 	if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "Table" {
 		table := obj.(*schemasv1alpha4.Table)
@@ -378,25 +380,42 @@ func (d *Database) PlanSyncViewSpec(spec *schemasv1alpha4.ViewSpec) ([]string, e
 		return []string{}, nil
 	}
 
-	if d.Driver == "postgres" {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+	// Views are supported through plugins for databases that support them
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		var schema interface{}
+		if d.Driver == "postgres" || d.Driver == "cockroachdb" {
+			schema = spec.Schema.Postgres
+		} else if d.Driver == "timescaledb" {
+			schema = spec.Schema.TimescaleDB
+		}
+
+		if schema == nil {
+			return []string{}, nil
+		}
+
+		return conn.PlanViewSchema(spec.Name, schema)
 	} else if d.Driver == "mysql" {
-		return nil, errors.New("mysql driver requires plugin - install schemahero-mysql plugin")
-	} else if d.Driver == "cockroachdb" {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-	} else if d.Driver == "timescaledb" {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-	} else if d.Driver == "sqlite" || d.Driver == "sqlite3" {
-		return nil, errors.New("sqlite driver requires plugin - install schemahero-sqlite plugin")
-	} else if d.Driver == "rqlite" {
-		return nil, errors.New("rqlite driver requires plugin - install schemahero-rqlite plugin")
-	} else if d.Driver == "timescaledb" {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-	} else if d.Driver == "cassandra" {
-		return nil, errors.New("cassandra driver requires plugin - install schemahero-cassandra plugin")
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		if spec.Schema.Mysql == nil {
+			return []string{}, nil
+		}
+
+		return conn.PlanViewSchema(spec.Name, spec.Schema.Mysql)
 	}
 
-	return nil, errors.New("unknown driver")
+	// Other drivers don't support views yet
+	return nil, errors.Errorf("driver %s does not support views", d.Driver)
 }
 
 func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
