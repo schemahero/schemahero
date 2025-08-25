@@ -84,8 +84,10 @@ func (r *RqliteConnection) PlanExtensionSchema(extensionName string, extensionSc
 
 // DeployStatements implements interfaces.SchemaHeroDatabaseConnection.DeployStatements()
 func (r *RqliteConnection) DeployStatements(statements []string) error {
-	// RQLite deployment not yet implemented
-	return errors.New("RQLite statement deployment not yet implemented")
+	if r.uri == "" {
+		return errors.New("URI not set in RqliteConnection")
+	}
+	return DeployRqliteStatements(r.uri, statements)
 }
 
 // GenerateFixtures generates SQL statements to create tables and seed data for fixtures
