@@ -584,8 +584,24 @@ func (d *Database) planExtensionSync(specContents []byte) ([]string, error) {
 }
 
 func (d *Database) PlanSyncDatabaseExtensionSpec(spec *schemasv1alpha4.DatabaseExtensionSpec) ([]string, error) {
-	if d.Driver == "postgres" && spec.Postgres != nil {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+	// Use connection-based planning for postgres
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		// Get the appropriate schema based on driver
+		var schema interface{}
+		var extensionName string
+		if d.Driver == "postgres" && spec.Postgres != nil {
+			schema = spec.Postgres
+			extensionName = spec.Postgres.Name
+		}
+		// CockroachDB and TimescaleDB would also use postgres schema if they support extensions
+
+		return conn.PlanExtensionSchema(extensionName, schema)
 	}
 
 	return nil, errors.Errorf("planning extensions is not supported for driver %q or extension type not specified", d.Driver)
@@ -613,8 +629,22 @@ func (d *Database) planFunctionSync(specContents []byte) ([]string, error) {
 }
 
 func (d *Database) PlanSyncFunctionSpec(spec *schemasv1alpha4.FunctionSpec) ([]string, error) {
-	if d.Driver == "postgres" && spec.Schema != nil && spec.Schema.Postgres != nil {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+	// Use connection-based planning for postgres
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		// Get the appropriate schema based on driver
+		var schema interface{}
+		if d.Driver == "postgres" && spec.Schema != nil && spec.Schema.Postgres != nil {
+			schema = spec.Schema.Postgres
+		}
+		// CockroachDB and TimescaleDB would also use postgres schema if they support functions
+
+		return conn.PlanFunctionSchema(spec.Name, schema)
 	}
 
 	return nil, errors.Errorf("planning functions is not supported for driver %q or function database schema not specified", d.Driver)
