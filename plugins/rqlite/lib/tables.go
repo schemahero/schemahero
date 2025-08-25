@@ -96,12 +96,20 @@ WHERE m.type='table' AND m.name=? AND il.name=? AND il.origin!='pk'
 	}
 
 	isConstraint := false
+	hasRows := false
 	for rows.Next() {
+		hasRows = true
 		var origin string
 		if err := rows.Scan(&origin); err != nil {
 			return false, err
 		}
 		isConstraint = origin != "c"
+	}
+	
+	// If no rows found, the index doesn't exist or query failed
+	if !hasRows {
+		// Return false since a non-existent index is not a constraint
+		return false, nil
 	}
 
 	return isConstraint, nil

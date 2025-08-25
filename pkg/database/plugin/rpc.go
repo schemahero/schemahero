@@ -419,6 +419,13 @@ func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArg
 				col.Default = &emptyStr
 			}
 		}
+	} else if rqliteSchema, ok := args.TableSchema.(*schemasv1alpha4.RqliteTableSchema); ok {
+		for _, col := range rqliteSchema.Columns {
+			if col.Default != nil && *col.Default == emptyStringSentinel {
+				emptyStr := ""
+				col.Default = &emptyStr
+			}
+		}
 	}
 
 	statements, err := conn.PlanTableSchema(args.TableName, args.TableSchema, args.SeedData)

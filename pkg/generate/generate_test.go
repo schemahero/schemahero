@@ -389,7 +389,7 @@ spec:
 			if test.driver == "rqlite" {
 				t.Skip("rqlite generate command not yet updated for plugin architecture")
 			}
-			
+
 			req := require.New(t)
 
 			y, err := generateTableYAML(test.driver, test.dbName, &test.table, test.primaryKey, test.foreignKeys, test.indexes, test.columns)

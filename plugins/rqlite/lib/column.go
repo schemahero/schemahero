@@ -8,10 +8,22 @@ import (
 )
 
 func schemaColumnToColumn(schemaColumn *schemasv1alpha4.RqliteTableColumn) (*types.Column, error) {
+	// Handle the sentinel value for empty string defaults
+	var columnDefault *string
+	if schemaColumn.Default != nil {
+		defaultValue := *schemaColumn.Default
+		if defaultValue == "__SCHEMAHERO_EMPTY_STRING_DEFAULT__" {
+			emptyStr := ""
+			columnDefault = &emptyStr
+		} else {
+			columnDefault = schemaColumn.Default
+		}
+	}
+	
 	column := &types.Column{
 		Name:          schemaColumn.Name,
 		DataType:      schemaColumn.Type,
-		ColumnDefault: schemaColumn.Default,
+		ColumnDefault: columnDefault,
 	}
 
 	if schemaColumn.Constraints != nil {

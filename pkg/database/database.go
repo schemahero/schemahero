@@ -470,9 +470,9 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 
 	// For seed data without schema, we need to connect to the database to get the existing schema
 	// This is supported through the plugin system for all drivers
-	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" || 
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" ||
 		d.Driver == "sqlite" || d.Driver == "sqlite3" || d.Driver == "rqlite" || d.Driver == "cassandra" {
-		
+
 		conn, err := d.GetConnection(context.Background())
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get database connection")

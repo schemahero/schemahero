@@ -278,7 +278,11 @@ desiredIndexesLoop:
 currentIndexesLoop:
 	for _, currentIndex := range currentIndexes {
 		for _, desiredIndex := range rqliteTableSchema.Indexes {
-			if desiredIndex.Name == currentIndex.Name {
+			desiredIndexName := desiredIndex.Name
+			if desiredIndexName == "" {
+				desiredIndexName = types.GenerateRqliteIndexName(tableName, desiredIndex)
+			}
+			if desiredIndexName == currentIndex.Name {
 				// if index changed, we already checked if it's a constraint above
 				continue currentIndexesLoop
 			}

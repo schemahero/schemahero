@@ -186,6 +186,13 @@ func (c *ConnectionProxy) PlanTableSchema(tableName string, tableSchema interfac
 				col.Default = &sentinel
 			}
 		}
+	} else if rqliteSchema, ok := tableSchema.(*schemasv1alpha4.RqliteTableSchema); ok {
+		for _, col := range rqliteSchema.Columns {
+			if col.Default != nil && *col.Default == "" {
+				sentinel := emptyStringSentinel
+				col.Default = &sentinel
+			}
+		}
 	}
 
 	var reply ConnectionPlanTableSchemaReply

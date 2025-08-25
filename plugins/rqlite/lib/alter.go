@@ -72,7 +72,11 @@ desiredIndexesLoop:
 currentIndexesLoop:
 	for _, currentIndex := range currentIndexes {
 		for _, desiredIndex := range rqliteTableSchema.Indexes {
-			if currentIndex.Name == desiredIndex.Name {
+			desiredIndexName := desiredIndex.Name
+			if desiredIndexName == "" {
+				desiredIndexName = types.GenerateRqliteIndexName(tableName, desiredIndex)
+			}
+			if currentIndex.Name == desiredIndexName {
 				// if index changed, we already handled it above
 				continue currentIndexesLoop
 			}
