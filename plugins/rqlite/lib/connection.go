@@ -10,7 +10,8 @@ import (
 )
 
 type RqliteConnection struct {
-	db *gorqlite.Connection
+	db  *gorqlite.Connection
+	uri string
 }
 
 func Connect(url string) (*RqliteConnection, error) {
@@ -20,7 +21,8 @@ func Connect(url string) (*RqliteConnection, error) {
 	}
 
 	rqliteConnection := RqliteConnection{
-		db: db,
+		db:  db,
+		uri: url,
 	}
 
 	return &rqliteConnection, nil
@@ -47,8 +49,19 @@ func (p *RqliteConnection) EngineVersion() string {
 
 // PlanTableSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTableSchema()
 func (r *RqliteConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
-	// RQLite planning not yet implemented
-	return nil, errors.New("RQLite table planning not yet implemented")
+	// Type assert to the correct schema type
+	rqliteSchema, ok := tableSchema.(*schemasv1alpha4.RqliteTableSchema)
+	if !ok {
+		return nil, errors.New("tableSchema must be *RqliteTableSchema")
+	}
+	
+	// Use the existing RQLite planning implementation
+	// Note: PlanRqliteTable expects a URL, but we need to pass the URL from somewhere
+	// For now, we'll need to store it in the connection
+	if r.uri == "" {
+		return nil, errors.New("URI not set in RqliteConnection")
+	}
+	return PlanRqliteTable(r.uri, tableName, rqliteSchema, seedData)
 }
 
 // PlanViewSchema implements interfaces.SchemaHeroDatabaseConnection.PlanViewSchema()
