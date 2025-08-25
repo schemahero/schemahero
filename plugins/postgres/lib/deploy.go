@@ -156,9 +156,20 @@ func PlanPostgresTableSeedDataOnly(uri string, tableName string, seedData *schem
 		return nil, errors.Wrap(err, "failed to get existing table schema")
 	}
 
+	// Get the primary key for conflict resolution
+	primaryKey, err := p.GetTablePrimaryKey(tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get table primary key")
+	}
+
 	// Convert the existing columns to a PostgresqlTableSchema
 	postgresSchema := &schemasv1alpha4.PostgresqlTableSchema{
 		Columns: []*schemasv1alpha4.PostgresqlTableColumn{},
+	}
+
+	// Add primary key if it exists
+	if primaryKey != nil {
+		postgresSchema.PrimaryKey = primaryKey.Columns
 	}
 
 	for _, col := range existingColumns {
