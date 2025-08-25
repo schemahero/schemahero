@@ -67,129 +67,188 @@ jobs:
       - run: go mod tidy
       - run: make vet test
 
-  # Integration tests have been moved to plugin repositories
-  # These tests are disabled since all database engines are now plugins
-  # TODO: Remove these jobs completely after verifying plugin tests work
-  
-  # test-postgres:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
+  test-postgres:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build postgres plugin
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/postgres
+          go build -o ../bin/schemahero-postgres .
+          chmod +x ../bin/schemahero-postgres
+      - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
-  # test-mysql:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       mysql_version: ["8.0.31", "8.4.5", "9.3.0"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
+  test-mysql:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        mysql_version: ["8.0.31", "8.4.5", "9.3.0"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build mysql plugin
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/mysql
+          go build -o ../bin/schemahero-mysql .
+          chmod +x ../bin/schemahero-mysql
+      - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
-  # test-cockroach:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       # "v19.2.12", "v20.2.19" are no longer supported
-  #       cockroachdb_version: ["v21.2.17", "v22.1.11"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
+  test-cockroach:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        # "v19.2.12", "v20.2.19" are no longer supported
+        cockroachdb_version: ["v21.2.17", "v22.1.11"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build postgres plugin (cockroach uses postgres plugin)
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/postgres
+          go build -o ../bin/schemahero-postgres .
+          chmod +x ../bin/schemahero-postgres
+      - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
-  # test-cassandra:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       cassandra_version: ["3.11.10"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
+  test-cassandra:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        cassandra_version: ["3.11.10"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build cassandra plugin
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/cassandra
+          go build -o ../bin/schemahero-cassandra .
+          chmod +x ../bin/schemahero-cassandra
+      - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
 
-  # test-sqlite:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       sqlite_version: ["3.39.3"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
+  test-sqlite:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        sqlite_version: ["3.39.3"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build sqlite plugin
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/sqlite
+          go build -o ../bin/schemahero-sqlite .
+          chmod +x ../bin/schemahero-sqlite
+      - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
 
-  # test-rqlite:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       rqlite_version: ["6.10.2", "7.6.1"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
+  test-rqlite:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        rqlite_version: ["6.10.2", "7.6.1"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build rqlite plugin
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/rqlite
+          go build -o ../bin/schemahero-rqlite .
+          chmod +x ../bin/schemahero-rqlite
+      - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
 
-  # test-timescaledb:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       timescaledb_version: ["2.9.3-pg14"]
-  #   steps:
-  #     - uses: actions/checkout@v4.1.1
-  #     - name: Download kubectl-schemahero binary
-  #       uses: actions/download-artifact@v4.3.0
-  #       with:
-  #         name: kubectl-schemahero
-  #         path: bin/
-  #     - run: chmod +x bin/kubectl-schemahero
-  #     - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
+  test-timescaledb:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        timescaledb_version: ["2.9.3-pg14"]
+    steps:
+      - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+      - name: Download kubectl-schemahero binary
+        uses: actions/download-artifact@v4.3.0
+        with:
+          name: kubectl-schemahero
+          path: bin/
+      - run: chmod +x bin/kubectl-schemahero
+      - name: Build timescaledb plugin
+        run: |
+          mkdir -p plugins/bin
+          cd plugins/timescaledb
+          go build -o ../bin/schemahero-timescaledb .
+          chmod +x ../bin/schemahero-timescaledb
+      - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
 
   test-fixtures:
     runs-on: ubuntu-latest
@@ -209,14 +268,13 @@ jobs:
     needs:
       - build
       - test
-      # Database-specific tests removed - moved to plugin repositories
-      # - test-postgres
-      # - test-mysql
-      # - test-cockroach
-      # - test-cassandra
-      # - test-sqlite
-      # - test-rqlite
-      # - test-timescaledb
+      - test-postgres
+      - test-mysql
+      - test-cockroach
+      - test-cassandra
+      - test-sqlite
+      - test-rqlite
+      - test-timescaledb
       - test-fixtures
     steps:
       - name: All tests passed
