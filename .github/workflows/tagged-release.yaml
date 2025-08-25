@@ -55,10 +55,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build postgres plugin
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/postgres
-          go build -o ../bin/schemahero-postgres .
-          chmod +x ../bin/schemahero-postgres
+          go build -o $HOME/.schemahero/plugins/schemahero-postgres .
+          chmod +x $HOME/.schemahero/plugins/schemahero-postgres
       - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
   test-mysql:
@@ -80,10 +80,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build mysql plugin
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/mysql
-          go build -o ../bin/schemahero-mysql .
-          chmod +x ../bin/schemahero-mysql
+          go build -o $HOME/.schemahero/plugins/schemahero-mysql .
+          chmod +x $HOME/.schemahero/plugins/schemahero-mysql
       - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
   test-cockroach:
@@ -106,10 +106,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build postgres plugin (cockroach uses postgres plugin)
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/postgres
-          go build -o ../bin/schemahero-postgres .
-          chmod +x ../bin/schemahero-postgres
+          go build -o $HOME/.schemahero/plugins/schemahero-postgres .
+          chmod +x $HOME/.schemahero/plugins/schemahero-postgres
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
   test-cassandra:
@@ -131,10 +131,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build cassandra plugin
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/cassandra
-          go build -o ../bin/schemahero-cassandra .
-          chmod +x ../bin/schemahero-cassandra
+          go build -o $HOME/.schemahero/plugins/schemahero-cassandra .
+          chmod +x $HOME/.schemahero/plugins/schemahero-cassandra
       - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
 
   test-sqlite:
@@ -156,10 +156,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build sqlite plugin
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/sqlite
-          go build -o ../bin/schemahero-sqlite .
-          chmod +x ../bin/schemahero-sqlite
+          go build -o $HOME/.schemahero/plugins/schemahero-sqlite .
+          chmod +x $HOME/.schemahero/plugins/schemahero-sqlite
       - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
 
   test-rqlite:
@@ -181,10 +181,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build rqlite plugin
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/rqlite
-          go build -o ../bin/schemahero-rqlite .
-          chmod +x ../bin/schemahero-rqlite
+          go build -o $HOME/.schemahero/plugins/schemahero-rqlite .
+          chmod +x $HOME/.schemahero/plugins/schemahero-rqlite
       - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
 
   test-timescaledb:
@@ -206,10 +206,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - name: Build timescaledb plugin
         run: |
-          mkdir -p plugins/bin
+          mkdir -p $HOME/.schemahero/plugins
           cd plugins/timescaledb
-          go build -o ../bin/schemahero-timescaledb .
-          chmod +x ../bin/schemahero-timescaledb
+          go build -o $HOME/.schemahero/plugins/schemahero-timescaledb .
+          chmod +x $HOME/.schemahero/plugins/schemahero-timescaledb
       - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
 
   build-docker-manager:
