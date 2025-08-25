@@ -397,7 +397,7 @@ func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArg
 	// to work around gob encoding losing empty string pointers
 	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
 
-	// Check if this is a PostgreSQL or MySQL schema and restore empty string defaults
+	// Check if this is a PostgreSQL, MySQL, or SQLite schema and restore empty string defaults
 	if pgSchema, ok := args.TableSchema.(*schemasv1alpha4.PostgresqlTableSchema); ok {
 		for _, col := range pgSchema.Columns {
 			if col.Default != nil && *col.Default == emptyStringSentinel {
@@ -407,6 +407,13 @@ func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArg
 		}
 	} else if mysqlSchema, ok := args.TableSchema.(*schemasv1alpha4.MysqlTableSchema); ok {
 		for _, col := range mysqlSchema.Columns {
+			if col.Default != nil && *col.Default == emptyStringSentinel {
+				emptyStr := ""
+				col.Default = &emptyStr
+			}
+		}
+	} else if sqliteSchema, ok := args.TableSchema.(*schemasv1alpha4.SqliteTableSchema); ok {
+		for _, col := range sqliteSchema.Columns {
 			if col.Default != nil && *col.Default == emptyStringSentinel {
 				emptyStr := ""
 				col.Default = &emptyStr
@@ -522,7 +529,7 @@ func (s *RPCServer) ConnectionGenerateFixtures(args *ConnectionGenerateFixturesA
 	// to work around gob encoding losing empty string pointers
 	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
 
-	// Check if this spec has a PostgreSQL or MySQL schema and restore empty string defaults
+	// Check if this spec has a PostgreSQL, MySQL, or SQLite schema and restore empty string defaults
 	if args.Spec != nil && args.Spec.Schema != nil {
 		if args.Spec.Schema.Postgres != nil {
 			for _, col := range args.Spec.Schema.Postgres.Columns {
@@ -533,6 +540,13 @@ func (s *RPCServer) ConnectionGenerateFixtures(args *ConnectionGenerateFixturesA
 			}
 		} else if args.Spec.Schema.Mysql != nil {
 			for _, col := range args.Spec.Schema.Mysql.Columns {
+				if col.Default != nil && *col.Default == emptyStringSentinel {
+					emptyStr := ""
+					col.Default = &emptyStr
+				}
+			}
+		} else if args.Spec.Schema.SQLite != nil {
+			for _, col := range args.Spec.Schema.SQLite.Columns {
 				if col.Default != nil && *col.Default == emptyStringSentinel {
 					emptyStr := ""
 					col.Default = &emptyStr

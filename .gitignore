@@ -28,6 +28,16 @@ dist/
 
 .DS_Store
 
+# Plugin binaries
+plugins/*/schemahero-*
+plugins/cassandra/cassandra
+plugins/mysql/mysql
+plugins/postgres/postgres
+plugins/rqlite/rqlite
+plugins/sqlite/sqlite
+plugins/timescaledb/timescaledb
+plugins/postgres/build
+
 vendor
 integration/**/out.sql
 integration/tests/fixtures/**/fixtures.sql

@@ -328,4 +328,3 @@ func (m *PluginManager) RegisterPlugin(info *PluginInfo) error {
 
 	return nil
 }
-
