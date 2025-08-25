@@ -16,6 +16,7 @@ func init() {
 	// Register types that will be passed through RPC interfaces
 	// These are needed for gob encoding/decoding of interface{} parameters
 	gob.Register(&schemasv1alpha4.PostgresqlTableSchema{})
+	gob.Register(&schemasv1alpha4.PostgresqlTableColumn{})
 	gob.Register(&schemasv1alpha4.MysqlTableSchema{})
 	gob.Register(&schemasv1alpha4.TimescaleDBTableSchema{})
 	gob.Register(&schemasv1alpha4.CassandraTableSchema{})
@@ -391,6 +392,20 @@ func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArg
 		return nil
 	}
 
+	// WORKAROUND: Restore empty string defaults that were replaced with sentinel values
+	// to work around gob encoding losing empty string pointers
+	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
+
+	// Check if this is a PostgreSQL schema and restore empty string defaults
+	if pgSchema, ok := args.TableSchema.(*schemasv1alpha4.PostgresqlTableSchema); ok {
+		for _, col := range pgSchema.Columns {
+			if col.Default != nil && *col.Default == emptyStringSentinel {
+				emptyStr := ""
+				col.Default = &emptyStr
+			}
+		}
+	}
+
 	statements, err := conn.PlanTableSchema(args.TableName, args.TableSchema, args.SeedData)
 	if err != nil {
 		reply.Error = err.Error()
@@ -493,6 +508,20 @@ func (s *RPCServer) ConnectionGenerateFixtures(args *ConnectionGenerateFixturesA
 	if !exists {
 		reply.Error = fmt.Sprintf("connection %s not found", args.ConnectionID)
 		return nil
+	}
+
+	// WORKAROUND: Restore empty string defaults that were replaced with sentinel values
+	// to work around gob encoding losing empty string pointers
+	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
+
+	// Check if this spec has a PostgreSQL schema and restore empty string defaults
+	if args.Spec != nil && args.Spec.Schema != nil && args.Spec.Schema.Postgres != nil {
+		for _, col := range args.Spec.Schema.Postgres.Columns {
+			if col.Default != nil && *col.Default == emptyStringSentinel {
+				emptyStr := ""
+				col.Default = &emptyStr
+			}
+		}
 	}
 
 	statements, err := conn.GenerateFixtures(args.Spec)

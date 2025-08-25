@@ -159,6 +159,21 @@ func (c *ConnectionProxy) GetTableSchema(table string) ([]*types.Column, error) 
 
 // PlanTableSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTableSchema()
 func (c *ConnectionProxy) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// WORKAROUND: gob encoding loses empty string pointers (treats them as nil)
+	// Before sending through RPC, replace empty string defaults with a sentinel value
+	// that will be restored on the other side
+	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
+
+	// Check if this is a PostgreSQL schema and fix empty string defaults
+	if pgSchema, ok := tableSchema.(*schemasv1alpha4.PostgresqlTableSchema); ok {
+		for _, col := range pgSchema.Columns {
+			if col.Default != nil && *col.Default == "" {
+				sentinel := emptyStringSentinel
+				col.Default = &sentinel
+			}
+		}
+	}
+
 	var reply ConnectionPlanTableSchemaReply
 	err := c.client.Call("Plugin.ConnectionPlanTableSchema", &ConnectionPlanTableSchemaArgs{
 		ConnectionID: c.connectionID,
@@ -254,6 +269,19 @@ func (c *ConnectionProxy) DeployStatements(statements []string) error {
 
 // GenerateFixtures implements interfaces.SchemaHeroDatabaseConnection.GenerateFixtures()
 func (c *ConnectionProxy) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	// WORKAROUND: gob encoding loses empty string pointers
+	// Apply the same sentinel value replacement for fixtures
+	const emptyStringSentinel = "__SCHEMAHERO_EMPTY_STRING_DEFAULT__"
+
+	if spec != nil && spec.Schema != nil && spec.Schema.Postgres != nil {
+		for _, col := range spec.Schema.Postgres.Columns {
+			if col.Default != nil && *col.Default == "" {
+				sentinel := emptyStringSentinel
+				col.Default = &sentinel
+			}
+		}
+	}
+
 	var reply ConnectionGenerateFixturesReply
 	err := c.client.Call("Plugin.ConnectionGenerateFixtures", &ConnectionGenerateFixturesArgs{
 		ConnectionID: c.connectionID,
