@@ -551,6 +551,7 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 	statements := []string{}
 
 	functionTagOpen := false
+	dollarQuoteTag := ""
 	statement := ""
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
@@ -558,12 +559,35 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 			continue
 		}
 
+		// Check for dollar-quoted string delimiters (e.g., $$ or $_SCHEMAHERO_$)
+		// These are used in PostgreSQL functions to avoid escaping issues
+		if dollarQuoteTag == "" {
+			// Look for opening dollar quote
+			if idx := strings.Index(line, "$"); idx >= 0 {
+				// Find the closing $ for the tag
+				endIdx := strings.Index(line[idx+1:], "$")
+				if endIdx >= 0 {
+					tag := line[idx : idx+endIdx+2]
+					// Check if this same tag appears again on the line (opening and closing on same line)
+					if !strings.Contains(line[idx+endIdx+2:], tag) {
+						dollarQuoteTag = tag
+					}
+				}
+			}
+		} else {
+			// Look for closing dollar quote
+			if strings.Contains(line, dollarQuoteTag) {
+				dollarQuoteTag = ""
+			}
+		}
+
 		// we assume the function tag to always have its own line and never be the last line for simplicity
 		if line == "-- Function body follows" {
 			functionTagOpen = !functionTagOpen
 		}
 
-		if !functionTagOpen && (i == len(lines)-1 || strings.HasSuffix(line, ";")) {
+		// Don't split on semicolons if we're inside a dollar-quoted string or function tag
+		if !functionTagOpen && dollarQuoteTag == "" && (i == len(lines)-1 || strings.HasSuffix(line, ";")) {
 			statement = statement + " " + line
 			statements = append(statements, strings.TrimSpace(statement))
 			statement = ""

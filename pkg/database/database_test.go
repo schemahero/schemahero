@@ -45,6 +45,22 @@ func Test_GetStatementsFromDDL(t *testing.T) {
 				`create materialized view "some_view" with (timescaledb.continuous) as select time_bucket('1 minute'::interval, created_at) as minute_bucket, id, sum(something) as total from some_data group by minute_bucket, id with data;`,
 			},
 		},
+		{
+			name: "postgres function with dollar quotes",
+			ddl: `create function test.get_user_count() returns bigint as
+$_SCHEMAHERO_$
+DECLARE
+    user_count bigint;
+BEGIN
+    SELECT COUNT(*) INTO user_count FROM users;
+    RETURN user_count;
+END;
+$_SCHEMAHERO_$
+language PLpgSQL;`,
+			wantStatements: []string{
+				`create function test.get_user_count() returns bigint as $_SCHEMAHERO_$ DECLARE user_count bigint; BEGIN SELECT COUNT(*) INTO user_count FROM users; RETURN user_count; END; $_SCHEMAHERO_$ language PLpgSQL;`,
+			},
+		},
 	}
 
 	for _, test := range tests {
