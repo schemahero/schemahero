@@ -81,7 +81,14 @@ func (t *TimescaleDBConnection) GetTableSchema(tableName string) ([]*types.Colum
 }
 
 func (t *TimescaleDBConnection) PlanViewSchema(viewName string, viewSchema interface{}) ([]string, error) {
-	// TimescaleDB views can be handled by PostgreSQL or have special continuous aggregate support
+	// Check if it's a TimescaleDB view schema
+	tsViewSchema, ok := viewSchema.(*schemasv1alpha4.TimescaleDBViewSchema)
+	if ok {
+		// Use TimescaleDB-specific view planning
+		return timescaledb.PlanTimescaleDBView(t.uri, viewName, tsViewSchema)
+	}
+	
+	// Fall back to PostgreSQL for regular views
 	return t.PostgresConnection.PlanViewSchema(viewName, viewSchema)
 }
 
