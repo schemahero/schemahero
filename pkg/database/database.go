@@ -157,7 +157,7 @@ func (d *Database) CreateFixturesSync() error {
 		if d.pluginManager != nil {
 			// Create a dummy URI for fixture generation - we won't actually connect
 			dummyURI := "fixture-only://localhost/schemahero"
-			
+
 			// Pass a special option to indicate this is fixture-only mode
 			options := map[string]interface{}{
 				"fixture-only": true,
@@ -166,7 +166,7 @@ func (d *Database) CreateFixturesSync() error {
 			conn, err := d.pluginManager.GetConnection(context.Background(), d.Driver, dummyURI, options)
 			if err == nil {
 				defer conn.Close()
-				
+
 				// Generate fixtures statements
 				stmts, err := conn.GenerateFixtures(spec)
 				if err != nil {
@@ -451,30 +451,20 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 		return []string{}, nil
 	}
 
-	if d.Driver == "postgres" {
-		// If schema is present, use it; otherwise, retrieve existing schema from database
-		if spec.Schema != nil && spec.Schema.Postgres != nil {
-			return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-		} else {
-			return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+	// For seed data without schema, we need to connect to the database to get the existing schema
+	// This is supported through the plugin system for all drivers
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" || 
+		d.Driver == "sqlite" || d.Driver == "sqlite3" || d.Driver == "rqlite" || d.Driver == "cassandra" {
+		
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
 		}
-	} else if d.Driver == "mysql" {
-		return nil, errors.New("mysql driver requires plugin - install schemahero-mysql plugin")
-	} else if d.Driver == "cockroachdb" {
-		// If schema is present, use it; otherwise, retrieve existing schema from database
-		if spec.Schema != nil && spec.Schema.Postgres != nil {
-			return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-		} else {
-			return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-		}
-	} else if d.Driver == "cassandra" {
-		return nil, errors.New("cassandra driver requires plugin - install schemahero-cassandra plugin")
-	} else if d.Driver == "sqlite" || d.Driver == "sqlite3" {
-		return nil, errors.New("sqlite driver requires plugin - install schemahero-sqlite plugin")
-	} else if d.Driver == "rqlite" {
-		return nil, errors.New("rqlite driver requires plugin - install schemahero-rqlite plugin")
-	} else if d.Driver == "timescaledb" {
-		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+		defer conn.Close()
+
+		// When there's no schema, pass nil for the schema and let the plugin handle it
+		// The plugin should retrieve the existing schema from the database
+		return conn.PlanTableSchema(spec.Name, nil, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)

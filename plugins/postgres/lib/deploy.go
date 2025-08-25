@@ -126,6 +126,69 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	return statements, nil
 }
 
+// PlanPostgresTableSeedDataOnly generates SQL statements for seed data without a schema definition.
+// This function connects to the database to retrieve the existing table schema,
+// then generates seed data statements based on that schema.
+func PlanPostgresTableSeedDataOnly(uri string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	if seedData == nil {
+		return []string{}, nil
+	}
+
+	p, err := Connect(uri)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to postgres")
+	}
+	defer p.Close()
+
+	// Check if the table exists
+	tableExists, err := CheckIfTableExists(p, tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+
+	if !tableExists {
+		return nil, errors.Errorf("table %s does not exist, cannot apply seed data without schema", tableName)
+	}
+
+	// Get the existing table schema from the database
+	existingColumns, err := p.GetTableSchema(tableName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get existing table schema")
+	}
+
+	// Convert the existing columns to a PostgresqlTableSchema
+	postgresSchema := &schemasv1alpha4.PostgresqlTableSchema{
+		Columns: []*schemasv1alpha4.PostgresqlTableColumn{},
+	}
+
+	for _, col := range existingColumns {
+		postgresCol := &schemasv1alpha4.PostgresqlTableColumn{
+			Name: col.Name,
+			Type: col.DataType,
+		}
+		
+		if col.Constraints != nil && col.Constraints.NotNull != nil {
+			postgresCol.Constraints = &schemasv1alpha4.PostgresqlTableColumnConstraints{
+				NotNull: col.Constraints.NotNull,
+			}
+		}
+		
+		if col.ColumnDefault != nil {
+			postgresCol.Default = col.ColumnDefault
+		}
+		
+		postgresSchema.Columns = append(postgresSchema.Columns, postgresCol)
+	}
+
+	// Generate seed data statements
+	seedDataStatements, err := SeedDataStatements(tableName, postgresSchema, seedData)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create seed data statements")
+	}
+
+	return seedDataStatements, nil
+}
+
 func DeployPostgresStatements(uri string, statements []string) error {
 	p, err := Connect(uri)
 	if err != nil {

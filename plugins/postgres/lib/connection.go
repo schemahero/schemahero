@@ -114,6 +114,13 @@ func (p *PostgresConnection) Close() error {
 
 // PlanTableSchema generates SQL statements to migrate a table to the desired schema
 func (p *PostgresConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// Handle seed data without schema case
+	if tableSchema == nil && seedData != nil {
+		// Need to retrieve the existing table schema from the database
+		// and generate seed data statements based on that
+		return PlanPostgresTableSeedDataOnly(p.GetConnectionURI(), tableName, seedData)
+	}
+	
 	// Type assert to the correct schema type
 	postgresSchema, ok := tableSchema.(*schemasv1alpha4.PostgresqlTableSchema)
 	if !ok {
@@ -165,6 +172,7 @@ func (p *PostgresConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) (
 	if spec.Schema.Postgres.IsDeleted {
 		return []string{}, nil
 	}
+
 
 	// Generate create table statements
 	statements, err := CreateTableStatements(spec.Name, spec.Schema.Postgres)
