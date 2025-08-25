@@ -45,16 +45,9 @@ func (p *PostgresPlugin) Connect(uri string, options map[string]interface{}) (in
 // Validate checks the provided configuration parameters for correctness.
 // For PostgreSQL, we validate that required connection parameters are present.
 func (p *PostgresPlugin) Validate(config map[string]interface{}) error {
-	// Check for required URI parameter
-	if uri, exists := config["uri"]; !exists || uri == "" {
-		return fmt.Errorf("uri parameter is required for postgres connections")
-	}
-
-	// Additional validation could include:
-	// - Checking URI format
-	// - Validating optional parameters like schema, search_path, etc.
-	// For now, we keep it simple and rely on the Connect method to validate the URI
-
+	// The URI is passed separately to Connect, not in the config map
+	// Config map is for additional optional parameters
+	// No required parameters in config for postgres
 	return nil
 }
 

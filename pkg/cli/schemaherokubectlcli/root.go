@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/schemahero/schemahero/pkg/config"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -50,6 +51,9 @@ func RootCmd() *cobra.Command {
 }
 
 func InitAndExecute() {
+	// Initialize the plugin system globally
+	plugin.InitializePluginSystem()
+	
 	if err := RootCmd().Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

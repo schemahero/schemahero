@@ -5,11 +5,17 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 3.39.3
+run: build-sqlite-plugin 3.39.3
+
+.PHONY: build-sqlite-plugin
+build-sqlite-plugin:
+	@echo "Building sqlite plugin..."
+	@mkdir -p $(HOME)/.schemahero/plugins
+	@cd ../../../plugins/sqlite && go build -o $(HOME)/.schemahero/plugins/schemahero-sqlite .
 
 .PHONY: 3.39.3
 3.39.3: export SQLITE_VERSION = 3.39.3
-3.39.3:
+3.39.3: build-sqlite-plugin
 	make -C basic-seed run
 	make -C column-add run
 	make -C column-alter run

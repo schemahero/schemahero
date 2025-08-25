@@ -43,14 +43,9 @@ func (r *RqlitePlugin) Connect(uri string, options map[string]interface{}) (inte
 // Validate checks the provided configuration parameters for correctness.
 // For RQLite, we validate that required connection parameters are present.
 func (r *RqlitePlugin) Validate(config map[string]interface{}) error {
-	// Check for required URI parameter
-	if uri, exists := config["uri"]; !exists || uri == "" {
-		return fmt.Errorf("uri parameter is required for rqlite connections")
-	}
-
-	// RQLite uses HTTP/HTTPS for connections, we could add URL format validation here
-	// but the Connect method will validate the URI when attempting to open the database
-
+	// The URI is passed separately to Connect, not in the config map
+	// Config map is for additional optional parameters
+	// No required parameters in config for rqlite
 	return nil
 }
 

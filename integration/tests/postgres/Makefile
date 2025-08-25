@@ -5,11 +5,17 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 11.18 12.13 13.9 14.6 15.1
+run: build-postgres-plugin 11.18 12.13 13.9 14.6 15.1
+
+.PHONY: build-postgres-plugin
+build-postgres-plugin:
+	@echo "Building postgres plugin..."
+	@mkdir -p $(HOME)/.schemahero/plugins
+	@cd ../../../plugins/postgres && go build -o $(HOME)/.schemahero/plugins/schemahero-postgres .
 
 .PHONY: 11.18
 11.18: export PG_VERSION = 11.18-alpine
-11.18:
+11.18: build-postgres-plugin
 	make -C alter-column-timezone run
 	make -C column-set-default run
 	make -C column-unset-default run
@@ -36,7 +42,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 
 .PHONY: 12.13
 12.13: export PG_VERSION = 12.13
-12.13:
+12.13: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -63,7 +69,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 
 .PHONY: 13.9
 13.9: export PG_VERSION = 13.9
-13.9:
+13.9: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -90,7 +96,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 
 .PHONY: 14.6
 14.6: export PG_VERSION = 14.6
-14.6:
+14.6: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -117,7 +123,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 
 .PHONY: 15.1
 15.1: export PG_VERSION = 15.1
-15.1:
+15.1: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-function run
@@ -145,7 +151,7 @@ run: 11.18 12.13 13.9 14.6 15.1
 
 .PHONY: seed
 seed: export PG_VERSION = 15.1
-seed:
+seed: build-postgres-plugin
 	make -C basic-seed run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run

@@ -210,12 +210,12 @@ func (m *PluginManager) DiscoverPlugins() {
 		"./plugins/bin", // Alternative local development plugins directory
 	}
 
-	// Add home directory plugin path
+	// Add home directory plugin path FIRST (higher priority)
 	if homeDir, err := os.UserHomeDir(); err == nil {
 		searchPaths = append(searchPaths, fmt.Sprintf("%s/.schemahero/plugins", homeDir))
 	}
 
-	// Add system paths
+	// Add system paths LAST (lower priority)
 	searchPaths = append(searchPaths,
 		"/usr/local/lib/schemahero/plugins",
 		"/var/lib/schemahero/plugins",
@@ -279,8 +279,20 @@ func (m *PluginManager) DiscoverPlugins() {
 						LocalPath: pluginPath,
 					}
 
-					if err := m.RegisterPlugin(pluginInfo); err != nil {
-						m.logger.Printf("Failed to register plugin %s: %v", pluginPath, err)
+					// Check if plugin is already registered - don't overwrite
+					existingPlugins := m.registry.List()
+					alreadyRegistered := false
+					for _, existing := range existingPlugins {
+						if existing.Name == pluginName {
+							alreadyRegistered = true
+							break
+						}
+					}
+					
+					if !alreadyRegistered {
+						if err := m.RegisterPlugin(pluginInfo); err != nil {
+							m.logger.Printf("Failed to register plugin %s: %v", pluginPath, err)
+						}
 					}
 				}
 			}

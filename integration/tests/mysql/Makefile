@@ -5,13 +5,19 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 8.0.31 8.4.5 9.3.0
+run: build-mysql-plugin 8.0.31 8.4.5 9.3.0
+
+.PHONY: build-mysql-plugin
+build-mysql-plugin:
+	@echo "Building mysql plugin..."
+	@mkdir -p $(HOME)/.schemahero/plugins
+	@cd ../../../plugins/mysql && go build -o $(HOME)/.schemahero/plugins/schemahero-mysql .
 
 
 
 .PHONY: 8.0.31
 8.0.31: export MYSQL_VERSION = 8.0.31
-8.0.31:
+8.0.31: build-mysql-plugin
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
@@ -46,7 +52,7 @@ run: 8.0.31 8.4.5 9.3.0
 
 .PHONY: 8.4.5
 8.4.5: export MYSQL_VERSION = 8.4.5
-8.4.5:
+8.4.5: build-mysql-plugin
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
@@ -81,7 +87,7 @@ run: 8.0.31 8.4.5 9.3.0
 
 .PHONY: 9.3.0
 9.3.0: export MYSQL_VERSION = 9.3.0
-9.3.0:
+9.3.0: build-mysql-plugin
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run

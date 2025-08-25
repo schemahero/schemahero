@@ -79,9 +79,6 @@ func PlanCmd() *cobra.Command {
 				}()
 			}
 
-			// Initialize plugin system
-			plugin.InitializePluginSystem()
-
 			db := database.Database{
 				InputDir:       v.GetString("input-dir"),
 				OutputDir:      v.GetString("output-dir"),
@@ -94,7 +91,7 @@ func PlanCmd() *cobra.Command {
 				DeploySeedData: v.GetBool("seed-data"),
 			}
 
-			// Set plugin manager
+			// Set plugin manager from global initialization
 			if pluginManager := plugin.GetGlobalPluginManager(); pluginManager != nil {
 				db.SetPluginManager(pluginManager)
 			}

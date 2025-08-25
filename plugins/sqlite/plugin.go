@@ -43,14 +43,9 @@ func (s *SqlitePlugin) Connect(uri string, options map[string]interface{}) (inte
 // Validate checks the provided configuration parameters for correctness.
 // For SQLite, we validate that required connection parameters are present.
 func (s *SqlitePlugin) Validate(config map[string]interface{}) error {
-	// Check for required URI parameter
-	if uri, exists := config["uri"]; !exists || uri == "" {
-		return fmt.Errorf("uri parameter is required for sqlite connections")
-	}
-
-	// SQLite doesn't require much validation since it's file-based
-	// The Connect method will validate the URI when attempting to open the database
-
+	// The URI is passed separately to Connect, not in the config map
+	// Config map is for additional optional parameters
+	// No required parameters in config for sqlite
 	return nil
 }
 

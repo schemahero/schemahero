@@ -5,11 +5,17 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: 7.6.1 6.10.2
+run: build-rqlite-plugin 7.6.1 6.10.2
+
+.PHONY: build-rqlite-plugin
+build-rqlite-plugin:
+	@echo "Building rqlite plugin..."
+	@mkdir -p $(HOME)/.schemahero/plugins
+	@cd ../../../plugins/rqlite && go build -o $(HOME)/.schemahero/plugins/schemahero-rqlite .
 
 .PHONY: 7.6.1
 7.6.1: export RQLITE_VERSION = 7.6.1
-7.6.1:
+7.6.1: build-rqlite-plugin
 	make -C basic-seed run
 	make -C column-add run
 	make -C column-alter run
@@ -49,7 +55,7 @@ run: 7.6.1 6.10.2
 
 .PHONY: 6.10.2
 6.10.2: export RQLITE_VERSION = 6.10.2
-6.10.2:
+6.10.2: build-rqlite-plugin
 	make -C basic-seed run
 	make -C column-add run
 	make -C column-alter run

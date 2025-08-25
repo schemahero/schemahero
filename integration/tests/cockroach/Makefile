@@ -5,11 +5,17 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: v19.2.12 v20.2.19 v21.2.17 v22.1.11
+run: build-postgres-plugin v19.2.12 v20.2.19 v21.2.17 v22.1.11
+
+.PHONY: build-postgres-plugin
+build-postgres-plugin:
+	@echo "Building postgres plugin (for cockroachdb)..."
+	@mkdir -p $(HOME)/.schemahero/plugins
+	@cd ../../../plugins/postgres && go build -o $(HOME)/.schemahero/plugins/schemahero-postgres .
 
 .PHONY: v19.2.12
 v19.2.12: export COCKROACHDB_VBERSION = v19.2.12
-v19.2.12:
+v19.2.12: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -24,7 +30,7 @@ v19.2.12:
 
 .PHONY: v20.2.19
 v20.2.19: export COCKROACHDB_VBERSION = v20.2.19
-v20.2.19:
+v20.2.19: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -39,7 +45,7 @@ v20.2.19:
 
 .PHONY: v21.2.17
 v21.2.17: export COCKROACHDB_VBERSION = v21.2.17
-v21.2.17:
+v21.2.17: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -54,7 +60,7 @@ v21.2.17:
 
 .PHONY: v22.1.11
 v22.1.11: export COCKROACHDB_VBERSION = v22.1.11
-v22.1.11:
+v22.1.11: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
