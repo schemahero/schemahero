@@ -62,7 +62,7 @@ func (d *Database) GetConnection(ctx context.Context) (interfaces.SchemaHeroData
 				options["keyspace"] = d.Keyspace
 			}
 		}
-		
+
 		conn, err := d.pluginManager.GetConnection(ctx, d.Driver, d.URI, options)
 		if err == nil {
 			return conn, nil
@@ -152,9 +152,37 @@ func (d *Database) CreateFixturesSync() error {
 			return nil
 		}
 
-		if d.Driver == "postgres" {
+		// For fixtures, we don't need a database connection - just generate DDL
+		// We'll use the plugin manager with a special fixture-only mode
+		if d.pluginManager != nil {
+			// Create a dummy URI for fixture generation - we won't actually connect
+			dummyURI := "fixture-only://localhost/schemahero"
+			
+			// Pass a special option to indicate this is fixture-only mode
+			options := map[string]interface{}{
+				"fixture-only": true,
+			}
+
+			conn, err := d.pluginManager.GetConnection(context.Background(), d.Driver, dummyURI, options)
+			if err == nil {
+				defer conn.Close()
+				
+				// Generate fixtures statements
+				stmts, err := conn.GenerateFixtures(spec)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate fixtures")
+				}
+
+				statements = append(statements, stmts...)
+				return nil
+			}
+			// If plugin connection fails, fall through to error
+		}
+
+		// Fallback to error for drivers that require plugins
+		if d.Driver == "postgres" || d.Driver == "postgresql" {
 			return errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
-		} else if d.Driver == "mysql" {
+		} else if d.Driver == "mysql" || d.Driver == "mariadb" {
 			return errors.New("mysql driver requires plugin - install schemahero-mysql plugin")
 		} else if d.Driver == "cockroachdb" {
 			return errors.New("cockroachdb driver requires plugin - install schemahero-postgres plugin")
@@ -492,7 +520,7 @@ func (d *Database) ApplySync(statements []string) error {
 			fmt.Printf("Executing query %q\n", statement)
 		}
 	}
-	
+
 	// Use connection-based deployment for postgres, mysql, sqlite, rqlite, timescaledb, and cassandra
 	if d.Driver == "postgres" || d.Driver == "postgresql" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" || d.Driver == "sqlite" || d.Driver == "sqlite3" || d.Driver == "rqlite" || d.Driver == "cassandra" {
 		conn, err := d.GetConnection(context.Background())
@@ -500,7 +528,7 @@ func (d *Database) ApplySync(statements []string) error {
 			return errors.Wrap(err, "failed to get database connection")
 		}
 		defer conn.Close()
-		
+
 		// Use the DeployStatements method on the connection
 		return conn.DeployStatements(statements)
 	}
@@ -601,3 +629,6 @@ func (d *Database) PlanSyncFunctionSpec(spec *schemasv1alpha4.FunctionSpec) ([]s
 
 	return nil, errors.Errorf("planning functions is not supported for driver %q or function database schema not specified", d.Driver)
 }
+
+// generateFixturesFromLib generates fixtures using the plugin lib packages directly
+// without requiring a database connection. This is used for fixture generation.

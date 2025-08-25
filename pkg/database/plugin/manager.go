@@ -205,8 +205,8 @@ func (m *PluginManager) GetDefaultPlugin(ctx context.Context, engine string) (Da
 // - Directories in SCHEMAHERO_PLUGIN_PATH environment variable
 func (m *PluginManager) DiscoverPlugins() {
 	searchPaths := []string{
-		".", // Current directory
-		"plugins/bin", // Local development plugins directory
+		".",             // Current directory
+		"plugins/bin",   // Local development plugins directory
 		"./plugins/bin", // Alternative local development plugins directory
 	}
 
@@ -288,7 +288,7 @@ func (m *PluginManager) DiscoverPlugins() {
 							break
 						}
 					}
-					
+
 					if !alreadyRegistered {
 						if err := m.RegisterPlugin(pluginInfo); err != nil {
 							m.logger.Printf("Failed to register plugin %s: %v", pluginPath, err)
@@ -328,3 +328,4 @@ func (m *PluginManager) RegisterPlugin(info *PluginInfo) error {
 
 	return nil
 }
+

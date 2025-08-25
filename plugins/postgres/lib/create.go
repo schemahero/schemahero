@@ -166,3 +166,4 @@ func findConflictInferenceSpec(tableName string, tableSchema *schemasv1alpha4.Po
 
 	return ""
 }
+

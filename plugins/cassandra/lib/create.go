@@ -143,3 +143,26 @@ func CreateTableStatements(keyspace string, tableName string, tableSchema *schem
 
 	return []string{query}, nil
 }
+
+func SeedDataStatements(keyspace string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	statements := []string{}
+
+	for _, row := range seedData.Rows {
+		cols := []string{}
+		vals := []string{}
+		for _, col := range row.Columns {
+			cols = append(cols, col.Column)
+			if col.Value.Int != nil {
+				vals = append(vals, fmt.Sprintf("%d", *col.Value.Int))
+			} else if col.Value.Str != nil {
+				vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+			}
+		}
+
+		statement := fmt.Sprintf(`INSERT INTO "%s.%s" (%s) VALUES (%s)`, keyspace, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statements = append(statements, statement)
+	}
+
+	return statements, nil
+}
+

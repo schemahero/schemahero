@@ -86,3 +86,4 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.MysqlT
 
 	return []string{query}, nil
 }
+

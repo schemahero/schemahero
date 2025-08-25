@@ -27,6 +27,9 @@ func Connect(url string) (*RqliteConnection, error) {
 }
 
 func (s RqliteConnection) Close() error {
+	if s.db == nil {
+		return nil
+	}
 	s.db.Close()
 	return nil
 }
@@ -36,6 +39,9 @@ func (m *RqliteConnection) DatabaseName() string {
 }
 
 func (p *RqliteConnection) EngineVersion() string {
+	if p.db == nil {
+		return "fixture-only"
+	}
 	return ""
 }
 
@@ -67,6 +73,43 @@ func (r *RqliteConnection) PlanExtensionSchema(extensionName string, extensionSc
 func (r *RqliteConnection) DeployStatements(statements []string) error {
 	// RQLite deployment not yet implemented
 	return errors.New("RQLite statement deployment not yet implemented")
+}
+
+// GenerateFixtures generates SQL statements to create tables and seed data for fixtures
+func (r *RqliteConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.Schema == nil || spec.Schema.RQLite == nil {
+		return []string{}, nil
+	}
+
+	// Skip deleted tables
+	if spec.Schema.RQLite.IsDeleted {
+		return []string{}, nil
+	}
+
+	// Generate create table statements
+	statements, err := CreateTableStatements(spec.Name, spec.Schema.RQLite)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create table statements")
+	}
+
+	// Add seed data if present
+	if spec.SeedData != nil {
+		seedStatements, err := SeedDataStatements(spec.Name, spec.SeedData)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create seed data statements")
+		}
+		statements = append(statements, seedStatements...)
+	}
+
+	return statements, nil
+}
+
+// NewFixtureOnlyConnection creates a RQLite connection that only supports fixture generation
+// without actually connecting to a database. This is used for fixture DDL generation.
+func NewFixtureOnlyConnection() *RqliteConnection {
+	return &RqliteConnection{
+		db: nil, // No actual database connection
+	}
 }
 
 func UsernameFromURL(url string) (string, error) {

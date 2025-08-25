@@ -156,6 +156,47 @@ func (p *PostgresConnection) DeployStatements(statements []string) error {
 	return DeployPostgresStatements(p.GetConnectionURI(), statements)
 }
 
+func (p *PostgresConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.Schema == nil || spec.Schema.Postgres == nil {
+		return []string{}, nil
+	}
+
+	// Skip deleted tables
+	if spec.Schema.Postgres.IsDeleted {
+		return []string{}, nil
+	}
+
+	// Generate create table statements
+	statements, err := CreateTableStatements(spec.Name, spec.Schema.Postgres)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create table statements")
+	}
+
+	// Add seed data if present
+	if spec.SeedData != nil {
+		seedStatements, err := SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create seed data statements")
+		}
+		statements = append(statements, seedStatements...)
+	}
+
+	return statements, nil
+}
+
+// NewFixtureOnlyConnection creates a PostgreSQL connection that only supports fixture generation
+// without actually connecting to a database. This is used for fixture DDL generation.
+func NewFixtureOnlyConnection() *PostgresConnection {
+	return &PostgresConnection{
+		databaseName:  "schemahero",
+		engineVersion: "fixture-only",
+		schema:        "public",
+		schemas:       []string{"public"},
+		uri:           "",
+		conn:          nil,  // No actual database connection
+	}
+}
+
 // GetConnectionURI returns the connection URI for this connection
 func (p *PostgresConnection) GetConnectionURI() string {
 	return p.uri

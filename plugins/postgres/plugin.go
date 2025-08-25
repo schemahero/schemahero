@@ -25,13 +25,22 @@ func (p *PostgresPlugin) Version() string {
 // SupportedEngines returns the list of database engines this plugin supports.
 // Both "postgres" and "postgresql" are supported for backward compatibility.
 // "postgres" is the preferred/modern form, "postgresql" is legacy.
+// CockroachDB is also supported as it uses the PostgreSQL wire protocol.
 func (p *PostgresPlugin) SupportedEngines() []string {
-	return []string{"postgres", "postgresql"}
+	return []string{"postgres", "postgresql", "cockroachdb"}
 }
 
 // Connect establishes a connection to the PostgreSQL database using the provided URI.
 // It leverages the internal postgres.Connect function to maintain compatibility.
 func (p *PostgresPlugin) Connect(uri string, options map[string]interface{}) (interfaces.SchemaHeroDatabaseConnection, error) {
+	// Check if this is a fixture-only mode
+	if options != nil {
+		if fixtureOnly, ok := options["fixture-only"].(bool); ok && fixtureOnly {
+			// Create a fixture-only connection that doesn't connect to a real database
+			return postgres.NewFixtureOnlyConnection(), nil
+		}
+	}
+
 	// Use the lib postgres package Connect function
 	conn, err := postgres.Connect(uri)
 	if err != nil {

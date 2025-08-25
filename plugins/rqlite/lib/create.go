@@ -67,3 +67,4 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Rqlite
 
 	return statements, nil
 }
+

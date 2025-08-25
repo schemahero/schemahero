@@ -7,8 +7,14 @@ OUTPUT_DIR ?= .
 
 TEST_NAME := fixtures
 
+.PHONY: build-plugin
+build-plugin:
+	@echo "Building $(DRIVER) plugin..."
+	@mkdir -p $(HOME)/.schemahero/plugins
+	@cd ../../../../../plugins/$(DRIVER) && go build -o $(HOME)/.schemahero/plugins/schemahero-$(DRIVER) .
+
 .PHONY: run
-run:
+run: build-plugin
 	@echo "Running fixtures test $(TEST_NAME) for $(DRIVER)"
 
 	# Fixtures

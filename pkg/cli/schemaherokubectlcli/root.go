@@ -51,9 +51,6 @@ func RootCmd() *cobra.Command {
 }
 
 func InitAndExecute() {
-	// Initialize the plugin system globally
-	plugin.InitializePluginSystem()
-	
 	if err := RootCmd().Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -63,4 +60,7 @@ func InitAndExecute() {
 func initConfig() {
 	viper.SetEnvPrefix("SCHEMAHERO")
 	viper.AutomaticEnv()
+
+	// Initialize the plugin system globally
+	plugin.InitializePluginSystem()
 }

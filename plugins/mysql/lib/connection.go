@@ -100,6 +100,45 @@ func (m *MysqlConnection) DeployStatements(statements []string) error {
 	return DeployMysqlStatements(m.uri, statements)
 }
 
+func (m *MysqlConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.Schema == nil || spec.Schema.Mysql == nil {
+		return []string{}, nil
+	}
+
+	// Skip deleted tables
+	if spec.Schema.Mysql.IsDeleted {
+		return []string{}, nil
+	}
+
+	// Generate create table statements
+	statements, err := CreateTableStatements(spec.Name, spec.Schema.Mysql)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create table statements")
+	}
+
+	// Add seed data if present
+	if spec.SeedData != nil {
+		seedStatements, err := SeedDataStatements(spec.Name, spec.SeedData)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create seed data statements")
+		}
+		statements = append(statements, seedStatements...)
+	}
+
+	return statements, nil
+}
+
+// NewFixtureOnlyConnection creates a MySQL connection that only supports fixture generation
+// without actually connecting to a database. This is used for fixture DDL generation.
+func NewFixtureOnlyConnection() *MysqlConnection {
+	return &MysqlConnection{
+		db:            nil,  // No actual database connection
+		databaseName:  "schemahero",
+		engineVersion: "fixture-only",
+		uri:           "",
+	}
+}
+
 func DatabaseNameFromURI(uri string) (string, error) {
 	cfg, err := mysqldriver.ParseDSN(uri)
 	if err != nil {

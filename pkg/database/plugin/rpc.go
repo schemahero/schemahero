@@ -484,6 +484,27 @@ func (s *RPCServer) ConnectionDeployStatements(args *ConnectionDeployStatementsA
 	return nil
 }
 
+// ConnectionGenerateFixtures handles RPC calls for generating fixture statements.
+func (s *RPCServer) ConnectionGenerateFixtures(args *ConnectionGenerateFixturesArgs, reply *ConnectionGenerateFixturesReply) error {
+	s.connectionsMutex.RLock()
+	conn, exists := s.connections[args.ConnectionID]
+	s.connectionsMutex.RUnlock()
+
+	if !exists {
+		reply.Error = fmt.Sprintf("connection %s not found", args.ConnectionID)
+		return nil
+	}
+
+	statements, err := conn.GenerateFixtures(args.Spec)
+	if err != nil {
+		reply.Error = err.Error()
+		return nil
+	}
+
+	reply.Statements = statements
+	return nil
+}
+
 // RPCClient wraps an RPC client and implements the DatabasePlugin interface.
 // This struct acts as the client-side adapter that makes RPC calls to the
 // plugin server and translates them back to the DatabasePlugin interface.

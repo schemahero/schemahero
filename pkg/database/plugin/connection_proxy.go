@@ -252,6 +252,24 @@ func (c *ConnectionProxy) DeployStatements(statements []string) error {
 	return nil
 }
 
+// GenerateFixtures implements interfaces.SchemaHeroDatabaseConnection.GenerateFixtures()
+func (c *ConnectionProxy) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	var reply ConnectionGenerateFixturesReply
+	err := c.client.Call("Plugin.ConnectionGenerateFixtures", &ConnectionGenerateFixturesArgs{
+		ConnectionID: c.connectionID,
+		Spec:         spec,
+	}, &reply)
+	if err != nil {
+		return nil, err
+	}
+
+	if reply.Error != "" {
+		return nil, &BasicError{Message: reply.Error}
+	}
+
+	return reply.Statements, nil
+}
+
 // Connection RPC method argument and reply types
 
 // ConnectionCloseArgs represents the arguments for the ConnectionClose RPC call.
@@ -407,6 +425,18 @@ type ConnectionDeployStatementsArgs struct {
 // ConnectionDeployStatementsReply represents the response for the ConnectionDeployStatements RPC call.
 type ConnectionDeployStatementsReply struct {
 	Error string
+}
+
+// ConnectionGenerateFixturesArgs represents the arguments for the ConnectionGenerateFixtures RPC call.
+type ConnectionGenerateFixturesArgs struct {
+	ConnectionID string
+	Spec         *schemasv1alpha4.TableSpec
+}
+
+// ConnectionGenerateFixturesReply represents the response for the ConnectionGenerateFixtures RPC call.
+type ConnectionGenerateFixturesReply struct {
+	Statements []string
+	Error      string
 }
 
 // BasicError represents a basic error that can be transmitted over RPC.

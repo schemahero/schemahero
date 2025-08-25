@@ -30,6 +30,14 @@ func (s *SqlitePlugin) SupportedEngines() []string {
 // Connect establishes a connection to the SQLite database using the provided URI.
 // It leverages the internal sqlite.Connect function to maintain compatibility.
 func (s *SqlitePlugin) Connect(uri string, options map[string]interface{}) (interfaces.SchemaHeroDatabaseConnection, error) {
+	// Check if this is a fixture-only mode
+	if options != nil {
+		if fixtureOnly, ok := options["fixture-only"].(bool); ok && fixtureOnly {
+			// Create a fixture-only connection that doesn't connect to a real database
+			return sqlite.NewFixtureOnlyConnection(), nil
+		}
+	}
+
 	// Use the lib sqlite package Connect function
 	conn, err := sqlite.Connect(uri)
 	if err != nil {

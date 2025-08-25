@@ -29,6 +29,9 @@ func Connect(dsn string) (*SqliteConnection, error) {
 }
 
 func (s *SqliteConnection) Close() error {
+	if s.db == nil {
+		return nil
+	}
 	return s.db.Close()
 }
 
@@ -49,6 +52,9 @@ func (s *SqliteConnection) DatabaseName() string {
 
 // EngineVersion returns the SQLite version
 func (s *SqliteConnection) EngineVersion() string {
+	if s.db == nil {
+		return "fixture-only"
+	}
 	var version string
 	row := s.db.QueryRow("SELECT sqlite_version()")
 	if err := row.Scan(&version); err != nil {
@@ -89,7 +95,45 @@ func (s *SqliteConnection) DeployStatements(statements []string) error {
 	return DeploySqliteStatements(s.uri, statements)
 }
 
+// GenerateFixtures generates SQL statements to create tables and seed data for fixtures
+func (s *SqliteConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.Schema == nil || spec.Schema.SQLite == nil {
+		return []string{}, nil
+	}
+
+	// Skip deleted tables
+	if spec.Schema.SQLite.IsDeleted {
+		return []string{}, nil
+	}
+
+	// Generate create table statements
+	statements, err := CreateTableStatements(spec.Name, spec.Schema.SQLite)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create table statements")
+	}
+
+	// Add seed data if present
+	if spec.SeedData != nil {
+		seedStatements, err := SeedDataStatements(spec.Name, spec.SeedData)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create seed data statements")
+		}
+		statements = append(statements, seedStatements...)
+	}
+
+	return statements, nil
+}
+
 // GetDB returns the underlying database connection
 func (s *SqliteConnection) GetDB() *sql.DB {
 	return s.db
+}
+
+// NewFixtureOnlyConnection creates a SQLite connection that only supports fixture generation
+// without actually connecting to a database. This is used for fixture DDL generation.
+func NewFixtureOnlyConnection() *SqliteConnection {
+	return &SqliteConnection{
+		db:  nil, // No actual database connection
+		uri: ":memory:",
+	}
 }

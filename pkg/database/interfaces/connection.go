@@ -26,4 +26,7 @@ type SchemaHeroDatabaseConnection interface {
 
 	// Deployment methods - execute SQL statements
 	DeployStatements(statements []string) error
+
+	// Fixture generation
+	GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error)
 }

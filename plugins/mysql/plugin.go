@@ -31,6 +31,14 @@ func (p *MySQLPlugin) SupportedEngines() []string {
 // Connect establishes a connection to the MySQL database using the provided URI.
 // It leverages the internal mysql.Connect function to maintain compatibility.
 func (p *MySQLPlugin) Connect(uri string, options map[string]interface{}) (interfaces.SchemaHeroDatabaseConnection, error) {
+	// Check if this is a fixture-only mode
+	if options != nil {
+		if fixtureOnly, ok := options["fixture-only"].(bool); ok && fixtureOnly {
+			// Create a fixture-only connection that doesn't connect to a real database
+			return mysql.NewFixtureOnlyConnection(), nil
+		}
+	}
+
 	// Use the internal mysql package Connect function
 	conn, err := mysql.Connect(uri)
 	if err != nil {

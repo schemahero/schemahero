@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	postgres "github.com/schemahero/schemahero/plugins/postgres/lib"
@@ -18,6 +19,18 @@ func NewTimescaleDBConnection(pgConn *postgres.PostgresConnection, uri string) *
 	return &TimescaleDBConnection{
 		PostgresConnection: pgConn,
 		uri:               uri,
+	}
+}
+
+// NewFixtureOnlyTimescaleDBConnection creates a TimescaleDB connection that only supports fixture generation
+// without actually connecting to a database. This is used for fixture DDL generation.
+func NewFixtureOnlyTimescaleDBConnection() *TimescaleDBConnection {
+	// Use the fixture-only postgres connection
+	fixtureOnlyPgConn := postgres.NewFixtureOnlyConnection()
+	
+	return &TimescaleDBConnection{
+		PostgresConnection: fixtureOnlyPgConn,
+		uri:               "",
 	}
 }
 
@@ -82,4 +95,39 @@ func (t *TimescaleDBConnection) PlanExtensionSchema(extensionName string, extens
 
 func (t *TimescaleDBConnection) DeployStatements(statements []string) error {
 	return t.PostgresConnection.DeployStatements(statements)
+}
+
+// GenerateFixtures generates SQL statements to create tables and seed data for fixtures
+func (t *TimescaleDBConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.Schema == nil {
+		return []string{}, nil
+	}
+
+	// Check if it's a TimescaleDB schema first
+	if spec.Schema.TimescaleDB != nil {
+		// Skip deleted tables
+		if spec.Schema.TimescaleDB.IsDeleted {
+			return []string{}, nil
+		}
+
+		// Generate TimescaleDB table statements
+		statements, err := timescaledb.CreateTableStatements(spec.Name, spec.Schema.TimescaleDB)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create table statements")
+		}
+
+		// Add seed data if present
+		if spec.SeedData != nil {
+			seedStatements, err := timescaledb.SeedDataStatements(spec.Name, spec.Schema.TimescaleDB, spec.SeedData)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create seed data statements")
+			}
+			statements = append(statements, seedStatements...)
+		}
+
+		return statements, nil
+	}
+
+	// Fall back to PostgreSQL if not a TimescaleDB schema
+	return t.PostgresConnection.GenerateFixtures(spec)
 }

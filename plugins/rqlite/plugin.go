@@ -30,6 +30,14 @@ func (r *RqlitePlugin) SupportedEngines() []string {
 // Connect establishes a connection to the RQLite database using the provided URI.
 // It leverages the internal rqlite.Connect function to maintain compatibility.
 func (r *RqlitePlugin) Connect(uri string, options map[string]interface{}) (interfaces.SchemaHeroDatabaseConnection, error) {
+	// Check if this is a fixture-only mode
+	if options != nil {
+		if fixtureOnly, ok := options["fixture-only"].(bool); ok && fixtureOnly {
+			// Create a fixture-only connection that doesn't connect to a real database
+			return rqlite.NewFixtureOnlyConnection(), nil
+		}
+	}
+
 	// Use the lib rqlite package Connect function
 	conn, err := rqlite.Connect(uri)
 	if err != nil {

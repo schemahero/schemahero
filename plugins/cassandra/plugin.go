@@ -32,6 +32,14 @@ func (p *CassandraPlugin) SupportedEngines() []string {
 // Note: Cassandra has a different connection model compared to SQL databases.
 // The URI should contain connection information but we also need hosts, keyspace, etc.
 func (p *CassandraPlugin) Connect(uri string, options map[string]interface{}) (interfaces.SchemaHeroDatabaseConnection, error) {
+	// Check if this is a fixture-only mode
+	if options != nil {
+		if fixtureOnly, ok := options["fixture-only"].(bool); ok && fixtureOnly {
+			// Create a fixture-only connection that doesn't connect to a real database
+			return cassandra.NewFixtureOnlyConnection(), nil
+		}
+	}
+
 	// For Cassandra, we need to parse connection parameters from options
 	// Since it doesn't use a standard URI format like SQL databases
 	

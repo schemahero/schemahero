@@ -38,6 +38,9 @@ func Connect(hosts []string, username string, password string, keyspace string) 
 }
 
 func (c *CassandraConnection) Close() error {
+	if c.session == nil {
+		return nil
+	}
 	c.session.Close()
 	return nil
 }
@@ -61,6 +64,9 @@ func (c *CassandraConnection) DatabaseName() string {
 
 // EngineVersion returns the Cassandra version
 func (c *CassandraConnection) EngineVersion() string {
+	if c.session == nil {
+		return "fixture-only"
+	}
 	var version string
 	if err := c.session.Query("SELECT release_version FROM system.local").Scan(&version); err != nil {
 		return "unknown"
@@ -256,4 +262,42 @@ func (c *CassandraConnection) planCassandraTable(tableName string, cassandraTabl
 	statements = append(statements, propertiesStatements...)
 
 	return statements, nil
+}
+
+// GenerateFixtures generates SQL statements to create tables and seed data for fixtures
+func (c *CassandraConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	if spec.Schema == nil || spec.Schema.Cassandra == nil {
+		return []string{}, nil
+	}
+
+	// Skip deleted tables
+	if spec.Schema.Cassandra.IsDeleted {
+		return []string{}, nil
+	}
+
+	// Generate create table statements
+	statements, err := CreateTableStatements(c.keyspace, spec.Name, spec.Schema.Cassandra)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create table statements")
+	}
+
+	// Add seed data if present
+	if spec.SeedData != nil {
+		seedStatements, err := SeedDataStatements(c.keyspace, spec.Name, spec.SeedData)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create seed data statements")
+		}
+		statements = append(statements, seedStatements...)
+	}
+
+	return statements, nil
+}
+
+// NewFixtureOnlyConnection creates a Cassandra connection that only supports fixture generation
+// without actually connecting to a database. This is used for fixture DDL generation.
+func NewFixtureOnlyConnection() *CassandraConnection {
+	return &CassandraConnection{
+		session:  nil, // No actual database connection
+		keyspace: "schemahero",
+	}
 }

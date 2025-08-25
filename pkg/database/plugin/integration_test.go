@@ -242,6 +242,11 @@ func (c *TestConnection) DeployStatements(statements []string) error {
 	return nil
 }
 
+func (c *TestConnection) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]string, error) {
+	// Test implementation - return empty statements
+	return []string{}, nil
+}
+
 // createInProcessRPCClientServer creates a client/server pair for testing RPC communication in-process
 func createInProcessRPCClientServer(impl DatabasePlugin) (*RPCClient, *RPCServer, error) {
 	// Create server
