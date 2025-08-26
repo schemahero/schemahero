@@ -33,7 +33,7 @@ func PlanCmd() *cobra.Command {
 			uri := v.GetString("uri")
 			host := v.GetStringSlice("host")
 
-			if driver == "" || specFile == "" || uri == "" || len(host) == 0 {
+			if driver == "" || specFile == "" || (uri == "" && len(host) == 0) {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")

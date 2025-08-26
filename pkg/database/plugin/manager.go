@@ -73,7 +73,8 @@ func (m *PluginManager) GetConnection(ctx context.Context, engine string, uri st
 		return nil, fmt.Errorf("database engine cannot be empty")
 	}
 
-	if uri == "" {
+	// Cassandra uses hosts/keyspace instead of URI
+	if uri == "" && engine != "cassandra" {
 		return nil, fmt.Errorf("database URI cannot be empty")
 	}
 
