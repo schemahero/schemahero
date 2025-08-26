@@ -2,6 +2,7 @@ package cassandra
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gocql/gocql"
 	"github.com/pkg/errors"
@@ -192,6 +193,48 @@ func (c *CassandraConnection) PlanTableSchema(tableName string, tableSchema inte
 	}
 	// Use the connection-based planning function
 	return c.planCassandraTable(tableName, schema, seedData)
+}
+
+// PlanTypeSchema generates SQL statements for type (UDT) schema changes
+func (c *CassandraConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	// Type assert to CassandraDataTypeSchema
+	schema, ok := typeSchema.(*schemasv1alpha4.CassandraDataTypeSchema)
+	if !ok {
+		return nil, fmt.Errorf("expected CassandraDataTypeSchema, got %T", typeSchema)
+	}
+	
+	// Check if the type exists
+	query := `select count(1) from system_schema.types where keyspace_name=? and type_name = ?`
+	row := c.session.Query(query, c.keyspace, typeName)
+	typeExists := 0
+	if err := row.Scan(&typeExists); err != nil {
+		return nil, errors.Wrap(err, "failed to check if type exists")
+	}
+	
+	if typeExists == 0 && schema.IsDeleted {
+		return []string{}, nil
+	} else if typeExists > 0 && schema.IsDeleted {
+		return []string{
+			fmt.Sprintf(`drop type "%s"`, typeName),
+		}, nil
+	}
+	
+	if typeExists == 0 {
+		// Create the type
+		fields := []string{}
+		for _, field := range schema.Fields {
+			fields = append(fields, fmt.Sprintf("%s %s", field.Name, field.Type))
+		}
+		
+		return []string{
+			fmt.Sprintf(`create type "%s" (%s)`, typeName, strings.Join(fields, ", ")),
+		}, nil
+	}
+	
+	// Cassandra doesn't support altering types
+	// You can only drop and recreate them
+	// For now, return empty if type exists and matches
+	return []string{}, nil
 }
 
 // PlanViewSchema - Cassandra views are not yet implemented

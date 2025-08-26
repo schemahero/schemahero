@@ -513,8 +513,15 @@ func (d *Database) PlanSyncTypeSpec(spec *schemasv1alpha4.DataTypeSpec) ([]strin
 		return []string{}, nil
 	}
 
+	// Use plugin for Cassandra
 	if d.Driver == "cassandra" {
-		return nil, errors.New("cassandra driver requires plugin - install schemahero-cassandra plugin")
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+		
+		return conn.PlanTypeSchema(spec.Name, spec.Schema.Cassandra)
 	}
 
 	return nil, errors.Errorf("planning types is not supported for driver %q", d.Driver)

@@ -382,6 +382,27 @@ func (s *RPCServer) ConnectionGetTableSchema(args *ConnectionGetTableSchemaArgs,
 	return nil
 }
 
+// ConnectionPlanTypeSchema handles RPC calls for planning type schema changes.
+func (s *RPCServer) ConnectionPlanTypeSchema(args *ConnectionPlanTypeSchemaArgs, reply *ConnectionPlanTypeSchemaReply) error {
+	s.connectionsMutex.RLock()
+	conn, exists := s.connections[args.ConnectionID]
+	s.connectionsMutex.RUnlock()
+
+	if !exists {
+		reply.Error = fmt.Sprintf("connection %s not found", args.ConnectionID)
+		return nil
+	}
+
+	statements, err := conn.PlanTypeSchema(args.TypeName, args.TypeSchema)
+	if err != nil {
+		reply.Error = err.Error()
+		return nil
+	}
+
+	reply.Statements = statements
+	return nil
+}
+
 // ConnectionPlanTableSchema handles RPC calls for planning table schema changes.
 func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArgs, reply *ConnectionPlanTableSchemaReply) error {
 	s.connectionsMutex.RLock()

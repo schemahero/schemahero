@@ -20,6 +20,7 @@ type SchemaHeroDatabaseConnection interface {
 
 	// Planning methods - generate SQL statements for schema changes
 	PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error)
+	PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error)
 	PlanViewSchema(viewName string, viewSchema interface{}) ([]string, error)
 	PlanFunctionSchema(functionName string, functionSchema interface{}) ([]string, error)
 	PlanExtensionSchema(extensionName string, extensionSchema interface{}) ([]string, error)

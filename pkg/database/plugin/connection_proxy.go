@@ -157,6 +157,25 @@ func (c *ConnectionProxy) GetTableSchema(table string) ([]*types.Column, error) 
 	return reply.Columns, nil
 }
 
+// PlanTypeSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTypeSchema()
+func (c *ConnectionProxy) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	var reply ConnectionPlanTypeSchemaReply
+	err := c.client.Call("Plugin.ConnectionPlanTypeSchema", &ConnectionPlanTypeSchemaArgs{
+		ConnectionID: c.connectionID,
+		TypeName:     typeName,
+		TypeSchema:   typeSchema,
+	}, &reply)
+	if err != nil {
+		return nil, err
+	}
+
+	if reply.Error != "" {
+		return nil, &BasicError{Message: reply.Error}
+	}
+
+	return reply.Statements, nil
+}
+
 // PlanTableSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTableSchema()
 func (c *ConnectionProxy) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	// WORKAROUND: gob encoding loses empty string pointers (treats them as nil)
@@ -434,6 +453,19 @@ type ConnectionGetTableSchemaArgs struct {
 type ConnectionGetTableSchemaReply struct {
 	Columns []*types.Column
 	Error   string
+}
+
+// ConnectionPlanTypeSchemaArgs represents the arguments for the ConnectionPlanTypeSchema RPC call.
+type ConnectionPlanTypeSchemaArgs struct {
+	ConnectionID string
+	TypeName     string
+	TypeSchema   interface{}
+}
+
+// ConnectionPlanTypeSchemaReply represents the response for the ConnectionPlanTypeSchema RPC call.
+type ConnectionPlanTypeSchemaReply struct {
+	Statements []string
+	Error      string
 }
 
 // ConnectionPlanTableSchemaArgs represents the arguments for the ConnectionPlanTableSchema RPC call.
