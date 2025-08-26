@@ -198,12 +198,41 @@ runs:
           
           # Also tag as latest
           oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" latest
+          
+          # Extract major and major.minor for compatibility tags
+          VERSION="${{ inputs.plugin_version }}"
+          IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          
+          # Tag with major version (e.g., "0") for plugin compatibility system
+          if [ ! -z "$MAJOR" ]; then
+            echo "Tagging with major version: ${MAJOR}"
+            oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" "${MAJOR}"
+          fi
+          
+          # Tag with major.minor version (e.g., "0.18") for more specific compatibility
+          if [ ! -z "$MAJOR" ] && [ ! -z "$MINOR" ]; then
+            echo "Tagging with major.minor version: ${MAJOR}.${MINOR}"
+            oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" "${MAJOR}.${MINOR}"
+          fi
         )
         
         echo "Successfully pushed multi-platform ${{ inputs.plugin_name }} version ${{ inputs.plugin_version }} to ${OCI_REPO}"
         echo ""
+        echo "Available tags:"
+        echo "  ${OCI_REPO}:${{ inputs.plugin_version }} (exact version)"
+        echo "  ${OCI_REPO}:latest"
+        if [ ! -z "$MAJOR" ]; then
+          echo "  ${OCI_REPO}:${MAJOR} (major version for compatibility)"
+        fi
+        if [ ! -z "$MAJOR" ] && [ ! -z "$MINOR" ]; then
+          echo "  ${OCI_REPO}:${MAJOR}.${MINOR} (major.minor version)"
+        fi
+        echo ""
         echo "Users can pull with:"
         echo "  oras pull ${OCI_REPO}:${{ inputs.plugin_version }}"
+        echo "  oras pull ${OCI_REPO}:${MAJOR} (for major version compatibility)"
         echo ""
         echo "The artifact contains binaries for: ${{ inputs.platforms }}"
 
