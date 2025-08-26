@@ -30,7 +30,7 @@ func Test_CreateTableStatements(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				`create table "k.t" (a int)`,
+				`create table "t" (a int)`,
 			},
 		},
 		{
@@ -51,7 +51,7 @@ func Test_CreateTableStatements(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				`create table "k.t" (a int, primary key (a))`,
+				`create table "t" (a int, primary key (a))`,
 			},
 		},
 		{
@@ -79,7 +79,7 @@ func Test_CreateTableStatements(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				`create table "k.t" (a int, b int, primary key (a, b))`,
+				`create table "t" (a int, b int, primary key (a, b))`,
 			},
 		},
 		{
@@ -111,7 +111,7 @@ func Test_CreateTableStatements(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				`create table "k.t" (a int, b int, c int, primary key ((a, b), c))`,
+				`create table "t" (a int, b int, c int, primary key ((a, b), c))`,
 			},
 		},
 		{
@@ -130,7 +130,7 @@ func Test_CreateTableStatements(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				`create table "k.t" (a int) with clustering order by (a)`,
+				`create table "t" (a int) with clustering order by (a)`,
 			},
 		},
 		{
@@ -150,7 +150,7 @@ func Test_CreateTableStatements(t *testing.T) {
 				},
 			},
 			expectedStatements: []string{
-				`create table "k.t" (a int) with clustering order by (a desc)`,
+				`create table "t" (a int) with clustering order by (a desc)`,
 			},
 		},
 	}

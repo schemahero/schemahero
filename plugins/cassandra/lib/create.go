@@ -51,7 +51,10 @@ func CreateTableStatements(keyspace string, tableName string, tableSchema *schem
 		columns = append(columns, pk)
 	}
 
-	query := fmt.Sprintf(`create table "%s.%s" (%s)`, keyspace, tableName, strings.Join(columns, ", "))
+	// Don't include keyspace in table name since it's already set in the session
+	// The keyspace parameter is kept for backward compatibility but not used in the query
+	_ = keyspace
+	query := fmt.Sprintf(`create table "%s" (%s)`, tableName, strings.Join(columns, ", "))
 
 	// clustering
 	if tableSchema.ClusteringOrder != nil {

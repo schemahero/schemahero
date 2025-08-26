@@ -17,6 +17,11 @@ type CassandraConnection struct {
 func Connect(hosts []string, username string, password string, keyspace string) (*CassandraConnection, error) {
 	cluster := gocql.NewCluster(hosts...)
 
+	// Set the keyspace if provided
+	if keyspace != "" {
+		cluster.Keyspace = keyspace
+	}
+
 	if username != "" {
 		cluster.Authenticator = gocql.PasswordAuthenticator{
 			Username: username,
