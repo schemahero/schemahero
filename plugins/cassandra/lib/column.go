@@ -47,7 +47,9 @@ func InsertColumnStatement(keyspace string, tableName string, desiredColumn *sch
 		return "", err
 	}
 
-	statement := fmt.Sprintf(`alter table "%s.%s" add %s`, keyspace, tableName, columnFields)
+	// Don't include keyspace in table name since it's already set in the session
+	_ = keyspace
+	statement := fmt.Sprintf(`alter table "%s" add %s`, tableName, columnFields)
 
 	return statement, nil
 }

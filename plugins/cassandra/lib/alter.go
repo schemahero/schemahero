@@ -31,11 +31,15 @@ func AlterColumnStatements(keyspace string, tableName string, desiredColumns []*
 				return []string{}, nil
 			}
 
-			return []string{fmt.Sprintf(`alter table "%s.%s" %s`, keyspace, tableName, strings.Join(changes, ", "))}, nil
+			// Don't include keyspace in table name since it's already set in the session
+			_ = keyspace
+			return []string{fmt.Sprintf(`alter table "%s" %s`, tableName, strings.Join(changes, ", "))}, nil
 		}
 	}
 
-	return []string{fmt.Sprintf(`alter table "%s.%s" drop column %s`, keyspace, tableName, existingColumn.Name)}, nil
+	// Don't include keyspace in table name since it's already set in the session
+	_ = keyspace
+	return []string{fmt.Sprintf(`alter table "%s" drop column %s`, tableName, existingColumn.Name)}, nil
 }
 
 func columnsMatch(col1 types.Column, col2 types.Column) bool {

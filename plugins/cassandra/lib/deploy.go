@@ -219,7 +219,8 @@ where keyspace_name = ? and table_name = ?`
 	}
 
 	return []string{
-		fmt.Sprintf("alter table %s.%s with %s", c.keyspace, tableName, strings.Join(needsUpdating, " and ")),
+		// Don't include keyspace in table name since it's already set in the session
+		fmt.Sprintf("alter table %s with %s", tableName, strings.Join(needsUpdating, " and ")),
 	}, nil
 }
 

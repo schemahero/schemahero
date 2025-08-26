@@ -1,1 +1,1 @@
-alter table "schemahero.users" alter column login type bigint;
+alter table "users" alter column login type bigint;

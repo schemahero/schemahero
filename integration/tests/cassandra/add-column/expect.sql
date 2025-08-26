@@ -1,1 +1,1 @@
-alter table "schemahero.users" add name text;
+alter table "users" add name text;
