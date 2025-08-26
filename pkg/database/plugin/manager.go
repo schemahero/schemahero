@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/schemahero/schemahero/pkg/database/interfaces"
 )
@@ -20,6 +21,9 @@ type PluginManager struct {
 
 	// loader handles plugin loading from various sources
 	loader *PluginLoader
+
+	// downloader handles downloading plugins from ORAS artifacts
+	downloader *PluginDownloader
 
 	// logger provides logging functionality for the manager
 	logger *log.Logger
@@ -44,9 +48,10 @@ func NewPluginManager(registry *PluginRegistry, loader *PluginLoader) *PluginMan
 	}
 
 	return &PluginManager{
-		registry: registry,
-		loader:   loader,
-		logger:   log.New(os.Stderr, "[plugin-manager] ", log.LstdFlags),
+		registry:   registry,
+		loader:     loader,
+		downloader: NewPluginDownloader(""), // Use default cache dir
+		logger:     log.New(os.Stderr, "[plugin-manager] ", log.LstdFlags),
 	}
 }
 
@@ -158,7 +163,7 @@ func (m *PluginManager) LoadPlugin(ctx context.Context, source *PluginSource) er
 
 // GetDefaultPlugin retrieves the default (first available) plugin that supports
 // the specified database engine. If the plugin is not already loaded, it will
-// be loaded from the registered plugin information.
+// be loaded from the registered plugin information or downloaded from ORAS artifacts.
 //
 // Parameters:
 //
@@ -194,7 +199,8 @@ func (m *PluginManager) GetDefaultPlugin(ctx context.Context, engine string) (Da
 		}
 	}
 
-	return nil, fmt.Errorf("no plugin found that supports database engine '%s'", engine)
+	// If no registered plugin found, try to download from ORAS artifacts
+	return m.downloadAndLoadPlugin(ctx, engine)
 }
 
 // DiscoverPlugins searches for plugins in common locations and registers them.
@@ -328,4 +334,75 @@ func (m *PluginManager) RegisterPlugin(info *PluginInfo) error {
 	}
 
 	return nil
+}
+
+// downloadAndLoadPlugin attempts to download and load a plugin for the specified engine
+// from ORAS artifacts on Docker Hub using the naming convention schemahero/plugin-{engine}:{major}
+func (m *PluginManager) downloadAndLoadPlugin(ctx context.Context, engine string) (DatabasePlugin, error) {
+	// Get the current major version for SchemaHero
+	// For now, we'll use "0" as the major version since we're in 0.x.y releases
+	majorVersion := m.getCurrentMajorVersion()
+	
+	// Normalize engine name - handle aliases
+	normalizedEngine := m.normalizeEngineForDownload(engine)
+	
+	// Check if plugin is already cached
+	if m.downloader.IsPluginCached(normalizedEngine, majorVersion) {
+		pluginPath := m.downloader.GetCachedPluginPath(normalizedEngine, majorVersion)
+		return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
+	}
+
+	// Download the plugin
+	pluginPath, err := m.downloader.DownloadPlugin(ctx, normalizedEngine, majorVersion)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download plugin for engine '%s': %w", engine, err)
+	}
+
+	// Load the downloaded plugin
+	return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
+}
+
+// loadPluginFromPath loads a plugin from a filesystem path and registers it
+func (m *PluginManager) loadPluginFromPath(ctx context.Context, engineName string, pluginPath string) (DatabasePlugin, error) {
+	// Load the plugin using the loader
+	plugin, err := m.loader.LoadLocal(ctx, pluginPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load plugin from %s: %w", pluginPath, err)
+	}
+
+	// Create plugin info and register it for future use
+	info := &PluginInfo{
+		Name:      plugin.Name(),
+		Version:   plugin.Version(),
+		Engines:   plugin.SupportedEngines(),
+		LocalPath: pluginPath,
+	}
+
+	// Register the plugin (ignore errors if already registered)
+	if err := m.registry.Register(info); err != nil {
+		m.logger.Printf("Warning: failed to register downloaded plugin '%s': %v", plugin.Name(), err)
+		// Continue anyway since the plugin is loaded
+	}
+
+	return plugin, nil
+}
+
+// getCurrentMajorVersion returns the major version for plugin compatibility
+// Currently returns "0" since SchemaHero is in 0.x.y releases
+func (m *PluginManager) getCurrentMajorVersion() string {
+	// TODO: This could be derived from build info or version constants
+	// For now, hardcode to "0" for 0.x.y releases
+	return "0"
+}
+
+// normalizeEngineForDownload normalizes engine names for consistent ORAS artifact naming
+func (m *PluginManager) normalizeEngineForDownload(engine string) string {
+	switch strings.ToLower(engine) {
+	case "postgresql":
+		return "postgres"
+	case "mariadb":
+		return "mysql"
+	default:
+		return strings.ToLower(engine)
+	}
 }
