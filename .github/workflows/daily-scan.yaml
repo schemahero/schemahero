@@ -29,12 +29,12 @@ jobs:
   scan_schemahero_docker_image:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
-      - name: Checkout
-        uses: actions/checkout@v4.1.1
 
       - name: Build schemahero image
         uses: ./.github/actions/build-push-action
@@ -61,12 +61,12 @@ jobs:
   scan_schemahero_manager_docker_image:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
-      - name: Checkout
-        uses: actions/checkout@v4.1.1
 
       - name: Build schemahero-manager image
         uses: ./.github/actions/build-push-action
