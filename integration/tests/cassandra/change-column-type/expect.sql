@@ -1,1 +1,1 @@
-alter table "users" alter column login type bigint;
+alter table "users" alter login type bigint;

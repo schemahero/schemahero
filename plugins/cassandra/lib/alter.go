@@ -9,6 +9,7 @@ import (
 )
 
 func AlterColumnStatements(keyspace string, tableName string, desiredColumns []*schemasv1alpha4.CassandraColumn, existingColumn *types.Column) ([]string, error) {
+	
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
 			column, err := schemaColumnToColumn(desiredColumn)
