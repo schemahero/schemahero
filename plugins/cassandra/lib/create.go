@@ -1,11 +1,10 @@
 package cassandra
 
 import (
-	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
-	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
@@ -75,11 +74,20 @@ func CreateTableStatements(keyspace string, tableName string, tableSchema *schem
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.Caching != nil {
-			b, err := json.Marshal(tableSchema.Properties.Caching)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to marshal caching property")
+			// Cassandra expects map properties with single quotes: {'key':'value'}
+			// Sort keys for consistent output
+			keys := make([]string, 0, len(tableSchema.Properties.Caching))
+			for k := range tableSchema.Properties.Caching {
+				keys = append(keys, k)
 			}
-			tableProperty := fmt.Sprintf(`caching = %s`, b)
+			sort.Strings(keys)
+			
+			parts := []string{}
+			for _, k := range keys {
+				v := tableSchema.Properties.Caching[k]
+				parts = append(parts, fmt.Sprintf("'%s':'%s'", k, v))
+			}
+			tableProperty := fmt.Sprintf(`caching = {%s}`, strings.Join(parts, ","))
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.Comment != "" {
@@ -87,19 +95,37 @@ func CreateTableStatements(keyspace string, tableName string, tableSchema *schem
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.Compaction != nil {
-			b, err := json.Marshal(tableSchema.Properties.Compaction)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to marshal compaction property")
+			// Cassandra expects map properties with single quotes: {'key':'value'}
+			// Sort keys for consistent output
+			keys := make([]string, 0, len(tableSchema.Properties.Compaction))
+			for k := range tableSchema.Properties.Compaction {
+				keys = append(keys, k)
 			}
-			tableProperty := fmt.Sprintf(`compaction = %s`, b)
+			sort.Strings(keys)
+			
+			parts := []string{}
+			for _, k := range keys {
+				v := tableSchema.Properties.Compaction[k]
+				parts = append(parts, fmt.Sprintf("'%s':'%s'", k, v))
+			}
+			tableProperty := fmt.Sprintf(`compaction = {%s}`, strings.Join(parts, ","))
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.Compression != nil {
-			b, err := json.Marshal(tableSchema.Properties.Compression)
-			if err != nil {
-				return nil, errors.Wrap(err, "failed to marshal compression property")
+			// Cassandra expects map properties with single quotes: {'key':'value'}
+			// Sort keys for consistent output
+			keys := make([]string, 0, len(tableSchema.Properties.Compression))
+			for k := range tableSchema.Properties.Compression {
+				keys = append(keys, k)
 			}
-			tableProperty := fmt.Sprintf(`compression = %s`, b)
+			sort.Strings(keys)
+			
+			parts := []string{}
+			for _, k := range keys {
+				v := tableSchema.Properties.Compression[k]
+				parts = append(parts, fmt.Sprintf("'%s':'%s'", k, v))
+			}
+			tableProperty := fmt.Sprintf(`compression = {%s}`, strings.Join(parts, ","))
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.CRCCheckChance != "" {
@@ -115,7 +141,7 @@ func CreateTableStatements(keyspace string, tableName string, tableSchema *schem
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.GCGraceSeconds != nil {
-			tableProperty := fmt.Sprintf(`grace_seconds = %d`, *tableSchema.Properties.GCGraceSeconds)
+			tableProperty := fmt.Sprintf(`gc_grace_seconds = %d`, *tableSchema.Properties.GCGraceSeconds)
 			tableProperties = append(tableProperties, tableProperty)
 		}
 		if tableSchema.Properties.MaxIndexInterval != nil {

@@ -47,6 +47,11 @@ func (p *RqliteConnection) EngineVersion() string {
 	return ""
 }
 
+// PlanTypeSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTypeSchema()
+func (r *RqliteConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	return nil, errors.New("type schemas are not supported in RQLite")
+}
+
 // PlanTableSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTableSchema()
 func (r *RqliteConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	// Type assert to the correct schema type

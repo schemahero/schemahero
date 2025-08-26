@@ -455,6 +455,20 @@ func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArg
 				col.Default = &emptyStr
 			}
 		}
+	} else if cassandraSchema, ok := args.TableSchema.(*schemasv1alpha4.CassandraTableSchema); ok {
+		// WORKAROUND: Restore zero integer values that were replaced with sentinel values
+		// to work around gob encoding losing zero integer pointers
+		const zeroIntSentinel = -999999999
+		if cassandraSchema.Properties != nil {
+			if cassandraSchema.Properties.DefaultTTL != nil && *cassandraSchema.Properties.DefaultTTL == zeroIntSentinel {
+				zero := 0
+				cassandraSchema.Properties.DefaultTTL = &zero
+			}
+			if cassandraSchema.Properties.MemtableFlushPeriodMS != nil && *cassandraSchema.Properties.MemtableFlushPeriodMS == zeroIntSentinel {
+				zero := 0
+				cassandraSchema.Properties.MemtableFlushPeriodMS = &zero
+			}
+		}
 	}
 
 	statements, err := conn.PlanTableSchema(args.TableName, args.TableSchema, args.SeedData)
@@ -586,6 +600,21 @@ func (s *RPCServer) ConnectionGenerateFixtures(args *ConnectionGenerateFixturesA
 				if col.Default != nil && *col.Default == emptyStringSentinel {
 					emptyStr := ""
 					col.Default = &emptyStr
+				}
+			}
+		} else if args.Spec.Schema.Cassandra != nil {
+			// WORKAROUND: Restore zero integer values for Cassandra properties
+			const zeroIntSentinel = -999999999
+			if args.Spec.Schema.Cassandra.Properties != nil {
+				if args.Spec.Schema.Cassandra.Properties.DefaultTTL != nil && 
+					*args.Spec.Schema.Cassandra.Properties.DefaultTTL == zeroIntSentinel {
+					zero := 0
+					args.Spec.Schema.Cassandra.Properties.DefaultTTL = &zero
+				}
+				if args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS != nil && 
+					*args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS == zeroIntSentinel {
+					zero := 0
+					args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS = &zero
 				}
 			}
 		}

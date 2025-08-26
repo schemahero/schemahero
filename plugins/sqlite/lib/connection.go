@@ -63,6 +63,11 @@ func (s *SqliteConnection) EngineVersion() string {
 	return version
 }
 
+// PlanTypeSchema generates SQL statements for type schema (not supported by SQLite)
+func (s *SqliteConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	return nil, errors.New("type schemas are not supported in SQLite")
+}
+
 // PlanTableSchema generates SQL statements to reconcile a table schema
 func (s *SqliteConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	sqliteTableSchema, ok := tableSchema.(*schemasv1alpha4.SqliteTableSchema)

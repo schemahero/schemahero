@@ -218,6 +218,12 @@ func (c *TestConnection) PlanTableSchema(tableName string, tableSchema interface
 	return []string{fmt.Sprintf("CREATE TABLE %s (id INT PRIMARY KEY)", tableName)}, nil
 }
 
+// PlanTypeSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTypeSchema()
+func (c *TestConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	// Test implementation - return sample statements
+	return []string{fmt.Sprintf("CREATE TYPE %s AS OBJECT", typeName)}, nil
+}
+
 // PlanViewSchema implements interfaces.SchemaHeroDatabaseConnection.PlanViewSchema()
 func (c *TestConnection) PlanViewSchema(viewName string, viewSchema interface{}) ([]string, error) {
 	// Test implementation - return sample statements

@@ -92,6 +92,11 @@ func (t *TimescaleDBConnection) PlanViewSchema(viewName string, viewSchema inter
 	return t.PostgresConnection.PlanViewSchema(viewName, viewSchema)
 }
 
+func (t *TimescaleDBConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	// Delegate to PostgreSQL connection for type schemas
+	return t.PostgresConnection.PlanTypeSchema(typeName, typeSchema)
+}
+
 func (t *TimescaleDBConnection) PlanFunctionSchema(functionName string, functionSchema interface{}) ([]string, error) {
 	return t.PostgresConnection.PlanFunctionSchema(functionName, functionSchema)
 }

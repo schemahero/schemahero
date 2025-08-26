@@ -112,6 +112,11 @@ func (p *PostgresConnection) Close() error {
 	return p.conn.Close(context.Background())
 }
 
+// PlanTypeSchema generates SQL statements for type schema (not implemented for PostgreSQL)
+func (p *PostgresConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	return nil, errors.New("type schemas are not yet implemented for PostgreSQL")
+}
+
 // PlanTableSchema generates SQL statements to migrate a table to the desired schema
 func (p *PostgresConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	// Handle seed data without schema case

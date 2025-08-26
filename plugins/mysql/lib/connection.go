@@ -63,6 +63,11 @@ func (m *MysqlConnection) Close() error {
 	return errors.Wrap(m.db.Close(), "failed to close connection")
 }
 
+// PlanTypeSchema generates SQL statements for type schema (not supported by MySQL)
+func (m *MysqlConnection) PlanTypeSchema(typeName string, typeSchema interface{}) ([]string, error) {
+	return nil, errors.New("type schemas are not supported in MySQL")
+}
+
 // PlanTableSchema generates SQL statements to migrate a table to the desired schema
 func (m *MysqlConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	mysqlSchema, ok := tableSchema.(*schemasv1alpha4.MysqlTableSchema)
