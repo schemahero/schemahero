@@ -426,6 +426,14 @@ func (s *RPCServer) ConnectionPlanTableSchema(args *ConnectionPlanTableSchemaArg
 				col.Default = &emptyStr
 			}
 		}
+	} else if timescaleSchema, ok := args.TableSchema.(*schemasv1alpha4.TimescaleDBTableSchema); ok {
+		// TimescaleDB uses PostgresqlTableColumn
+		for _, col := range timescaleSchema.Columns {
+			if col.Default != nil && *col.Default == emptyStringSentinel {
+				emptyStr := ""
+				col.Default = &emptyStr
+			}
+		}
 	}
 
 	statements, err := conn.PlanTableSchema(args.TableName, args.TableSchema, args.SeedData)

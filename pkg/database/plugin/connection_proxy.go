@@ -193,6 +193,14 @@ func (c *ConnectionProxy) PlanTableSchema(tableName string, tableSchema interfac
 				col.Default = &sentinel
 			}
 		}
+	} else if timescaleSchema, ok := tableSchema.(*schemasv1alpha4.TimescaleDBTableSchema); ok {
+		// TimescaleDB uses PostgresqlTableColumn
+		for _, col := range timescaleSchema.Columns {
+			if col.Default != nil && *col.Default == "" {
+				sentinel := emptyStringSentinel
+				col.Default = &sentinel
+			}
+		}
 	}
 
 	var reply ConnectionPlanTableSchemaReply
