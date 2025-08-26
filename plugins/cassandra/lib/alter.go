@@ -9,8 +9,6 @@ import (
 )
 
 func AlterColumnStatements(keyspace string, tableName string, desiredColumns []*schemasv1alpha4.CassandraColumn, existingColumn *types.Column) ([]string, error) {
-	alterStatement := fmt.Sprintf("alter column %s", existingColumn.Name)
-
 	for _, desiredColumn := range desiredColumns {
 		if desiredColumn.Name == existingColumn.Name {
 			column, err := schemaColumnToColumn(desiredColumn)
@@ -24,7 +22,8 @@ func AlterColumnStatements(keyspace string, tableName string, desiredColumns []*
 
 			changes := []string{}
 			if existingColumn.DataType != column.DataType {
-				changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
+				// Cassandra syntax: ALTER TABLE ... ALTER column_name TYPE new_type
+				changes = append(changes, fmt.Sprintf("alter %s type %s", existingColumn.Name, column.DataType))
 			}
 
 			if len(changes) == 0 {
