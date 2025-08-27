@@ -1,6 +1,7 @@
 package generate
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,24 +11,35 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/interfaces"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	"gopkg.in/yaml.v2"
 )
 
 type Generator struct {
-	Driver    string
-	URI       string
-	DBName    string
-	OutputDir string
-	Schemas   []string
+	Driver        string
+	URI           string
+	DBName        string
+	OutputDir     string
+	Schemas       []string
+	pluginManager *plugin.PluginManager
 }
 
-func (g *Generator) RunSync() error {
-	fmt.Printf("connecting to %s\n", g.URI)
+// SetPluginManager sets the plugin manager for this generator instance.
+// The plugin manager is used to resolve database connections through plugins.
+func (g *Generator) SetPluginManager(manager *plugin.PluginManager) {
+	g.pluginManager = manager
+}
 
-	var db interfaces.SchemaHeroDatabaseConnection
-	if g.Driver == "postgres" {
-		uri := g.URI
+// getConnection attempts to establish a database connection through plugins.
+func (g *Generator) getConnection(ctx context.Context) (interfaces.SchemaHeroDatabaseConnection, error) {
+	if g.pluginManager == nil {
+		return nil, errors.New("plugin manager not set - use SetPluginManager() before calling RunSync()")
+	}
+
+	// Handle PostgreSQL schema parameters
+	uri := g.URI
+	if g.Driver == "postgres" || g.Driver == "postgresql" || g.Driver == "cockroachdb" || g.Driver == "timescaledb" {
 		if !strings.Contains(uri, "schema=") && !strings.Contains(uri, "schemas=") && len(g.Schemas) > 0 {
 			schemasStr := strings.Join(g.Schemas, ",")
 
@@ -46,13 +58,31 @@ func (g *Generator) RunSync() error {
 				}
 			}
 		}
-
-		return errors.New("postgres driver requires plugin - generate command not yet updated for plugin architecture")
-	} else if g.Driver == "mysql" {
-		return errors.New("mysql driver requires plugin - generate command not yet updated for plugin architecture")
-	} else if g.Driver == "rqlite" {
-		return errors.New("rqlite driver requires plugin - generate command not yet updated for plugin architecture")
 	}
+
+	// Prepare connection options (currently no special options needed for generate)
+	options := map[string]interface{}{}
+
+	// Get connection through plugin manager
+	conn, err := g.pluginManager.GetConnection(ctx, g.Driver, uri, options)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to connect to %s database", g.Driver)
+	}
+
+	return conn, nil
+}
+
+func (g *Generator) RunSync() error {
+	fmt.Printf("connecting to %s\n", g.URI)
+
+	ctx := context.Background()
+	
+	// Get database connection through plugin manager
+	db, err := g.getConnection(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect to database")
+	}
+	defer db.Close()
 
 	tables, err := db.ListTables()
 	if err != nil {
@@ -137,14 +167,20 @@ func (g *Generator) RunSync() error {
 }
 
 func generateTableYAML(driver string, dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
-	if driver == "mysql" {
+	switch driver {
+	case "mysql", "mariadb":
 		return generateMysqlTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
+	case "rqlite":
+		return generateRqliteTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
+	case "sqlite", "sqlite3":
+		return generateSqliteTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
+	case "cassandra":
+		return generateCassandraTableYAML(dbName, table, primaryKey, foreignKeys, indexes, columns)
+	case "postgres", "postgresql", "cockroachdb", "timescaledb":
+		return generatePostgresqlTableYAML(driver, dbName, table, primaryKey, foreignKeys, indexes, columns)
+	default:
+		return "", errors.Errorf("unsupported database driver for generate: %s", driver)
 	}
-	// RQLite moved to plugin architecture - generate functionality not yet implemented
-	if driver == "rqlite" {
-		return "", errors.New("rqlite driver requires plugin - generate command not yet updated for plugin architecture")
-	}
-	return generatePostgresqlTableYAML(driver, dbName, table, primaryKey, foreignKeys, indexes, columns)
 }
 
 func generateMysqlTableYAML(dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
@@ -311,6 +347,129 @@ func generateRqliteTableYAML(dbName string, table *types.Table, primaryKey []str
 
 	schema := &schemasv1alpha4.TableSchema{}
 	schema.RQLite = tableSchema
+
+	schemaHeroResource := schemasv1alpha4.TableSpec{
+		Database: dbName,
+		Name:     table.Name,
+		Requires: []string{},
+		Schema:   schema,
+	}
+
+	specDoc := struct {
+		Spec schemasv1alpha4.TableSpec `yaml:"spec"`
+	}{
+		schemaHeroResource,
+	}
+
+	b, err := yaml.Marshal(&specDoc)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO consider marshaling this instead of inline
+	tableDoc := fmt.Sprintf(`apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: %s
+%s`, sanitizeName(table.Name), b)
+
+	return tableDoc, nil
+}
+
+func generateSqliteTableYAML(dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
+	schemaForeignKeys := make([]*schemasv1alpha4.SqliteTableForeignKey, 0)
+	for _, foreignKey := range foreignKeys {
+		schemaForeignKey := types.ForeignKeyToSqliteSchemaForeignKey(foreignKey)
+		schemaForeignKeys = append(schemaForeignKeys, schemaForeignKey)
+	}
+
+	schemaIndexes := make([]*schemasv1alpha4.SqliteTableIndex, 0)
+	for _, index := range indexes {
+		schemaIndex := types.IndexToSqliteSchemaIndex(index)
+		schemaIndexes = append(schemaIndexes, schemaIndex)
+	}
+
+	schemaTableColumns := make([]*schemasv1alpha4.SqliteTableColumn, 0)
+	for _, column := range columns {
+		schemaTableColumn, err := types.ColumnToSqliteSchemaColumn(column)
+		if err != nil {
+			return "", err
+		}
+
+		schemaTableColumns = append(schemaTableColumns, schemaTableColumn)
+	}
+
+	tableSchema := &schemasv1alpha4.SqliteTableSchema{
+		PrimaryKey:  primaryKey,
+		Columns:     schemaTableColumns,
+		ForeignKeys: schemaForeignKeys,
+		Indexes:     schemaIndexes,
+	}
+
+	schema := &schemasv1alpha4.TableSchema{}
+	schema.SQLite = tableSchema
+
+	schemaHeroResource := schemasv1alpha4.TableSpec{
+		Database: dbName,
+		Name:     table.Name,
+		Requires: []string{},
+		Schema:   schema,
+	}
+
+	specDoc := struct {
+		Spec schemasv1alpha4.TableSpec `yaml:"spec"`
+	}{
+		schemaHeroResource,
+	}
+
+	b, err := yaml.Marshal(&specDoc)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO consider marshaling this instead of inline
+	tableDoc := fmt.Sprintf(`apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: %s
+%s`, sanitizeName(table.Name), b)
+
+	return tableDoc, nil
+}
+
+func generateCassandraTableYAML(dbName string, table *types.Table, primaryKey []string, foreignKeys []*types.ForeignKey, indexes []*types.Index, columns []*types.Column) (string, error) {
+	// Cassandra doesn't support foreign keys, so we ignore them
+	_ = foreignKeys
+
+	// Cassandra doesn't have index support in SchemaHero schemas (it uses secondary indexes differently)
+	_ = indexes
+
+	// Convert columns to Cassandra columns
+	schemaTableColumns := make([]*schemasv1alpha4.CassandraColumn, 0)
+	for _, column := range columns {
+		// Cassandra columns have a different structure
+		cassandraColumn := &schemasv1alpha4.CassandraColumn{
+			Name: column.Name,
+			Type: column.DataType,
+		}
+
+		schemaTableColumns = append(schemaTableColumns, cassandraColumn)
+	}
+
+	// Convert primary key to Cassandra format ([][]string instead of []string)
+	// For simple primary key, we wrap it in another array
+	cassandraPrimaryKey := [][]string{}
+	if len(primaryKey) > 0 {
+		cassandraPrimaryKey = [][]string{primaryKey}
+	}
+
+	tableSchema := &schemasv1alpha4.CassandraTableSchema{
+		PrimaryKey: cassandraPrimaryKey,
+		Columns:    schemaTableColumns,
+	}
+
+	schema := &schemasv1alpha4.TableSchema{}
+	schema.Cassandra = tableSchema
 
 	schemaHeroResource := schemasv1alpha4.TableSpec{
 		Database: dbName,
