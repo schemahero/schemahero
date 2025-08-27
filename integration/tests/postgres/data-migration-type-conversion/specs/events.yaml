@@ -1,0 +1,22 @@
+database: schemahero
+name: events
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: event_name
+        type: varchar(255)
+        constraints:
+          notNull: true
+      - name: created_at
+        type: timestamp with time zone
+dataMigrations:
+  - type: typeConversion
+    column: created_at
+    fromColumn: created_at
+    typeConvert:
+      from: timestamp
+      to: timestamp with time zone

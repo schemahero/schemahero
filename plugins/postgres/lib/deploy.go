@@ -45,7 +45,7 @@ func PlanPostgresFunction(uri string, functionName string, postgresFunctionSchem
 	return queries, nil
 }
 
-func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData, dataMigrations []schemasv1alpha4.DataMigration) ([]string, error) {
 	p, err := Connect(uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to connect to postgres")
@@ -122,6 +122,15 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	statements = append(statements, indexStatements...)
 
 	statements = append(statements, seedDataStatements...)
+
+	// data migration changes
+	if len(dataMigrations) > 0 {
+		dataMigrationStatements, err := GenerateDataMigrationStatements(tableName, dataMigrations)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to generate data migration statements")
+		}
+		statements = append(statements, dataMigrationStatements...)
+	}
 
 	return statements, nil
 }

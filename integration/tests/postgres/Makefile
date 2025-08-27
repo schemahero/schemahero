@@ -16,6 +16,9 @@ build-postgres-plugin:
 .PHONY: 11.18
 11.18: export PG_VERSION = 11.18-alpine
 11.18: build-postgres-plugin
+	make -C data-migration-static-value
+	make -C data-migration-calculated-value
+	make -C data-migration-type-conversion
 	make -C alter-column-timezone run
 	make -C column-set-default run
 	make -C column-unset-default run

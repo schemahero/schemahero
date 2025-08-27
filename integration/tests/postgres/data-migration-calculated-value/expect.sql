@@ -1,0 +1,1 @@
+update "orders" set "total_with_tax" = "total" * 1.08;
