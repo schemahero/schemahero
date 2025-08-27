@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22.4"
+          go-version-file: 'go.mod'
           cache: true
 
       - name: Checkout
@@ -64,7 +64,7 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22.4"
+          go-version-file: 'go.mod'
           cache: true
 
       - name: Checkout

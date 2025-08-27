@@ -3,6 +3,7 @@ SHELL := /bin/bash
 VERSION ?= $(if $(GIT_TAG),$(GIT_TAG),$(shell git describe --tags))
 DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"`
 VERSION_PACKAGE = github.com/schemahero/schemahero/pkg/version
+PLUGIN ?= postgres
 GIT_TREE = $(shell git rev-parse --is-inside-work-tree 2>/dev/null)
 ifneq "$(GIT_TREE)" ""
 define GIT_UPDATE_INDEX_CMD
@@ -65,15 +66,26 @@ plugins:
 
 .PHONY: install-dev
 install-dev: bin/kubectl-schemahero
-	@echo "Installing schemahero and postgres plugin for development..."
+	@echo "Installing schemahero and $(PLUGIN) plugin for development..."
 	sudo mv bin/kubectl-schemahero /usr/local/bin/schemahero
-	$(MAKE) -C plugins postgres
+	$(MAKE) -C plugins $(PLUGIN)
 	sudo mkdir -p /var/lib/schemahero/plugins
-	sudo cp ./plugins/bin/schemahero-postgres /var/lib/schemahero/plugins
+	sudo cp ./plugins/bin/schemahero-$(PLUGIN) /var/lib/schemahero/plugins
 	@echo "Fixing permissions and signing in place..."
-	sudo chmod 755 /var/lib/schemahero/plugins/schemahero-postgres
-	sudo codesign --force --deep -s - /var/lib/schemahero/plugins/schemahero-postgres
-	@echo "Installation complete."
+	sudo chmod 755 /var/lib/schemahero/plugins/schemahero-$(PLUGIN)
+	sudo codesign --force --deep -s - /var/lib/schemahero/plugins/schemahero-$(PLUGIN)
+	@echo "Installation complete. Plugin $(PLUGIN) is ready at /var/lib/schemahero/plugins/schemahero-$(PLUGIN)"
+
+.PHONY: install-plugin
+install-plugin:
+	@echo "Installing $(PLUGIN) plugin for development..."
+	$(MAKE) -C plugins $(PLUGIN)
+	sudo mkdir -p /var/lib/schemahero/plugins
+	sudo cp ./plugins/bin/schemahero-$(PLUGIN) /var/lib/schemahero/plugins
+	@echo "Fixing permissions and signing in place..."
+	sudo chmod 755 /var/lib/schemahero/plugins/schemahero-$(PLUGIN)
+	sudo codesign --force --deep -s - /var/lib/schemahero/plugins/schemahero-$(PLUGIN)
+	@echo "Plugin $(PLUGIN) installed at /var/lib/schemahero/plugins/schemahero-$(PLUGIN)"
 
 .PHONY: test-plugins
 test-plugins:
