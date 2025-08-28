@@ -53,7 +53,7 @@ func generateStaticMigration(tableName string, migration schemasv1alpha4.DataMig
 	value := strings.ReplaceAll(*migration.Value, "'", "''")
 
 	return fmt.Sprintf(
-		"update %s set %s = '%s';",
+		"update %s set %s = '%s'",
 		pgx.Identifier{tableName}.Sanitize(),
 		pgx.Identifier{migration.Column}.Sanitize(),
 		value,
@@ -69,7 +69,7 @@ func generateCalculatedMigration(tableName string, migration schemasv1alpha4.Dat
 	expression := sanitizeExpression(*migration.Expression)
 
 	return fmt.Sprintf(
-		"update %s set %s = %s;",
+		"update %s set %s = %s",
 		pgx.Identifier{tableName}.Sanitize(),
 		pgx.Identifier{migration.Column}.Sanitize(),
 		expression,
@@ -85,7 +85,7 @@ func generateTypeConversionMigration(tableName string, migration schemasv1alpha4
 
 	// First, alter the column type
 	alterStmt := fmt.Sprintf(
-		"alter table %s alter column %s type %s;",
+		"alter table %s alter column %s type %s",
 		pgx.Identifier{tableName}.Sanitize(),
 		pgx.Identifier{migration.Column}.Sanitize(),
 		migration.TypeConvert.To,
@@ -95,7 +95,7 @@ func generateTypeConversionMigration(tableName string, migration schemasv1alpha4
 	// For timestamp to timestamptz conversion, update the data
 	if isTimestampConversion(migration.TypeConvert.From, migration.TypeConvert.To) {
 		updateStmt := fmt.Sprintf(
-			"update %s set %s = %s at time zone 'UTC';",
+			"update %s set %s = %s at time zone 'UTC'",
 			pgx.Identifier{tableName}.Sanitize(),
 			pgx.Identifier{migration.Column}.Sanitize(),
 			pgx.Identifier{migration.Column}.Sanitize(),
