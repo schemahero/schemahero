@@ -66,3 +66,8 @@ func Debugf(template string, args ...interface{}) {
 	sugar := log.Sugar()
 	sugar.Debugf(template, args)
 }
+
+// GetZapLogger returns the underlying zap logger for use with other logging libraries
+func GetZapLogger() *zap.Logger {
+	return log
+}
