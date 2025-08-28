@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-logr/zapr"
 	"github.com/schemahero/schemahero/pkg/apis"
 	"github.com/schemahero/schemahero/pkg/config"
 	databasecontroller "github.com/schemahero/schemahero/pkg/controller/database"
@@ -21,6 +22,7 @@ import (
 	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
@@ -37,6 +39,9 @@ func RunCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			logger.Infof("Starting schemahero version %+v", version.GetBuild())
+
+			// Configure controller-runtime to use our zap logger
+			ctrl.SetLogger(zapr.NewLogger(logger.GetZapLogger()))
 
 			v := viper.GetViper()
 
