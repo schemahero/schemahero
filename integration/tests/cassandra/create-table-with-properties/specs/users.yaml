@@ -17,12 +17,12 @@ schema:
       bloomFilterFPChance: "0.01"
       caching: 
         keys: NONE
-        rows_per_partition': '10'
+        rows_per_partition: '10'
       comment: "test"
       compaction: 
         class: 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy'
         max_threshold: '32'
-        min_threshold': '4'
+        min_threshold: '4'
       compression:
         chunk_length_in_kb: '64'
         class: 'org.apache.cassandra.io.compress.LZ4Compressor'

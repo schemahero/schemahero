@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	"github.com/schemahero/schemahero/pkg/files"
 	"github.com/spf13/cobra"
@@ -32,7 +33,7 @@ func PlanCmd() *cobra.Command {
 			uri := v.GetString("uri")
 			host := v.GetStringSlice("host")
 
-			if driver == "" || specFile == "" || uri == "" || len(host) == 0 {
+			if driver == "" || specFile == "" || (uri == "" && len(host) == 0) {
 				missing := []string{}
 				if driver == "" {
 					missing = append(missing, "driver")
@@ -88,6 +89,11 @@ func PlanCmd() *cobra.Command {
 				Password:       v.GetString("password"),
 				Keyspace:       v.GetString("keyspace"),
 				DeploySeedData: v.GetBool("seed-data"),
+			}
+
+			// Set plugin manager from global initialization
+			if pluginManager := plugin.GetGlobalPluginManager(); pluginManager != nil {
+				db.SetPluginManager(pluginManager)
 			}
 
 			specsFromFiles := []types.Spec{}

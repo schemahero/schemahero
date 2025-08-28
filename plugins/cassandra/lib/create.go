@@ -1,0 +1,197 @@
+package cassandra
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+)
+
+func CreateTypeStatement(keyspace string, typeName string, typeSchema *schemasv1alpha4.CassandraDataTypeSchema) (string, error) {
+	fields := []string{}
+	for _, desiredField := range typeSchema.Fields {
+		fieldFields, err := cassandraTypeAsInsert(desiredField)
+		if err != nil {
+			return "", err
+		}
+		fields = append(fields, fieldFields)
+	}
+
+	query := fmt.Sprintf("create type %q (%s)", typeName, strings.Join(fields, ", "))
+
+	return query, nil
+}
+
+func CreateTableStatements(keyspace string, tableName string, tableSchema *schemasv1alpha4.CassandraTableSchema) ([]string, error) {
+	columns := []string{}
+	for _, desiredColumn := range tableSchema.Columns {
+		columnsFields, err := cassandraColumnAsInsert(desiredColumn)
+		if err != nil {
+			return nil, err
+		}
+		columns = append(columns, columnsFields)
+	}
+
+	// primary key
+	if tableSchema.PrimaryKey != nil {
+		compoundedKeys := []string{}
+		for _, primaryKey := range tableSchema.PrimaryKey {
+			if len(primaryKey) == 1 {
+				compoundedKeys = append(compoundedKeys, primaryKey[0])
+				continue
+			}
+
+			keyComponent := fmt.Sprintf("(%s)", strings.Join(primaryKey, ", "))
+			compoundedKeys = append(compoundedKeys, keyComponent)
+		}
+
+		pk := fmt.Sprintf("primary key (%s)", strings.Join(compoundedKeys, ", "))
+		columns = append(columns, pk)
+	}
+
+	// Don't include keyspace in table name since it's already set in the session
+	// The keyspace parameter is kept for backward compatibility but not used in the query
+	_ = keyspace
+	query := fmt.Sprintf(`create table "%s" (%s)`, tableName, strings.Join(columns, ", "))
+
+	// clustering
+	if tableSchema.ClusteringOrder != nil {
+		order := ""
+		if tableSchema.ClusteringOrder.IsDescending != nil && *tableSchema.ClusteringOrder.IsDescending {
+			order = " desc"
+		}
+		clustering := fmt.Sprintf("with clustering order by (%s%s)", tableSchema.ClusteringOrder.Column, order)
+
+		query = fmt.Sprintf("%s %s", query, clustering)
+	}
+
+	// any specified properties
+	tableProperties := []string{}
+	if tableSchema.Properties != nil {
+		if tableSchema.Properties.BloomFilterFPChance != "" {
+			tableProperty := fmt.Sprintf(`bloom_filter_fp_chance = %s`, tableSchema.Properties.BloomFilterFPChance)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.Caching != nil {
+			// Cassandra expects map properties with single quotes: {'key':'value'}
+			// Sort keys for consistent output
+			keys := make([]string, 0, len(tableSchema.Properties.Caching))
+			for k := range tableSchema.Properties.Caching {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			
+			parts := []string{}
+			for _, k := range keys {
+				v := tableSchema.Properties.Caching[k]
+				parts = append(parts, fmt.Sprintf("'%s':'%s'", k, v))
+			}
+			tableProperty := fmt.Sprintf(`caching = {%s}`, strings.Join(parts, ","))
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.Comment != "" {
+			tableProperty := fmt.Sprintf(`comment = '%s'`, tableSchema.Properties.Comment)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.Compaction != nil {
+			// Cassandra expects map properties with single quotes: {'key':'value'}
+			// Sort keys for consistent output
+			keys := make([]string, 0, len(tableSchema.Properties.Compaction))
+			for k := range tableSchema.Properties.Compaction {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			
+			parts := []string{}
+			for _, k := range keys {
+				v := tableSchema.Properties.Compaction[k]
+				parts = append(parts, fmt.Sprintf("'%s':'%s'", k, v))
+			}
+			tableProperty := fmt.Sprintf(`compaction = {%s}`, strings.Join(parts, ","))
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.Compression != nil {
+			// Cassandra expects map properties with single quotes: {'key':'value'}
+			// Sort keys for consistent output
+			keys := make([]string, 0, len(tableSchema.Properties.Compression))
+			for k := range tableSchema.Properties.Compression {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			
+			parts := []string{}
+			for _, k := range keys {
+				v := tableSchema.Properties.Compression[k]
+				parts = append(parts, fmt.Sprintf("'%s':'%s'", k, v))
+			}
+			tableProperty := fmt.Sprintf(`compression = {%s}`, strings.Join(parts, ","))
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.CRCCheckChance != "" {
+			tableProperty := fmt.Sprintf(`crc_check_chance = %s`, tableSchema.Properties.CRCCheckChance)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.DCLocalReadRepairChance != "" {
+			tableProperty := fmt.Sprintf(`dclocal_read_repair_chance = %s`, tableSchema.Properties.DCLocalReadRepairChance)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.DefaultTTL != nil {
+			tableProperty := fmt.Sprintf(`default_time_to_live = %d`, *tableSchema.Properties.DefaultTTL)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.GCGraceSeconds != nil {
+			tableProperty := fmt.Sprintf(`gc_grace_seconds = %d`, *tableSchema.Properties.GCGraceSeconds)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.MaxIndexInterval != nil {
+			tableProperty := fmt.Sprintf(`max_index_interval = %d`, *tableSchema.Properties.MaxIndexInterval)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.MemtableFlushPeriodMS != nil {
+			tableProperty := fmt.Sprintf(`memtable_flush_period_in_ms = %d`, *tableSchema.Properties.MemtableFlushPeriodMS)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.MinIndexInterval != nil {
+			tableProperty := fmt.Sprintf(`min_index_interval = %d`, *tableSchema.Properties.MinIndexInterval)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.ReadRepairChance != "" {
+			tableProperty := fmt.Sprintf(`read_repair_chance = %s`, tableSchema.Properties.ReadRepairChance)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+		if tableSchema.Properties.SpeculativeRetry != "" {
+			tableProperty := fmt.Sprintf(`speculative_retry = '%s'`, tableSchema.Properties.SpeculativeRetry)
+			tableProperties = append(tableProperties, tableProperty)
+		}
+	}
+
+	if len(tableProperties) > 0 {
+		query = fmt.Sprintf("%s with %s", query, strings.Join(tableProperties, " AND "))
+	}
+
+	return []string{query}, nil
+}
+
+func SeedDataStatements(keyspace string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	statements := []string{}
+
+	for _, row := range seedData.Rows {
+		cols := []string{}
+		vals := []string{}
+		for _, col := range row.Columns {
+			cols = append(cols, col.Column)
+			if col.Value.Int != nil {
+				vals = append(vals, fmt.Sprintf("%d", *col.Value.Int))
+			} else if col.Value.Str != nil {
+				vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+			}
+		}
+
+		statement := fmt.Sprintf(`INSERT INTO "%s.%s" (%s) VALUES (%s)`, keyspace, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statements = append(statements, statement)
+	}
+
+	return statements, nil
+}
+

@@ -1,6 +1,7 @@
 package managercli
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -12,6 +13,7 @@ import (
 	migrationcontroller "github.com/schemahero/schemahero/pkg/controller/migration"
 	tablecontroller "github.com/schemahero/schemahero/pkg/controller/table"
 	viewcontroller "github.com/schemahero/schemahero/pkg/controller/view"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"github.com/schemahero/schemahero/pkg/version"
 	"github.com/schemahero/schemahero/pkg/webhook"
@@ -37,6 +39,15 @@ func RunCmd() *cobra.Command {
 			logger.Infof("Starting schemahero version %+v", version.GetBuild())
 
 			v := viper.GetViper()
+
+			// Initialize plugin system
+			logger.Info("Initializing plugin system")
+			pluginManager := plugin.InitializePluginSystem()
+			if pluginManager == nil {
+				logger.Error(fmt.Errorf("failed to initialize plugin system"))
+				os.Exit(1)
+			}
+			logger.Info("Plugin system initialized successfully")
 
 			isDebug := false
 			if v.GetString("log-level") == "debug" {

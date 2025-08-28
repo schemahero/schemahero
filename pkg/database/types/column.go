@@ -102,3 +102,20 @@ func ColumnToRqliteSchemaColumn(column *Column) (*schemasv1alpha4.RqliteTableCol
 
 	return schemaColumn, nil
 }
+
+func ColumnToSqliteSchemaColumn(column *Column) (*schemasv1alpha4.SqliteTableColumn, error) {
+	schemaColumn := &schemasv1alpha4.SqliteTableColumn{
+		Name: column.Name,
+		Type: column.DataType,
+	}
+
+	if column.Constraints != nil {
+		schemaColumn.Constraints = &schemasv1alpha4.SqliteTableColumnConstraints{
+			NotNull: column.Constraints.NotNull,
+		}
+	}
+
+	schemaColumn.Default = column.ColumnDefault
+
+	return schemaColumn, nil
+}

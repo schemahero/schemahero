@@ -1,0 +1,244 @@
+name: Build and Push Plugin
+description: Build and push a SchemaHero plugin as OCI artifact
+
+inputs:
+  plugin_name:
+    description: 'Name of the plugin to build'
+    required: true
+  plugin_version:
+    description: 'Version of the plugin'
+    required: true
+  platforms:
+    description: 'Comma-separated list of platforms (e.g., linux/amd64,linux/arm64)'
+    required: true
+  registry:
+    description: 'OCI registry to push to'
+    required: true
+  registry_namespace:
+    description: 'Registry namespace/organization'
+    required: true
+  dockerhub_username:
+    description: 'DockerHub username for authentication'
+    required: false
+  dockerhub_token:
+    description: 'DockerHub token for authentication'
+    required: false
+  push:
+    description: 'Whether to push to registry'
+    required: true
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Install ORAS
+      shell: bash
+      run: |
+        VERSION="1.2.0"
+        curl -LO "https://github.com/oras-project/oras/releases/download/v${VERSION}/oras_${VERSION}_linux_amd64.tar.gz"
+        mkdir -p oras-install/
+        tar -zxf oras_${VERSION}_*.tar.gz -C oras-install/
+        sudo mv oras-install/oras /usr/local/bin/
+        rm -rf oras_${VERSION}_*.tar.gz oras-install/
+        oras version
+
+    - name: Log in to DockerHub
+      if: inputs.push == 'true'
+      shell: bash
+      run: |
+        echo "Logging in to DockerHub to push artifacts..."
+        echo "${{ inputs.dockerhub_token }}" | docker login ${{ inputs.registry }} -u ${{ inputs.dockerhub_username }} --password-stdin
+
+    - name: Build plugin for multiple platforms
+      shell: bash
+      run: |
+        PLUGIN_NAME="schemahero-${{ inputs.plugin_name }}"
+        PLATFORMS="${{ inputs.platforms }}"
+        
+        # Create output directory
+        mkdir -p dist
+        
+        # Create an index file that will list all platforms
+        cat > dist/index.json <<EOF
+        {
+          "schemaVersion": 2,
+          "mediaType": "application/vnd.oci.image.index.v1+json",
+          "manifests": [
+        EOF
+        
+        # Build for each platform
+        IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
+        first=true
+        for platform in "${PLATFORM_ARRAY[@]}"; do
+          echo "Building ${{ inputs.plugin_name }} for $platform"
+          
+          # Parse platform
+          OS=$(echo $platform | cut -d'/' -f1)
+          ARCH=$(echo $platform | cut -d'/' -f2)
+          
+          # Build the plugin
+          cd plugins/${{ inputs.plugin_name }}
+          CGO_ENABLED=0 GOOS=$OS GOARCH=$ARCH go build \
+            -ldflags="-s -w -X main.version=${{ inputs.plugin_version }}" \
+            -o ../../dist/${PLUGIN_NAME}-${OS}-${ARCH} .
+          cd ../..
+          
+          # Create tarball for this platform
+          tar -czf dist/${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz -C dist ${PLUGIN_NAME}-${OS}-${ARCH}
+          
+          # Create checksums
+          cd dist
+          sha256sum ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz > ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz.sha256
+          TARBALL_SHA256=$(sha256sum ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz | cut -d' ' -f1)
+          TARBALL_SIZE=$(stat -c%s ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz 2>/dev/null || stat -f%z ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz)
+          cd ..
+          
+          # Add to index
+          if [ "$first" = false ]; then
+            echo "," >> dist/index.json
+          fi
+          cat >> dist/index.json <<EOF
+            {
+              "mediaType": "application/vnd.schemahero.plugin.v1+tar",
+              "size": ${TARBALL_SIZE},
+              "digest": "sha256:${TARBALL_SHA256}",
+              "platform": {
+                "architecture": "$ARCH",
+                "os": "$OS"
+              },
+              "annotations": {
+                "org.opencontainers.image.name": "${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz"
+              }
+            }
+        EOF
+          first=false
+        done
+        
+        # Close the index
+        cat >> dist/index.json <<EOF
+        
+          ],
+          "annotations": {
+            "org.opencontainers.image.title": "${{ inputs.plugin_name }}",
+            "org.opencontainers.image.version": "${{ inputs.plugin_version }}",
+            "org.opencontainers.image.description": "SchemaHero ${{ inputs.plugin_name }} database plugin"
+          }
+        }
+        EOF
+        
+        # Create a combined artifact bundle for ORAS
+        cat > dist/artifacts.json <<EOF
+        {
+          "plugin": "${{ inputs.plugin_name }}",
+          "version": "${{ inputs.plugin_version }}",
+          "platforms": "${{ inputs.platforms }}",
+          "build_time": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        }
+        EOF
+
+    - name: List built artifacts
+      shell: bash
+      run: |
+        echo "Built artifacts for ${{ inputs.plugin_name }}:"
+        ls -la dist/
+        echo "Index content:"
+        cat dist/index.json | jq .
+
+    - name: Skip push for pull request
+      if: inputs.push != 'true'
+      shell: bash
+      run: |
+        echo "Skipping push to registry (pull request build)"
+        echo "Artifacts built successfully and available as GitHub Actions artifacts"
+        echo "Will push to registry when merged to plugins branch"
+
+    - name: Push to registry as OCI artifact with multi-platform support
+      if: inputs.push == 'true'
+      shell: bash
+      run: |
+        echo "Pushing plugin to OCI registry (merge to plugins branch)..."
+        PLUGIN_NAME="schemahero-${{ inputs.plugin_name }}"
+        OCI_REPO="${{ inputs.registry }}/${{ inputs.registry_namespace }}/plugin-${{ inputs.plugin_name }}"
+        
+        # Create a single artifact that contains all platforms
+        # This is the ORAS way - one artifact with multiple files
+        
+        PLATFORMS="${{ inputs.platforms }}"
+        IFS=',' read -ra PLATFORM_ARRAY <<< "$PLATFORMS"
+        
+        # Build the file list for ORAS push
+        FILES=""
+        for platform in "${PLATFORM_ARRAY[@]}"; do
+          OS=$(echo $platform | cut -d'/' -f1)
+          ARCH=$(echo $platform | cut -d'/' -f2)
+          FILES="${FILES} ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz:application/gzip"
+          FILES="${FILES} ${PLUGIN_NAME}-${OS}-${ARCH}.tar.gz.sha256:text/plain"
+        done
+        
+        # Add the index and artifacts metadata
+        FILES="${FILES} index.json:application/vnd.oci.image.index.v1+json"
+        FILES="${FILES} artifacts.json:application/json"
+        
+        echo "Pushing multi-platform artifact to ${OCI_REPO}:${{ inputs.plugin_version }}"
+        
+        # Push from dist directory to avoid directory prefix in artifact
+        (
+          cd dist
+          
+          # Push all platform artifacts as a single OCI artifact
+          # The client will download the index and then fetch the appropriate platform
+          oras push "${OCI_REPO}:${{ inputs.plugin_version }}" \
+            --artifact-type application/vnd.schemahero.plugin.v1.multi+tar \
+            ${FILES} \
+            --annotation "org.opencontainers.image.title=${PLUGIN_NAME}" \
+            --annotation "org.opencontainers.image.version=${{ inputs.plugin_version }}" \
+            --annotation "org.opencontainers.image.description=SchemaHero ${{ inputs.plugin_name }} database plugin (multi-platform)" \
+            --annotation "org.opencontainers.image.source=https://github.com/schemahero/schemahero" \
+            --annotation "io.schemahero.plugin.platforms=${{ inputs.platforms }}"
+          
+          # Also tag as latest
+          oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" latest
+          
+          # Extract major and major.minor for compatibility tags
+          VERSION="${{ inputs.plugin_version }}"
+          IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          
+          # Tag with major version (e.g., "0") for plugin compatibility system
+          if [ ! -z "$MAJOR" ]; then
+            echo "Tagging with major version: ${MAJOR}"
+            oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" "${MAJOR}"
+          fi
+          
+          # Tag with major.minor version (e.g., "0.18") for more specific compatibility
+          if [ ! -z "$MAJOR" ] && [ ! -z "$MINOR" ]; then
+            echo "Tagging with major.minor version: ${MAJOR}.${MINOR}"
+            oras tag "${OCI_REPO}:${{ inputs.plugin_version }}" "${MAJOR}.${MINOR}"
+          fi
+        )
+        
+        echo "Successfully pushed multi-platform ${{ inputs.plugin_name }} version ${{ inputs.plugin_version }} to ${OCI_REPO}"
+        echo ""
+        echo "Available tags:"
+        echo "  ${OCI_REPO}:${{ inputs.plugin_version }} (exact version)"
+        echo "  ${OCI_REPO}:latest"
+        if [ ! -z "$MAJOR" ]; then
+          echo "  ${OCI_REPO}:${MAJOR} (major version for compatibility)"
+        fi
+        if [ ! -z "$MAJOR" ] && [ ! -z "$MINOR" ]; then
+          echo "  ${OCI_REPO}:${MAJOR}.${MINOR} (major.minor version)"
+        fi
+        echo ""
+        echo "Users can pull with:"
+        echo "  oras pull ${OCI_REPO}:${{ inputs.plugin_version }}"
+        echo "  oras pull ${OCI_REPO}:${MAJOR} (for major version compatibility)"
+        echo ""
+        echo "The artifact contains binaries for: ${{ inputs.platforms }}"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: plugin-${{ inputs.plugin_name }}-${{ inputs.plugin_version }}
+        path: dist/
+        retention-days: 7

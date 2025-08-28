@@ -1,1 +1,1 @@
-create table "schemahero.users" (id int, login varchar, name varchar, primary key (id));
+create table "users" (id int, login varchar, name varchar, primary key (id));

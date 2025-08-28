@@ -71,6 +71,16 @@ func IndexToRqliteSchemaIndex(index *Index) *schemasv1alpha4.RqliteTableIndex {
 	return &schemaIndex
 }
 
+func IndexToSqliteSchemaIndex(index *Index) *schemasv1alpha4.SqliteTableIndex {
+	schemaIndex := schemasv1alpha4.SqliteTableIndex{
+		Columns:  index.Columns,
+		Name:     index.Name,
+		IsUnique: index.IsUnique,
+	}
+
+	return &schemaIndex
+}
+
 func MysqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.MysqlTableIndex) *Index {
 	index := Index{
 		Columns:  schemaIndex.Columns,

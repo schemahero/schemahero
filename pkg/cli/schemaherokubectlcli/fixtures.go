@@ -2,6 +2,7 @@ package schemaherokubectlcli
 
 import (
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,6 +24,9 @@ func FixturesCmd() *cobra.Command {
 				OutputDir: v.GetString("output-dir"),
 				Driver:    v.GetString("driver"),
 				URI:       v.GetString("uri")}
+
+			// Set the global plugin manager
+			db.SetPluginManager(plugin.GetGlobalPluginManager())
 
 			return db.CreateFixturesSync()
 		},

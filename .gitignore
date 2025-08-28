@@ -28,6 +28,9 @@ dist/
 
 .DS_Store
 
+# Plugin binaries
+plugins/*/schemahero-*
+
 vendor
 integration/**/out.sql
 integration/tests/fixtures/**/fixtures.sql

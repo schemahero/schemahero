@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/generate"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -37,6 +38,12 @@ func GenerateCmd() *cobra.Command {
 				OutputDir: v.GetString("output-dir"),
 				Schemas:   v.GetStringSlice("schema"),
 			}
+
+			// Set plugin manager from global initialization
+			if pluginManager := plugin.GetGlobalPluginManager(); pluginManager != nil {
+				g.SetPluginManager(pluginManager)
+			}
+
 			return g.RunSync()
 
 		},

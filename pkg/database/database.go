@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,12 +12,8 @@ import (
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/client/schemaheroclientset/scheme"
-	"github.com/schemahero/schemahero/pkg/database/cassandra"
-	"github.com/schemahero/schemahero/pkg/database/mysql"
-	"github.com/schemahero/schemahero/pkg/database/postgres"
-	"github.com/schemahero/schemahero/pkg/database/rqlite"
-	"github.com/schemahero/schemahero/pkg/database/sqlite"
-	"github.com/schemahero/schemahero/pkg/database/timescaledb"
+	"github.com/schemahero/schemahero/pkg/database/interfaces"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
@@ -33,6 +30,85 @@ type Database struct {
 	Password       string
 	Keyspace       string
 	DeploySeedData bool
+	pluginManager  *plugin.PluginManager
+}
+
+// SetPluginManager sets the plugin manager for this database instance.
+// The plugin manager is used to resolve database connections through plugins
+// before falling back to in-tree drivers.
+func (d *Database) SetPluginManager(manager *plugin.PluginManager) {
+	d.pluginManager = manager
+}
+
+// getConnection attempts to establish a database connection through plugins.
+// For postgres and mysql, plugins are required. Other drivers still use in-tree implementations.
+func (d *Database) GetConnection(ctx context.Context) (interfaces.SchemaHeroDatabaseConnection, error) {
+	// Try plugin-based connection first if plugin manager is set
+	if d.pluginManager != nil {
+		// Prepare connection options based on driver
+		options := map[string]interface{}{}
+		if d.Driver == "cassandra" {
+			// Cassandra requires special connection parameters
+			if len(d.Hosts) > 0 {
+				options["hosts"] = d.Hosts
+			}
+			if d.Username != "" {
+				options["username"] = d.Username
+			}
+			if d.Password != "" {
+				options["password"] = d.Password
+			}
+			if d.Keyspace != "" {
+				options["keyspace"] = d.Keyspace
+			}
+		}
+
+		conn, err := d.pluginManager.GetConnection(ctx, d.Driver, d.URI, options)
+		if err == nil {
+			return conn, nil
+		}
+		// For postgres, mysql, sqlite, cassandra, and rqlite, plugins are required - no fallback
+		if d.Driver == "postgres" || d.Driver == "postgresql" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+			return nil, errors.Wrapf(err, "postgres driver requires plugin")
+		}
+		if d.Driver == "mysql" || d.Driver == "mariadb" {
+			return nil, errors.Wrapf(err, "mysql driver requires plugin")
+		}
+		if d.Driver == "sqlite" || d.Driver == "sqlite3" {
+			return nil, errors.Wrapf(err, "sqlite driver requires plugin")
+		}
+		if d.Driver == "rqlite" {
+			return nil, errors.Wrapf(err, "rqlite driver requires plugin")
+		}
+		if d.Driver == "cassandra" {
+			return nil, errors.Wrapf(err, "cassandra driver requires plugin")
+		}
+		// Log the plugin failure for other drivers
+		logger.Info("Plugin connection failed for driver",
+			zap.String("driver", d.Driver),
+			zap.Error(err))
+	}
+
+	// For drivers that require plugins, return error if no plugin manager
+	switch d.Driver {
+	case "postgres", "postgresql", "cockroachdb", "timescaledb":
+		return nil, errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+
+	case "mysql", "mariadb":
+		return nil, errors.New("mysql driver requires plugin - install schemahero-mysql plugin")
+
+	case "rqlite":
+		return nil, errors.New("rqlite driver requires plugin - install schemahero-rqlite plugin")
+
+	case "sqlite", "sqlite3":
+		return nil, errors.New("sqlite driver requires plugin - install schemahero-sqlite plugin")
+
+	case "cassandra":
+		return nil, errors.New("cassandra driver requires plugin - install schemahero-cassandra plugin")
+
+	default:
+		return nil, errors.Errorf("unknown database driver: %q", d.Driver)
+	}
 }
 
 func (d *Database) CreateFixturesSync() error {
@@ -76,74 +152,48 @@ func (d *Database) CreateFixturesSync() error {
 			return nil
 		}
 
-		if d.Driver == "postgres" {
-			if spec.Schema.Postgres == nil || spec.Schema.Postgres.IsDeleted {
+		// For fixtures, we don't need a database connection - just generate DDL
+		// We'll use the plugin manager with a special fixture-only mode
+		if d.pluginManager != nil {
+			// Create a dummy URI for fixture generation - we won't actually connect
+			dummyURI := "fixture-only://localhost/schemahero"
+
+			// Pass a special option to indicate this is fixture-only mode
+			options := map[string]interface{}{
+				"fixture-only": true,
+			}
+
+			conn, err := d.pluginManager.GetConnection(context.Background(), d.Driver, dummyURI, options)
+			if err == nil {
+				defer conn.Close()
+
+				// Generate fixtures statements
+				stmts, err := conn.GenerateFixtures(spec)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate fixtures")
+				}
+
+				statements = append(statements, stmts...)
 				return nil
 			}
+			// If plugin connection fails, fall through to error
+		}
 
-			createStatements, err := postgres.CreateTableStatements(spec.Name, spec.Schema.Postgres)
-			if err != nil {
-				return err
-			}
-
-			statements = append(statements, createStatements...)
-		} else if d.Driver == "mysql" {
-			if spec.Schema.Mysql == nil || spec.Schema.Mysql.IsDeleted {
-				return nil
-			}
-
-			createStatements, err := mysql.CreateTableStatements(spec.Name, spec.Schema.Mysql)
-			if err != nil {
-				return err
-			}
-
-			statements = append(statements, createStatements...)
+		// Fallback to error for drivers that require plugins
+		if d.Driver == "postgres" || d.Driver == "postgresql" {
+			return errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
+		} else if d.Driver == "mysql" || d.Driver == "mariadb" {
+			return errors.New("mysql driver requires plugin - install schemahero-mysql plugin")
 		} else if d.Driver == "cockroachdb" {
-			if spec.Schema.CockroachDB == nil || spec.Schema.CockroachDB.IsDeleted {
-				return nil
-			}
-
-			createStatements, err := postgres.CreateTableStatements(spec.Name, spec.Schema.CockroachDB)
-			if err != nil {
-				return err
-			}
-
-			statements = append(statements, createStatements...)
-		} else if d.Driver == "sqlite" {
-			if spec.Schema.SQLite == nil || spec.Schema.SQLite.IsDeleted {
-				return nil
-			}
-
-			createStatements, err := sqlite.CreateTableStatements(spec.Name, spec.Schema.SQLite)
-			if err != nil {
-				return err
-			}
-
-			statements = append(statements, createStatements...)
+			return errors.New("cockroachdb driver requires plugin - install schemahero-postgres plugin")
+		} else if d.Driver == "sqlite" || d.Driver == "sqlite3" {
+			return errors.New("sqlite driver requires plugin - install schemahero-sqlite plugin")
 		} else if d.Driver == "rqlite" {
-			if spec.Schema.RQLite == nil || spec.Schema.RQLite.IsDeleted {
-				return nil
-			}
-
-			createStatements, err := rqlite.CreateTableStatements(spec.Name, spec.Schema.RQLite)
-			if err != nil {
-				return err
-			}
-
-			statements = append(statements, createStatements...)
+			return errors.New("rqlite driver requires plugin - install schemahero-rqlite plugin")
 		} else if d.Driver == "timescaledb" {
-			if spec.Schema.TimescaleDB == nil || spec.Schema.TimescaleDB.IsDeleted {
-				return nil
-			}
-
-			createStatements, err := timescaledb.CreateTableStatements(spec.Name, spec.Schema.TimescaleDB)
-			if err != nil {
-				return err
-			}
-
-			statements = append(statements, createStatements...)
+			return errors.New("postgres driver requires plugin - install schemahero-postgres plugin")
 		} else if d.Driver == "cassandra" {
-			return errors.New("not implemented")
+			return errors.New("cassandra driver requires plugin - install schemahero-cassandra plugin")
 		}
 
 		return nil
@@ -328,23 +378,42 @@ func (d *Database) PlanSyncViewSpec(spec *schemasv1alpha4.ViewSpec) ([]string, e
 		return []string{}, nil
 	}
 
-	if d.Driver == "postgres" {
-		return postgres.PlanPostgresView(d.URI, spec.Name, spec.Schema.Postgres)
+	// Views are supported through plugins for databases that support them
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		var schema interface{}
+		if d.Driver == "postgres" || d.Driver == "cockroachdb" {
+			schema = spec.Schema.Postgres
+		} else if d.Driver == "timescaledb" {
+			schema = spec.Schema.TimescaleDB
+		}
+
+		if schema == nil {
+			return []string{}, nil
+		}
+
+		return conn.PlanViewSchema(spec.Name, schema)
 	} else if d.Driver == "mysql" {
-		return mysql.PlanMysqlView(d.URI, spec.Name, spec.Schema.Mysql)
-	} else if d.Driver == "cockroachdb" {
-		return postgres.PlanPostgresView(d.URI, spec.Name, spec.Schema.CockroachDB)
-	} else if d.Driver == "sqlite" {
-		return sqlite.PlanSqliteView(d.URI, spec.Name, spec.Schema.SQLite)
-	} else if d.Driver == "rqlite" {
-		return rqlite.PlanRQLiteView(d.URI, spec.Name, spec.Schema.RQLite)
-	} else if d.Driver == "timescaledb" {
-		return timescaledb.PlanTimescaleDBView(d.URI, spec.Name, spec.Schema.TimescaleDB)
-	} else if d.Driver == "cassandra" {
-		return cassandra.PlanCassandraView(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		if spec.Schema.Mysql == nil {
+			return []string{}, nil
+		}
+
+		return conn.PlanViewSchema(spec.Name, spec.Schema.Mysql)
 	}
 
-	return nil, errors.New("unknown driver")
+	// Other drivers don't support views yet
+	return nil, errors.Errorf("driver %s does not support views", d.Driver)
 }
 
 func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string, error) {
@@ -361,20 +430,34 @@ func (d *Database) PlanSyncTableSpec(spec *schemasv1alpha4.TableSpec) ([]string,
 		seedData = spec.SeedData
 	}
 
-	if d.Driver == "postgres" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.Postgres, seedData)
-	} else if d.Driver == "mysql" {
-		return mysql.PlanMysqlTable(d.URI, spec.Name, spec.Schema.Mysql, seedData)
-	} else if d.Driver == "cockroachdb" {
-		return postgres.PlanPostgresTable(d.URI, spec.Name, spec.Schema.CockroachDB, seedData)
-	} else if d.Driver == "cassandra" {
-		return cassandra.PlanCassandraTable(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra, seedData)
-	} else if d.Driver == "sqlite" {
-		return sqlite.PlanSqliteTable(d.URI, spec.Name, spec.Schema.SQLite, seedData)
-	} else if d.Driver == "rqlite" {
-		return rqlite.PlanRqliteTable(d.URI, spec.Name, spec.Schema.RQLite, seedData)
-	} else if d.Driver == "timescaledb" {
-		return timescaledb.PlanTimescaleDBTable(d.URI, spec.Name, spec.Schema.TimescaleDB, seedData)
+	// Use connection-based planning for postgres, mysql, sqlite, rqlite, timescaledb, and cassandra
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" || d.Driver == "sqlite" || d.Driver == "sqlite3" || d.Driver == "rqlite" || d.Driver == "cassandra" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		// Get the appropriate schema based on driver
+		var schema interface{}
+		switch d.Driver {
+		case "postgres":
+			schema = spec.Schema.Postgres
+		case "cockroachdb":
+			schema = spec.Schema.CockroachDB
+		case "mysql":
+			schema = spec.Schema.Mysql
+		case "timescaledb":
+			schema = spec.Schema.TimescaleDB
+		case "sqlite", "sqlite3":
+			schema = spec.Schema.SQLite
+		case "rqlite":
+			schema = spec.Schema.RQLite
+		case "cassandra":
+			schema = spec.Schema.Cassandra
+		}
+
+		return conn.PlanTableSchema(spec.Name, schema, seedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -385,35 +468,20 @@ func (d *Database) PlanSyncSeedData(spec *schemasv1alpha4.TableSpec) ([]string, 
 		return []string{}, nil
 	}
 
-	if d.Driver == "postgres" {
-		// If schema is present, use it; otherwise, retrieve existing schema from database
-		if spec.Schema != nil && spec.Schema.Postgres != nil {
-			return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
-		} else {
-			return postgres.SeedDataStatementsWithExistingSchema(d.URI, spec.Name, spec.SeedData)
+	// For seed data without schema, we need to connect to the database to get the existing schema
+	// This is supported through the plugin system for all drivers
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" ||
+		d.Driver == "sqlite" || d.Driver == "sqlite3" || d.Driver == "rqlite" || d.Driver == "cassandra" {
+
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
 		}
-	} else if d.Driver == "mysql" {
-		return mysql.SeedDataStatements(spec.Name, spec.SeedData)
-	} else if d.Driver == "cockroachdb" {
-		// If schema is present, use it; otherwise, retrieve existing schema from database
-		if spec.Schema != nil && spec.Schema.Postgres != nil {
-			return postgres.SeedDataStatements(spec.Name, spec.Schema.Postgres, spec.SeedData)
-		} else {
-			return postgres.SeedDataStatementsWithExistingSchema(d.URI, spec.Name, spec.SeedData)
-		}
-	} else if d.Driver == "cassandra" {
-		return nil, errors.New("cassandra seed data is not implemented")
-	} else if d.Driver == "sqlite" {
-		return sqlite.SeedDataStatements(spec.Name, spec.SeedData)
-	} else if d.Driver == "rqlite" {
-		return rqlite.SeedDataStatements(spec.Name, spec.SeedData)
-	} else if d.Driver == "timescaledb" {
-		// If schema is present, use it; otherwise, retrieve existing schema from database
-		if spec.Schema != nil && spec.Schema.TimescaleDB != nil {
-			return timescaledb.SeedDataStatements(spec.Name, spec.Schema.TimescaleDB, spec.SeedData)
-		} else {
-			return timescaledb.SeedDataStatementsWithExistingSchema(d.URI, spec.Name, spec.SeedData)
-		}
+		defer conn.Close()
+
+		// When there's no schema, pass nil for the schema and let the plugin handle it
+		// The plugin should retrieve the existing schema from the database
+		return conn.PlanTableSchema(spec.Name, nil, spec.SeedData)
 	}
 
 	return nil, errors.Errorf("unknown database driver: %q", d.Driver)
@@ -445,28 +513,38 @@ func (d *Database) PlanSyncTypeSpec(spec *schemasv1alpha4.DataTypeSpec) ([]strin
 		return []string{}, nil
 	}
 
+	// Use plugin for Cassandra
 	if d.Driver == "cassandra" {
-		return cassandra.PlanCassandraType(d.Hosts, d.Username, d.Password, d.Keyspace, spec.Name, spec.Schema.Cassandra)
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+		
+		return conn.PlanTypeSchema(spec.Name, spec.Schema.Cassandra)
 	}
 
 	return nil, errors.Errorf("planning types is not supported for driver %q", d.Driver)
 }
 
 func (d *Database) ApplySync(statements []string) error {
-	if d.Driver == "postgres" {
-		return postgres.DeployPostgresStatements(d.URI, statements)
-	} else if d.Driver == "mysql" {
-		return mysql.DeployMysqlStatements(d.URI, statements)
-	} else if d.Driver == "cockroachdb" {
-		return postgres.DeployPostgresStatements(d.URI, statements)
-	} else if d.Driver == "cassandra" {
-		return cassandra.DeployCassandraStatements(d.Hosts, d.Username, d.Password, d.Keyspace, statements)
-	} else if d.Driver == "sqlite" {
-		return sqlite.DeploySqliteStatements(d.URI, statements)
-	} else if d.Driver == "rqlite" {
-		return rqlite.DeployRqliteStatements(d.URI, statements)
-	} else if d.Driver == "timescaledb" {
-		return postgres.DeployPostgresStatements(d.URI, statements)
+	// Print each statement before executing
+	for _, statement := range statements {
+		if statement != "" {
+			fmt.Printf("Executing query %q\n", statement)
+		}
+	}
+
+	// Use connection-based deployment for postgres, mysql, sqlite, rqlite, timescaledb, and cassandra
+	if d.Driver == "postgres" || d.Driver == "postgresql" || d.Driver == "cockroachdb" || d.Driver == "mysql" || d.Driver == "timescaledb" || d.Driver == "sqlite" || d.Driver == "sqlite3" || d.Driver == "rqlite" || d.Driver == "cassandra" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		// Use the DeployStatements method on the connection
+		return conn.DeployStatements(statements)
 	}
 
 	return errors.Errorf("unknown database driver: %q", d.Driver)
@@ -480,6 +558,7 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 	statements := []string{}
 
 	functionTagOpen := false
+	dollarQuoteTag := ""
 	statement := ""
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
@@ -487,12 +566,35 @@ func (d *Database) GetStatementsFromDDL(ddl string) []string {
 			continue
 		}
 
+		// Check for dollar-quoted string delimiters (e.g., $$ or $_SCHEMAHERO_$)
+		// These are used in PostgreSQL functions to avoid escaping issues
+		if dollarQuoteTag == "" {
+			// Look for opening dollar quote
+			if idx := strings.Index(line, "$"); idx >= 0 {
+				// Find the closing $ for the tag
+				endIdx := strings.Index(line[idx+1:], "$")
+				if endIdx >= 0 {
+					tag := line[idx : idx+endIdx+2]
+					// Check if this same tag appears again on the line (opening and closing on same line)
+					if !strings.Contains(line[idx+endIdx+2:], tag) {
+						dollarQuoteTag = tag
+					}
+				}
+			}
+		} else {
+			// Look for closing dollar quote
+			if strings.Contains(line, dollarQuoteTag) {
+				dollarQuoteTag = ""
+			}
+		}
+
 		// we assume the function tag to always have its own line and never be the last line for simplicity
-		if line == postgres.FunctionLogicTag {
+		if line == "-- Function body follows" {
 			functionTagOpen = !functionTagOpen
 		}
 
-		if !functionTagOpen && (i == len(lines)-1 || strings.HasSuffix(line, ";")) {
+		// Don't split on semicolons if we're inside a dollar-quoted string or function tag
+		if !functionTagOpen && dollarQuoteTag == "" && (i == len(lines)-1 || strings.HasSuffix(line, ";")) {
 			statement = statement + " " + line
 			statements = append(statements, strings.TrimSpace(statement))
 			statement = ""
@@ -530,8 +632,24 @@ func (d *Database) planExtensionSync(specContents []byte) ([]string, error) {
 }
 
 func (d *Database) PlanSyncDatabaseExtensionSpec(spec *schemasv1alpha4.DatabaseExtensionSpec) ([]string, error) {
-	if d.Driver == "postgres" && spec.Postgres != nil {
-		return postgres.CreateExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{spec.Postgres})
+	// Use connection-based planning for postgres
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		// Get the appropriate schema based on driver
+		var schema interface{}
+		var extensionName string
+		if d.Driver == "postgres" && spec.Postgres != nil {
+			schema = spec.Postgres
+			extensionName = spec.Postgres.Name
+		}
+		// CockroachDB and TimescaleDB would also use postgres schema if they support extensions
+
+		return conn.PlanExtensionSchema(extensionName, schema)
 	}
 
 	return nil, errors.Errorf("planning extensions is not supported for driver %q or extension type not specified", d.Driver)
@@ -559,9 +677,26 @@ func (d *Database) planFunctionSync(specContents []byte) ([]string, error) {
 }
 
 func (d *Database) PlanSyncFunctionSpec(spec *schemasv1alpha4.FunctionSpec) ([]string, error) {
-	if d.Driver == "postgres" && spec.Schema != nil && spec.Schema.Postgres != nil {
-		return postgres.PlanPostgresFunction(d.URI, spec.Name, spec.Schema.Postgres)
+	// Use connection-based planning for postgres
+	if d.Driver == "postgres" || d.Driver == "cockroachdb" || d.Driver == "timescaledb" {
+		conn, err := d.GetConnection(context.Background())
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get database connection")
+		}
+		defer conn.Close()
+
+		// Get the appropriate schema based on driver
+		var schema interface{}
+		if d.Driver == "postgres" && spec.Schema != nil && spec.Schema.Postgres != nil {
+			schema = spec.Schema.Postgres
+		}
+		// CockroachDB and TimescaleDB would also use postgres schema if they support functions
+
+		return conn.PlanFunctionSchema(spec.Name, schema)
 	}
 
 	return nil, errors.Errorf("planning functions is not supported for driver %q or function database schema not specified", d.Driver)
 }
+
+// generateFixturesFromLib generates fixtures using the plugin lib packages directly
+// without requiring a database connection. This is used for fixture generation.

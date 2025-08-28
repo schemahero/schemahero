@@ -10,16 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4.1.1
+
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22.4"
+          go-version-file: 'go.mod'
 
       - id: go-cache-paths
         run: |
           echo "::set-output name=go-build::$(go env GOCACHE)"
           echo "::set-output name=go-mod::$(go env GOMODCACHE)"
-
-      - uses: actions/checkout@v4.1.1
 
       - uses: actions/cache@v4
         with:
@@ -43,16 +43,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4.1.1
+
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22.4"
+          go-version-file: 'go.mod'
 
       - id: go-cache-paths
         run: |
           echo "::set-output name=go-build::$(go env GOCACHE)"
           echo "::set-output name=go-mod::$(go env GOMODCACHE)"
-
-      - uses: actions/checkout@v4.1.1
 
       - uses: actions/cache@v4
         with:
@@ -76,12 +76,21 @@ jobs:
         postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build postgres plugin
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/postgres
+          go build -o $HOME/.schemahero/plugins/schemahero-postgres .
+          chmod +x $HOME/.schemahero/plugins/schemahero-postgres
       - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
   test-mysql:
@@ -93,12 +102,21 @@ jobs:
         mysql_version: ["8.0.31", "8.4.5", "9.3.0"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build mysql plugin
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/mysql
+          go build -o $HOME/.schemahero/plugins/schemahero-mysql .
+          chmod +x $HOME/.schemahero/plugins/schemahero-mysql
       - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
   test-cockroach:
@@ -111,12 +129,21 @@ jobs:
         cockroachdb_version: ["v21.2.17", "v22.1.11"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build postgres plugin (cockroach uses postgres plugin)
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/postgres
+          go build -o $HOME/.schemahero/plugins/schemahero-postgres .
+          chmod +x $HOME/.schemahero/plugins/schemahero-postgres
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
   test-cassandra:
@@ -128,12 +155,21 @@ jobs:
         cassandra_version: ["3.11.10"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build cassandra plugin
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/cassandra
+          go build -o $HOME/.schemahero/plugins/schemahero-cassandra .
+          chmod +x $HOME/.schemahero/plugins/schemahero-cassandra
       - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
 
   test-sqlite:
@@ -145,12 +181,21 @@ jobs:
         sqlite_version: ["3.39.3"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build sqlite plugin
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/sqlite
+          go build -o $HOME/.schemahero/plugins/schemahero-sqlite .
+          chmod +x $HOME/.schemahero/plugins/schemahero-sqlite
       - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
 
   test-rqlite:
@@ -162,12 +207,21 @@ jobs:
         rqlite_version: ["6.10.2", "7.6.1"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build rqlite plugin
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/rqlite
+          go build -o $HOME/.schemahero/plugins/schemahero-rqlite .
+          chmod +x $HOME/.schemahero/plugins/schemahero-rqlite
       - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
 
   test-timescaledb:
@@ -179,12 +233,21 @@ jobs:
         timescaledb_version: ["2.9.3-pg14"]
     steps:
       - uses: actions/checkout@v4.1.1
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
           name: kubectl-schemahero
           path: bin/
       - run: chmod +x bin/kubectl-schemahero
+      - name: Build timescaledb plugin
+        run: |
+          mkdir -p $HOME/.schemahero/plugins
+          cd plugins/timescaledb
+          go build -o $HOME/.schemahero/plugins/schemahero-timescaledb .
+          chmod +x $HOME/.schemahero/plugins/schemahero-timescaledb
       - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
 
   test-fixtures:

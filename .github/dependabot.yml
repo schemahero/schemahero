@@ -15,3 +15,63 @@ updates:
         update-types:
           - "patch"
           - "minor"
+
+  - package-ecosystem: "gomod"
+    directory: "/plugins/rqlite"
+    schedule:
+      interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"
+
+  - package-ecosystem: "gomod"
+    directory: "/plugins/sqlite"
+    schedule:
+      interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"
+
+  - package-ecosystem: "gomod"
+    directory: "/plugins/cassandra"
+    schedule:
+      interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"
+
+  - package-ecosystem: "gomod"
+    directory: "/plugins/postgres"
+    schedule:
+      interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"
+
+  - package-ecosystem: "gomod"
+    directory: "/plugins/mysql"
+    schedule:
+      interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"
+
+  - package-ecosystem: "gomod"
+    directory: "/plugins/timescaledb"
+    schedule:
+      interval: "weekly"
+    groups:
+      security:
+        update-types:
+          - "patch"
+          - "minor"

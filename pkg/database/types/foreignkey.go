@@ -100,6 +100,20 @@ func ForeignKeyToRqliteSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4
 	return &schemaForeignKey
 }
 
+func ForeignKeyToSqliteSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4.SqliteTableForeignKey {
+	schemaForeignKey := schemasv1alpha4.SqliteTableForeignKey{
+		Columns: foreignKey.ChildColumns,
+		References: schemasv1alpha4.SqliteTableForeignKeyReferences{
+			Table:   foreignKey.ParentTable,
+			Columns: foreignKey.ParentColumns,
+		},
+		Name:     foreignKey.Name,
+		OnDelete: foreignKey.OnDelete,
+	}
+
+	return &schemaForeignKey
+}
+
 func MysqlSchemaForeignKeyToForeignKey(schemaForeignKey *schemasv1alpha4.MysqlTableForeignKey) *ForeignKey {
 	foreignKey := ForeignKey{
 		ChildColumns:  schemaForeignKey.Columns,

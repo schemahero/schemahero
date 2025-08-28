@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/schemahero/schemahero/pkg/config"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -59,4 +60,7 @@ func InitAndExecute() {
 func initConfig() {
 	viper.SetEnvPrefix("SCHEMAHERO")
 	viper.AutomaticEnv()
+
+	// Initialize the plugin system globally
+	plugin.InitializePluginSystem()
 }

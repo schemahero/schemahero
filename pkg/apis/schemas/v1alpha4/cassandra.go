@@ -62,3 +62,99 @@ type CassandraDataTypeSchema struct {
 	IsDeleted bool              `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 	Fields    []*CassandraField `json:"fields,omitempty" yaml:"fields,omitempty"`
 }
+
+// UnmarshalYAML implements custom YAML unmarshaling to handle zero values properly
+func (p *CassandraTableProperties) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// Use a map to capture all fields including zero values
+	var raw map[string]interface{}
+	if err := unmarshal(&raw); err != nil {
+		return err
+	}
+	
+	// Handle string fields
+	if v, ok := raw["bloomFilterFPChance"]; ok {
+		if str, ok := v.(string); ok {
+			p.BloomFilterFPChance = str
+		}
+	}
+	if v, ok := raw["comment"]; ok {
+		if str, ok := v.(string); ok {
+			p.Comment = str
+		}
+	}
+	if v, ok := raw["crcCheckChance"]; ok {
+		if str, ok := v.(string); ok {
+			p.CRCCheckChance = str
+		}
+	}
+	if v, ok := raw["dcLocalReadRepairChance"]; ok {
+		if str, ok := v.(string); ok {
+			p.DCLocalReadRepairChance = str
+		}
+	}
+	if v, ok := raw["readRepairChance"]; ok {
+		if str, ok := v.(string); ok {
+			p.ReadRepairChance = str
+		}
+	}
+	if v, ok := raw["speculativeRetry"]; ok {
+		if str, ok := v.(string); ok {
+			p.SpeculativeRetry = str
+		}
+	}
+	
+	// Handle map fields
+	if v, ok := raw["caching"]; ok {
+		if m, ok := v.(map[interface{}]interface{}); ok {
+			p.Caching = make(map[string]string)
+			for k, val := range m {
+				p.Caching[k.(string)] = val.(string)
+			}
+		}
+	}
+	if v, ok := raw["compaction"]; ok {
+		if m, ok := v.(map[interface{}]interface{}); ok {
+			p.Compaction = make(map[string]string)
+			for k, val := range m {
+				p.Compaction[k.(string)] = val.(string)
+			}
+		}
+	}
+	if v, ok := raw["compression"]; ok {
+		if m, ok := v.(map[interface{}]interface{}); ok {
+			p.Compression = make(map[string]string)
+			for k, val := range m {
+				p.Compression[k.(string)] = val.(string)
+			}
+		}
+	}
+	
+	// Handle integer fields - explicitly check for presence
+	if v, ok := raw["defaultTTL"]; ok {
+		if i, ok := v.(int); ok {
+			p.DefaultTTL = &i
+		}
+	}
+	if v, ok := raw["gcGraceSeconds"]; ok {
+		if i, ok := v.(int); ok {
+			p.GCGraceSeconds = &i
+		}
+	}
+	if v, ok := raw["maxIndexInterval"]; ok {
+		if i, ok := v.(int); ok {
+			p.MaxIndexInterval = &i
+		}
+	}
+	if v, ok := raw["memtableFlushPeriodMs"]; ok {
+		if i, ok := v.(int); ok {
+			p.MemtableFlushPeriodMS = &i
+		}
+	}
+	if v, ok := raw["minIndexInterval"]; ok {
+		if i, ok := v.(int); ok {
+			p.MinIndexInterval = &i
+		}
+	}
+	
+	return nil
+}
