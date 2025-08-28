@@ -1,8 +1,6 @@
 module github.com/schemahero/schemahero/plugins/cassandra
 
-go 1.24.0
-
-toolchain go1.24.2
+go 1.24.6
 
 replace github.com/schemahero/schemahero => ../..
 
