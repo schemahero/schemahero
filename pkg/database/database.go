@@ -332,6 +332,10 @@ func (d *Database) planTableSync(specContents []byte) ([]string, error) {
 		spec = &plainSpec
 	}
 
+	logger.Debug("parsed table spec",
+		zap.String("name", spec.Name),
+		zap.Int("dataMigrations", len(spec.DataMigrations)))
+
 	plan, err := d.PlanSyncTableSpec(spec)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to plan table sync for %s", spec.Name)
