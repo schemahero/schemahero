@@ -362,12 +362,12 @@ func (c *ConnectionProxy) GenerateFixtures(spec *schemasv1alpha4.TableSpec) ([]s
 			// WORKAROUND: gob encoding loses zero integer pointers
 			const zeroIntSentinel = -999999999
 			if spec.Schema.Cassandra.Properties != nil {
-				if spec.Schema.Cassandra.Properties.DefaultTTL != nil && 
+				if spec.Schema.Cassandra.Properties.DefaultTTL != nil &&
 					*spec.Schema.Cassandra.Properties.DefaultTTL == 0 {
 					sentinel := zeroIntSentinel
 					spec.Schema.Cassandra.Properties.DefaultTTL = &sentinel
 				}
-				if spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS != nil && 
+				if spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS != nil &&
 					*spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS == 0 {
 					sentinel := zeroIntSentinel
 					spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS = &sentinel

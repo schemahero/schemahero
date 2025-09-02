@@ -587,12 +587,12 @@ func (s *RPCServer) ConnectionGenerateFixtures(args *ConnectionGenerateFixturesA
 			// WORKAROUND: Restore zero integer values for Cassandra properties
 			const zeroIntSentinel = -999999999
 			if args.Spec.Schema.Cassandra.Properties != nil {
-				if args.Spec.Schema.Cassandra.Properties.DefaultTTL != nil && 
+				if args.Spec.Schema.Cassandra.Properties.DefaultTTL != nil &&
 					*args.Spec.Schema.Cassandra.Properties.DefaultTTL == zeroIntSentinel {
 					zero := 0
 					args.Spec.Schema.Cassandra.Properties.DefaultTTL = &zero
 				}
-				if args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS != nil && 
+				if args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS != nil &&
 					*args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS == zeroIntSentinel {
 					zero := 0
 					args.Spec.Schema.Cassandra.Properties.MemtableFlushPeriodMS = &zero

@@ -2,6 +2,7 @@
 package plugin
 
 import (
+	"os"
 	"sync"
 )
 
@@ -26,6 +27,10 @@ var (
 //
 // Returns the initialized plugin manager instance.
 func InitializePluginSystem() *PluginManager {
+	// Check if we should override the plugin registry from environment
+	if registry := os.Getenv("SCHEMAHERO_PLUGIN_REGISTRY"); registry != "" {
+		SetPluginRegistryOverride(registry)
+	}
 	globalPluginManagerMutex.Lock()
 	defer globalPluginManagerMutex.Unlock()
 

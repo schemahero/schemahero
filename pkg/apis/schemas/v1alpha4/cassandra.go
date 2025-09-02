@@ -70,7 +70,7 @@ func (p *CassandraTableProperties) UnmarshalYAML(unmarshal func(interface{}) err
 	if err := unmarshal(&raw); err != nil {
 		return err
 	}
-	
+
 	// Handle string fields
 	if v, ok := raw["bloomFilterFPChance"]; ok {
 		if str, ok := v.(string); ok {
@@ -102,7 +102,7 @@ func (p *CassandraTableProperties) UnmarshalYAML(unmarshal func(interface{}) err
 			p.SpeculativeRetry = str
 		}
 	}
-	
+
 	// Handle map fields
 	if v, ok := raw["caching"]; ok {
 		if m, ok := v.(map[interface{}]interface{}); ok {
@@ -128,7 +128,7 @@ func (p *CassandraTableProperties) UnmarshalYAML(unmarshal func(interface{}) err
 			}
 		}
 	}
-	
+
 	// Handle integer fields - explicitly check for presence
 	if v, ok := raw["defaultTTL"]; ok {
 		if i, ok := v.(int); ok {
@@ -155,6 +155,6 @@ func (p *CassandraTableProperties) UnmarshalYAML(unmarshal func(interface{}) err
 			p.MinIndexInterval = &i
 		}
 	}
-	
+
 	return nil
 }

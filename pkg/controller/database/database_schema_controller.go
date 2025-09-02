@@ -37,6 +37,8 @@ type ReconcileDatabaseSchema struct {
 	client.Client
 	scheme        *runtime.Scheme
 	databaseNames []string
+	managerImage  string
+	managerTag    string
 }
 
 // Reconcile reads that state of the cluster for a Database object and makes changes based on the state read

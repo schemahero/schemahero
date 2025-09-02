@@ -46,8 +46,17 @@ export GO111MODULE=on
 
 all: generate fmt vet manifests bin/kubectl-schemahero manager test
 
+.PHONY: help
+help: ## Show this help message
+	@echo "SchemaHero Makefile"
+	@echo ""
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Available targets:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
+
 .PHONY: clean-and-tidy
-clean-and-tidy:
+clean-and-tidy: ## Clean module cache and tidy dependencies
 	@go clean -modcache ||:
 	@go mod tidy ||:
 
@@ -56,25 +65,25 @@ envtest:
 	./hack/envtest.sh
 
 .PHONY: test
-test: fmt vet manifests envtest
+test: fmt vet manifests envtest ## Run tests
 	go test ./pkg/... ./cmd/...
 
 .PHONY: plugins
-plugins:
+plugins: ## Build all database plugins
 	@echo "Building plugins..."
 	$(MAKE) -C plugins all
 
 .PHONY: install-dev
 install-dev: bin/kubectl-schemahero
-	@echo "Installing schemahero and $(PLUGIN) plugin for development..."
-	sudo mv bin/kubectl-schemahero /usr/local/bin/schemahero
+	@echo "Building $(PLUGIN) plugin for development..."
 	$(MAKE) -C plugins $(PLUGIN)
-	sudo mkdir -p /var/lib/schemahero/plugins
-	sudo cp ./plugins/bin/schemahero-$(PLUGIN) /var/lib/schemahero/plugins
-	@echo "Fixing permissions and signing in place..."
-	sudo chmod 755 /var/lib/schemahero/plugins/schemahero-$(PLUGIN)
-	sudo codesign --force --deep -s - /var/lib/schemahero/plugins/schemahero-$(PLUGIN)
-	@echo "Installation complete. Plugin $(PLUGIN) is ready at /var/lib/schemahero/plugins/schemahero-$(PLUGIN)"
+	@echo ""
+	@echo "✅ Development build complete!"
+	@echo "🔧 Binary: ./bin/kubectl-schemahero"
+	@echo "🔌 Plugin: ./plugins/bin/schemahero-$(PLUGIN)"
+	@echo ""
+	@echo "To use:"
+	@echo "  SCHEMAHERO_PLUGIN_DIR=./plugins/bin ./bin/kubectl-schemahero plan ..."
 
 .PHONY: install-plugin
 install-plugin:
@@ -117,7 +126,7 @@ run-database: generate fmt vet bin/manager
 	--manager-tag latest
 
 .PHONY: install
-install: manifests generate local
+install: manifests generate local ## Install SchemaHero to cluster
 	kubectl apply -f config/crds/v1
 
 .PHONY: deploy
@@ -126,7 +135,7 @@ deploy: manifests
 	kustomize build config/default | kubectl apply -f -
 
 .PHONY: manifests
-manifests: controller-gen
+manifests: controller-gen ## Generate Kubernetes manifests
 	$(CONTROLLER_GEN) \
 		rbac:roleName=manager-role webhook \
 		crd:crdVersions=v1,generateEmbeddedObjectMeta=true  \
@@ -166,7 +175,7 @@ generate: controller-gen client-gen lister-gen informer-gen
         -h ./hack/boilerplate.go.txt
 
 .PHONY: bin/kubectl-schemahero
-bin/kubectl-schemahero:
+bin/kubectl-schemahero: ## Build kubectl-schemahero binary
 	go build \
 	  -tags netgo -installsuffix netgo \
 		${LDFLAGS} \
@@ -286,3 +295,85 @@ scan:
 		--severity="HIGH,CRITICAL" \
 		--ignore-unfixed \
 		./
+
+.PHONY: test-dev
+test-dev: ## Build SchemaHero for local testing with temporary ttl.sh images
+	@echo "Building SchemaHero for local testing with ttl.sh images..."
+	
+	# Generate deterministic image name based on MAC address for ttl.sh (24 hour TTL)
+	$(eval MAC_ADDR := $(shell ifconfig | grep ether | head -1 | awk '{print $$2}' | tr -d ':' | head -c 12))
+	$(eval TTL_IMAGE := ttl.sh/schemahero-dev-$(MAC_ADDR))
+	$(eval TTL_PLUGIN_PREFIX := ttl.sh/schemahero-dev-$(MAC_ADDR)/plugin)
+	$(eval TEST_VERSION := dev)
+	
+	@echo "Using deterministic namespace: ttl.sh/schemahero-dev-$(MAC_ADDR)"
+	@echo "Manager image: $(TTL_IMAGE):$(TEST_VERSION)"
+	@echo "Plugin prefix: $(TTL_PLUGIN_PREFIX)-{driver}:$(TEST_VERSION)"
+	
+	# Build manager binary
+	CGO_ENABLED=0 make bin/manager
+	
+	# Build multi-arch docker image and push to ttl.sh
+	@echo "Setting up docker buildx for multi-platform builds..."
+	docker buildx create --name schemahero-builder --use --bootstrap 2>/dev/null || docker buildx use schemahero-builder
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t $(TTL_IMAGE):$(TEST_VERSION) \
+		-f ./deploy/Dockerfile.multiarch --target manager \
+		--push .
+	
+	# Build and push multi-arch plugins to ttl.sh in parallel
+	@echo "Building and pushing multi-arch plugins to ttl.sh in parallel..."
+	@for plugin in postgres mysql timescaledb sqlite rqlite cassandra; do \
+		if [ -d "./plugins/$$plugin" ]; then \
+			echo "Building multi-arch plugin: $$plugin"; \
+			( \
+				echo "Building $$plugin for linux/amd64..." && \
+				mkdir -p /tmp/push-$$plugin-amd64 && \
+				cd ./plugins/$$plugin && \
+				CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /tmp/push-$$plugin-amd64/schemahero-$$plugin . && \
+				cd /tmp/push-$$plugin-amd64 && \
+				oras push $(TTL_PLUGIN_PREFIX)-$$plugin:$(TEST_VERSION)-amd64 schemahero-$$plugin && \
+				echo "Building $$plugin for linux/arm64..." && \
+				mkdir -p /tmp/push-$$plugin-arm64 && \
+				cd $(pwd)/plugins/$$plugin && \
+				CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o /tmp/push-$$plugin-arm64/schemahero-$$plugin . && \
+				cd /tmp/push-$$plugin-arm64 && \
+				oras push $(TTL_PLUGIN_PREFIX)-$$plugin:$(TEST_VERSION)-arm64 schemahero-$$plugin && \
+				echo "✅ Pushed $$plugin for amd64 and arm64" \
+			) & \
+		else \
+			echo "Warning: Plugin $$plugin directory not found, skipping"; \
+		fi \
+	done; \
+	wait
+	
+	# Build kubectl-schemahero with embedded ttl.sh image and plugin registry
+	go build \
+		-tags netgo -installsuffix netgo \
+		-ldflags "\
+			-X github.com/schemahero/schemahero/pkg/version.version=$(TEST_VERSION) \
+			-X github.com/schemahero/schemahero/pkg/version.gitSHA=`git rev-parse HEAD` \
+			-X github.com/schemahero/schemahero/pkg/version.buildTime=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+			-X github.com/schemahero/schemahero/pkg/version.managerImage=$(TTL_IMAGE) \
+			-X github.com/schemahero/schemahero/pkg/version.pluginRegistry=$(TTL_PLUGIN_PREFIX) \
+		" \
+		-o bin/kubectl-schemahero-test \
+		./cmd/kubectl-schemahero
+	
+	@echo ""
+	@echo "✅ Test build complete!"
+	@echo "📦 Manager image: $(TTL_IMAGE):$(TEST_VERSION)"
+	@echo "🔌 Plugin registry: $(TTL_PLUGIN_PREFIX)-{driver}:$(TEST_VERSION)"
+	@echo "🔧 Binary: bin/kubectl-schemahero-test"
+	@echo ""
+	@echo "Plugins pushed:"
+	@for plugin in postgres mysql timescaledb sqlite rqlite cassandra; do \
+		if [ -f "./plugins/bin/schemahero-$$plugin" ]; then \
+			echo "  • $(TTL_PLUGIN_PREFIX)-$$plugin:$(TEST_VERSION)"; \
+		fi \
+	done
+	@echo ""
+	@echo "To test:"
+	@echo "  ./bin/kubectl-schemahero-test install"
+	@echo ""
+	@echo "🕐 Images will be available for 24 hours on ttl.sh"

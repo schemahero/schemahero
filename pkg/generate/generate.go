@@ -76,7 +76,7 @@ func (g *Generator) RunSync() error {
 	fmt.Printf("connecting to %s\n", g.URI)
 
 	ctx := context.Background()
-	
+
 	// Get database connection through plugin manager
 	db, err := g.getConnection(ctx)
 	if err != nil {

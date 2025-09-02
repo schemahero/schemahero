@@ -21,8 +21,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 )
@@ -47,6 +47,19 @@ func RunCmd() *cobra.Command {
 
 			// Initialize plugin system
 			logger.Info("Initializing plugin system")
+			
+			// Set plugin registry override if provided
+			if pluginRegistry := v.GetString("plugin-registry"); pluginRegistry != "" {
+				logger.Infof("Setting plugin registry override to: %s", pluginRegistry)
+				plugin.SetPluginRegistryOverride(pluginRegistry)
+			}
+			
+			// Set plugin tag override if provided  
+			if pluginTag := v.GetString("plugin-tag"); pluginTag != "" {
+				logger.Infof("Setting plugin tag override to: %s", pluginTag)
+				plugin.SetPluginTagOverride(pluginTag)
+			}
+			
 			pluginManager := plugin.InitializePluginSystem()
 			if pluginManager == nil {
 				logger.Error(fmt.Errorf("failed to initialize plugin system"))
@@ -93,7 +106,7 @@ func RunCmd() *cobra.Command {
 
 			if v.GetBool("enable-database-controller") {
 				logger.Info("Starting database controller")
-				if err := databasecontroller.Add(mgr, v.GetString("manager-image"), v.GetString("manager-tag"), isDebug); err != nil {
+				if err := databasecontroller.Add(mgr, v.GetString("manager-image"), v.GetString("manager-tag"), v.GetString("plugin-registry"), v.GetString("plugin-tag"), isDebug); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}
@@ -101,7 +114,7 @@ func RunCmd() *cobra.Command {
 
 			if len(v.GetStringSlice("database-name")) > 0 {
 				logger.Infof("Starting controllers for %+v", v.GetStringSlice("database-name"))
-				if err := databasecontroller.AddForDatabaseSchemasOnly(mgr, v.GetStringSlice("database-name")); err != nil {
+				if err := databasecontroller.AddForDatabaseSchemasOnly(mgr, v.GetStringSlice("database-name"), v.GetString("manager-image"), v.GetString("manager-tag")); err != nil {
 					logger.Error(err)
 					os.Exit(1)
 				}
@@ -151,8 +164,10 @@ func RunCmd() *cobra.Command {
 
 	cmd.Flags().Bool("enable-database-controller", false, "when set, the database controller will be active")
 	cmd.Flags().StringSlice("database-name", []string{}, "when present (and not set to *), the controller will reconcile tables and migrations for the specified database")
-	cmd.Flags().String("manager-image", "schemahero/schemahero-manager", "the schemahero manager image to use in the controller")
+	cmd.Flags().String("manager-image", version.ManagerImage(), "the schemahero manager image to use in the controller")
 	cmd.Flags().String("manager-tag", defaultManagerTag(), "the tag of the schemahero manager image to use")
+	cmd.Flags().String("plugin-registry", "", "override plugin registry (e.g. ttl.sh/test/plugin)")
+	cmd.Flags().String("plugin-tag", "", "override plugin tag (e.g. dev, staging)")
 	cmd.Flags().String("namespace", "", "when set, limit rbac permissions for watches to this namespace")
 
 	return cmd
