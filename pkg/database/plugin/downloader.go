@@ -173,7 +173,6 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	for _, path := range possiblePaths {
 		if _, err := os.Stat(path); err == nil {
 			foundPath = path
-			fmt.Printf("[DEBUG] Found plugin at: %s\n", path)
 			break
 		}
 	}

@@ -349,11 +349,8 @@ func (m *PluginManager) downloadAndLoadPlugin(ctx context.Context, engine string
 	// Check if plugin is already cached
 	if m.downloader.IsPluginCached(normalizedEngine, majorVersion) {
 		pluginPath := m.downloader.GetCachedPluginPath(normalizedEngine, majorVersion)
-		fmt.Printf("[DEBUG] Using cached plugin at: %s\n", pluginPath)
 		return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
 	}
-	
-	fmt.Printf("[DEBUG] No cached plugin found, downloading fresh...\n")
 
 	// Download the plugin
 	pluginPath, err := m.downloader.DownloadPlugin(ctx, normalizedEngine, majorVersion)

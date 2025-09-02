@@ -37,8 +37,8 @@ func TestPluginDownloader_GetCachedPluginPath(t *testing.T) {
 		majorVersion string
 		expected     string
 	}{
-		{"postgres", "0", filepath.Join(tempDir, "0", "schemahero-postgres")},
-		{"mysql", "1", filepath.Join(tempDir, "1", "schemahero-mysql")},
+		{"postgres", "0", filepath.Join(tempDir, "schemahero-postgres")},
+		{"mysql", "1", filepath.Join(tempDir, "schemahero-mysql")},
 	}
 
 	for _, test := range tests {
