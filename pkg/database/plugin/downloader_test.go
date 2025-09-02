@@ -15,9 +15,9 @@ func TestPluginDownloader_GetPluginArtifactRef(t *testing.T) {
 		majorVersion string
 		expected     string
 	}{
-		{"postgres", "0", "schemahero/plugin-postgres:0"},
-		{"mysql", "1", "schemahero/plugin-mysql:1"},
-		{"cassandra", "0", "schemahero/plugin-cassandra:0"},
+		{"postgres", "0", "docker.io/schemahero/plugin-postgres:0"},
+		{"mysql", "1", "docker.io/schemahero/plugin-mysql:0"},
+		{"cassandra", "0", "docker.io/schemahero/plugin-cassandra:0"},
 	}
 
 	for _, test := range tests {
