@@ -63,7 +63,7 @@ func (d *PluginDownloader) GetPluginArtifactRef(driver string, majorVersion stri
 		ref := fmt.Sprintf("%s-%s:%s-%s", pluginRegistryOverride, driver, majorVersion, arch)
 		return ref
 	}
-	return fmt.Sprintf("schemahero/plugin-%s:%s", driver, majorVersion)
+	return fmt.Sprintf("docker.io/schemahero/plugin-%s:0", driver)
 }
 
 // GetCachedPluginPath returns the expected path for a cached plugin binary
