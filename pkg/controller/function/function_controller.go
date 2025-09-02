@@ -24,6 +24,7 @@ import (
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -95,6 +96,9 @@ func (r *ReconcileFunction) dropFunction(ctx context.Context, function *schemasv
 		Driver: driver,
 		URI:    connectionURI,
 	}
+
+	// Set plugin manager for automatic plugin downloading
+	db.SetPluginManager(plugin.GetGlobalPluginManager())
 
 	// Get a connection to plan the function drop
 	conn, err := db.GetConnection(ctx)
@@ -210,6 +214,9 @@ func (r *ReconcileFunction) Reconcile(ctx context.Context, request reconcile.Req
 		Driver: driver,
 		URI:    connectionURI,
 	}
+
+	// Set plugin manager for automatic plugin downloading
+	db.SetPluginManager(plugin.GetGlobalPluginManager())
 
 	// Get a connection to plan the function creation
 	conn, err := db.GetConnection(ctx)

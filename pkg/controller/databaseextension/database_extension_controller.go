@@ -24,6 +24,7 @@ import (
 	databasesv1alpha4 "github.com/schemahero/schemahero/pkg/apis/databases/v1alpha4"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -92,6 +93,9 @@ func (r *ReconcileDatabaseExtension) dropExtension(ctx context.Context, database
 		Driver: driver,
 		URI:    connectionURI,
 	}
+
+	// Set plugin manager for automatic plugin downloading
+	db.SetPluginManager(plugin.GetGlobalPluginManager())
 
 	// Get a connection to plan the extension drop
 	conn, err := db.GetConnection(ctx)
@@ -201,6 +205,9 @@ func (r *ReconcileDatabaseExtension) Reconcile(ctx context.Context, request reco
 		Driver: driver,
 		URI:    connectionURI,
 	}
+
+	// Set plugin manager for automatic plugin downloading
+	db.SetPluginManager(plugin.GetGlobalPluginManager())
 
 	// Get a connection to plan the extension creation
 	conn, err := db.GetConnection(ctx)

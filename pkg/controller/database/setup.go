@@ -30,32 +30,36 @@ var tenSeconds = int64(10)
 
 // Add creates a new Database Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, managerImage string, managerTag string, debugLogs bool) error {
-	return add(mgr, newReconciler(mgr, managerImage, managerTag, debugLogs), "databaseController")
+func Add(mgr manager.Manager, managerImage string, managerTag string, pluginRegistry string, pluginTag string, debugLogs bool) error {
+	return add(mgr, newReconciler(mgr, managerImage, managerTag, pluginRegistry, pluginTag, debugLogs), "databaseController")
 }
 
 // AddForDatabaseSchemasOnly creates a new Database Controller to watch for changes to a specific database object. This is how database-level schema
 // changes are populated. Table and migration reconcile loops are separate, this is used for database options (charset, collate, etc)
-func AddForDatabaseSchemasOnly(mgr manager.Manager, databaseNames []string) error {
-	return add(mgr, newDatabaseSchemaReconciler(mgr, databaseNames), "databaseSchemaController")
+func AddForDatabaseSchemasOnly(mgr manager.Manager, databaseNames []string, managerImage string, managerTag string) error {
+	return add(mgr, newDatabaseSchemaReconciler(mgr, databaseNames, managerImage, managerTag), "databaseSchemaController")
 }
 
 // newReconciler returns a new reconcile.Reconciler
-func newReconciler(mgr manager.Manager, managerImage string, managerTag string, debugLogs bool) reconcile.Reconciler {
+func newReconciler(mgr manager.Manager, managerImage string, managerTag string, pluginRegistry string, pluginTag string, debugLogs bool) reconcile.Reconciler {
 	return &ReconcileDatabase{
-		Client:       mgr.GetClient(),
-		scheme:       mgr.GetScheme(),
-		managerImage: managerImage,
-		managerTag:   managerTag,
-		debugLogs:    debugLogs,
+		Client:         mgr.GetClient(),
+		scheme:         mgr.GetScheme(),
+		managerImage:   managerImage,
+		managerTag:     managerTag,
+		pluginRegistry: pluginRegistry,
+		pluginTag:      pluginTag,
+		debugLogs:      debugLogs,
 	}
 }
 
-func newDatabaseSchemaReconciler(mgr manager.Manager, databaseNames []string) reconcile.Reconciler {
+func newDatabaseSchemaReconciler(mgr manager.Manager, databaseNames []string, managerImage string, managerTag string) reconcile.Reconciler {
 	return &ReconcileDatabaseSchema{
 		Client:        mgr.GetClient(),
 		scheme:        mgr.GetScheme(),
 		databaseNames: databaseNames,
+		managerImage:  managerImage,
+		managerTag:    managerTag,
 	}
 }
 

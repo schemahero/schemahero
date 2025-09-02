@@ -11,6 +11,7 @@ import (
 	databasesclientv1alpha4 "github.com/schemahero/schemahero/pkg/client/schemaheroclientset/typed/databases/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/config"
 	"github.com/schemahero/schemahero/pkg/database"
+	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
@@ -173,6 +174,9 @@ func (r *ReconcileView) plan(ctx context.Context, databaseInstance *databasesv1a
 		URI:            connectionURI,
 		DeploySeedData: databaseInstance.Spec.DeploySeedData,
 	}
+
+	// Set plugin manager for automatic plugin downloading
+	db.SetPluginManager(plugin.GetGlobalPluginManager())
 
 	schemaStatements, err := db.PlanSyncViewSpec(&viewInstance.Spec)
 	if err != nil {

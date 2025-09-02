@@ -342,15 +342,18 @@ func (m *PluginManager) downloadAndLoadPlugin(ctx context.Context, engine string
 	// Get the current major version for SchemaHero
 	// For now, we'll use "0" as the major version since we're in 0.x.y releases
 	majorVersion := m.getCurrentMajorVersion()
-	
+
 	// Normalize engine name - handle aliases
 	normalizedEngine := m.normalizeEngineForDownload(engine)
-	
+
 	// Check if plugin is already cached
 	if m.downloader.IsPluginCached(normalizedEngine, majorVersion) {
 		pluginPath := m.downloader.GetCachedPluginPath(normalizedEngine, majorVersion)
+		fmt.Printf("[DEBUG] Using cached plugin at: %s\n", pluginPath)
 		return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
 	}
+	
+	fmt.Printf("[DEBUG] No cached plugin found, downloading fresh...\n")
 
 	// Download the plugin
 	pluginPath, err := m.downloader.DownloadPlugin(ctx, normalizedEngine, majorVersion)
@@ -388,10 +391,12 @@ func (m *PluginManager) loadPluginFromPath(ctx context.Context, engineName strin
 }
 
 // getCurrentMajorVersion returns the major version for plugin compatibility
-// Currently returns "0" since SchemaHero is in 0.x.y releases
 func (m *PluginManager) getCurrentMajorVersion() string {
-	// TODO: This could be derived from build info or version constants
-	// For now, hardcode to "0" for 0.x.y releases
+	// Use plugin tag override if set
+	if pluginTagOverride != "" {
+		return pluginTagOverride
+	}
+	// For production builds, use major version "0" for 0.x.y releases
 	return "0"
 }
 

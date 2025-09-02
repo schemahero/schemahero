@@ -62,3 +62,16 @@ func BuildTime() time.Time {
 	}
 	return build.BuildTime
 }
+
+// ManagerImage gets the manager image, defaulting to schemahero/schemahero-manager if not set
+func ManagerImage() string {
+	if managerImage != "" {
+		return managerImage
+	}
+	return "schemahero/schemahero-manager"
+}
+
+// PluginRegistry gets the plugin registry override, empty if not set
+func PluginRegistry() string {
+	return pluginRegistry
+}

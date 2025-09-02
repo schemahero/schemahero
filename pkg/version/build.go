@@ -4,4 +4,6 @@ package version
 
 var (
 	version, gitSHA, buildTime string
+	managerImage               string // optional override for manager image
+	pluginRegistry             string // optional override for plugin registry
 )

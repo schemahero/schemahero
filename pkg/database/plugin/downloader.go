@@ -9,9 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2"
-	"oras.land/oras-go/v2/content/file"
+	"oras.land/oras-go/v2/content/file"  
 	"oras.land/oras-go/v2/registry/remote"
 )
 
@@ -22,10 +21,28 @@ type PluginDownloader struct {
 	onceMutex    sync.RWMutex
 }
 
+// pluginRegistryOverride can be set at build time to override the default plugin registry
+var pluginRegistryOverride string
+var pluginTagOverride string
+
+// SetPluginRegistryOverride allows runtime override of the plugin registry
+func SetPluginRegistryOverride(registry string) {
+	pluginRegistryOverride = registry
+}
+
+// SetPluginTagOverride allows runtime override of the plugin tag
+func SetPluginTagOverride(tag string) {
+	pluginTagOverride = tag
+}
+
 // NewPluginDownloader creates a new plugin downloader with specified cache directory
 func NewPluginDownloader(cacheDir string) *PluginDownloader {
 	if cacheDir == "" {
-		cacheDir = "/tmp/plugins"
+		if homeDir, err := os.UserHomeDir(); err == nil {
+			cacheDir = filepath.Join(homeDir, ".schemahero", "plugins")
+		} else {
+			cacheDir = "/tmp/plugins"
+		}
 	}
 
 	return &PluginDownloader{
@@ -38,26 +55,33 @@ func NewPluginDownloader(cacheDir string) *PluginDownloader {
 // GetPluginArtifactRef returns the ORAS artifact reference for a given driver
 // Maps driver names to Docker Hub artifact references following pattern:
 // schemahero/plugin-{driver}:{major-version}
+// Can be overridden at build time via pluginRegistryOverride
 func (d *PluginDownloader) GetPluginArtifactRef(driver string, majorVersion string) string {
+	if pluginRegistryOverride != "" {
+		// For dev builds, append architecture suffix to get the right binary
+		arch := runtime.GOARCH
+		ref := fmt.Sprintf("%s-%s:%s-%s", pluginRegistryOverride, driver, majorVersion, arch)
+		return ref
+	}
 	return fmt.Sprintf("schemahero/plugin-%s:%s", driver, majorVersion)
 }
 
 // GetCachedPluginPath returns the expected path for a cached plugin binary
 func (d *PluginDownloader) GetCachedPluginPath(driver string, majorVersion string) string {
 	pluginBinary := fmt.Sprintf("schemahero-%s", driver)
-	return filepath.Join(d.cacheDir, majorVersion, pluginBinary)
+	return filepath.Join(d.cacheDir, pluginBinary)
 }
 
 // IsPluginCached checks if a plugin is already downloaded and cached locally
 func (d *PluginDownloader) IsPluginCached(driver string, majorVersion string) bool {
 	pluginPath := d.GetCachedPluginPath(driver, majorVersion)
-	
+
 	// Check if file exists and is executable
 	if info, err := os.Stat(pluginPath); err == nil && !info.IsDir() {
 		// Check if file is executable
 		return info.Mode().Perm()&0111 != 0
 	}
-	
+
 	return false
 }
 
@@ -67,13 +91,13 @@ func (d *PluginDownloader) DownloadPlugin(ctx context.Context, driver string, ma
 	if driver == "" {
 		return "", fmt.Errorf("driver cannot be empty")
 	}
-	
+
 	if majorVersion == "" {
 		return "", fmt.Errorf("major version cannot be empty")
 	}
 
 	pluginPath := d.GetCachedPluginPath(driver, majorVersion)
-	
+
 	// Check if already cached
 	if d.IsPluginCached(driver, majorVersion) {
 		return pluginPath, nil
@@ -81,7 +105,7 @@ func (d *PluginDownloader) DownloadPlugin(ctx context.Context, driver string, ma
 
 	// Use sync.Once to ensure only one download per plugin happens concurrently
 	downloadKey := fmt.Sprintf("%s:%s", driver, majorVersion)
-	
+
 	d.onceMutex.Lock()
 	once, exists := d.downloadOnce[downloadKey]
 	if !exists {
@@ -110,6 +134,10 @@ func (d *PluginDownloader) DownloadPlugin(ctx context.Context, driver string, ma
 func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string, majorVersion string, pluginPath string) error {
 	artifactRef := d.GetPluginArtifactRef(driver, majorVersion)
 	
+	// Extract the tag from the artifact reference (everything after the last :)
+	parts := strings.Split(artifactRef, ":")
+	tag := parts[len(parts)-1]
+
 	// Ensure cache directory exists
 	cacheDir := filepath.Dir(pluginPath)
 	if err := os.MkdirAll(cacheDir, 0755); err != nil {
@@ -122,66 +150,44 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		return fmt.Errorf("failed to create repository reference for %s: %w", artifactRef, err)
 	}
 
-	// Create file store for download
+	// Create file store and copy to it
 	fs, err := file.New(cacheDir)
 	if err != nil {
 		return fmt.Errorf("failed to create file store: %w", err)
 	}
 	defer fs.Close()
 
-	// Get the current platform
-	platform := fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
-	
-	// Copy from registry to local file store
-	// ORAS will automatically select the correct platform from multi-arch image
-	desc, err := oras.Copy(ctx, repo, "latest", fs, "latest", oras.CopyOptions{
-		CopyGraphOptions: oras.CopyGraphOptions{
-			// This ensures we get the right platform from multi-arch
-			PreCopy: func(ctx context.Context, desc ocispec.Descriptor) error {
-				// Only copy if it matches our platform or is the manifest
-				if desc.Platform != nil {
-					descPlatform := fmt.Sprintf("%s/%s", desc.Platform.OS, desc.Platform.Architecture)
-					if descPlatform != platform {
-						return oras.SkipNode
-					}
-				}
-				return nil
-			},
-		},
-	})
+	_, err = oras.Copy(ctx, repo, tag, fs, tag, oras.CopyOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to download plugin %s: %w", artifactRef, err)
 	}
-
-	// Find the downloaded plugin binary
-	// ORAS downloads files maintaining their structure, so we need to find the binary
-	downloadedFiles := []string{}
-	err = filepath.Walk(cacheDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		
-		// Look for files that start with "schemahero-" and are executable
-		if !info.IsDir() && strings.HasPrefix(info.Name(), "schemahero-") {
-			downloadedFiles = append(downloadedFiles, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("failed to search for downloaded plugin binary: %w", err)
-	}
-
-	if len(downloadedFiles) == 0 {
-		return fmt.Errorf("no plugin binary found after downloading %s (descriptor: %v)", artifactRef, desc)
-	}
-
-	// Use the first matching file (there should only be one)
-	downloadedPath := downloadedFiles[0]
 	
-	// Move to expected location if it's not already there
-	if downloadedPath != pluginPath {
-		if err := os.Rename(downloadedPath, pluginPath); err != nil {
-			return fmt.Errorf("failed to move plugin binary to expected location: %w", err)
+	// ORAS seems to preserve directory structure, so look in common subdirectories
+	possiblePaths := []string{
+		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),           // Direct
+		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
+		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
+	}
+	
+	var foundPath string
+	for _, path := range possiblePaths {
+		if _, err := os.Stat(path); err == nil {
+			foundPath = path
+			fmt.Printf("[DEBUG] Found plugin at: %s\n", path)
+			break
+		}
+	}
+	
+	if foundPath == "" {
+		return fmt.Errorf("plugin not found in any expected location after download")
+	}
+	
+	expectedFile := foundPath
+
+	// Move to final location if needed
+	if expectedFile != pluginPath {
+		if err := os.Rename(expectedFile, pluginPath); err != nil {
+			return fmt.Errorf("failed to move plugin: %w", err)
 		}
 	}
 
@@ -202,7 +208,7 @@ func (d *PluginDownloader) CleanCache() error {
 func (d *PluginDownloader) CleanPluginCache(driver string, majorVersion string) error {
 	pluginDir := filepath.Join(d.cacheDir, majorVersion)
 	pluginPath := d.GetCachedPluginPath(driver, majorVersion)
-	
+
 	// Remove the specific plugin binary
 	if err := os.Remove(pluginPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove plugin binary %s: %w", pluginPath, err)

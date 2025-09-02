@@ -187,6 +187,18 @@ func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespa
 	return true, nil
 }
 
+func buildManagerCommand(schemaheroTag string) []string {
+	cmd := []string{"/manager", "run", "--enable-database-controller", "--manager-image", version.ManagerImage(), "--manager-tag", schemaheroTag}
+	
+	// Add plugin registry if using custom registry
+	if pluginRegistry := version.PluginRegistry(); pluginRegistry != "" {
+		cmd = append(cmd, "--plugin-registry", pluginRegistry)
+		cmd = append(cmd, "--plugin-tag", "dev")
+	}
+	
+	return cmd
+}
+
 func manager(namespace string) *appsv1.StatefulSet {
 	env := []corev1.EnvVar{
 		{
@@ -203,11 +215,12 @@ func manager(namespace string) *appsv1.StatefulSet {
 		},
 	}
 
+
 	schemaheroTag := version.Version()
 	if strings.HasPrefix(schemaheroTag, "v") {
 		schemaheroTag = strings.TrimPrefix(schemaheroTag, "v")
 	}
-	schemaHeroManagerImage := fmt.Sprintf("schemahero/schemahero-manager:%s", schemaheroTag)
+	schemaHeroManagerImage := fmt.Sprintf("%s:%s", version.ManagerImage(), schemaheroTag)
 
 	return &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
@@ -270,7 +283,7 @@ func manager(namespace string) *appsv1.StatefulSet {
 							Image:           schemaHeroManagerImage,
 							ImagePullPolicy: corev1.PullAlways,
 							Name:            "manager",
-							Command:         []string{"/manager", "run", "--enable-database-controller"},
+							Command:         buildManagerCommand(schemaheroTag),
 							Env:             env,
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{

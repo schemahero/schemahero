@@ -30,6 +30,15 @@ dist/
 
 # Plugin binaries
 plugins/*/schemahero-*
+plugins/cassandra/cassandra
+plugins/mysql/mysql
+plugins/postgres/postgres
+plugins/rqlite/rqlite
+plugins/sqlite/sqlite
+plugins/timescaledb/timescaledb
+
+# Downloaded plugin binaries
+schemahero-postgres
 
 vendor
 integration/**/out.sql

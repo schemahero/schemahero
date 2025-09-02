@@ -520,7 +520,7 @@ func (d *Database) PlanSyncTypeSpec(spec *schemasv1alpha4.DataTypeSpec) ([]strin
 			return nil, errors.Wrap(err, "failed to get database connection")
 		}
 		defer conn.Close()
-		
+
 		return conn.PlanTypeSchema(spec.Name, spec.Schema.Cassandra)
 	}
 

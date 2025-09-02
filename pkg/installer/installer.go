@@ -35,6 +35,18 @@ func GenerateOperatorYAML(namespace string) (map[string][]byte, error) {
 	}
 	manifests["migrations_crd.yaml"] = manifest
 
+	manifest, err = databaseExtensionsCRDYAML()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get database extensions crd")
+	}
+	manifests["database_extensions_crd.yaml"] = manifest
+
+	manifest, err = functionsCRDYAML()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get functions crd")
+	}
+	manifests["functions_crd.yaml"] = manifest
+
 	manifest, err = clusterRoleYAML()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get cluster role")
@@ -102,6 +114,14 @@ func InstallOperator(namespace string) (bool, error) {
 
 	if err := ensureMigrationsCRD(ctx, cfg); err != nil {
 		return false, errors.Wrap(err, "failed to create migrations crd")
+	}
+
+	if err := ensureDatabaseExtensionsCRD(ctx, cfg); err != nil {
+		return false, errors.Wrap(err, "failed to create database extensions crd")
+	}
+
+	if err := ensureFunctionsCRD(ctx, cfg); err != nil {
+		return false, errors.Wrap(err, "failed to create functions crd")
 	}
 
 	if err := ensureClusterRole(ctx, client); err != nil {
