@@ -247,6 +247,12 @@ func (d *PluginDownloader) extractPlugin(archivePath, extractDir, driver string)
 			return "", fmt.Errorf("failed to read tar entry: %w", err)
 		}
 
+		// Sanitize the archive entry name to prevent Zip Slip
+		if strings.Contains(header.Name, "..") || strings.Contains(header.Name, "/") || strings.Contains(header.Name, "\\") {
+			// Unsafe entry, skip extraction
+			continue
+		}
+
 		// Look for the binary we want
 		if header.Typeflag == tar.TypeReg && strings.Contains(header.Name, expectedBinary) {
 			extractPath := filepath.Join(extractDir, filepath.Base(header.Name))
