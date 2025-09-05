@@ -1,8 +1,11 @@
 package plugin
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -144,22 +147,26 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		return fmt.Errorf("failed to create cache directory %s: %w", cacheDir, err)
 	}
 
-	// Create repository reference
-	repo, err := remote.NewRepository(artifactRef)
+	// Create repository reference (without tag)
+	repoURL := strings.TrimSuffix(artifactRef, ":"+tag)
+	repo, err := remote.NewRepository(repoURL)
 	if err != nil {
-		return fmt.Errorf("failed to create repository reference for %s: %w", artifactRef, err)
+		return fmt.Errorf("failed to create repository reference for %s: %w", repoURL, err)
 	}
 
-	// Create file store and copy to it
-	fs, err := file.New(cacheDir)
+	// Use file store with higher size limit (100MB) for plugin artifacts
+	fs, err := file.NewWithFallbackLimit(cacheDir, 100*1024*1024) // 100MB limit
 	if err != nil {
 		return fmt.Errorf("failed to create file store: %w", err)
 	}
 	defer fs.Close()
 
-	_, err = oras.Copy(ctx, repo, tag, fs, tag, oras.CopyOptions{})
+	// Use default copy options for custom OCI artifacts
+	copyOpts := oras.CopyOptions{}
+
+	_, err = oras.Copy(ctx, repo, tag, fs, tag, copyOpts)
 	if err != nil {
-		return fmt.Errorf("failed to download plugin %s: %w", artifactRef, err)
+		return fmt.Errorf("failed to download plugin from %s (repo: %s, tag: %s): %w", artifactRef, repoURL, tag, err)
 	}
 	
 	// ORAS seems to preserve directory structure, so look in common subdirectories
@@ -167,12 +174,17 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),           // Direct
 		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
 		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
+		// Also look for the tarball files that might be downloaded
+		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-linux-%s.tar.gz", driver, runtime.GOARCH)),
+		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
 	}
 	
 	var foundPath string
+	var isArchive bool
 	for _, path := range possiblePaths {
 		if _, err := os.Stat(path); err == nil {
 			foundPath = path
+			isArchive = strings.HasSuffix(path, ".tar.gz")
 			break
 		}
 	}
@@ -181,12 +193,22 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		return fmt.Errorf("plugin not found in any expected location after download")
 	}
 	
-	expectedFile := foundPath
+	var finalPluginPath string
+	
+	if isArchive {
+		// Extract the tarball
+		finalPluginPath, err = d.extractPlugin(foundPath, cacheDir, driver)
+		if err != nil {
+			return fmt.Errorf("failed to extract plugin from %s: %w", foundPath, err)
+		}
+	} else {
+		finalPluginPath = foundPath
+	}
 
 	// Move to final location if needed
-	if expectedFile != pluginPath {
-		if err := os.Rename(expectedFile, pluginPath); err != nil {
-			return fmt.Errorf("failed to move plugin: %w", err)
+	if finalPluginPath != pluginPath {
+		if err := os.Rename(finalPluginPath, pluginPath); err != nil {
+			return fmt.Errorf("failed to move plugin from %s to %s: %w", finalPluginPath, pluginPath, err)
 		}
 	}
 
@@ -196,6 +218,61 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	}
 
 	return nil
+}
+
+// extractPlugin extracts a plugin binary from a tar.gz archive
+func (d *PluginDownloader) extractPlugin(archivePath, extractDir, driver string) (string, error) {
+	file, err := os.Open(archivePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open archive: %w", err)
+	}
+	defer file.Close()
+
+	gzr, err := gzip.NewReader(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to create gzip reader: %w", err)
+	}
+	defer gzr.Close()
+
+	tr := tar.NewReader(gzr)
+	
+	expectedBinary := fmt.Sprintf("schemahero-%s", driver)
+	
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return "", fmt.Errorf("failed to read tar entry: %w", err)
+		}
+
+		// Look for the binary we want
+		if header.Typeflag == tar.TypeReg && strings.Contains(header.Name, expectedBinary) {
+			extractPath := filepath.Join(extractDir, filepath.Base(header.Name))
+			
+			outFile, err := os.Create(extractPath)
+			if err != nil {
+				return "", fmt.Errorf("failed to create extract file: %w", err)
+			}
+			
+			_, err = io.Copy(outFile, tr)
+			outFile.Close()
+			
+			if err != nil {
+				return "", fmt.Errorf("failed to extract file: %w", err)
+			}
+			
+			// Make it executable
+			if err := os.Chmod(extractPath, 0755); err != nil {
+				return "", fmt.Errorf("failed to make extracted binary executable: %w", err)
+			}
+			
+			return extractPath, nil
+		}
+	}
+	
+	return "", fmt.Errorf("binary %s not found in archive", expectedBinary)
 }
 
 // CleanCache removes all cached plugins
