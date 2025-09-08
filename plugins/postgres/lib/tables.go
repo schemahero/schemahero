@@ -104,7 +104,8 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 	  select pg_get_indexdef(idx.indexrelid, k + 1, true)
 	  from generate_subscripts(idx.indkey, 1) as k
 	  order by k
-	) as indkey_names
+	) as indkey_names,
+	 i.reloptions as reloptions
 	from pg_index as idx
 	join pg_class as i on i.oid = idx.indexrelid
 	join pg_am as am on i.relam = am.oid
@@ -121,11 +122,13 @@ func (p *PostgresConnection) ListTableIndexes(databaseName string, tableName str
 		var index types.Index
 		var method string
 		var columns []string
-		if err := rows.Scan(&index.Name, &method, &index.IsUnique, &columns); err != nil {
+		var reloptions map[string]string
+		if err := rows.Scan(&index.Name, &method, &index.IsUnique, &columns, &reloptions); err != nil {
 			return nil, err
 		}
 
 		index.Columns = columns
+		index.With = reloptions
 
 		indexes = append(indexes, &index)
 	}

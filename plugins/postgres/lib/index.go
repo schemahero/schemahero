@@ -31,11 +31,21 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.Postgresql
 		name = types.GeneratePostgresqlIndexName(tableName, schemaIndex)
 	}
 
-	return fmt.Sprintf("create %sindex %s on %s (%s)",
+	statement := fmt.Sprintf("create %sindex %s on %s (%s)",
 		unique,
 		name,
 		tableName,
 		strings.Join(schemaIndex.Columns, ", "))
+
+	if schemaIndex.With != nil && len(schemaIndex.With) > 0 {
+		withClauses := make([]string, 0, len(schemaIndex.With))
+		for key, value := range schemaIndex.With {
+			withClauses = append(withClauses, fmt.Sprintf("%s=%s", key, value))
+		}
+		statement += fmt.Sprintf(" with (%s)", strings.Join(withClauses, ", "))
+	}
+
+	return statement
 }
 
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
