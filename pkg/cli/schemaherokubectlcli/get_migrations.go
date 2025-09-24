@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"text/tabwriter"
 	"time"
 
@@ -15,6 +16,41 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
+
+// matchesMigrationStatus determines if a migration matches the status filter using hierarchy
+// (rejected > approved > executed > planned)
+func matchesMigrationStatus(migration schemasv1alpha4.Migration, status string) bool {
+	switch status {
+	case "rejected":
+		return migration.Status.RejectedAt > 0
+	case "approved":
+		return migration.Status.ApprovedAt > 0 && migration.Status.RejectedAt == 0
+	case "executed":
+		return migration.Status.ExecutedAt > 0 && migration.Status.RejectedAt == 0
+	case "planned":
+		return migration.Status.PlannedAt > 0 && migration.Status.ExecutedAt == 0 && migration.Status.RejectedAt == 0 && migration.Status.ApprovedAt == 0
+	default:
+		return false
+	}
+}
+
+// getMostRecentTimestamp returns the most recent timestamp from a migration
+func getMostRecentTimestamp(migration schemasv1alpha4.Migration) int64 {
+	timestamps := []int64{
+		migration.Status.PlannedAt,
+		migration.Status.ExecutedAt,
+		migration.Status.ApprovedAt,
+		migration.Status.RejectedAt,
+	}
+
+	var mostRecent int64
+	for _, ts := range timestamps {
+		if ts > mostRecent {
+			mostRecent = ts
+		}
+	}
+	return mostRecent
+}
 
 func GetMigrationsCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -30,6 +66,22 @@ func GetMigrationsCmd() *cobra.Command {
 			ctx := context.Background()
 
 			databaseNameFilter := v.GetString("database")
+			statusFilter := v.GetString("status")
+
+			// Validate status filter
+			if statusFilter != "" {
+				validStatuses := []string{"planned", "executed", "approved", "rejected"}
+				isValid := false
+				for _, validStatus := range validStatuses {
+					if statusFilter == validStatus {
+						isValid = true
+						break
+					}
+				}
+				if !isValid {
+					return fmt.Errorf("invalid status filter: %s. Valid options are: planned, executed, approved, rejected", statusFilter)
+				}
+			}
 
 			cfg, err := config.GetRESTConfig()
 			if err != nil {
@@ -73,14 +125,17 @@ func GetMigrationsCmd() *cobra.Command {
 				}
 
 				for _, m := range migrations.Items {
-					if databaseNameFilter == "" {
-						matchingMigrations = append(matchingMigrations, m)
+					// Check database filter
+					if databaseNameFilter != "" && m.Spec.DatabaseName != databaseNameFilter {
 						continue
 					}
 
-					if m.Spec.DatabaseName == databaseNameFilter {
-						matchingMigrations = append(matchingMigrations, m)
+					// Check status filter
+					if statusFilter != "" && !matchesMigrationStatus(m, statusFilter) {
+						continue
 					}
+
+					matchingMigrations = append(matchingMigrations, m)
 				}
 			}
 
@@ -88,6 +143,11 @@ func GetMigrationsCmd() *cobra.Command {
 				fmt.Println("No resources found.")
 				return nil
 			}
+
+			// Sort migrations by most recent timestamp (descending)
+			sort.Slice(matchingMigrations, func(i, j int) bool {
+				return getMostRecentTimestamp(matchingMigrations[i]) > getMostRecentTimestamp(matchingMigrations[j])
+			})
 
 			rows := [][]string{}
 			for _, m := range matchingMigrations {
@@ -122,7 +182,7 @@ func GetMigrationsCmd() *cobra.Command {
 	cmd.Flags().StringP("database", "d", "", "database name to filter to results to")
 	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
 
-	// cmd.Flags().StringP("status", "s", "", "status to filter to results to")
+	cmd.Flags().String("status", "", "status to filter results to (planned, executed, approved, rejected)")
 
 	return cmd
 }
