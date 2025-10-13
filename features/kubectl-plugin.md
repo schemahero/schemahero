@@ -47,9 +47,9 @@ users         0
 projects      1
 ```
 
-3. List all pending migrations for all database (--status=pending) should be default?
+3. List all pending migrations for all database (--status=planned) should be default?
 ```shell
-$ kubectl schemahero get migrations --status=pending --all-databases
+$ kubectl schemahero get migrations --status=planned --all-databases
 ID                 DATABASE          TABLE
 abc123             reporting         projects
 ```
