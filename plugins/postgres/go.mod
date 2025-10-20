@@ -11,7 +11,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/pkg/errors v0.9.1
 	github.com/schemahero/schemahero v0.0.0-00010101000000-000000000000
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/xo/dburl v0.23.8
 )
 
