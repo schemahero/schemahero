@@ -47,19 +47,19 @@ func RunCmd() *cobra.Command {
 
 			// Initialize plugin system
 			logger.Info("Initializing plugin system")
-			
+
 			// Set plugin registry override if provided
 			if pluginRegistry := v.GetString("plugin-registry"); pluginRegistry != "" {
 				logger.Infof("Setting plugin registry override to: %s", pluginRegistry)
 				plugin.SetPluginRegistryOverride(pluginRegistry)
 			}
-			
-			// Set plugin tag override if provided  
+
+			// Set plugin tag override if provided
 			if pluginTag := v.GetString("plugin-tag"); pluginTag != "" {
 				logger.Infof("Setting plugin tag override to: %s", pluginTag)
 				plugin.SetPluginTagOverride(pluginTag)
 			}
-			
+
 			pluginManager := plugin.InitializePluginSystem()
 			if pluginManager == nil {
 				logger.Error(fmt.Errorf("failed to initialize plugin system"))

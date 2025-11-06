@@ -153,7 +153,7 @@ func (r *ReconcileDatabase) Reconcile(ctx context.Context, request reconcile.Req
 							ImagePullPolicy: corev1.PullIfNotPresent,
 							Name:            "manager",
 							Command:         []string{"/manager"},
-							Args: buildDatabaseControllerArgs(databaseInstance, r.pluginRegistry, r.pluginTag),
+							Args:            buildDatabaseControllerArgs(databaseInstance, r.pluginRegistry, r.pluginTag),
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("1"),
@@ -211,15 +211,15 @@ func buildDatabaseControllerArgs(databaseInstance *databasesv1alpha4.Database, p
 		"--namespace", databaseInstance.Namespace,
 		"--database-name", databaseInstance.Name,
 	}
-	
+
 	if pluginRegistry != "" {
 		args = append(args, "--plugin-registry", pluginRegistry)
 	}
-	
+
 	if pluginTag != "" {
 		args = append(args, "--plugin-tag", pluginTag)
 	}
-	
+
 	return args
 }
 
