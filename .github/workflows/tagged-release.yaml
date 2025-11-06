@@ -45,8 +45,6 @@ jobs:
 
   # PostgreSQL Plugin
   build-postgres:
-    needs: changes
-    if: needs.changes.outputs.postgres == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -77,8 +75,6 @@ jobs:
 
   # MySQL Plugin
   build-mysql:
-    needs: changes
-    if: needs.changes.outputs.mysql == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -109,8 +105,6 @@ jobs:
 
   # TimescaleDB Plugin
   build-timescaledb:
-    needs: changes
-    if: needs.changes.outputs.timescaledb == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -141,8 +135,6 @@ jobs:
 
   # SQLite Plugin
   build-sqlite:
-    needs: changes
-    if: needs.changes.outputs.sqlite == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -173,8 +165,6 @@ jobs:
 
   # RQLite Plugin
   build-rqlite:
-    needs: changes
-    if: needs.changes.outputs.rqlite == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -205,8 +195,6 @@ jobs:
 
   # Cassandra Plugin
   build-cassandra:
-    needs: changes
-    if: needs.changes.outputs.cassandra == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -236,7 +224,7 @@ jobs:
           push: true
   build:
     runs-on: ubuntu-latest
-    needs: [changes, build-postgres, build-mysql, build-timescaledb, build-sqlite, build-rqlite, build-cassandra]
+    needs: [build-postgres, build-mysql, build-timescaledb, build-sqlite, build-rqlite, build-cassandra]
     if: always() && !cancelled()
     steps:
       - uses: actions/checkout@v4.1.1
