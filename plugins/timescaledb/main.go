@@ -6,6 +6,8 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/plugin/shared"
 )
 
+// Multi-platform support: darwin/amd64, darwin/arm64, linux/amd64, linux/arm64
+
 func init() {
 	// Register all schema types for RPC serialization
 	shared.RegisterSchemaTypes()
