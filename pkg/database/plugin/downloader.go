@@ -174,8 +174,7 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),           // Direct
 		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
 		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
-		// Also look for the tarball files that might be downloaded
-		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-linux-%s.tar.gz", driver, runtime.GOARCH)),
+		// Look for the OS-specific tarball first (runtime.GOOS determines the correct platform)
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
 	}
 	
