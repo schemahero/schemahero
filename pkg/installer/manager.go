@@ -189,13 +189,13 @@ func ensureManager(ctx context.Context, clientset *kubernetes.Clientset, namespa
 
 func buildManagerCommand(schemaheroTag string) []string {
 	cmd := []string{"/manager", "run", "--enable-database-controller", "--manager-image", version.ManagerImage(), "--manager-tag", schemaheroTag}
-	
+
 	// Add plugin registry if using custom registry
 	if pluginRegistry := version.PluginRegistry(); pluginRegistry != "" {
 		cmd = append(cmd, "--plugin-registry", pluginRegistry)
 		cmd = append(cmd, "--plugin-tag", "dev")
 	}
-	
+
 	return cmd
 }
 
@@ -214,7 +214,6 @@ func manager(namespace string) *appsv1.StatefulSet {
 			Value: "webhook-server-secret",
 		},
 	}
-
 
 	schemaheroTag := version.Version()
 	if strings.HasPrefix(schemaheroTag, "v") {

@@ -145,7 +145,7 @@ func TestPluginDownloader_DownloadPlugin_Integration(t *testing.T) {
 	// Try to download the postgres plugin that should exist
 	t.Logf("Attempting to download postgres plugin to %s", tempDir)
 	pluginPath, err := downloader.DownloadPlugin(ctx, "postgres", "0")
-	
+
 	if err != nil {
 		t.Logf("Download failed (this may be expected if plugin doesn't exist): %v", err)
 		// Don't fail the test - just log the error so we can see what happens
