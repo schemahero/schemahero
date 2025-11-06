@@ -179,18 +179,27 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
 		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
 	}
-	
+
+	fmt.Fprintf(os.Stderr, "[plugin-downloader] Looking for plugin for OS=%s ARCH=%s\n", runtime.GOOS, runtime.GOARCH)
 	var foundPath string
 	var isArchive bool
 	for _, path := range possiblePaths {
+		fmt.Fprintf(os.Stderr, "[plugin-downloader] Checking path: %s\n", path)
 		if _, err := os.Stat(path); err == nil {
 			foundPath = path
 			isArchive = strings.HasSuffix(path, ".tar.gz")
+			fmt.Fprintf(os.Stderr, "[plugin-downloader] Found plugin at: %s (isArchive=%v)\n", foundPath, isArchive)
 			break
 		}
 	}
-	
+
 	if foundPath == "" {
+		// List what files actually exist in cacheDir for debugging
+		files, _ := os.ReadDir(cacheDir)
+		fmt.Fprintf(os.Stderr, "[plugin-downloader] ERROR: Plugin not found. Files in %s:\n", cacheDir)
+		for _, f := range files {
+			fmt.Fprintf(os.Stderr, "[plugin-downloader]   - %s\n", f.Name())
+		}
 		return fmt.Errorf("plugin not found in any expected location after download")
 	}
 	
