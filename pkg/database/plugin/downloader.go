@@ -169,13 +169,15 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 		return fmt.Errorf("failed to download plugin from %s (repo: %s, tag: %s): %w", artifactRef, repoURL, tag, err)
 	}
 	
-	// ORAS seems to preserve directory structure, so look in common subdirectories
+	// ORAS downloads all platform artifacts, so we must check for the correct platform-specific tarball FIRST
+	// before falling back to generic paths
 	possiblePaths := []string{
+		// Look for the OS-specific tarball first (runtime.GOOS and runtime.GOARCH determine the correct platform)
+		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
+		// Fallback paths for direct binary (no tarball)
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),           // Direct
 		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
 		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
-		// Look for the OS-specific tarball first (runtime.GOOS determines the correct platform)
-		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
 	}
 	
 	var foundPath string
