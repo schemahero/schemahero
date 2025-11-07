@@ -54,12 +54,18 @@ func (r *RqliteConnection) PlanTypeSchema(typeName string, typeSchema interface{
 
 // PlanTableSchema implements interfaces.SchemaHeroDatabaseConnection.PlanTableSchema()
 func (r *RqliteConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// Handle seed data without schema case
+	if tableSchema == nil && seedData != nil {
+		// Need to verify the table exists and generate seed data statements
+		return PlanRqliteTableSeedDataOnly(r.uri, tableName, seedData)
+	}
+
 	// Type assert to the correct schema type
 	rqliteSchema, ok := tableSchema.(*schemasv1alpha4.RqliteTableSchema)
 	if !ok {
 		return nil, errors.New("tableSchema must be *RqliteTableSchema")
 	}
-	
+
 	// Use the existing RQLite planning implementation
 	// Note: PlanRqliteTable expects a URL, but we need to pass the URL from somewhere
 	// For now, we'll need to store it in the connection
