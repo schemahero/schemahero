@@ -124,6 +124,10 @@ func (s *stubClient) Patch(ctx context.Context, obj client.Object, patch client.
 	return nil
 }
 
+func (s *stubClient) Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...client.ApplyOption) error {
+	return nil
+}
+
 func (s *stubClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
 	return nil
 }
