@@ -27,7 +27,9 @@ func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.Postgresq
 			if col.Value.Int != nil {
 				vals = append(vals, strconv.Itoa(*col.Value.Int))
 			} else if col.Value.Str != nil {
-				vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
+				// Escape string for PostgreSQL, handling multiline strings
+				escapedStr := escapePostgresString(*col.Value.Str)
+				vals = append(vals, escapedStr)
 			}
 		}
 
@@ -167,3 +169,17 @@ func findConflictInferenceSpec(tableName string, tableSchema *schemasv1alpha4.Po
 	return ""
 }
 
+// escapePostgresString properly escapes a string for PostgreSQL, using E'...' syntax for strings containing newlines
+func escapePostgresString(s string) string {
+	// Check if the string contains newlines or single quotes that need escaping
+	if strings.Contains(s, "\n") || strings.Contains(s, `'`) {
+		// Use PostgreSQL's escape string syntax E'...'
+		// We need to escape newlines to \n since GetStatementsFromDDL will flatten them to spaces
+		escaped := strings.ReplaceAll(s, `\`, `\\`)       // Escape backslashes first
+		escaped = strings.ReplaceAll(escaped, `'`, `\'`)  // Escape single quotes
+		escaped = strings.ReplaceAll(escaped, "\n", `\n`) // Escape newlines to survive GetStatementsFromDDL
+		return fmt.Sprintf("E'%s'", escaped)
+	}
+	// For simple strings without special characters, use regular single quotes
+	return fmt.Sprintf("'%s'", s)
+}
