@@ -188,7 +188,7 @@ func SeedDataStatements(keyspace string, tableName string, seedData *schemasv1al
 			}
 		}
 
-		statement := fmt.Sprintf(`INSERT INTO "%s.%s" (%s) VALUES (%s)`, keyspace, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+		statement := fmt.Sprintf(`INSERT INTO %s.%s (%s) VALUES (%s)`, keyspace, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
 		statements = append(statements, statement)
 	}
 
