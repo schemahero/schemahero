@@ -23,3 +23,4 @@ build-cassandra-plugin:
 	make -C create-table-with-properties run
 	make -C alter-table-properties run
 	make -C alter-table-default-properties-unchanged run
+	make -C seed-data-without-schema run

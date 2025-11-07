@@ -70,6 +70,12 @@ func (s *SqliteConnection) PlanTypeSchema(typeName string, typeSchema interface{
 
 // PlanTableSchema generates SQL statements to reconcile a table schema
 func (s *SqliteConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// Handle seed data without schema case
+	if tableSchema == nil && seedData != nil {
+		// Need to verify the table exists and generate seed data statements
+		return PlanSqliteTableSeedDataOnly(s.uri, tableName, seedData)
+	}
+
 	sqliteTableSchema, ok := tableSchema.(*schemasv1alpha4.SqliteTableSchema)
 	if !ok {
 		return nil, fmt.Errorf("expected SqliteTableSchema, got %T", tableSchema)

@@ -15,6 +15,40 @@ func PlanSqliteView(dsn string, viewName string, sqliteViewSchema *schemasv1alph
 	return nil, errors.New("not implemented")
 }
 
+// PlanSqliteTableSeedDataOnly generates SQL statements for seed data without a schema definition.
+// This function connects to the database to verify the table exists,
+// then generates seed data statements.
+func PlanSqliteTableSeedDataOnly(dsn string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	if seedData == nil {
+		return []string{}, nil
+	}
+
+	s, err := Connect(dsn)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to sqlite")
+	}
+	defer s.Close()
+
+	// Check if the table exists
+	tableExists := 0
+	row := s.db.QueryRow("select count(1) from sqlite_master where type=? and name=?", "table", tableName)
+	if err := row.Scan(&tableExists); err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+
+	if tableExists == 0 {
+		return nil, errors.Errorf("table %s does not exist, cannot apply seed data without schema", tableName)
+	}
+
+	// Generate seed data statements
+	seedDataStatements, err := SeedDataStatements(tableName, seedData)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create seed data statements")
+	}
+
+	return seedDataStatements, nil
+}
+
 func PlanSqliteTable(dsn string, tableName string, sqliteTableSchema *schemasv1alpha4.SqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	s, err := Connect(dsn)
 	if err != nil {
