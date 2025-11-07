@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
@@ -43,7 +43,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
@@ -75,7 +75,7 @@ jobs:
       matrix:
         postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -101,7 +101,7 @@ jobs:
       matrix:
         mysql_version: ["8.0.31", "8.4.5", "9.3.0"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -128,7 +128,7 @@ jobs:
         # "v19.2.12", "v20.2.19" are no longer supported
         cockroachdb_version: ["v21.2.17", "v22.1.11"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -154,7 +154,7 @@ jobs:
       matrix:
         cassandra_version: ["3.11.10"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -180,7 +180,7 @@ jobs:
       matrix:
         sqlite_version: ["3.39.3"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -206,7 +206,7 @@ jobs:
       matrix:
         rqlite_version: ["6.10.2", "7.6.1"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -232,7 +232,7 @@ jobs:
       matrix:
         timescaledb_version: ["2.9.3-pg14"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -254,7 +254,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - name: Download kubectl-schemahero binary
         uses: actions/download-artifact@v4.3.0
         with:
