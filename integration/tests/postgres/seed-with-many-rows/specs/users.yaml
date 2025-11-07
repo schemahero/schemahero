@@ -54,4 +54,12 @@ seedData:
           str: another
       - column: name
         value:
-          str: more
+          str: |
+            key1:
+              quoted: "a yaml
+                file"
+              unquotes: |
+                line 1
+                'line in quotes'
+                line \ with backslash
+                line N
