@@ -18,6 +18,10 @@ build-mysql-plugin:
 .PHONY: 8.0.31
 8.0.31: export MYSQL_VERSION = 8.0.31
 8.0.31: build-mysql-plugin
+	make -C json run
+	make -C not-null-with-default run
+	make -C seed-nullable-text run
+	make -C seed-data-without-schema run
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
@@ -46,17 +50,17 @@ build-mysql-plugin:
 	make -C basic-seed run
 	make -C seed-with-many-rows run
 	make -C multiline-seed run
-	make -C seed-data-without-schema run
-	make -C seed-nullable-text run
 	make -C multi-column-index run
 	make -C primary-key-keep run
 	make -C unchanged-charset run
-	make -C json run
-	make -C not-null-with-default run
 
 .PHONY: 8.4.5
 8.4.5: export MYSQL_VERSION = 8.4.5
 8.4.5: build-mysql-plugin
+	make -C json run
+	make -C not-null-with-default run
+	make -C seed-nullable-text run
+	make -C seed-data-without-schema run
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
@@ -85,17 +89,17 @@ build-mysql-plugin:
 	make -C basic-seed run
 	make -C seed-with-many-rows run
 	make -C multiline-seed run
-	make -C seed-data-without-schema run
-	make -C seed-nullable-text run
 	make -C multi-column-index run
 	make -C primary-key-keep run
 	make -C unchanged-charset run
-	make -C json run
-	make -C not-null-with-default run
 
 .PHONY: 9.3.0
 9.3.0: export MYSQL_VERSION = 9.3.0
 9.3.0: build-mysql-plugin
+	make -C json run
+	make -C not-null-with-default run
+	make -C seed-nullable-text run
+	make -C seed-data-without-schema run
 	make -C medium-blob run
 	make -C decimal run
 	make -C medium-text run
@@ -124,13 +128,9 @@ build-mysql-plugin:
 	make -C basic-seed run
 	make -C seed-with-many-rows run
 	make -C multiline-seed run
-	make -C seed-data-without-schema run
-	make -C seed-nullable-text run
 	make -C multi-column-index run
 	make -C primary-key-keep run
 	make -C unchanged-charset run
-	make -C json run
-	make -C not-null-with-default run
 
 .PHONY: build
 build: docker-build

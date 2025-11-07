@@ -70,11 +70,18 @@ func (m *MysqlConnection) PlanTypeSchema(typeName string, typeSchema interface{}
 
 // PlanTableSchema generates SQL statements to migrate a table to the desired schema
 func (m *MysqlConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// Handle seed data without schema case
+	if tableSchema == nil && seedData != nil {
+		// Need to retrieve the existing table schema from the database
+		// and generate seed data statements based on that
+		return PlanMysqlTableSeedDataOnly(m.uri, tableName, seedData)
+	}
+
 	mysqlSchema, ok := tableSchema.(*schemasv1alpha4.MysqlTableSchema)
 	if !ok {
 		return nil, errors.New("tableSchema must be *MysqlTableSchema")
 	}
-	
+
 	return PlanMysqlTable(m.uri, tableName, mysqlSchema, seedData)
 }
 
