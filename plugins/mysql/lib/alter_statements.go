@@ -59,7 +59,7 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 	}
 
 	if useConstraintsFromExistingColumn {
-		if s.ExistingColumn.Constraints != nil {
+		if s.ExistingColumn.Constraints != nil && s.ExistingColumn.Constraints.NotNull != nil {
 			if *s.ExistingColumn.Constraints.NotNull {
 				stmts = append(stmts, "not null")
 			} else {
@@ -67,7 +67,7 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 			}
 		}
 	} else {
-		if s.Column.Constraints != nil {
+		if s.Column.Constraints != nil && s.Column.Constraints.NotNull != nil {
 			if *s.Column.Constraints.NotNull {
 				stmts = append(stmts, "not null")
 			} else {
