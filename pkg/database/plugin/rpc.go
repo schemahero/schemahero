@@ -672,7 +672,6 @@ func (c *RPCClient) Connect(uri string, options map[string]interface{}) (interfa
 
 // Validate implements DatabasePlugin.Validate() by making an RPC call to the server.
 func (c *RPCClient) Validate(config map[string]interface{}) error {
-	log.Printf("[plugin-rpc] Calling Plugin.Validate RPC method")
 	var reply ValidateReply
 	err := c.client.Call("Plugin.Validate", &ValidateArgs{Config: config}, &reply)
 	if err != nil {
@@ -685,7 +684,6 @@ func (c *RPCClient) Validate(config map[string]interface{}) error {
 		return &plugin.BasicError{Message: reply.Error}
 	}
 
-	log.Printf("[plugin-rpc] Plugin.Validate succeeded")
 	return nil
 }
 
