@@ -269,7 +269,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -295,7 +295,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -322,7 +322,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -348,7 +348,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -374,7 +374,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -400,7 +400,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
@@ -426,7 +426,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/
