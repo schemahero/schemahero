@@ -94,24 +94,40 @@ func (l *PluginLoader) LoadLocal(ctx context.Context, path string) (DatabasePlug
 	}
 
 	// Loading plugin from local path
+	l.logger.Printf("Loading plugin from local path: %s", path)
 
 	// Create the plugin command
 	cmd := exec.Command(path)
 
-	// Create the plugin client with logging disabled
+	// Create a logger that will capture plugin stderr output
+	pluginLogger := hclog.New(&hclog.LoggerOptions{
+		Name:   fmt.Sprintf("plugin-%s", fileInfo.Name()),
+		Output: os.Stderr,
+		Level:  hclog.Debug,
+	})
+
+	// Create the plugin client with logging enabled to capture errors
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
 		Cmd:             cmd,
-		Logger:          hclog.NewNullLogger(), // Disable go-plugin's internal logging
+		Logger:          pluginLogger,
+		AllowedProtocols: []plugin.Protocol{
+			plugin.ProtocolNetRPC,
+		},
+		SyncStdout: os.Stdout,
+		SyncStderr: os.Stderr,
 	})
 
+	l.logger.Printf("Starting plugin client for: %s", path)
 	// Start the client
 	rpcClient, err := client.Client()
 	if err != nil {
+		l.logger.Printf("ERROR: Failed to start plugin client for %s: %v", path, err)
 		client.Kill()
 		return nil, fmt.Errorf("failed to start plugin client for %s: %w", path, err)
 	}
+	l.logger.Printf("Plugin client started successfully for: %s", path)
 
 	// Get the plugin interface
 	raw, err := rpcClient.Dispense(shared.DatabaseInterfaceName)

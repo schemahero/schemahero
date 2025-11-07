@@ -39,6 +39,7 @@ build-rqlite-plugin:
 	make -C primary-key-add run
 	make -C primary-key-alter run
 	make -C primary-key-drop run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C table-create run
 	make -C table-create-strict run
@@ -79,6 +80,7 @@ build-rqlite-plugin:
 	make -C primary-key-add run
 	make -C primary-key-alter run
 	make -C primary-key-drop run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C table-create run
 	make -C table-create-with-index run
@@ -95,4 +97,5 @@ build-rqlite-plugin:
 .PHONY: seed
 seed:
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run

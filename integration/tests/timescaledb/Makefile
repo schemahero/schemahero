@@ -34,6 +34,7 @@ build-timescaledb-plugin:
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 
 
@@ -41,6 +42,7 @@ build-timescaledb-plugin:
 seed: export TIMESCALEDB_VERSION = 2.9.3-pg14
 seed:
 	make -C basic-seed run
+	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 
 .PHONY: build

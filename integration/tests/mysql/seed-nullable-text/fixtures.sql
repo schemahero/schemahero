@@ -1,0 +1,1 @@
+-- Empty fixtures file - table will be created with seed data

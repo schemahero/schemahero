@@ -15,6 +15,41 @@ func PlanMysqlView(uri string, viewName string, mysqlViewSchema *schemasv1alpha4
 	return nil, errors.New("not implemented")
 }
 
+// PlanMysqlTableSeedDataOnly generates SQL statements for seed data without a schema definition.
+// This function connects to the database to verify the table exists,
+// then generates seed data statements.
+func PlanMysqlTableSeedDataOnly(uri string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	if seedData == nil {
+		return []string{}, nil
+	}
+
+	m, err := Connect(uri)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to mysql")
+	}
+	defer m.Close()
+
+	// Check if the table exists
+	query := `select count(1) from information_schema.TABLES where TABLE_NAME = ? and TABLE_SCHEMA = ?`
+	row := m.db.QueryRow(query, tableName, m.databaseName)
+	tableExists := 0
+	if err := row.Scan(&tableExists); err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+
+	if tableExists == 0 {
+		return nil, errors.Errorf("table %s does not exist, cannot apply seed data without schema", tableName)
+	}
+
+	// Generate seed data statements
+	seedDataStatements, err := SeedDataStatements(tableName, seedData)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create seed data statements")
+	}
+
+	return seedDataStatements, nil
+}
+
 func PlanMysqlTable(uri string, tableName string, mysqlTableSchema *schemasv1alpha4.MysqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	m, err := Connect(uri)
 	if err != nil {

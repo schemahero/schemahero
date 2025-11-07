@@ -14,6 +14,52 @@ func PlanRQLiteView(url string, viewName string, rqliteViewSchema *schemasv1alph
 	return nil, errors.New("not implemented")
 }
 
+// PlanRqliteTableSeedDataOnly generates SQL statements for seed data without a schema definition.
+// This function connects to the database to verify the table exists,
+// then generates seed data statements.
+func PlanRqliteTableSeedDataOnly(url string, tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	if seedData == nil {
+		return []string{}, nil
+	}
+
+	if url == "" {
+		return nil, errors.New("URI not set in RqliteConnection")
+	}
+
+	r, err := Connect(url)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to rqlite")
+	}
+	defer r.Close()
+
+	// Check if the table exists
+	row, err := r.db.QueryOneParameterized(gorqlite.ParameterizedStatement{
+		Query:     "select count(1) from sqlite_master where type=? and name=?",
+		Arguments: []interface{}{"table", tableName},
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+	row.Next()
+
+	tableExists := 0
+	if err := row.Scan(&tableExists); err != nil {
+		return nil, errors.Wrap(err, "failed to scan")
+	}
+
+	if tableExists == 0 {
+		return nil, errors.Errorf("table %s does not exist, cannot apply seed data without schema", tableName)
+	}
+
+	// Generate seed data statements
+	seedDataStatements, err := SeedDataStatements(tableName, seedData)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create seed data statements")
+	}
+
+	return seedDataStatements, nil
+}
+
 func PlanRqliteTable(url string, tableName string, rqliteTableSchema *schemasv1alpha4.RqliteTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	r, err := Connect(url)
 	if err != nil {

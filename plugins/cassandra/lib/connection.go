@@ -186,6 +186,12 @@ func (c *CassandraConnection) GetTableSchema(tableName string) ([]*types.Column,
 
 // PlanTableSchema generates SQL statements for table schema changes
 func (c *CassandraConnection) PlanTableSchema(tableName string, tableSchema interface{}, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	// Handle seed data without schema case
+	if tableSchema == nil && seedData != nil {
+		// Need to verify the table exists and generate seed data statements
+		return c.planCassandraTableSeedDataOnly(tableName, seedData)
+	}
+
 	// Type assert to CassandraTableSchema
 	schema, ok := tableSchema.(*schemasv1alpha4.CassandraTableSchema)
 	if !ok {
@@ -265,6 +271,34 @@ func (c *CassandraConnection) DeployStatements(statements []string) error {
 		}
 	}
 	return nil
+}
+
+// planCassandraTableSeedDataOnly generates SQL statements for seed data without a schema definition.
+// This function verifies the table exists, then generates seed data statements.
+func (c *CassandraConnection) planCassandraTableSeedDataOnly(tableName string, seedData *schemasv1alpha4.SeedData) ([]string, error) {
+	if seedData == nil {
+		return []string{}, nil
+	}
+
+	// Check if the table exists
+	query := `select count(1) from system_schema.tables where keyspace_name=? and table_name = ?`
+	row := c.session.Query(query, c.keyspace, tableName)
+	tableExists := 0
+	if err := row.Scan(&tableExists); err != nil {
+		return nil, errors.Wrap(err, "failed to check if table exists")
+	}
+
+	if tableExists == 0 {
+		return nil, fmt.Errorf("table %s does not exist, cannot apply seed data without schema", tableName)
+	}
+
+	// Generate seed data statements
+	seedDataStatements, err := SeedDataStatements(c.keyspace, tableName, seedData)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create seed data statements")
+	}
+
+	return seedDataStatements, nil
 }
 
 // planCassandraTable is the connection-based planning function

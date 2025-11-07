@@ -168,28 +168,38 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	if err != nil {
 		return fmt.Errorf("failed to download plugin from %s (repo: %s, tag: %s): %w", artifactRef, repoURL, tag, err)
 	}
-
-	// ORAS seems to preserve directory structure, so look in common subdirectories
+	
+	// ORAS downloads all platform artifacts, so we must check for the correct platform-specific tarball FIRST
+	// before falling back to generic paths
 	possiblePaths := []string{
+		// Look for the OS-specific tarball first (runtime.GOOS and runtime.GOARCH determine the correct platform)
+		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
+		// Fallback paths for direct binary (no tarball)
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),                   // Direct
 		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
 		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
-		// Also look for the tarball files that might be downloaded
-		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-linux-%s.tar.gz", driver, runtime.GOARCH)),
-		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
 	}
 
+	fmt.Fprintf(os.Stderr, "[plugin-downloader] Looking for plugin for OS=%s ARCH=%s\n", runtime.GOOS, runtime.GOARCH)
 	var foundPath string
 	var isArchive bool
 	for _, path := range possiblePaths {
+		fmt.Fprintf(os.Stderr, "[plugin-downloader] Checking path: %s\n", path)
 		if _, err := os.Stat(path); err == nil {
 			foundPath = path
 			isArchive = strings.HasSuffix(path, ".tar.gz")
+			fmt.Fprintf(os.Stderr, "[plugin-downloader] Found plugin at: %s (isArchive=%v)\n", foundPath, isArchive)
 			break
 		}
 	}
 
 	if foundPath == "" {
+		// List what files actually exist in cacheDir for debugging
+		files, _ := os.ReadDir(cacheDir)
+		fmt.Fprintf(os.Stderr, "[plugin-downloader] ERROR: Plugin not found. Files in %s:\n", cacheDir)
+		for _, f := range files {
+			fmt.Fprintf(os.Stderr, "[plugin-downloader]   - %s\n", f.Name())
+		}
 		return fmt.Errorf("plugin not found in any expected location after download")
 	}
 

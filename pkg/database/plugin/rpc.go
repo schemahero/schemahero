@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/rpc"
 	"sync"
 
@@ -674,10 +675,12 @@ func (c *RPCClient) Validate(config map[string]interface{}) error {
 	var reply ValidateReply
 	err := c.client.Call("Plugin.Validate", &ValidateArgs{Config: config}, &reply)
 	if err != nil {
+		log.Printf("[plugin-rpc] ERROR: Plugin.Validate RPC call failed: %v", err)
 		return err
 	}
 
 	if !reply.Valid {
+		log.Printf("[plugin-rpc] Plugin.Validate returned invalid: %s", reply.Error)
 		return &plugin.BasicError{Message: reply.Error}
 	}
 
@@ -686,16 +689,20 @@ func (c *RPCClient) Validate(config map[string]interface{}) error {
 
 // Initialize implements DatabasePlugin.Initialize() by making an RPC call to the server.
 func (c *RPCClient) Initialize(ctx context.Context) error {
+	log.Printf("[plugin-rpc] Calling Plugin.Initialize RPC method")
 	var reply InitializeReply
 	err := c.client.Call("Plugin.Initialize", &InitializeArgs{}, &reply)
 	if err != nil {
+		log.Printf("[plugin-rpc] ERROR: Plugin.Initialize RPC call failed: %v", err)
 		return err
 	}
 
 	if !reply.Success {
+		log.Printf("[plugin-rpc] Plugin.Initialize returned failure: %s", reply.Error)
 		return &plugin.BasicError{Message: reply.Error}
 	}
 
+	log.Printf("[plugin-rpc] Plugin.Initialize succeeded")
 	return nil
 }
 
