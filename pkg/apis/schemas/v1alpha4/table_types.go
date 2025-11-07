@@ -35,14 +35,31 @@ type TableSchema struct {
 	RQLite      *RqliteTableSchema      `json:"rqlite,omitempty" yaml:"rqlite,omitempty"`
 }
 
+// DataMigration defines a data transformation to be applied
+type DataMigration struct {
+	Type        string          `json:"type" yaml:"type"` // "static", "calculated", "typeConversion"
+	Column      string          `json:"column" yaml:"column"`
+	Value       *string         `json:"value,omitempty" yaml:"value,omitempty"`           // For static updates
+	Expression  *string         `json:"expression,omitempty" yaml:"expression,omitempty"` // For calculated values
+	FromColumn  *string         `json:"fromColumn,omitempty" yaml:"fromColumn,omitempty"` // Source for conversions
+	TypeConvert *TypeConversion `json:"typeConvert,omitempty" yaml:"typeConvert,omitempty"`
+}
+
+// TypeConversion defines a type conversion operation
+type TypeConversion struct {
+	From string `json:"from" yaml:"from"`
+	To   string `json:"to" yaml:"to"`
+}
+
 // TableSpec defines the desired state of Table
 type TableSpec struct {
 	Database string   `json:"database" yaml:"database"`
 	Name     string   `json:"name" yaml:"name"`
 	Requires []string `json:"requires,omitempty" yaml:"requires,omitempty"`
 
-	Schema   *TableSchema `json:"schema,omitempty" yaml:"schema,omitempty"`
-	SeedData *SeedData    `json:"seedData,omitempty" yaml:"seedData,omitempty"`
+	Schema         *TableSchema    `json:"schema,omitempty" yaml:"schema,omitempty"`
+	SeedData       *SeedData       `json:"seedData,omitempty" yaml:"seedData,omitempty"`
+	DataMigrations []DataMigration `json:"dataMigrations,omitempty" yaml:"dataMigrations,omitempty"`
 }
 
 // TableStatus defines the observed state of Table
