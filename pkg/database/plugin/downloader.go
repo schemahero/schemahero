@@ -13,7 +13,7 @@ import (
 	"sync"
 
 	"oras.land/oras-go/v2"
-	"oras.land/oras-go/v2/content/file"  
+	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/registry/remote"
 )
 
@@ -136,7 +136,7 @@ func (d *PluginDownloader) DownloadPlugin(ctx context.Context, driver string, ma
 // downloadPluginOnce performs the actual download operation
 func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string, majorVersion string, pluginPath string) error {
 	artifactRef := d.GetPluginArtifactRef(driver, majorVersion)
-	
+
 	// Extract the tag from the artifact reference (everything after the last :)
 	parts := strings.Split(artifactRef, ":")
 	tag := parts[len(parts)-1]
@@ -168,17 +168,17 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	if err != nil {
 		return fmt.Errorf("failed to download plugin from %s (repo: %s, tag: %s): %w", artifactRef, repoURL, tag, err)
 	}
-	
+
 	// ORAS seems to preserve directory structure, so look in common subdirectories
 	possiblePaths := []string{
-		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),           // Direct
+		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s", driver)),                   // Direct
 		filepath.Join(cacheDir, "plugins", "bin", fmt.Sprintf("schemahero-%s", driver)), // With structure
 		filepath.Join(cacheDir, "plugins", fmt.Sprintf("schemahero-%s", driver)),        // Partial structure
 		// Also look for the tarball files that might be downloaded
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-linux-%s.tar.gz", driver, runtime.GOARCH)),
 		filepath.Join(cacheDir, fmt.Sprintf("schemahero-%s-%s-%s.tar.gz", driver, runtime.GOOS, runtime.GOARCH)),
 	}
-	
+
 	var foundPath string
 	var isArchive bool
 	for _, path := range possiblePaths {
@@ -188,13 +188,13 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 			break
 		}
 	}
-	
+
 	if foundPath == "" {
 		return fmt.Errorf("plugin not found in any expected location after download")
 	}
-	
+
 	var finalPluginPath string
-	
+
 	if isArchive {
 		// Extract the tarball
 		finalPluginPath, err = d.extractPlugin(foundPath, cacheDir, driver)
@@ -235,9 +235,9 @@ func (d *PluginDownloader) extractPlugin(archivePath, extractDir, driver string)
 	defer gzr.Close()
 
 	tr := tar.NewReader(gzr)
-	
+
 	expectedBinary := fmt.Sprintf("schemahero-%s", driver)
-	
+
 	for {
 		header, err := tr.Next()
 		if err == io.EOF {
@@ -256,28 +256,28 @@ func (d *PluginDownloader) extractPlugin(archivePath, extractDir, driver string)
 		// Look for the binary we want
 		if header.Typeflag == tar.TypeReg && strings.Contains(header.Name, expectedBinary) {
 			extractPath := filepath.Join(extractDir, filepath.Base(header.Name))
-			
+
 			outFile, err := os.Create(extractPath)
 			if err != nil {
 				return "", fmt.Errorf("failed to create extract file: %w", err)
 			}
-			
+
 			_, err = io.Copy(outFile, tr)
 			outFile.Close()
-			
+
 			if err != nil {
 				return "", fmt.Errorf("failed to extract file: %w", err)
 			}
-			
+
 			// Make it executable
 			if err := os.Chmod(extractPath, 0755); err != nil {
 				return "", fmt.Errorf("failed to make extracted binary executable: %w", err)
 			}
-			
+
 			return extractPath, nil
 		}
 	}
-	
+
 	return "", fmt.Errorf("binary %s not found in archive", expectedBinary)
 }
 
