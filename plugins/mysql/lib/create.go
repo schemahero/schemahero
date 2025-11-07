@@ -35,6 +35,11 @@ func SeedDataStatements(tableName string, seedData *schemasv1alpha4.SeedData) ([
 					vals = append(vals, fmt.Sprintf("'%s'", *col.Value.Str))
 					updateVals = append(updateVals, fmt.Sprintf("%s=%s", col.Column, fmt.Sprintf("'%s'", *col.Value.Str)))
 				}
+			} else {
+				// If neither Int nor Str is set (e.g., str: "" becomes nil due to omitempty),
+				// treat it as an empty string
+				vals = append(vals, "''")
+				updateVals = append(updateVals, fmt.Sprintf("%s=''", col.Column))
 			}
 		}
 

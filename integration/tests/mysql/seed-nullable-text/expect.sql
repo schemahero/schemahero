@@ -1,0 +1,3 @@
+create table `products` (`product_id` int (11) not null, `product_name` varchar (100) not null, `description` varchar (500), `price` decimal (10, 2) not null, `stock_count` int (11) default '0', primary key (`product_id`));
+insert into products (product_id, product_name, description, price) values (1, 'Test Product One', '', '99.99') on duplicate key update product_id=1, product_name='Test Product One', description='', price='99.99';
+insert into products (product_id, product_name, description, price, stock_count) values (2, 'Test Product Two', '', '149.50', 10) on duplicate key update product_id=2, product_name='Test Product Two', description='', price='149.50', stock_count=10;

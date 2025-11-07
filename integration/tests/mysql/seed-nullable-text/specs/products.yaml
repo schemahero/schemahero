@@ -1,0 +1,59 @@
+database: schemahero
+name: products
+requires: []
+schema:
+  mysql:
+    primaryKey: [product_id]
+    columns:
+      - name: product_id
+        type: int
+        constraints:
+          notNull: true
+      - name: product_name
+        type: varchar(100)
+        constraints:
+          notNull: true
+      - name: description
+        type: varchar(500)
+        constraints:
+          notNull: false
+      - name: price
+        type: decimal(10,2)
+        constraints:
+          notNull: true
+      - name: stock_count
+        type: int
+        constraints:
+          notNull: false
+        default: "0"
+seedData:
+  rows:
+    - columns:
+      - column: product_id
+        value:
+          int: 1
+      - column: product_name
+        value:
+          str: Test Product One
+      - column: description
+        value:
+          str: ""
+      - column: price
+        value:
+          str: "99.99"
+    - columns:
+      - column: product_id
+        value:
+          int: 2
+      - column: product_name
+        value:
+          str: Test Product Two
+      - column: description
+        value:
+          str: ""
+      - column: price
+        value:
+          str: "149.50"
+      - column: stock_count
+        value:
+          int: 10
