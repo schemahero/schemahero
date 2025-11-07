@@ -19,7 +19,7 @@ jobs:
       rqlite: ${{ steps.filter.outputs.rqlite }}
       cassandra: ${{ steps.filter.outputs.cassandra }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get plugin version
         id: version
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get plugin version
         id: version
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get plugin version
         id: version
@@ -138,7 +138,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get plugin version
         id: version
@@ -168,7 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get plugin version
         id: version
@@ -198,7 +198,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get plugin version
         id: version
@@ -227,7 +227,7 @@ jobs:
     needs: [build-postgres, build-mysql, build-timescaledb, build-sqlite, build-rqlite, build-cassandra]
     if: always() && !cancelled()
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
@@ -264,7 +264,7 @@ jobs:
       matrix:
         postgres_version: ["11.18", "12.13", "13.9", "14.6", "15.1"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -290,7 +290,7 @@ jobs:
       matrix:
         mysql_version: ["8.0.31", "8.4.5", "9.3.0"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -317,7 +317,7 @@ jobs:
         # "v19.2.12", "v20.2.19" are no longer supported
         cockroachdb_version: ["v21.2.17", "v22.1.11"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -343,7 +343,7 @@ jobs:
       matrix:
         cassandra_version: ["3.11.10"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -369,7 +369,7 @@ jobs:
       matrix:
         sqlite_version: ["3.39.3"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -395,7 +395,7 @@ jobs:
       matrix:
         rqlite_version: ["6.10.2", "7.6.1"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -421,7 +421,7 @@ jobs:
       matrix:
         timescaledb_version: ["2.9.3-pg14"]
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -454,7 +454,7 @@ jobs:
       digest: ${{ steps.release-manager.outputs.digest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - id: get_version
         uses: battila7/get-version-action@v2
       - name: Set up QEMU
@@ -503,7 +503,7 @@ jobs:
       digest: ${{ steps.release-schemahero.outputs.digest }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - id: get_version
         uses: battila7/get-version-action@v2
@@ -552,7 +552,7 @@ jobs:
       - test-timescaledb
     if: always() && !cancelled()
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
@@ -606,7 +606,7 @@ jobs:
       - build-docker-manager
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v5
       - name: Create new schemahero version in krew-index
         uses: rajatjindal/krew-release-bot@v0.0.47
         with:
