@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: tables.schemas.schemahero.io
 spec:
   group: schemas.schemahero.io
@@ -268,6 +268,11 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
                         type: array
                       primaryKey:
                         items:
@@ -334,8 +339,18 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
                         type: array
                     type: object
+                    x-kubernetes-validations:
+                    - message: exactly one of the fields in [triggers json:triggers]
+                        must be set
+                      rule: '[has(self.triggers),has(self.json:triggers)].filter(x,x==true).size()
+                        == 1'
                   mysql:
                     properties:
                       collation:
@@ -556,6 +571,11 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
                         type: array
                       primaryKey:
                         items:
@@ -622,8 +642,18 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
                         type: array
                     type: object
+                    x-kubernetes-validations:
+                    - message: exactly one of the fields in [triggers json:triggers]
+                        must be set
+                      rule: '[has(self.triggers),has(self.json:triggers)].filter(x,x==true).size()
+                        == 1'
                   rqlite:
                     properties:
                       columns:
@@ -968,6 +998,11 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
                         type: array
                     type: object
                 type: object

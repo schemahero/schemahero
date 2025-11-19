@@ -74,7 +74,7 @@ type PostgresqlTableColumn struct {
 	Default     *string                           `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
-// +kubebuilder:validation:ExactlyOneOf=triggers;json:triggers
+// +kubebuilder:validation:ExactlyOneOf=triggers;"json:triggers"
 type PostgresqlTableSchema struct {
 	Schema      string                       `json:"schema,omitempty" yaml:"schema,omitempty"`
 	PrimaryKey  []string                     `json:"primaryKey,omitempty" yaml:"primaryKey,omitempty"`
