@@ -417,9 +417,3 @@ func (m *PluginManager) Cleanup() {
 		m.loader.Cleanup()
 	}
 }
-
-// GetLoader returns the plugin loader instance.
-// This is primarily used for testing and cleanup purposes.
-func (m *PluginManager) GetLoader() *PluginLoader {
-	return m.loader
-}
