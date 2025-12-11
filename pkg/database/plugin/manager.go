@@ -408,3 +408,18 @@ func (m *PluginManager) normalizeEngineForDownload(engine string) string {
 		return strings.ToLower(engine)
 	}
 }
+
+// Cleanup terminates all plugin processes and cleans up resources.
+// This method should be called when shutting down the plugin manager
+// to ensure all plugin processes are properly terminated.
+func (m *PluginManager) Cleanup() {
+	if m.loader != nil {
+		m.loader.Cleanup()
+	}
+}
+
+// GetLoader returns the plugin loader instance.
+// This is primarily used for testing and cleanup purposes.
+func (m *PluginManager) GetLoader() *PluginLoader {
+	return m.loader
+}

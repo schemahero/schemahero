@@ -51,6 +51,13 @@ func RootCmd() *cobra.Command {
 }
 
 func InitAndExecute() {
+	// Ensure plugin processes are cleaned up on exit
+	defer func() {
+		if pluginManager := plugin.GetGlobalPluginManager(); pluginManager != nil {
+			pluginManager.Cleanup()
+		}
+	}()
+
 	if err := RootCmd().Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
