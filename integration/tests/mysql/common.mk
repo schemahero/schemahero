@@ -32,6 +32,9 @@ run:
 		exit 1; \
 	fi
 
+	# Check for leaked plugin processes
+	@bash ../../../check-plugin-leaks.sh
+
 	# Cleanup
 	@-sleep 5
 	# rm ./out.sql
