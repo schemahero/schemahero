@@ -39,8 +39,20 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
 
-      - run: make fmt
-      - run: go mod tidy
+      - name: Format and check for diffs
+        run: |
+          make fmt
+          git diff --exit-code || {
+            echo "::error::Please run 'make fmt' and commit changes"
+            exit 1
+          }
+      - name: Check go mod tidy
+        run: |
+          make tidy
+          git diff --exit-code -- go.mod go.sum "**/go.mod" "**/go.sum" || {
+            echo "::error::Please run 'make tidy' and commit changes"
+            exit 1
+          }
       - run: make vet test
 
   test-postgres:
