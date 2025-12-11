@@ -8,7 +8,7 @@ set -e
 
 # Get list of all running schemahero plugin processes
 # Pattern matches: schemahero-postgres, schemahero-mysql, schemahero-cockroachdb, etc.
-leaked_processes=$(ps aux | grep -E "[s]chemahero-(postgres|mysql|cockroachdb|timescaledb|cassandra|sqlite|rqlite|mongodb)" || true)
+leaked_processes=$(ps aux | grep -E "schemahero-[a-z]+" || true)
 
 if [ -n "$leaked_processes" ]; then
     echo ""
