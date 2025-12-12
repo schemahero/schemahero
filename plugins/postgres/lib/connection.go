@@ -159,8 +159,12 @@ func (p *PostgresConnection) PlanFunctionSchema(functionName string, functionSch
 
 // PlanExtensionSchema generates SQL statements to manage database extensions
 func (p *PostgresConnection) PlanExtensionSchema(extensionName string, extensionSchema interface{}) ([]string, error) {
-	// Extensions planning not yet implemented
-	return nil, errors.New("extension planning not yet implemented")
+	postgresExtension, ok := extensionSchema.(*schemasv1alpha4.PostgresDatabaseExtension)
+	if !ok {
+		return nil, errors.New("extensionSchema must be *PostgresDatabaseExtension")
+	}
+	
+	return PlanPostgresExtension(p.GetConnectionURI(), extensionName, postgresExtension)
 }
 
 // DeployStatements executes a list of SQL statements

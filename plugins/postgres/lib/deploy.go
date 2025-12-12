@@ -515,3 +515,50 @@ func CheckIfFunctionExists(p *PostgresConnection, functionSchema string, functio
 
 	return tableExists > 0, nil
 }
+
+// CheckIfExtensionExists returns whether the specified extension exists in the database
+func CheckIfExtensionExists(p *PostgresConnection, extensionName string) (bool, error) {
+	query := `select count(1) from pg_extension where extname = $1`
+	row := p.conn.QueryRow(context.Background(), query, extensionName)
+	extensionExists := 0
+	if err := row.Scan(&extensionExists); err != nil {
+		return false, errors.Wrap(err, "failed to scan")
+	}
+
+	return extensionExists > 0, nil
+}
+
+func PlanPostgresExtension(uri string, extensionName string, postgresExtensionSchema *schemasv1alpha4.PostgresDatabaseExtension) ([]string, error) {
+	p, err := Connect(uri)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect to postgres")
+	}
+	defer p.Close()
+
+	extensionExists, err := CheckIfExtensionExists(p, extensionName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check if extension exists")
+	}
+
+	queries := []string{}
+
+	if !extensionExists && postgresExtensionSchema.IsDeleted {
+		return []string{}, nil
+	} else if extensionExists && postgresExtensionSchema.IsDeleted {
+		dropStatements, err := DropExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{postgresExtensionSchema})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create drop extension statements")
+		}
+		return dropStatements, nil
+	}
+
+	if !extensionExists {
+		createStatements, err := CreateExtensionStatements([]*schemasv1alpha4.PostgresDatabaseExtension{postgresExtensionSchema})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create extension statements")
+		}
+		queries = append(queries, createStatements...)
+	}
+
+	return queries, nil
+}
