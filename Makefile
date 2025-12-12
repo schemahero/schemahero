@@ -151,6 +151,13 @@ fmt:
 vet:
 	go vet ./pkg/... ./cmd/...
 
+.PHONY: tidy
+tidy: go.mod plugins/**/go.mod
+	for file in $^ ; do \
+		dir=$$(dirname $$file); \
+		pushd $$(dirname $$file) && go mod tidy; popd; \
+	done
+
 .PHONY: generate
 generate: controller-gen client-gen lister-gen informer-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths=./pkg/apis/...

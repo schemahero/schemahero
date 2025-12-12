@@ -168,7 +168,7 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	if err != nil {
 		return fmt.Errorf("failed to download plugin from %s (repo: %s, tag: %s): %w", artifactRef, repoURL, tag, err)
 	}
-	
+
 	// ORAS downloads all platform artifacts, so we must check for the correct platform-specific tarball FIRST
 	// before falling back to generic paths
 	possiblePaths := []string{
