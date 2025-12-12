@@ -23,6 +23,9 @@ run:
 	# Apply
 	../../../../bin/kubectl-schemahero apply --keyspace schemahero --host 127.0.0.1:9042 --driver=$(DRIVER) --ddl out.sql
 
+	# Check for leaked plugin processes
+	@bash ../../../check-plugin-leaks.sh
+
 	# Cleanup
 	@-sleep 5
 	rm ./out.sql
