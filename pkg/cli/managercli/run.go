@@ -67,6 +67,14 @@ func RunCmd() *cobra.Command {
 			}
 			logger.Info("Plugin system initialized successfully")
 
+			// Ensure plugin processes are cleaned up on exit
+			defer func() {
+				logger.Info("Cleaning up plugin system")
+				if pluginManager != nil {
+					pluginManager.Cleanup()
+				}
+			}()
+
 			isDebug := false
 			if v.GetString("log-level") == "debug" {
 				isDebug = true
