@@ -11,6 +11,7 @@ type Index struct {
 	Columns  []string
 	Name     string
 	IsUnique bool
+	With     map[string]string
 }
 
 func (idx *Index) Equals(other *Index) bool {
