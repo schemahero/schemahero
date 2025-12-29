@@ -241,6 +241,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -273,6 +274,7 @@ spec:
                               must be set
                             rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
                               == 1'
+                        maxItems: 100
                         type: array
                       primaryKey:
                         items:
@@ -312,6 +314,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -344,13 +347,9 @@ spec:
                               must be set
                             rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
                               == 1'
+                        maxItems: 100
                         type: array
                     type: object
-                    x-kubernetes-validations:
-                    - message: exactly one of the fields in [triggers json:triggers]
-                        must be set
-                      rule: '[has(self.triggers),has(self.json:triggers)].filter(x,x==true).size()
-                        == 1'
                   mysql:
                     properties:
                       collation:
@@ -544,6 +543,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -576,6 +576,7 @@ spec:
                               must be set
                             rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
                               == 1'
+                        maxItems: 100
                         type: array
                       primaryKey:
                         items:
@@ -615,6 +616,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -647,13 +649,9 @@ spec:
                               must be set
                             rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
                               == 1'
+                        maxItems: 100
                         type: array
                     type: object
-                    x-kubernetes-validations:
-                    - message: exactly one of the fields in [triggers json:triggers]
-                        must be set
-                      rule: '[has(self.triggers),has(self.json:triggers)].filter(x,x==true).size()
-                        == 1'
                   rqlite:
                     properties:
                       columns:
@@ -971,6 +969,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -1003,6 +1002,7 @@ spec:
                               must be set
                             rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
                               == 1'
+                        maxItems: 100
                         type: array
                     type: object
                 type: object

@@ -51,8 +51,9 @@ type TimescaleDBTableSchema struct {
 	Indexes     []*PostgresqlTableIndex      `json:"indexes,omitempty" yaml:"indexes,omitempty"`
 	Columns     []*PostgresqlTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                         `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
-	Triggers    []*PostgresqlTableTrigger    `json:"triggers,omitempty" yaml:"triggers,omitempty"`
-	Hypertable  *TimescaleDBHypertable       `json:"hypertable,omitempty" yaml:"hypertable,omitempty"`
+	// +kubebuilder:validation:MaxItems=100
+	Triggers   []*PostgresqlTableTrigger `json:"triggers,omitempty" yaml:"triggers,omitempty"`
+	Hypertable *TimescaleDBHypertable    `json:"hypertable,omitempty" yaml:"hypertable,omitempty"`
 }
 
 type TimescaleDBViewSchema struct {
