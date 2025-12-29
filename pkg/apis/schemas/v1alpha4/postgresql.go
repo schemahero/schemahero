@@ -33,9 +33,9 @@ type PostgresqlTableTrigger struct {
 type PostgresqlTableTriggerExecute struct {
 	//+kubebuilder:validation:Enum=Procedure;Function
 	//+kubebuilder:default:=Procedure
-	Type   string                        `json:"type" yaml:"type"`
-	Schema string                        `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Name   string                        `json:"name" yaml:"name"`
+	Type   string `json:"type" yaml:"type"`
+	Schema string `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Name   string `json:"name" yaml:"name"`
 	// +kubebuilder:validation:MaxItems=100
 	Params []*PostgresqlExecuteParameter `json:"params,omitempty" yaml:"params,omitempty"`
 }
