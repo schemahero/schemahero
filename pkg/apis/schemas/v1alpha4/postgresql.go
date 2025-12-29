@@ -33,9 +33,10 @@ type PostgresqlTableTrigger struct {
 type PostgresqlTableTriggerExecute struct {
 	//+kubebuilder:validation:Enum=Procedure;Function
 	//+kubebuilder:default:=Procedure
-	Type   string                        `json:"type" yaml:"type"`
-	Schema string                        `json:"schema,omitempty" yaml:"schema,omitempty"`
-	Name   string                        `json:"name" yaml:"name"`
+	Type   string `json:"type" yaml:"type"`
+	Schema string `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Name   string `json:"name" yaml:"name"`
+	// +kubebuilder:validation:MaxItems=100
 	Params []*PostgresqlExecuteParameter `json:"params,omitempty" yaml:"params,omitempty"`
 }
 
@@ -74,7 +75,6 @@ type PostgresqlTableColumn struct {
 	Default     *string                           `json:"default,omitempty" yaml:"default,omitempty"`
 }
 
-// +kubebuilder:validation:ExactlyOneOf=triggers;"json:triggers"
 type PostgresqlTableSchema struct {
 	Schema      string                       `json:"schema,omitempty" yaml:"schema,omitempty"`
 	PrimaryKey  []string                     `json:"primaryKey,omitempty" yaml:"primaryKey,omitempty"`
@@ -83,8 +83,10 @@ type PostgresqlTableSchema struct {
 	Columns     []*PostgresqlTableColumn     `json:"columns,omitempty" yaml:"columns,omitempty"`
 	IsDeleted   bool                         `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
 	// Deprecated: this field should be avoided and one should use Triggers without json prefix instead
+	// +kubebuilder:validation:MaxItems=100
 	JSONTriggers []*PostgresqlTableTrigger `json:"json:triggers,omitempty" yaml:"json:triggers,omitempty"`
-	Triggers     []*PostgresqlTableTrigger `json:"triggers,omitempty" yaml:"triggers,omitempty"`
+	// +kubebuilder:validation:MaxItems=100
+	Triggers []*PostgresqlTableTrigger `json:"triggers,omitempty" yaml:"triggers,omitempty"`
 }
 
 type PostgresqlFunctionSchema struct {
