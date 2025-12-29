@@ -568,7 +568,7 @@ jobs:
       - name: make release-tarballs
         run: make release-tarballs
         env:
-          GITHUB_TAG: ${{ steps.get_version.outputs.version-without-v }}
+          GIT_TAG: ${{ steps.get_version.outputs.version-without-v }}
 
       - name: create github release
         id: create-github-release
