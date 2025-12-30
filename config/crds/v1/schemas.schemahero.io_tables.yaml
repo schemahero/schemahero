@@ -53,6 +53,36 @@ spec:
           spec:
             description: TableSpec defines the desired state of Table
             properties:
+              dataMigrations:
+                items:
+                  description: DataMigration defines a data transformation to be applied
+                  properties:
+                    column:
+                      type: string
+                    expression:
+                      type: string
+                    fromColumn:
+                      type: string
+                    type:
+                      type: string
+                    typeConvert:
+                      description: TypeConversion defines a type conversion operation
+                      properties:
+                        from:
+                          type: string
+                        to:
+                          type: string
+                      required:
+                      - from
+                      - to
+                      type: object
+                    value:
+                      type: string
+                  required:
+                  - column
+                  - type
+                  type: object
+                type: array
               database:
                 type: string
               name:
