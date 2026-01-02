@@ -226,7 +226,7 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 
 	// plan the seed data
 	seedStatements := []string{}
-	if databaseInstance.Spec.DeploySeedData {
+	if databaseInstance.Spec.DeploySeedData && tableInstance.Spec.SeedData != nil && len(schemaStatements) == 0 {
 		stmts, err := db.PlanSyncSeedData(&tableInstance.Spec)
 		if err != nil {
 			return reconcile.Result{}, errors.Wrapf(err, "failed to plan seed for table %s", tableInstance.Name)
