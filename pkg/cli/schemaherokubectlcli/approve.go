@@ -10,7 +10,7 @@ func ApproveCmd() *cobra.Command {
 		Use:           "approve",
 		Short:         "",
 		Long:          `...`,
-		Args:          cobra.MinimumNArgs(1),
+		Args:          cobra.ExactArgs(0),
 		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())

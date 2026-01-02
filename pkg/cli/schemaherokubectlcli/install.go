@@ -23,6 +23,7 @@ After upgrading, the operator will roll out new database managers, restarting ea
 
 For more control, use the --yaml flag to avoid making any changes to the cluster, and only print the manifests to the terminal that can be deployed using other tooling.`,
 		SilenceErrors: true,
+		Args:          cobra.ExactArgs(0),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
