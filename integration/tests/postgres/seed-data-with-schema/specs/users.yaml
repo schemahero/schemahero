@@ -1,0 +1,27 @@
+database: schemahero
+name: table1
+requires: []
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: col1
+        type: varchar(255)
+        constraints:
+          notNull: true
+      - name: col2
+        type: timestamp
+seedData:
+  rows:
+    - columns:
+      - column: id
+        value:
+          int: 1
+      - column: col1
+        value:
+          str: seed-value
+      - column: col2
+        value:
+          str: "2024-01-01T00:00:00Z"

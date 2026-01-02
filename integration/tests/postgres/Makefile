@@ -34,6 +34,7 @@ build-postgres-plugin:
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-with-schema run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
@@ -61,6 +62,7 @@ build-postgres-plugin:
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-with-schema run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
@@ -88,6 +90,7 @@ build-postgres-plugin:
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-with-schema run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
@@ -115,6 +118,7 @@ build-postgres-plugin:
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-with-schema run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
@@ -143,6 +147,7 @@ build-postgres-plugin:
 	make -C unique-constraint-add run
 	make -C unique-constraint-drop run
 	make -C basic-seed run
+	make -C seed-data-with-schema run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C two-column-pk run
@@ -153,6 +158,7 @@ build-postgres-plugin:
 seed: export PG_VERSION = 15.1
 seed: build-postgres-plugin
 	make -C basic-seed run
+	make -C seed-data-with-schema run
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 
