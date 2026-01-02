@@ -19,11 +19,11 @@ jobs:
           cache-dependency-path: ./go.sum
 
       - run: make manifests bin/kubectl-schemahero manager
-      - uses: actions/upload-artifact@v5.0.0
+      - uses: actions/upload-artifact@v6.0.0
         with:
           name: kubectl-schemahero
           path: bin/kubectl-schemahero
-      - uses: actions/upload-artifact@v5.0.0
+      - uses: actions/upload-artifact@v6.0.0
         with:
           name: manager
           path: bin/manager
