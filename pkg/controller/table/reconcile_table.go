@@ -2,6 +2,7 @@ package table
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/plugin"
 	"github.com/schemahero/schemahero/pkg/logger"
 	"go.uber.org/zap"
+	appsv1 "k8s.io/api/apps/v1"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -50,6 +52,21 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 	if database == nil {
 		// TDOO add a status field with this state
 		logger.Debug("requeuing table reconcile request for 10 seconds because database instance was not present",
+			zap.String("database.name", instance.Spec.Database),
+			zap.String("database.namespace", instance.Namespace))
+
+		return reconcile.Result{
+			Requeue:      true,
+			RequeueAfter: time.Second * 10,
+		}, nil
+	}
+
+	isReady, err := r.isDatabaseControllerReady(ctx, database)
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to verify database controller readiness")
+	}
+	if !isReady {
+		logger.Debug("requeuing table reconcile request because database controller is not ready",
 			zap.String("database.name", instance.Spec.Database),
 			zap.String("database.namespace", instance.Namespace))
 
@@ -175,6 +192,28 @@ func (r *ReconcileTable) getDatabaseInstance(ctx context.Context, namespace stri
 	}
 
 	return database, nil
+}
+
+func (r *ReconcileTable) isDatabaseControllerReady(ctx context.Context, databaseInstance *databasesv1alpha4.Database) (bool, error) {
+	statefulsetName := fmt.Sprintf("%s-controller", databaseInstance.Name)
+	statefulset := &appsv1.StatefulSet{}
+
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      statefulsetName,
+		Namespace: databaseInstance.Namespace,
+	}, statefulset)
+	if kuberneteserrors.IsNotFound(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, errors.Wrap(err, "failed to get database controller statefulset")
+	}
+
+	if statefulset.Status.ReadyReplicas < 1 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func checkDatabaseTypeMatches(connection *databasesv1alpha4.DatabaseConnection, tableSchema *schemasv1alpha4.TableSchema) bool {
