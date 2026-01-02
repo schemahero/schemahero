@@ -125,6 +125,16 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 					Verbs:     metav1.Verbs{"get"},
 				},
 				{
+					APIGroups: []string{"apps"},
+					Resources: []string{"statefulsets"},
+					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+				},
+				{
+					APIGroups: []string{"apps"},
+					Resources: []string{"statefulsets/status"},
+					Verbs:     metav1.Verbs{"get", "update", "patch"},
+				},
+				{
 					APIGroups: []string{"databases.schemahero.io"},
 					Resources: []string{"databases"},
 					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
