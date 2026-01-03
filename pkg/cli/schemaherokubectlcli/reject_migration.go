@@ -21,7 +21,7 @@ func RejectMigrationCmd() *cobra.Command {
 		Use:           "migration",
 		Short:         "",
 		Long:          `...`,
-		Args:          cobra.MinimumNArgs(1),
+		Args:          cobra.ExactArgs(1),
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PreRun: func(cmd *cobra.Command, args []string) {

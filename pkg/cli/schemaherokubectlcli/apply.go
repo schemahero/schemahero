@@ -19,6 +19,7 @@ func ApplyCmd() *cobra.Command {
 		Short:        "apply a spec to a database",
 		Long:         `...`,
 		SilenceUsage: true,
+		Args:         cobra.ExactArgs(0),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},

@@ -10,7 +10,7 @@ func RejectCmd() *cobra.Command {
 		Use:           "reject",
 		Short:         "",
 		Long:          `...`,
-		Args:          cobra.MinimumNArgs(1),
+		Args:          cobra.ExactArgs(0),
 		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())

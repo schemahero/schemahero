@@ -57,6 +57,7 @@ func GetMigrationsCmd() *cobra.Command {
 		Use:           "migrations",
 		Short:         "",
 		Long:          `...`,
+		Args:          cobra.ExactArgs(0),
 		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())

@@ -21,6 +21,7 @@ func PlanCmd() *cobra.Command {
 		Short:        "plan a spec application against a database",
 		Long:         `...`,
 		SilenceUsage: true,
+		Args:         cobra.ExactArgs(0),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
