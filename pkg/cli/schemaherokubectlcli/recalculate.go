@@ -15,9 +15,6 @@ func RecalculateCmd() *cobra.Command {
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
-		},
 	}
 
 	cmd.AddCommand(RecalculateMigrationCmd())
