@@ -385,7 +385,7 @@ jobs:
     if: always() && !cancelled()
     strategy:
       matrix:
-        rqlite_version: ["6.10.2", "7.6.1"]
+        rqlite_version: ["8.36.8", "9.3.18"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6

@@ -1,11 +1,10 @@
-
 SHELL := /bin/bash
 
 export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: build-rqlite-plugin 7.6.1 6.10.2
+run: build-rqlite-plugin 8.36.8 9.3.18
 
 .PHONY: build-rqlite-plugin
 build-rqlite-plugin:
@@ -13,9 +12,9 @@ build-rqlite-plugin:
 	@mkdir -p $(HOME)/.schemahero/plugins
 	@cd ../../../plugins/rqlite && go build -o $(HOME)/.schemahero/plugins/schemahero-rqlite .
 
-.PHONY: 7.6.1
-7.6.1: export RQLITE_VERSION = 7.6.1
-7.6.1: build-rqlite-plugin
+.PHONY: 8.36.8
+8.36.8: export RQLITE_VERSION = 8.36.8
+8.36.8: build-rqlite-plugin
 	make -C basic-seed run
 	make -C column-add run
 	make -C column-alter run
@@ -54,9 +53,9 @@ build-rqlite-plugin:
 	make -C unique-index-named-no-change run
 	make -C unique-index-no-change run
 
-.PHONY: 6.10.2
-6.10.2: export RQLITE_VERSION = 6.10.2
-6.10.2: build-rqlite-plugin
+.PHONY: 9.3.18
+9.3.18: export RQLITE_VERSION = 9.3.18
+9.3.18: build-rqlite-plugin
 	make -C basic-seed run
 	make -C column-add run
 	make -C column-alter run
@@ -83,6 +82,7 @@ build-rqlite-plugin:
 	make -C seed-data-without-schema run
 	make -C seed-with-many-rows run
 	make -C table-create run
+	make -C table-create-strict run
 	make -C table-create-with-index run
 	make -C table-create-with-unique-index run
 	make -C unique-constraint-add run
