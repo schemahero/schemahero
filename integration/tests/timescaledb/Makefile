@@ -5,7 +5,7 @@ export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: build-timescaledb-plugin 2.9.3-pg14
+run: build-timescaledb-plugin 2.25.0-pg17
 
 .PHONY: build-timescaledb-plugin
 build-timescaledb-plugin:
@@ -13,9 +13,9 @@ build-timescaledb-plugin:
 	@mkdir -p $(HOME)/.schemahero/plugins
 	@cd ../../../plugins/timescaledb && go build -o $(HOME)/.schemahero/plugins/schemahero-timescaledb .
 
-.PHONY: 2.9.3-pg14
-2.9.3-pg14: export TIMESCALEDB_VERSION = 2.9.3-pg14
-2.9.3-pg14: build-timescaledb-plugin
+.PHONY: 2.25.0-pg17
+2.25.0-pg17: export TIMESCALEDB_VERSION = 2.25.0-pg17
+2.25.0-pg17: build-timescaledb-plugin
 	make -C create-materialized-view run
 	make -C drop-materialized-view run
 	make -C alter-column-timezone run
@@ -39,7 +39,7 @@ build-timescaledb-plugin:
 
 
 .PHONY: seed
-seed: export TIMESCALEDB_VERSION = 2.9.3-pg14
+seed: export TIMESCALEDB_VERSION = 2.25.0-pg17
 seed:
 	make -C basic-seed run
 	make -C seed-data-without-schema run
