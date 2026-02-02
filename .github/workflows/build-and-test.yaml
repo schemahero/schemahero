@@ -117,8 +117,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # "v19.2.12", "v20.2.19" are no longer supported
-        cockroachdb_version: ["v21.2.17", "v22.1.11"]
+        cockroachdb_version: ["v24.3.25", "v25.2.11", "v25.4.3"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
