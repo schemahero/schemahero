@@ -229,7 +229,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        timescaledb_version: ["2.9.3-pg14"]
+        timescaledb_version: ["2.25.0-pg17"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
