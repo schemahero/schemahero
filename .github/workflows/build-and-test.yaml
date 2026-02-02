@@ -146,7 +146,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cassandra_version: ["3.11.10"]
+        cassandra_version: ["4.0.19", "4.1.10", "5.0.6"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
