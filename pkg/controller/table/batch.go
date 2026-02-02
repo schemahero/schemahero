@@ -41,8 +41,8 @@ import (
 
 // pendingTable represents a table waiting to be processed in a batch
 type pendingTable struct {
-	table     *schemasv1alpha4.Table
-	queuedAt  time.Time
+	table    *schemasv1alpha4.Table
+	queuedAt time.Time
 }
 
 // batchState tracks the state of a batch for a specific database
@@ -72,7 +72,7 @@ func (bm *BatchManager) SetClient(c client.Client) {
 	bm.client = c
 }
 
-// SetScheme sets the runtime scheme for the batch manager  
+// SetScheme sets the runtime scheme for the batch manager
 func (bm *BatchManager) SetScheme(s *runtime.Scheme) {
 	bm.scheme = s
 }
