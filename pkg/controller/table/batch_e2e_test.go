@@ -138,7 +138,7 @@ func TestBatchWindowE2E(t *testing.T) {
 					Schema: &schemasv1alpha4.TableSchema{
 						Postgres: &schemasv1alpha4.PostgresqlTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha4.PostgresqlColumn{
+							Columns: []*schemasv1alpha4.PostgresqlTableColumn{
 								{Name: "id", Type: "integer"},
 								{Name: "email", Type: "varchar(255)"},
 							},
@@ -157,7 +157,7 @@ func TestBatchWindowE2E(t *testing.T) {
 					Schema: &schemasv1alpha4.TableSchema{
 						Postgres: &schemasv1alpha4.PostgresqlTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha4.PostgresqlColumn{
+							Columns: []*schemasv1alpha4.PostgresqlTableColumn{
 								{Name: "id", Type: "integer"},
 								{Name: "user_id", Type: "integer"},
 								{Name: "total", Type: "decimal(10,2)"},
@@ -177,7 +177,7 @@ func TestBatchWindowE2E(t *testing.T) {
 					Schema: &schemasv1alpha4.TableSchema{
 						Postgres: &schemasv1alpha4.PostgresqlTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha4.PostgresqlColumn{
+							Columns: []*schemasv1alpha4.PostgresqlTableColumn{
 								{Name: "id", Type: "integer"},
 								{Name: "name", Type: "varchar(255)"},
 								{Name: "price", Type: "decimal(10,2)"},
@@ -261,7 +261,7 @@ func TestBatchWindowE2E(t *testing.T) {
 					Schema: &schemasv1alpha4.TableSchema{
 						Postgres: &schemasv1alpha4.PostgresqlTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha4.PostgresqlColumn{
+							Columns: []*schemasv1alpha4.PostgresqlTableColumn{
 								{Name: "id", Type: "integer"},
 								{Name: "email", Type: "varchar(255)"},
 							},
@@ -280,7 +280,7 @@ func TestBatchWindowE2E(t *testing.T) {
 					Schema: &schemasv1alpha4.TableSchema{
 						Postgres: &schemasv1alpha4.PostgresqlTableSchema{
 							PrimaryKey: []string{"id"},
-							Columns: []*schemasv1alpha4.PostgresqlColumn{
+							Columns: []*schemasv1alpha4.PostgresqlTableColumn{
 								{Name: "id", Type: "integer"},
 								{Name: "user_id", Type: "integer"},
 							},
