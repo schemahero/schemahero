@@ -275,9 +275,20 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 	}
 
 	if len(schemaStatements) == 0 && len(seedStatements) == 0 {
-		logger.Debug("no statements generated for migration",
+		logger.Info("table is already in sync with the desired schema, no migration needed",
 			zap.String("databaseName", databaseInstance.Name),
 			zap.String("tableName", tableInstance.Name))
+
+		// Update the status to reflect that we've planned this table spec
+		// This prevents re-logging on subsequent reconciles
+		tableSpecSHA, err := tableInstance.GetSHA()
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to get table sha for status update")
+		}
+		tableInstance.Status.LastPlannedTableSpecSHA = tableSpecSHA
+		if err := r.Status().Update(ctx, tableInstance); err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to update table status")
+		}
 
 		return reconcile.Result{}, nil
 	}
@@ -341,6 +352,17 @@ func (r *ReconcileTable) plan(ctx context.Context, databaseInstance *databasesv1
 		}
 	} else {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get existing migration")
+	}
+
+	// Update the table status with the SHA we just planned
+	// This prevents re-planning on subsequent reconciles
+	tableSpecSHA, err := tableInstance.GetSHA()
+	if err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to get table sha for status update")
+	}
+	tableInstance.Status.LastPlannedTableSpecSHA = tableSpecSHA
+	if err := r.Status().Update(ctx, tableInstance); err != nil {
+		return reconcile.Result{}, errors.Wrap(err, "failed to update table status")
 	}
 
 	return reconcile.Result{}, nil
