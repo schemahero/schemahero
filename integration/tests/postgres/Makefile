@@ -1,11 +1,10 @@
-
 SHELL := /bin/bash
 
 export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: build-postgres-plugin 11.18 12.13 13.9 14.6 15.1
+run: build-postgres-plugin 14.20 15.15 16.11 17.7 18.1
 
 .PHONY: build-postgres-plugin
 build-postgres-plugin:
@@ -13,37 +12,9 @@ build-postgres-plugin:
 	@mkdir -p $(HOME)/.schemahero/plugins
 	@cd ../../../plugins/postgres && go build -o $(HOME)/.schemahero/plugins/schemahero-postgres .
 
-.PHONY: 11.18
-11.18: export PG_VERSION = 11.18-alpine
-11.18: build-postgres-plugin
-	make -C alter-column-timezone run
-	make -C column-set-default run
-	make -C column-unset-default run
-	make -C create-table run
-	make -C create-table-with-index run
-	make -C drop-table run
-	make -C foreign-key-create run
-	make -C foreign-key-action run
-	make -C foreign-key-drop run
-	make -C foreign-key-alter run
-	make -C not-null run
-	make -C not-null-with-default run
-	make -C index-create run
-	make -C primary-key-add run
-	make -C primary-key-drop run
-	make -C unique-constraint-add run
-	make -C unique-constraint-drop run
-	make -C basic-seed run
-	make -C seed-data-with-schema run
-	make -C seed-data-without-schema run
-	make -C seed-with-many-rows run
-	make -C two-column-pk run
-	make -C two-column-pk-reversed-order run
-	make -C user-defined-type-vector run
-
-.PHONY: 12.13
-12.13: export PG_VERSION = 12.13
-12.13: build-postgres-plugin
+.PHONY: 14.20
+14.20: export PG_VERSION = 14.20
+14.20: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -69,11 +40,12 @@ build-postgres-plugin:
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
 
-.PHONY: 13.9
-13.9: export PG_VERSION = 13.9
-13.9: build-postgres-plugin
+.PHONY: 15.15
+15.15: export PG_VERSION = 15.15
+15.15: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
+	make -C create-function run
 	make -C create-table run
 	make -C create-table-with-index run
 	make -C drop-table run
@@ -97,11 +69,12 @@ build-postgres-plugin:
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
 
-.PHONY: 14.6
-14.6: export PG_VERSION = 14.6
-14.6: build-postgres-plugin
+.PHONY: 16.11
+16.11: export PG_VERSION = 16.11
+16.11: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
+	make -C create-function run
 	make -C create-table run
 	make -C create-table-with-index run
 	make -C drop-table run
@@ -125,9 +98,38 @@ build-postgres-plugin:
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
 
-.PHONY: 15.1
-15.1: export PG_VERSION = 15.1
-15.1: build-postgres-plugin
+.PHONY: 17.7
+17.7: export PG_VERSION = 17.7
+17.7: build-postgres-plugin
+	make -C column-set-default run
+	make -C column-unset-default run
+	make -C create-function run
+	make -C create-table run
+	make -C create-table-with-index run
+	make -C drop-table run
+	make -C foreign-key-create run
+	make -C foreign-key-action run
+	make -C foreign-key-drop run
+	make -C foreign-key-alter run
+	make -C not-null run
+	make -C not-null-with-default run
+	make -C index-create run
+	make -C primary-key-add run
+	make -C primary-key-drop run
+	make -C primary-key-change run
+	make -C unique-constraint-add run
+	make -C unique-constraint-drop run
+	make -C basic-seed run
+	make -C seed-data-with-schema run
+	make -C seed-data-without-schema run
+	make -C seed-with-many-rows run
+	make -C two-column-pk run
+	make -C two-column-pk-reversed-order run
+	make -C user-defined-type-vector run
+
+.PHONY: 18.1
+18.1: export PG_VERSION = 18.1
+18.1: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-function run
@@ -155,7 +157,7 @@ build-postgres-plugin:
 	make -C user-defined-type-vector run
 
 .PHONY: seed
-seed: export PG_VERSION = 15.1
+seed: export PG_VERSION = 17.7
 seed: build-postgres-plugin
 	make -C basic-seed run
 	make -C seed-data-with-schema run
