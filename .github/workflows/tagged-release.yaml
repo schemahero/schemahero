@@ -280,7 +280,7 @@ jobs:
     if: always() && !cancelled()
     strategy:
       matrix:
-        mysql_version: ["8.0.31", "8.4.5", "9.3.0"]
+        mysql_version: ["8.0.45", "8.4.8", "9.5.2"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
