@@ -1,11 +1,10 @@
-
 SHELL := /bin/bash
 
 export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: build-mysql-plugin 8.0.31 8.4.5 9.3.0
+run: build-mysql-plugin 8.0.45 8.4.8 9.5.2
 
 .PHONY: build-mysql-plugin
 build-mysql-plugin:
@@ -13,11 +12,9 @@ build-mysql-plugin:
 	@mkdir -p $(HOME)/.schemahero/plugins
 	@cd ../../../plugins/mysql && go build -o $(HOME)/.schemahero/plugins/schemahero-mysql .
 
-
-
-.PHONY: 8.0.31
-8.0.31: export MYSQL_VERSION = 8.0.31
-8.0.31: build-mysql-plugin
+.PHONY: 8.0.45
+8.0.45: export MYSQL_VERSION = 8.0.45
+8.0.45: build-mysql-plugin
 	make -C json run
 	make -C not-null-with-default run
 	make -C seed-nullable-text run
@@ -54,9 +51,9 @@ build-mysql-plugin:
 	make -C primary-key-keep run
 	make -C unchanged-charset run
 
-.PHONY: 8.4.5
-8.4.5: export MYSQL_VERSION = 8.4.5
-8.4.5: build-mysql-plugin
+.PHONY: 8.4.8
+8.4.8: export MYSQL_VERSION = 8.4.8
+8.4.8: build-mysql-plugin
 	make -C json run
 	make -C not-null-with-default run
 	make -C seed-nullable-text run
@@ -93,9 +90,9 @@ build-mysql-plugin:
 	make -C primary-key-keep run
 	make -C unchanged-charset run
 
-.PHONY: 9.3.0
-9.3.0: export MYSQL_VERSION = 9.3.0
-9.3.0: build-mysql-plugin
+.PHONY: 9.5.2
+9.5.2: export MYSQL_VERSION = 9.5.2
+9.5.2: build-mysql-plugin
 	make -C json run
 	make -C not-null-with-default run
 	make -C seed-nullable-text run
