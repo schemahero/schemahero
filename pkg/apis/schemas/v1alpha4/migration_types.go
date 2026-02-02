@@ -31,6 +31,12 @@ const (
 	Rejected Phase = "REJECTED"
 )
 
+// TableReference identifies a table that is part of a migration
+type TableReference struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}
+
 // MigrationSpec defines the desired state of Migration
 type MigrationSpec struct {
 	DatabaseName   string `json:"databaseName,omitempty"`
@@ -38,6 +44,11 @@ type MigrationSpec struct {
 	TableNamespace string `json:"tableNamespace"`
 	GeneratedDDL   string `json:"generatedDDL,omitempty"`
 	EditedDDL      string `json:"editedDDL,omitempty"`
+
+	// Tables contains references to all tables included in this migration.
+	// This is populated for batch migrations that include multiple tables.
+	// For single-table migrations, this may be empty (use TableName/TableNamespace).
+	Tables []TableReference `json:"tables,omitempty"`
 }
 
 // MigrationStatus defines the observed state of Migration

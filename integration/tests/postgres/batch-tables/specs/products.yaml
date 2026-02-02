@@ -1,0 +1,24 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: products
+spec:
+  database: testdb
+  name: products
+  schema:
+    postgres:
+      primaryKey:
+        - id
+      columns:
+        - name: id
+          type: integer
+        - name: name
+          type: varchar(255)
+          constraints:
+            notNull: true
+        - name: price
+          type: decimal(10,2)
+        - name: sku
+          type: varchar(50)
+          constraints:
+            notNull: true
