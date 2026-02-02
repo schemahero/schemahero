@@ -1,11 +1,10 @@
-
 SHELL := /bin/bash
 
 export IMAGE
 export GO111MODULE=on
 
 .PHONY: run
-run: build-postgres-plugin v19.2.12 v20.2.19 v21.2.17 v22.1.11
+run: build-postgres-plugin v24.3.25 v25.2.11 v25.4.3
 
 .PHONY: build-postgres-plugin
 build-postgres-plugin:
@@ -13,9 +12,9 @@ build-postgres-plugin:
 	@mkdir -p $(HOME)/.schemahero/plugins
 	@cd ../../../plugins/postgres && go build -o $(HOME)/.schemahero/plugins/schemahero-postgres .
 
-.PHONY: v19.2.12
-v19.2.12: export COCKROACHDB_VBERSION = v19.2.12
-v19.2.12: build-postgres-plugin
+.PHONY: v24.3.25
+v24.3.25: export COCKROACHDB_VERSION = v24.3.25
+v24.3.25: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -28,9 +27,9 @@ v19.2.12: build-postgres-plugin
 	make -C primary-key-add run
 	make -C primary-key-drop run
 
-.PHONY: v20.2.19
-v20.2.19: export COCKROACHDB_VBERSION = v20.2.19
-v20.2.19: build-postgres-plugin
+.PHONY: v25.2.11
+v25.2.11: export COCKROACHDB_VERSION = v25.2.11
+v25.2.11: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
@@ -43,24 +42,9 @@ v20.2.19: build-postgres-plugin
 	make -C primary-key-add run
 	make -C primary-key-drop run
 
-.PHONY: v21.2.17
-v21.2.17: export COCKROACHDB_VBERSION = v21.2.17
-v21.2.17: build-postgres-plugin
-	make -C column-set-default run
-	make -C column-unset-default run
-	make -C create-table run
-	make -C foreign-key-create run
-	make -C foreign-key-action run
-	make -C foreign-key-drop run
-	make -C foreign-key-alter run
-	make -C not-null run
-	make -C index-create run
-	make -C primary-key-add run
-	make -C primary-key-drop run
-
-.PHONY: v22.1.11
-v22.1.11: export COCKROACHDB_VBERSION = v22.1.11
-v22.1.11: build-postgres-plugin
+.PHONY: v25.4.3
+v25.4.3: export COCKROACHDB_VERSION = v25.4.3
+v25.4.3: build-postgres-plugin
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
