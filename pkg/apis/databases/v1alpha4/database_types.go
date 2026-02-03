@@ -53,6 +53,14 @@ type DatabaseSpec struct {
 	DeploySeedData  bool              `json:"deploySeedData,omitempty"` // TODO remove this for envs in 0.13.0
 	SchemaHero      *SchemaHero       `json:"schemahero,omitempty"`
 	Template        *DatabaseTemplate `json:"template,omitempty"`
+
+	// BatchWindow specifies a duration to wait and collect table changes before
+	// planning and applying them together in a single migration. This improves
+	// performance when deploying many tables at once by reducing the number of
+	// database connections and migrations created.
+	// When set, tables are queued and processed together after the window expires.
+	// Example values: "5s", "10s", "30s"
+	BatchWindow *metav1.Duration `json:"batchWindow,omitempty"`
 }
 
 type DatabaseTemplate struct {

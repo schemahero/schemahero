@@ -141,7 +141,17 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 		return reconcile.Result{}, nil
 	}
 
-	// at this point, we need to execute a plan
+	// Check if batching is enabled for this database
+	batchManager := GetBatchManager()
+	if batchManager.QueueTable(ctx, database, instance, r) {
+		// Table was queued for batch processing
+		logger.Debug("table queued for batch processing",
+			zap.String("tableName", instance.Name),
+			zap.String("databaseName", database.Name))
+		return reconcile.Result{}, nil
+	}
+
+	// No batching, execute plan immediately
 	return r.plan(ctx, database, instance)
 }
 

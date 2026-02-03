@@ -1,0 +1,1 @@
+-- Empty database, all tables will be created by the batch

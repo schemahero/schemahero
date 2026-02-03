@@ -1,0 +1,20 @@
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: users
+spec:
+  database: testdb
+  name: users
+  schema:
+    postgres:
+      primaryKey:
+        - id
+      columns:
+        - name: id
+          type: integer
+        - name: email
+          type: varchar(255)
+          constraints:
+            notNull: true
+        - name: name
+          type: varchar(255)

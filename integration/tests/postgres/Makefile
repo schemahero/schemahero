@@ -39,6 +39,7 @@ build-postgres-plugin:
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
+	make -C batch-tables run
 
 .PHONY: 15.15
 15.15: export PG_VERSION = 15.15
@@ -68,6 +69,7 @@ build-postgres-plugin:
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
+	make -C batch-tables run
 
 .PHONY: 16.11
 16.11: export PG_VERSION = 16.11
@@ -97,6 +99,7 @@ build-postgres-plugin:
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
+	make -C batch-tables run
 
 .PHONY: 17.7
 17.7: export PG_VERSION = 17.7
@@ -126,6 +129,7 @@ build-postgres-plugin:
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
+	make -C batch-tables run
 
 .PHONY: 18.1
 18.1: export PG_VERSION = 18.1
@@ -155,6 +159,7 @@ build-postgres-plugin:
 	make -C two-column-pk run
 	make -C two-column-pk-reversed-order run
 	make -C user-defined-type-vector run
+	make -C batch-tables run
 
 .PHONY: seed
 seed: export PG_VERSION = 17.7
