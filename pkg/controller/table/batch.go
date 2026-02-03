@@ -33,9 +33,7 @@ import (
 	"go.uber.org/zap"
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
@@ -56,8 +54,6 @@ type batchState struct {
 type BatchManager struct {
 	batches map[string]*batchState // key is database namespace/name
 	mu      sync.RWMutex
-	client  client.Client
-	scheme  *runtime.Scheme
 }
 
 // NewBatchManager creates a new BatchManager
@@ -65,16 +61,6 @@ func NewBatchManager() *BatchManager {
 	return &BatchManager{
 		batches: make(map[string]*batchState),
 	}
-}
-
-// SetClient sets the Kubernetes client for the batch manager
-func (bm *BatchManager) SetClient(c client.Client) {
-	bm.client = c
-}
-
-// SetScheme sets the runtime scheme for the batch manager
-func (bm *BatchManager) SetScheme(s *runtime.Scheme) {
-	bm.scheme = s
 }
 
 // databaseKey returns a unique key for a database
@@ -127,8 +113,10 @@ func (bm *BatchManager) QueueTable(ctx context.Context, db *databasesv1alpha4.Da
 		batch.timer.Stop()
 	}
 
+	// Use a fresh background context for the timer callback since the original
+	// reconcile context may be cancelled or reused by the time the timer fires
 	batch.timer = time.AfterFunc(db.Spec.BatchWindow.Duration, func() {
-		bm.processBatch(ctx, db, r)
+		bm.processBatch(context.Background(), db, r)
 	})
 
 	return true
@@ -292,8 +280,10 @@ func (r *ReconcileTable) planBatch(ctx context.Context, databaseInstance *databa
 	}, &existingMigration)
 
 	if kuberneteserrors.IsNotFound(err) {
-		// Set owner reference to first table (for garbage collection)
-		if err := controllerutil.SetControllerReference(processedTables[0], &migration, r.scheme); err != nil {
+		// Set owner reference to database for batch migrations (for garbage collection).
+		// Using database as owner makes more sense than picking an arbitrary table
+		// since the batch spans multiple tables.
+		if err := controllerutil.SetControllerReference(databaseInstance, &migration, r.scheme); err != nil {
 			return errors.Wrap(err, "failed to set owner on migration")
 		}
 
