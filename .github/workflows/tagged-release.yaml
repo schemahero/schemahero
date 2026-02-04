@@ -566,7 +566,7 @@ jobs:
           fi
 
       - name: make release-tarballs
-        run: make release-tarballs
+        run: make release-tarballs VERSION=${{ steps.get_version.outputs.version-without-v }}
         env:
           GIT_TAG: ${{ steps.get_version.outputs.version-without-v }}
 
