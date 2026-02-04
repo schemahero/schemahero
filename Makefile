@@ -241,22 +241,23 @@ release-tarballs:
 	mkdir -p ./release
 
 	# Build the kubectl plugins
+	# Pass VERSION explicitly to sub-makes to ensure correct version string
 
 	rm -rf ./bin/kubectl-schemahero
 
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(MAKE) bin/kubectl-schemahero VERSION=$(VERSION)
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_linux_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 	mv ./kubectl-schemahero ./schemahero
 	tar czvf ./release/schemahero_linux_amd64.tar.gz ./schemahero README.md LICENSE
 
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(MAKE) bin/kubectl-schemahero VERSION=$(VERSION)
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_linux_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
 	mv ./kubectl-schemahero ./schemahero
 	tar czvf ./release/schemahero_linux_arm64.tar.gz ./schemahero README.md LICENSE
 
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(MAKE) bin/kubectl-schemahero VERSION=$(VERSION)
 	mv bin/kubectl-schemahero ./kubectl-schemahero.exe
 	tar czvf ./release/kubectl-schemahero_windows_amd64.tar.gz ./kubectl-schemahero.exe README.md LICENSE
 	mv ./kubectl-schemahero.exe ./schemahero.exe
@@ -264,13 +265,13 @@ release-tarballs:
 	rm -rf ./kubectl-schemahero.exe
 	rm -rf ./schemahero.exe
 
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(MAKE) bin/kubectl-schemahero VERSION=$(VERSION)
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_darwin_amd64.tar.gz ./kubectl-schemahero README.md LICENSE
 	mv ./kubectl-schemahero ./schemahero
 	tar czvf ./release/schemahero_darwin_amd64.tar.gz ./schemahero README.md LICENSE
 
-	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 make bin/kubectl-schemahero
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 $(MAKE) bin/kubectl-schemahero VERSION=$(VERSION)
 	mv bin/kubectl-schemahero ./kubectl-schemahero
 	tar czvf ./release/kubectl-schemahero_darwin_arm64.tar.gz ./kubectl-schemahero README.md LICENSE
 	mv ./kubectl-schemahero ./schemahero
