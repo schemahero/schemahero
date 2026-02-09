@@ -604,7 +604,7 @@ jobs:
       - id: get_version
         uses: battila7/get-version-action@v2
       - name: Trigger homebrew-tap update
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: schemahero/homebrew-tap
