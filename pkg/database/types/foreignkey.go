@@ -16,7 +16,10 @@ type ForeignKey struct {
 }
 
 func (fk *ForeignKey) Equals(other *ForeignKey) bool {
-	if fk.Name != other.Name {
+	// Compare names: if both are set, they must match.
+	// If one is empty (e.g. from a spec without an explicit name), skip the name check
+	// and rely on structural comparison.
+	if fk.Name != "" && other.Name != "" && fk.Name != other.Name {
 		return false
 	}
 
@@ -24,7 +27,7 @@ func (fk *ForeignKey) Equals(other *ForeignKey) bool {
 		return false
 	}
 
-	if fk.OnDelete != other.OnDelete {
+	if !onDeleteEquals(fk.OnDelete, other.OnDelete) {
 		return false
 	}
 
@@ -53,9 +56,26 @@ nextParentColumn:
 				continue nextParentColumn
 			}
 		}
+		return false
 	}
 
 	return true
+}
+
+// onDeleteEquals compares two ON DELETE actions, handling case differences
+// and treating "NO ACTION" (the database default) as equivalent to empty/unset.
+func onDeleteEquals(a, b string) bool {
+	a = normalizeOnDelete(a)
+	b = normalizeOnDelete(b)
+	return strings.EqualFold(a, b)
+}
+
+func normalizeOnDelete(s string) string {
+	upper := strings.ToUpper(strings.TrimSpace(s))
+	if upper == "NO ACTION" || upper == "" {
+		return ""
+	}
+	return upper
 }
 
 func ForeignKeyToMysqlSchemaForeignKey(foreignKey *ForeignKey) *schemasv1alpha4.MysqlTableForeignKey {

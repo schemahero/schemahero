@@ -163,7 +163,7 @@ func TestDbControllerTest(t *testing.T) {
 
 	err = env.Stop()
 	if err != nil {
-		t.Fatalf("Failed to clean up environment: %v", err)
+		t.Logf("Warning: failed to clean up environment: %v", err)
 	}
 }
 

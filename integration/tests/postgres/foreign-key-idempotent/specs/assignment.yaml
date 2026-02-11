@@ -1,0 +1,52 @@
+database: schemahero
+name: assignment
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: char(36)
+        constraints:
+          notNull: true
+      - name: employee_id
+        type: char(36)
+        constraints:
+          notNull: true
+      - name: department_id
+        type: char(36)
+        constraints:
+          notNull: true
+      - name: assigned_at
+        type: timestamptz
+        default: now()
+        constraints:
+          notNull: true
+      - name: created_at
+        type: timestamptz
+        default: now()
+        constraints:
+          notNull: true
+    foreignKeys:
+      - columns:
+          - employee_id
+        references:
+          table: employee
+          columns:
+            - id
+        onDelete: cascade
+      - columns:
+          - department_id
+        references:
+          table: department
+          columns:
+            - id
+        onDelete: cascade
+    indexes:
+      - name: idx_assignment_employee_id
+        columns:
+          - employee_id
+      - name: idx_assignment_unique
+        columns:
+          - employee_id
+          - department_id
+        isUnique: true

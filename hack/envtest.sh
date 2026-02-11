@@ -1,27 +1,34 @@
 #!/usr/bin/env bash
 
-# Install etcd and kube-api
-#
-# Using the same version that controller-runtime
-# uses, currently the way envtest invokes the kube-apiserver
-# uses flags that have been deprecated in k8s 1.20+, tried
-# working around it but it was a hassle and likely redundant
-# work presuming controller-runtime will fix this eventually
-version=1.19.2
-download_url=https://storage.googleapis.com/kubebuilder-tools
-if [[ -z "${TMPDIR}" ]]; then
+set -euo pipefail
+
+# Install envtest binaries (etcd, kube-apiserver, kubectl) using setup-envtest.
+# This replaces the old approach of downloading from Google Cloud Storage,
+# which is no longer accessible.
+
+ENVTEST_K8S_VERSION=${ENVTEST_K8S_VERSION:-1.31.x}
+
+if [[ -z "${TMPDIR:-}" ]]; then
     TMPDIR=/tmp
 fi
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    rm -f ${TMPDIR}/kubebuilder-tools-${version}-darwin-amd64.tar.gz
-    rm -rf ${TMPDIR}/kubebuilder && mkdir -p ${TMPDIR}/kubebuilder
 
-    curl -L ${download_url}/kubebuilder-tools-${version}-darwin-amd64.tar.gz -o ${TMPDIR}/kubebuilder-tools-${version}-darwin-amd64.tar.gz
-    tar -xzvf ${TMPDIR}/kubebuilder-tools-${version}-darwin-amd64.tar.gz -C $TMPDIR
-else
-    rm -f ${TMPDIR}/kubebuilder-tools-${version}-linux-amd64.tar.gz
-    rm -rf ${TMPDIR}/kubebuilder && mkdir -p ${TMPDIR}/kubebuilder
+DEST="${TMPDIR}/kubebuilder/bin"
 
-    curl -L ${download_url}/kubebuilder-tools-${version}-linux-amd64.tar.gz -o ${TMPDIR}/kubebuilder-tools-${version}-linux-amd64.tar.gz
-    tar -xzvf ${TMPDIR}/kubebuilder-tools-${version}-linux-amd64.tar.gz -C $TMPDIR
+# Install setup-envtest if not present
+if ! command -v setup-envtest &> /dev/null; then
+    echo "Installing setup-envtest..."
+    go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 fi
+
+# Download envtest binaries directly to the expected location
+echo "Setting up envtest binaries for Kubernetes ${ENVTEST_K8S_VERSION}..."
+rm -rf "${DEST}"
+mkdir -p "${DEST}"
+
+ENVTEST_ASSETS=$(setup-envtest use "${ENVTEST_K8S_VERSION}" -p path)
+
+# Copy binaries to the expected location
+cp "${ENVTEST_ASSETS}"/* "${DEST}/"
+
+echo "Envtest binaries installed at: ${DEST}"
+ls -la "${DEST}/"
