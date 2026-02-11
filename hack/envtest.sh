@@ -6,13 +6,13 @@ set -euo pipefail
 # This replaces the old approach of downloading from Google Cloud Storage,
 # which is no longer accessible.
 
-ENVTEST_K8S_VERSION=${ENVTEST_K8S_VERSION:-1.28.x}
+ENVTEST_K8S_VERSION=${ENVTEST_K8S_VERSION:-1.31.x}
 
 if [[ -z "${TMPDIR:-}" ]]; then
     TMPDIR=/tmp
 fi
 
-DEST="${TMPDIR}/kubebuilder"
+DEST="${TMPDIR}/kubebuilder/bin"
 
 # Install setup-envtest if not present
 if ! command -v setup-envtest &> /dev/null; then
@@ -20,13 +20,15 @@ if ! command -v setup-envtest &> /dev/null; then
     go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 fi
 
-# Download envtest binaries
+# Download envtest binaries directly to the expected location
 echo "Setting up envtest binaries for Kubernetes ${ENVTEST_K8S_VERSION}..."
-ENVTEST_ASSETS=$(setup-envtest use "${ENVTEST_K8S_VERSION}" -p path)
-
-# Link to the expected location for the test suite
 rm -rf "${DEST}"
 mkdir -p "${DEST}"
-ln -sf "${ENVTEST_ASSETS}" "${DEST}/bin"
 
-echo "Envtest binaries available at: ${DEST}/bin"
+ENVTEST_ASSETS=$(setup-envtest use "${ENVTEST_K8S_VERSION}" -p path)
+
+# Copy binaries to the expected location
+cp "${ENVTEST_ASSETS}"/* "${DEST}/"
+
+echo "Envtest binaries installed at: ${DEST}"
+ls -la "${DEST}/"
