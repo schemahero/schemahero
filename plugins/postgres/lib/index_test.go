@@ -58,6 +58,49 @@ func Test_AddIndexStatement(t *testing.T) {
 			},
 			expectedStatement: `create unique index idx_t2_c1 on t2 (c1)`,
 		},
+		{
+			name:      "with fillfactor option",
+			tableName: "t2",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{
+				Columns: []string{
+					"c1",
+				},
+				With: map[string]string{
+					"fillfactor": "70",
+				},
+			},
+			expectedStatement: `create index idx_t2_c1 on t2 (c1) with (fillfactor = 70)`,
+		},
+		{
+			name:      "with multiple options",
+			tableName: "t2",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{
+				Columns: []string{
+					"c1",
+					"c2",
+				},
+				Name: "idx_custom",
+				With: map[string]string{
+					"fillfactor":             "80",
+					"gin_pending_list_limit": "64",
+				},
+			},
+			expectedStatement: `create index idx_custom on t2 (c1, c2) with (fillfactor = 80, gin_pending_list_limit = 64)`,
+		},
+		{
+			name:      "unique index with with clause",
+			tableName: "t2",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{
+				Columns: []string{
+					"c1",
+				},
+				IsUnique: true,
+				With: map[string]string{
+					"fillfactor": "90",
+				},
+			},
+			expectedStatement: `create unique index idx_t2_c1 on t2 (c1) with (fillfactor = 90)`,
+		},
 	}
 
 	for _, test := range tests {
