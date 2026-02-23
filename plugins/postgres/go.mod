@@ -1,6 +1,6 @@
 module github.com/schemahero/schemahero/plugins/postgres
 
-go 1.25.4
+go 1.25.7
 
 replace github.com/schemahero/schemahero => ../..
 
