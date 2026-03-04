@@ -76,6 +76,10 @@ func ApproveMigrationCmd() *cobra.Command {
 					return err
 				}
 
+				if migration.Status.Phase != v1alpha4.Planned {
+					return errors.Errorf("migration %q is not in the planned phase (current phase: %s)", migrationName, migration.Status.Phase)
+				}
+
 				migration.Status.ApprovedAt = time.Now().Unix()
 				migration.Status.Phase = v1alpha4.Approved
 				if _, err := schemasClient.Migrations(namespaceName).Update(ctx, migration, metav1.UpdateOptions{}); err != nil {
