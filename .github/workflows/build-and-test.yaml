@@ -7,6 +7,52 @@ on:
     branches: [ main ] # run tests on main branch
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      postgres: ${{ steps.filter.outputs.postgres }}
+      mysql: ${{ steps.filter.outputs.mysql }}
+      cockroach: ${{ steps.filter.outputs.cockroach }}
+      cassandra: ${{ steps.filter.outputs.cassandra }}
+      sqlite: ${{ steps.filter.outputs.sqlite }}
+      rqlite: ${{ steps.filter.outputs.rqlite }}
+      timescaledb: ${{ steps.filter.outputs.timescaledb }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            core:
+              - 'pkg/**'
+              - 'cmd/**'
+              - 'go.mod'
+              - 'go.sum'
+              - 'Makefile'
+              - '.github/workflows/build-and-test.yaml'
+            postgres:
+              - 'plugins/postgres/**'
+              - 'integration/tests/postgres/**'
+            mysql:
+              - 'plugins/mysql/**'
+              - 'integration/tests/mysql/**'
+            cockroach:
+              - 'plugins/postgres/**'
+              - 'integration/tests/cockroach/**'
+            cassandra:
+              - 'plugins/cassandra/**'
+              - 'integration/tests/cassandra/**'
+            sqlite:
+              - 'plugins/sqlite/**'
+              - 'integration/tests/sqlite/**'
+            rqlite:
+              - 'plugins/rqlite/**'
+              - 'integration/tests/rqlite/**'
+            timescaledb:
+              - 'plugins/timescaledb/**'
+              - 'integration/tests/timescaledb/**'
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -55,13 +101,19 @@ jobs:
           }
       - run: make vet test
 
+  # ── PostgreSQL ──────────────────────────────────────────────
+  # PRs: latest version only. Main: full matrix.
   test-postgres:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.postgres == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
-        postgres_version: ["14.20", "15.15", "16.11", "17.7", "18.1"]
+        postgres_version: ${{ github.ref == 'refs/heads/main' && fromJson('["14.20","15.15","16.11","17.7","18.1"]') || fromJson('["18.1"]') }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -83,13 +135,18 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-postgres
       - run: make -C integration/tests/postgres ${{matrix.postgres_version}}
 
+  # ── MySQL ───────────────────────────────────────────────────
   test-mysql:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.mysql == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
-        mysql_version: ["8.0.45", "8.4.8", "9.5.2"]
+        mysql_version: ${{ github.ref == 'refs/heads/main' && fromJson('["8.0.45","8.4.8","9.5.2"]') || fromJson('["9.5.2"]') }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -111,13 +168,18 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-mysql
       - run: make -C integration/tests/mysql ${{matrix.mysql_version}}
 
+  # ── CockroachDB ─────────────────────────────────────────────
   test-cockroach:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.cockroach == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
-        cockroachdb_version: ["v24.3.25", "v25.2.11", "v25.4.3"]
+        cockroachdb_version: ${{ github.ref == 'refs/heads/main' && fromJson('["v24.3.25","v25.2.11","v25.4.3"]') || fromJson('["v25.4.3"]') }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -139,13 +201,18 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-postgres
       - run: make -C integration/tests/cockroach ${{matrix.cockroachdb_version}}
 
+  # ── Cassandra ───────────────────────────────────────────────
   test-cassandra:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.cassandra == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
-        cassandra_version: ["4.0.19", "4.1.10", "5.0.6"]
+        cassandra_version: ${{ github.ref == 'refs/heads/main' && fromJson('["4.0.19","4.1.10","5.0.6"]') || fromJson('["5.0.6"]') }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -167,9 +234,14 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-cassandra
       - run: make -C integration/tests/cassandra ${{matrix.cassandra_version}}
 
+  # ── SQLite ──────────────────────────────────────────────────
   test-sqlite:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.sqlite == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
@@ -195,13 +267,18 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-sqlite
       - run: make -C integration/tests/sqlite ${{matrix.sqlite_version}}
 
+  # ── RQLite ──────────────────────────────────────────────────
   test-rqlite:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.rqlite == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
-        rqlite_version: ["8.36.8", "9.3.18"]
+        rqlite_version: ${{ github.ref == 'refs/heads/main' && fromJson('["8.36.8","9.3.18"]') || fromJson('["9.3.18"]') }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -223,9 +300,14 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-rqlite
       - run: make -C integration/tests/rqlite ${{matrix.rqlite_version}}
 
+  # ── TimescaleDB ─────────────────────────────────────────────
   test-timescaledb:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.timescaledb == 'true'
+      || github.ref == 'refs/heads/main'
     strategy:
       fail-fast: false
       matrix:
@@ -251,6 +333,7 @@ jobs:
           chmod +x $HOME/.schemahero/plugins/schemahero-timescaledb
       - run: make -C integration/tests/timescaledb ${{matrix.timescaledb_version}}
 
+  # ── Fixtures ────────────────────────────────────────────────
   test-fixtures:
     runs-on: ubuntu-latest
     needs: build
@@ -264,8 +347,10 @@ jobs:
       - run: chmod +x bin/kubectl-schemahero
       - run: make -C integration/tests/fixtures run
 
+  # ── Gate ────────────────────────────────────────────────────
   all-tests-passed:
     runs-on: ubuntu-latest
+    if: always()
     needs:
       - build
       - test
@@ -278,5 +363,30 @@ jobs:
       - test-timescaledb
       - test-fixtures
     steps:
-      - name: All tests passed
-        run: echo "All tests have passed successfully"
+      - name: Check results
+        run: |
+          # Fail if any needed job failed (skipped is OK from path filtering)
+          FAILED=false
+          for result in \
+            "${{ needs.build.result }}" \
+            "${{ needs.test.result }}" \
+            "${{ needs.test-postgres.result }}" \
+            "${{ needs.test-mysql.result }}" \
+            "${{ needs.test-cockroach.result }}" \
+            "${{ needs.test-cassandra.result }}" \
+            "${{ needs.test-sqlite.result }}" \
+            "${{ needs.test-rqlite.result }}" \
+            "${{ needs.test-timescaledb.result }}" \
+            "${{ needs.test-fixtures.result }}" \
+          ; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              FAILED=true
+            fi
+          done
+
+          if [ "$FAILED" = "true" ]; then
+            echo "::error::One or more jobs failed"
+            exit 1
+          fi
+
+          echo "All tests passed (some may have been skipped due to path filtering)"
