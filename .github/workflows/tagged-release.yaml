@@ -459,7 +459,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Docker meta for manager
         id: meta-manager
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: index.docker.io/schemahero/schemahero-manager
           tags: |
@@ -511,7 +511,7 @@ jobs:
 
       - name: Docker meta for schemahero
         id: meta-schemahero
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: index.docker.io/schemahero/schemahero
           tags: |
