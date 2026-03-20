@@ -469,7 +469,7 @@ jobs:
             type=raw,value=latest,enable=${{ steps.get_version.outputs.prerelease == '' }}
       - name: Build and push
         id: release-manager
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: deploy/Dockerfile.multiarch
@@ -521,7 +521,7 @@ jobs:
             type=raw,value=latest,enable=${{ steps.get_version.outputs.prerelease == '' }}
       - name: Build and push
         id: release-schemahero
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: deploy/Dockerfile.multiarch
