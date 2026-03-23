@@ -122,7 +122,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -155,7 +155,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -188,7 +188,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -221,7 +221,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -254,7 +254,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -287,7 +287,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -320,7 +320,7 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
@@ -340,7 +340,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Download kubectl-schemahero binary
-        uses: actions/download-artifact@v8.0.0
+        uses: actions/download-artifact@v8.0.1
         with:
           name: kubectl-schemahero
           path: bin/
