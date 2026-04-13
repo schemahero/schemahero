@@ -1,6 +1,6 @@
 module github.com/schemahero/schemahero/plugins/mysql
 
-go 1.25.7
+go 1.26.0
 
 replace github.com/schemahero/schemahero => ../..
 
