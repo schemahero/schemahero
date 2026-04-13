@@ -1,6 +1,6 @@
 module github.com/schemahero/schemahero/plugins/timescaledb
 
-go 1.26.0
+go 1.26.2
 
 replace github.com/schemahero/schemahero => ../..
 
