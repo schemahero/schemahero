@@ -141,11 +141,9 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version-file: 'go.mod'
+          go-version-file: '${{ matrix.plugin.path }}/go.mod'
           cache: true
-          cache-dependency-path: |
-            ./go.sum
-            ./plugins/**/go.sum
+          cache-dependency-path: '${{ matrix.plugin.path }}/go.sum'
 
       - run: go test ${{ matrix.plugin.package }}
         working-directory: ${{ matrix.plugin.path }}
