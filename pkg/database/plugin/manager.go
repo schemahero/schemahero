@@ -367,7 +367,10 @@ func (m *PluginManager) DownloadPlugin(ctx context.Context, engine string) (stri
 
 	pluginPath, err := m.downloader.DownloadPlugin(ctx, normalizedEngine, majorVersion)
 	if err != nil {
-		return "", fmt.Errorf("failed to download SchemaHero %s plugin: %w", normalizedEngine, err)
+		return "", &DownloadError{
+			Plugin: normalizedEngine,
+			Err:    err,
+		}
 	}
 
 	return pluginPath, nil

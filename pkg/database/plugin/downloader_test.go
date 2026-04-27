@@ -145,7 +145,7 @@ func TestPluginManager_DownloadPluginErrorMessage(t *testing.T) {
 	}
 
 	errString := err.Error()
-	if !strings.Contains(errString, "failed to download SchemaHero postgres plugin") {
+	if !strings.Contains(errString, "Failed to download SchemaHero postgres plugin. You can download this plugin ahead of time with 'schemahero plugin download postgres'") {
 		t.Fatalf("expected SchemaHero plugin download error, got %q", errString)
 	}
 

@@ -24,6 +24,7 @@ func PluginDownloadCmd() *cobra.Command {
 		Short:         "Download a SchemaHero database plugin",
 		Args:          cobra.ExactArgs(1),
 		SilenceErrors: true,
+		SilenceUsage:  true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginManager := plugin.GetGlobalPluginManager()
 			if pluginManager == nil {

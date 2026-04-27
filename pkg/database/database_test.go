@@ -1,6 +1,7 @@
 package database
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/schemahero/schemahero/pkg/database/types"
@@ -70,6 +71,41 @@ language PLpgSQL;`,
 
 			assert.Equal(t, test.wantStatements, gotStatements)
 		})
+	}
+}
+
+func TestPlanSyncGVKPlanningErrorDoesNotFallBackToSpecType(t *testing.T) {
+	db := &Database{Driver: "postgres"}
+	spec := []byte(`
+apiVersion: schemas.schemahero.io/v1alpha4
+kind: Table
+metadata:
+  name: embeddings
+spec:
+  database: postgres
+  name: embeddings
+  schema:
+    postgres:
+      primaryKey: [id]
+      columns:
+        - name: id
+          type: serial
+          constraints:
+            notNull: true
+`)
+
+	_, err := db.PlanSync(spec, "table")
+	if err == nil {
+		t.Fatal("expected planning error")
+	}
+
+	errString := err.Error()
+	if !strings.Contains(errString, "failed to plan table embeddings") {
+		t.Fatalf("expected GVK planning error, got %q", errString)
+	}
+
+	if strings.Contains(errString, "failed to plan table sync for embeddings") {
+		t.Fatalf("expected no fallback to spec-type planning, got %q", errString)
 	}
 }
 
