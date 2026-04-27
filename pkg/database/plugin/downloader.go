@@ -6,16 +6,22 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content/file"
 	"oras.land/oras-go/v2/registry/remote"
+	"oras.land/oras-go/v2/registry/remote/auth"
 )
+
+const pluginDownloadConnectionTimeout = 30 * time.Second
 
 // PluginDownloader handles downloading plugins from ORAS artifacts on Docker Hub
 type PluginDownloader struct {
@@ -153,6 +159,7 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	if err != nil {
 		return fmt.Errorf("failed to create repository reference for %s: %w", repoURL, err)
 	}
+	repo.Client = newPluginDownloadClient()
 
 	// Use file store with higher size limit (100MB) for plugin artifacts
 	fs, err := file.NewWithFallbackLimit(cacheDir, 100*1024*1024) // 100MB limit
@@ -228,6 +235,26 @@ func (d *PluginDownloader) downloadPluginOnce(ctx context.Context, driver string
 	}
 
 	return nil
+}
+
+func newPluginDownloadClient() *auth.Client {
+	dialer := &net.Dialer{
+		Timeout: pluginDownloadConnectionTimeout,
+	}
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.DialContext = dialer.DialContext
+	transport.TLSHandshakeTimeout = pluginDownloadConnectionTimeout
+	transport.ResponseHeaderTimeout = pluginDownloadConnectionTimeout
+
+	return &auth.Client{
+		Client: &http.Client{
+			Transport: transport,
+		},
+		Header: http.Header{
+			"User-Agent": {"schemahero"},
+		},
+		Cache: auth.DefaultCache,
+	}
 }
 
 // extractPlugin extracts a plugin binary from a tar.gz archive
