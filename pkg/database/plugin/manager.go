@@ -337,8 +337,27 @@ func (m *PluginManager) RegisterPlugin(info *PluginInfo) error {
 }
 
 // downloadAndLoadPlugin attempts to download and load a plugin for the specified engine
-// from ORAS artifacts on Docker Hub using the naming convention schemahero/plugin-{engine}:{major}
 func (m *PluginManager) downloadAndLoadPlugin(ctx context.Context, engine string) (DatabasePlugin, error) {
+	// Download the plugin
+	pluginPath, err := m.DownloadPlugin(ctx, engine)
+	if err != nil {
+		return nil, err
+	}
+
+	normalizedEngine := m.normalizeEngineForDownload(engine)
+
+	// Load the downloaded plugin
+	return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
+}
+
+// DownloadPlugin downloads the default SchemaHero plugin for the specified
+// engine from ORAS artifacts on Docker Hub using the naming convention schemahero/plugin-{engine}:{major}
+// and returns the local cached plugin path.
+func (m *PluginManager) DownloadPlugin(ctx context.Context, engine string) (string, error) {
+	if engine == "" {
+		return "", fmt.Errorf("database engine cannot be empty")
+	}
+
 	// Get the current major version for SchemaHero
 	// For now, we'll use "0" as the major version since we're in 0.x.y releases
 	majorVersion := m.getCurrentMajorVersion()
@@ -346,20 +365,15 @@ func (m *PluginManager) downloadAndLoadPlugin(ctx context.Context, engine string
 	// Normalize engine name - handle aliases
 	normalizedEngine := m.normalizeEngineForDownload(engine)
 
-	// Check if plugin is already cached
-	if m.downloader.IsPluginCached(normalizedEngine, majorVersion) {
-		pluginPath := m.downloader.GetCachedPluginPath(normalizedEngine, majorVersion)
-		return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
-	}
-
-	// Download the plugin
 	pluginPath, err := m.downloader.DownloadPlugin(ctx, normalizedEngine, majorVersion)
 	if err != nil {
-		return nil, fmt.Errorf("failed to download plugin for engine '%s': %w", engine, err)
+		return "", &DownloadError{
+			Plugin: normalizedEngine,
+			Err:    err,
+		}
 	}
 
-	// Load the downloaded plugin
-	return m.loadPluginFromPath(ctx, normalizedEngine, pluginPath)
+	return pluginPath, nil
 }
 
 // loadPluginFromPath loads a plugin from a filesystem path and registers it

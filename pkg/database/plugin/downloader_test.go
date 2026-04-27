@@ -2,8 +2,10 @@ package plugin
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -128,6 +130,42 @@ func TestPluginDownloader_CleanPluginCache(t *testing.T) {
 	// Verify it's gone
 	if _, err := os.Stat(pluginPath); !os.IsNotExist(err) {
 		t.Error("Plugin file should not exist after cleaning")
+	}
+}
+
+func TestPluginManager_DownloadPluginErrorMessage(t *testing.T) {
+	manager := NewPluginManager(NewPluginRegistry(), NewPluginLoader(t.TempDir()))
+	manager.downloader = NewPluginDownloader(t.TempDir())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := manager.DownloadPlugin(ctx, "postgres")
+	if err == nil {
+		t.Fatal("expected download error")
+	}
+
+	errString := err.Error()
+	if !strings.Contains(errString, "Failed to download SchemaHero postgres plugin") {
+		t.Fatalf("expected SchemaHero plugin download error, got %q", errString)
+	}
+
+	if strings.Contains(errString, "You can download this plugin ahead of time") {
+		t.Fatalf("expected no remediation steps in Go error string, got %q", errString)
+	}
+
+	if !strings.Contains(errString, "context canceled") {
+		t.Fatalf("expected original Go error string, got %q", errString)
+	}
+
+	var downloadErr *DownloadError
+	if !errors.As(err, &downloadErr) {
+		t.Fatalf("expected DownloadError, got %T", err)
+	}
+
+	expectedMessage := "Failed to download SchemaHero postgres plugin. You can download this plugin ahead of time with 'schemahero plugin download postgres'"
+	if downloadErr.Message() != expectedMessage {
+		t.Fatalf("expected message %q, got %q", expectedMessage, downloadErr.Message())
 	}
 }
 

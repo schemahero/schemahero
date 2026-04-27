@@ -13,9 +13,10 @@ import (
 
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "schemahero",
-		Short: "SchemaHero is a cloud-native database schema management tool",
-		Long:  `...`,
+		Use:           "schemahero",
+		Short:         "SchemaHero is a cloud-native database schema management tool",
+		Long:          `...`,
+		SilenceErrors: true,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			viper.BindPFlags(cmd.Flags())
 		},
@@ -39,6 +40,7 @@ func RootCmd() *cobra.Command {
 	cmd.AddCommand(RejectCmd())
 	cmd.AddCommand(GenerateCmd())
 	cmd.AddCommand(FixturesCmd())
+	cmd.AddCommand(PluginCmd())
 
 	cmd.AddCommand(PlanCmd())
 	cmd.AddCommand(ApplyCmd())
@@ -59,7 +61,10 @@ func InitAndExecute() {
 	}()
 
 	if err := RootCmd().Execute(); err != nil {
-		fmt.Println(err)
+		if message, ok := plugin.DownloadErrorMessage(err); ok {
+			fmt.Fprintf(os.Stderr, "%s\n\n", message)
+		}
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

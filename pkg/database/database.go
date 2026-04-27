@@ -33,6 +33,14 @@ type Database struct {
 	pluginManager  *plugin.PluginManager
 }
 
+type specTypeFallbackError struct {
+	err error
+}
+
+func (e *specTypeFallbackError) Error() string {
+	return e.err.Error()
+}
+
 // SetPluginManager sets the plugin manager for this database instance.
 // The plugin manager is used to resolve database connections through plugins
 // before falling back to in-tree drivers.
@@ -242,6 +250,9 @@ func (d *Database) PlanSync(specContents []byte, specType string) ([]string, err
 	if err == nil {
 		return plan, nil
 	}
+	if _, ok := err.(*specTypeFallbackError); !ok {
+		return nil, err
+	}
 
 	logger.Debugf("failed to plan using GVK, falling back on spec type parameter: %s", err)
 
@@ -285,7 +296,7 @@ func (d *Database) planGVKSync(specContents []byte) ([]string, error) {
 
 	obj, gvk, err := decode(specContents, nil, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode spec")
+		return nil, &specTypeFallbackError{err: errors.Wrap(err, "failed to decode spec")}
 	}
 
 	if gvk.Group == "schemas.schemahero.io" && gvk.Version == "v1alpha4" && gvk.Kind == "Table" {
@@ -310,7 +321,7 @@ func (d *Database) planGVKSync(specContents []byte) ([]string, error) {
 		}
 		return plan, nil
 	} else {
-		return nil, errors.Errorf("unknown gvk %s", gvk)
+		return nil, &specTypeFallbackError{err: errors.Errorf("unknown gvk %s", gvk)}
 	}
 }
 
