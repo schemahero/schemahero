@@ -13,7 +13,7 @@ type DownloadError struct {
 }
 
 func (e *DownloadError) Error() string {
-	return fmt.Sprintf("%s: %v", e.Message(), e.Err)
+	return fmt.Sprintf("%s: %v", e.errorMessage(), e.Err)
 }
 
 func (e *DownloadError) Unwrap() error {
@@ -21,7 +21,11 @@ func (e *DownloadError) Unwrap() error {
 }
 
 func (e *DownloadError) Message() string {
-	return fmt.Sprintf("Failed to download SchemaHero %s plugin. You can download this plugin ahead of time with 'schemahero plugin download %s'", e.Plugin, e.Plugin)
+	return fmt.Sprintf("%s. You can download this plugin ahead of time with 'schemahero plugin download %s'", e.errorMessage(), e.Plugin)
+}
+
+func (e *DownloadError) errorMessage() string {
+	return fmt.Sprintf("Failed to download SchemaHero %s plugin", e.Plugin)
 }
 
 func DownloadErrorMessage(err error) (string, bool) {
