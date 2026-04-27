@@ -164,6 +164,57 @@ func Test_CreateTableStatement(t *testing.T) {
 				"create table `test` (`id` int (11), primary key (`id`)) collate latin1_german1_ci",
 			},
 		},
+		{
+			name: "table with enum column",
+			tableSchema: &schemasv1alpha4.MysqlTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.MysqlTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+					{
+						Name: "status",
+						Type: "enum('active','inactive','pending')",
+						Constraints: &schemasv1alpha4.MysqlTableColumnConstraints{
+							NotNull: &trueValue,
+						},
+					},
+				},
+			},
+			tableName: "test_enum",
+			expectedStatements: []string{
+				"create table `test_enum` (`id` int (11), `status` enum('active','inactive','pending') not null, primary key (`id`))",
+			},
+		},
+		{
+			name: "table with enum column and default",
+			tableSchema: &schemasv1alpha4.MysqlTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Columns: []*schemasv1alpha4.MysqlTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+					{
+						Name: "role",
+						Type: "enum('admin','user','guest')",
+						Constraints: &schemasv1alpha4.MysqlTableColumnConstraints{
+							NotNull: &trueValue,
+						},
+						Default: func() *string { s := "user"; return &s }(),
+					},
+				},
+			},
+			tableName: "test_enum_default",
+			expectedStatements: []string{
+				"create table `test_enum_default` (`id` int (11), `role` enum('admin','user','guest') not null default 'user', primary key (`id`))",
+			},
+		},
 	}
 
 	for _, test := range tests {
