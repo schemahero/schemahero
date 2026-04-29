@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/jackc/pgx/v4"
@@ -38,9 +39,15 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.Postgresql
 		strings.Join(schemaIndex.Columns, ", "))
 
 	if schemaIndex.With != nil && len(schemaIndex.With) > 0 {
+		keys := make([]string, 0, len(schemaIndex.With))
+		for key := range schemaIndex.With {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+
 		withClauses := make([]string, 0, len(schemaIndex.With))
-		for key, value := range schemaIndex.With {
-			withClauses = append(withClauses, fmt.Sprintf("%s=%s", key, value))
+		for _, key := range keys {
+			withClauses = append(withClauses, fmt.Sprintf("%s = %s", key, schemaIndex.With[key]))
 		}
 		statement += fmt.Sprintf(" with (%s)", strings.Join(withClauses, ", "))
 	}

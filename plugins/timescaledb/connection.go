@@ -5,7 +5,7 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 	"github.com/schemahero/schemahero/pkg/database/types"
 	postgres "github.com/schemahero/schemahero/plugins/postgres/lib"
-	timescaledb "github.com/schemahero/schemahero/plugins/timescaledb/internal"
+	timescaledb "github.com/schemahero/schemahero/plugins/timescaledb/lib"
 )
 
 // TimescaleDBConnection wraps a PostgreSQL connection and adds TimescaleDB-specific functionality

@@ -101,6 +101,53 @@ jobs:
           }
       - run: make vet test
 
+  test-plugin-unit:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: >-
+      needs.changes.outputs.core == 'true'
+      || needs.changes.outputs.postgres == 'true'
+      || needs.changes.outputs.mysql == 'true'
+      || needs.changes.outputs.cockroach == 'true'
+      || needs.changes.outputs.cassandra == 'true'
+      || needs.changes.outputs.sqlite == 'true'
+      || needs.changes.outputs.rqlite == 'true'
+      || needs.changes.outputs.timescaledb == 'true'
+      || github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin:
+          - name: postgres
+            path: plugins/postgres
+            package: ./lib
+          - name: mysql
+            path: plugins/mysql
+            package: ./lib
+          - name: timescaledb
+            path: plugins/timescaledb
+            package: ./lib
+          - name: sqlite
+            path: plugins/sqlite
+            package: ./lib
+          - name: rqlite
+            path: plugins/rqlite
+            package: ./lib
+          - name: cassandra
+            path: plugins/cassandra
+            package: ./lib
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: '${{ matrix.plugin.path }}/go.mod'
+          cache: true
+          cache-dependency-path: '${{ matrix.plugin.path }}/go.sum'
+
+      - run: go test ${{ matrix.plugin.package }}
+        working-directory: ${{ matrix.plugin.path }}
+
   # ── PostgreSQL ──────────────────────────────────────────────
   # PRs: latest version only. Main: full matrix.
   test-postgres:
