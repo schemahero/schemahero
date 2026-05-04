@@ -5,15 +5,15 @@ go 1.26.2
 replace github.com/schemahero/schemahero => ../..
 
 require (
-	github.com/go-sql-driver/mysql v1.9.3
-	github.com/hashicorp/go-plugin v1.7.0
+	github.com/go-sql-driver/mysql v1.10.0
+	github.com/hashicorp/go-plugin v1.8.0
 	github.com/pkg/errors v0.9.1
 	github.com/schemahero/schemahero v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
 )
 
 require (
-	filippo.io/edwards25519 v1.1.1 // indirect
+	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.41.6 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.32.16 // indirect
