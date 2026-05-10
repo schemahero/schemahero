@@ -192,6 +192,49 @@ func Test_maybeParseParameterizedColumnType(t *testing.T) {
 			expectedColumnType:  "",
 			expectedErrorSubstr: "invalid timestamp precision 7",
 		},
+		// enum tests
+		{
+			name:               "enum('active','inactive')",
+			requestedType:      "enum('active','inactive')",
+			expectedColumnType: "enum('active','inactive')",
+		},
+		{
+			name:               "enum('active', 'inactive', 'pending')",
+			requestedType:      "enum('active', 'inactive', 'pending')",
+			expectedColumnType: "enum('active','inactive','pending')",
+		},
+		{
+			name:               "enum ('a','b','c')",
+			requestedType:      "enum ('a','b','c')",
+			expectedColumnType: "enum('a','b','c')",
+		},
+		{
+			name:               "enum('single')",
+			requestedType:      "enum('single')",
+			expectedColumnType: "enum('single')",
+		},
+		{
+			name:               "enum('hello world','foo bar')",
+			requestedType:      "enum('hello world','foo bar')",
+			expectedColumnType: "enum('hello world','foo bar')",
+		},
+		{
+			name:               "enum with escaped single quote in value",
+			requestedType:      "enum('it''s','fine')",
+			expectedColumnType: "enum('it''s','fine')",
+		},
+		{
+			name:                "enum without values",
+			requestedType:       "enum",
+			expectedColumnType:  "",
+			expectedErrorSubstr: "invalid enum type: at least one value required",
+		},
+		{
+			name:                "enum() empty values",
+			requestedType:       "enum()",
+			expectedColumnType:  "",
+			expectedErrorSubstr: "invalid enum type: at least one value required",
+		},
 	}
 
 	for _, test := range tests {
