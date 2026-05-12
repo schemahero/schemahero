@@ -56,9 +56,23 @@ type TimescaleDBTableSchema struct {
 	Hypertable *TimescaleDBHypertable    `json:"hypertable,omitempty" yaml:"hypertable,omitempty"`
 }
 
+type TimescaleDBViewRefreshPolicy struct {
+	StartOffset            string `json:"startOffset,omitempty" yaml:"startOffset,omitempty"`
+	EndOffset              string `json:"endOffset,omitempty" yaml:"endOffset,omitempty"`
+	ScheduleInterval       string `json:"scheduleInterval,omitempty" yaml:"scheduleInterval,omitempty"`
+	IfNotExists            *bool  `json:"ifNotExists,omitempty" yaml:"ifNotExists,omitempty"`
+	InitialStart           string `json:"initialStart,omitempty" yaml:"initialStart,omitempty"`
+	Timezone               string `json:"timezone,omitempty" yaml:"timezone,omitempty"`
+	IncludeTieredData      *bool  `json:"includeTieredData,omitempty" yaml:"includeTieredData,omitempty"`
+	BucketsPerBatch        *int   `json:"bucketsPerBatch,omitempty" yaml:"bucketsPerBatch,omitempty"`
+	MaxBatchesPerExecution *int   `json:"maxBatchesPerExecution,omitempty" yaml:"maxBatchesPerExecution,omitempty"`
+	RefreshNewestFirst     *bool  `json:"refreshNewestFirst,omitempty" yaml:"refreshNewestFirst,omitempty"`
+}
+
 type TimescaleDBViewSchema struct {
-	IsContinuousAggregate *bool  `json:"isContinuousAggregate,omitempty" yaml:"isContinuousAggregate,omitempty"`
-	WithNoData            *bool  `json:"withNoData,omitempty" yaml:"withNoData,omitempty"`
-	Query                 string `json:"query,omitempty" yaml:"query,omitempty"`
-	IsDeleted             bool   `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
+	IsContinuousAggregate *bool                         `json:"isContinuousAggregate,omitempty" yaml:"isContinuousAggregate,omitempty"`
+	WithNoData            *bool                         `json:"withNoData,omitempty" yaml:"withNoData,omitempty"`
+	Query                 string                        `json:"query,omitempty" yaml:"query,omitempty"`
+	IsDeleted             bool                          `json:"isDeleted,omitempty" yaml:"isDeleted,omitempty"`
+	RefreshPolicy         *TimescaleDBViewRefreshPolicy `json:"refreshPolicy,omitempty" yaml:"refreshPolicy,omitempty"`
 }

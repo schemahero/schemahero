@@ -13,3 +13,7 @@ spec:
         select time_bucket('1 day'::interval, time) as daily_time, status, count(1) as total
         from flight_status
         group by daily_time, status
+      refreshPolicy:
+        startOffset: "3 days"
+        endOffset: "1 day"
+        scheduleInterval: "1 day"
