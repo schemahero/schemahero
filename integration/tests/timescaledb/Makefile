@@ -17,6 +17,7 @@ build-timescaledb-plugin:
 2.25.0-pg17: export TIMESCALEDB_VERSION = 2.25.0-pg17
 2.25.0-pg17: build-timescaledb-plugin
 	make -C create-materialized-view run
+	make -C update-materialized-view-policy run
 	make -C drop-materialized-view run
 	make -C alter-column-timezone run
 	make -C column-set-default run

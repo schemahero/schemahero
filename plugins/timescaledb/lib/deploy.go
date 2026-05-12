@@ -3,6 +3,7 @@ package timescaledb
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/pkg/errors"
@@ -10,6 +11,127 @@ import (
 	postgres "github.com/schemahero/schemahero/plugins/postgres/lib"
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
+
+// currentRefreshPolicy represents the live state of a continuous aggregate refresh policy in the database.
+type currentRefreshPolicy struct {
+	scheduleInterval         string
+	startOffset              string
+	endOffset                string
+	timezone                 string
+	bucketsPerBatch          string
+	maxBatchesPerExecution   string
+	refreshNewestFirst       string
+	includeTieredData        string
+}
+
+func getContinuousAggregatePolicy(p *postgres.PostgresConnection, viewName string) (*currentRefreshPolicy, error) {
+	query := `select
+		j.schedule_interval::text,
+		j.config->>'start_offset',
+		j.config->>'end_offset',
+		j.timezone,
+		j.config->>'buckets_per_batch',
+		j.config->>'max_batches_per_execution',
+		j.config->>'refresh_newest_first',
+		j.config->>'include_tiered_data'
+	from _timescaledb_catalog.continuous_agg c
+	join _timescaledb_catalog.bgw_job j on j.hypertable_id = c.mat_hypertable_id
+	where c.user_view_name = $1`
+
+	row := p.GetConnection().QueryRow(context.Background(), query, viewName)
+
+	var policy currentRefreshPolicy
+	var scheduleInterval, startOffset, endOffset, timezone, bucketsPerBatch, maxBatchesPerExecution, refreshNewestFirst, includeTieredData *string
+
+	if err := row.Scan(&scheduleInterval, &startOffset, &endOffset, &timezone, &bucketsPerBatch, &maxBatchesPerExecution, &refreshNewestFirst, &includeTieredData); err != nil {
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "failed to scan continuous aggregate policy")
+	}
+
+	if scheduleInterval != nil {
+		policy.scheduleInterval = *scheduleInterval
+	}
+	if startOffset != nil {
+		policy.startOffset = *startOffset
+	}
+	if endOffset != nil {
+		policy.endOffset = *endOffset
+	}
+	if timezone != nil {
+		policy.timezone = *timezone
+	}
+	if bucketsPerBatch != nil {
+		policy.bucketsPerBatch = *bucketsPerBatch
+	}
+	if maxBatchesPerExecution != nil {
+		policy.maxBatchesPerExecution = *maxBatchesPerExecution
+	}
+	if refreshNewestFirst != nil {
+		policy.refreshNewestFirst = *refreshNewestFirst
+	}
+	if includeTieredData != nil {
+		policy.includeTieredData = *includeTieredData
+	}
+
+	return &policy, nil
+}
+
+func policyDiffers(desired *schemasv1alpha4.TimescaleDBViewRefreshPolicy, current *currentRefreshPolicy) bool {
+	if desired == nil && current == nil {
+		return false
+	}
+	if desired == nil || current == nil {
+		return true
+	}
+
+	if desired.StartOffset != current.startOffset {
+		return true
+	}
+	if desired.EndOffset != current.endOffset {
+		return true
+	}
+	// NOTE: schedule_interval may be canonicalized by PostgreSQL (e.g. "1 hour" -> "01:00:00").
+	// For simplicity we do exact string comparison. Users should match the canonical form.
+	if desired.ScheduleInterval != current.scheduleInterval {
+		return true
+	}
+	if desired.Timezone != current.timezone {
+		return true
+	}
+	if boolPtrString(desired.IncludeTieredData) != current.includeTieredData {
+		return true
+	}
+	if intPtrString(desired.BucketsPerBatch) != current.bucketsPerBatch {
+		return true
+	}
+	if intPtrString(desired.MaxBatchesPerExecution) != current.maxBatchesPerExecution {
+		return true
+	}
+	if boolPtrString(desired.RefreshNewestFirst) != current.refreshNewestFirst {
+		return true
+	}
+
+	return false
+}
+
+func boolPtrString(v *bool) string {
+	if v == nil {
+		return ""
+	}
+	if *v {
+		return "true"
+	}
+	return "false"
+}
+
+func intPtrString(v *int) string {
+	if v == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *v)
+}
 
 func PlanTimescaleDBView(uri string, viewName string, viewSchema *schemasv1alpha4.TimescaleDBViewSchema) ([]string, error) {
 	p, err := postgres.Connect(uri)
@@ -57,6 +179,10 @@ func PlanTimescaleDBView(uri string, viewName string, viewSchema *schemasv1alpha
 		}
 	} else if viewExists > 0 && !viewSchema.IsDeleted {
 		// TODO: Alter view.  Some properties can be altered, but to alter the SQL, a new view should be created.
+		// For now, handle refresh policy drift for continuous aggregates.
+		if isContinuousAggregate {
+			return planPolicyChanges(p, viewName, viewSchema)
+		}
 	}
 
 	// if the view doesn't exist, shortcut to create
@@ -70,6 +196,48 @@ func PlanTimescaleDBView(uri string, viewName string, viewSchema *schemasv1alpha
 	}
 
 	return []string{}, nil
+}
+
+func planPolicyChanges(p *postgres.PostgresConnection, viewName string, viewSchema *schemasv1alpha4.TimescaleDBViewSchema) ([]string, error) {
+	statements := []string{}
+
+	currentPolicy, err := getContinuousAggregatePolicy(p, viewName)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get current refresh policy")
+	}
+
+	if viewSchema.RefreshPolicy == nil {
+		if currentPolicy != nil {
+			// policy exists but is no longer desired
+			statements = append(statements,
+				fmt.Sprintf("select remove_continuous_aggregate_policy(%s)", strings.ReplaceAll(pgx.Identifier{viewName}.Sanitize(), "\"", "'")),
+			)
+		}
+		return statements, nil
+	}
+
+	// desired policy exists
+	if policyDiffers(viewSchema.RefreshPolicy, currentPolicy) {
+		if currentPolicy != nil {
+			statements = append(statements,
+				fmt.Sprintf("select remove_continuous_aggregate_policy(%s)", strings.ReplaceAll(pgx.Identifier{viewName}.Sanitize(), "\"", "'")),
+			)
+		}
+
+		createStmts, err := CreateViewStatements(viewName, viewSchema)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create policy statement")
+		}
+		// CreateViewStatements returns both CREATE MATERIALIZED VIEW and the policy.
+		// Filter out the CREATE statement when the view already exists.
+		for _, stmt := range createStmts {
+			if !strings.Contains(strings.ToLower(stmt), "create materialized view") {
+				statements = append(statements, stmt)
+			}
+		}
+	}
+
+	return statements, nil
 }
 
 func PlanTimescaleDBTable(uri string, tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {

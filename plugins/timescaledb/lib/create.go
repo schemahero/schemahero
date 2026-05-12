@@ -25,12 +25,65 @@ func CreateViewStatements(viewName string, viewSchema *schemasv1alpha4.Timescale
 				withDataStatement),
 		}
 
+		if viewSchema.RefreshPolicy != nil {
+			policyStmt, err := createRefreshPolicyStatement(viewName, viewSchema.RefreshPolicy)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create refresh policy statement")
+			}
+			if policyStmt != "" {
+				statements = append(statements, policyStmt)
+			}
+		}
+
 		return statements, nil
 	}
 
 	// create the views as a postgres view
 	// TODO
 	return nil, errors.New("not implemented")
+}
+
+func createRefreshPolicyStatement(viewName string, policy *schemasv1alpha4.TimescaleDBViewRefreshPolicy) (string, error) {
+	if policy.StartOffset == "" {
+		return "", errors.New("refreshPolicy.startOffset is required")
+	}
+	if policy.EndOffset == "" {
+		return "", errors.New("refreshPolicy.endOffset is required")
+	}
+	if policy.ScheduleInterval == "" {
+		return "", errors.New("refreshPolicy.scheduleInterval is required")
+	}
+
+	policyStmt := fmt.Sprintf(
+		"select add_continuous_aggregate_policy(%s, start_offset => INTERVAL '%s', end_offset => INTERVAL '%s', schedule_interval => INTERVAL '%s'",
+		strings.ReplaceAll(pgx.Identifier{viewName}.Sanitize(), "\"", "'"),
+		policy.StartOffset,
+		policy.EndOffset,
+		policy.ScheduleInterval,
+	)
+	if policy.IfNotExists != nil && *policy.IfNotExists {
+		policyStmt = policyStmt + ", if_not_exists => true"
+	}
+	if policy.InitialStart != "" {
+		policyStmt = policyStmt + fmt.Sprintf(", initial_start => '%s'", policy.InitialStart)
+	}
+	if policy.Timezone != "" {
+		policyStmt = policyStmt + fmt.Sprintf(", timezone => '%s'", policy.Timezone)
+	}
+	if policy.IncludeTieredData != nil {
+		policyStmt = policyStmt + fmt.Sprintf(", include_tiered_data => %t", *policy.IncludeTieredData)
+	}
+	if policy.BucketsPerBatch != nil {
+		policyStmt = policyStmt + fmt.Sprintf(", buckets_per_batch => %d", *policy.BucketsPerBatch)
+	}
+	if policy.MaxBatchesPerExecution != nil {
+		policyStmt = policyStmt + fmt.Sprintf(", max_batches_per_execution => %d", *policy.MaxBatchesPerExecution)
+	}
+	if policy.RefreshNewestFirst != nil {
+		policyStmt = policyStmt + fmt.Sprintf(", refresh_newest_first => %t", *policy.RefreshNewestFirst)
+	}
+	policyStmt = policyStmt + ")"
+	return policyStmt, nil
 }
 
 func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema) ([]string, error) {
