@@ -1,0 +1,36 @@
+# Dry-run validation of factory + template on PRs that touch .elasticclaw.
+# Requires repo secret: ELASTICCLAW_TOKEN
+# Pattern: https://github.com/elasticclaw/elasticclaw/blob/main/.depot/workflows/factory-validate.yaml
+
+name: Validate Factory
+
+on:
+  pull_request:
+    paths:
+      - '.elasticclaw/**'
+
+jobs:
+  validate:
+    name: Validate ElasticClaw Config
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate factory (schemahero-issues)
+        uses: elasticclaw/actions/publish-factory@main
+        with:
+          hub-endpoint: https://factory.repldev.com
+          token: ${{ secrets.ELASTICCLAW_TOKEN }}
+          path: .elasticclaw/factories/schemahero-issues
+          dry-run: true
+
+      - name: Validate template (schemahero-developer)
+        uses: elasticclaw/actions/publish-template@main
+        with:
+          hub-endpoint: https://factory.repldev.com
+          token: ${{ secrets.ELASTICCLAW_TOKEN }}
+          path: .elasticclaw/templates/schemahero-developer
+          dry-run: true

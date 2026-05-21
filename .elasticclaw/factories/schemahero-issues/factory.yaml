@@ -1,0 +1,17 @@
+name: schemahero-issues
+integration: github-issues
+workspace: schemahero
+trigger_status: "agent-ready"
+
+repos:
+  - schemahero/schemahero
+
+labels:
+  - agent-ready
+
+webhook_secret_ref: schemahero_github_webhook_secret
+
+template: schemahero-developer
+
+allowed_labelers:
+  - marccampbell

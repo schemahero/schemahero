@@ -1,0 +1,37 @@
+# Publishes ElasticClaw factory + template when .elasticclaw changes on main.
+# Requires repo secret: ELASTICCLAW_TOKEN
+# Pattern: https://github.com/elasticclaw/elasticclaw/blob/main/.depot/workflows/factory-publish.yaml
+
+name: Publish Factory
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.elasticclaw/**'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish to ElasticClaw Factory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Publish factory (schemahero-issues)
+        uses: elasticclaw/actions/publish-factory@main
+        with:
+          hub-endpoint: https://factory.repldev.com
+          token: ${{ secrets.ELASTICCLAW_TOKEN }}
+          path: .elasticclaw/factories/schemahero-issues
+
+      - name: Publish template (schemahero-developer)
+        uses: elasticclaw/actions/publish-template@main
+        with:
+          hub-endpoint: https://factory.repldev.com
+          token: ${{ secrets.ELASTICCLAW_TOKEN }}
+          path: .elasticclaw/templates/schemahero-developer

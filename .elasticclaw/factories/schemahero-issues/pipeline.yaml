@@ -1,0 +1,88 @@
+stages:
+  - id: working
+    label: "Working"
+    entry: true
+    on_enter:
+      add_labels:
+        - "agent-working"
+      remove_labels:
+        - "agent-ready"
+      inject: |
+        Issue: {{.Issue.Identifier}} — {{.Issue.Title}}
+        URL: {{.Issue.URL}}
+
+        You are working a GitHub issue for schemahero/schemahero (see CONTEXT.md and BOOTSTRAP.md for id, title, URL, and description).
+
+        Repository: schemahero/schemahero is cloned in your workspace with write access.
+        All fixes belong in this repo unless the issue explicitly requires another project.
+
+        Read AGENTS.md and SOUL.md, then describe your understanding of the issue before writing code.
+
+        Many issues may be old. Before implementing, check whether the work is still relevant:
+        read comments, linked PRs, release notes, and the current codebase. Look for duplicates,
+        fixes already shipped, features removed, or reports that no longer apply.
+
+        If the issue should not be worked (obsolete, duplicate, already fixed, out of scope, or
+        cannot be reproduced with high confidence after a real attempt), do not open a PR.
+        Instead, leave a short comment on the issue explaining why, then send exactly one line:
+        [WONTFIX]
+
+        If the issue is actionable, do not wait for a reply—start implementation.
+        Narrate progress as you go. Open a PR from a new branch when you change code.
+
+        When the task is complete, send exactly one line:
+        [DONE] https://github.com/schemahero/schemahero/pull/N
+
+  - id: wont_fix
+    label: "Won't Fix"
+    triggers:
+      - message_contains: "[WONTFIX]"
+    terminal: true
+    on_enter:
+      add_labels:
+        - "wontfix"
+      remove_labels:
+        - "agent-working"
+        - "agent-ready"
+      close_issue: true
+      inject: |
+        Issue marked won't fix and closed. Terminating this agent.
+
+  - id: pr_opened
+    label: "PR Opened"
+    triggers:
+      - message_contains: "[DONE]"
+    on_enter:
+      add_labels:
+        - "agent-needs-review"
+      remove_labels:
+        - "agent-working"
+      inject: |
+        PR created. Watch for CI results and review comments.
+
+  - id: merged
+    label: "Merged"
+    triggers:
+      - pr_merged:
+    terminal: true
+    on_enter:
+      add_labels:
+        - "done"
+      remove_labels:
+        - "agent-needs-review"
+      close_issue: true
+      inject: |
+        PR was merged. Issue closed. Terminating this agent.
+
+  - id: closed_no_merge
+    label: "Closed Without Merge"
+    triggers:
+      - pr_closed:
+    terminal: true
+    on_enter:
+      add_labels:
+        - "wontfix"
+      remove_labels:
+        - "agent-needs-review"
+      inject: |
+        PR was closed without merging. Terminating this agent.
