@@ -6,6 +6,9 @@ trigger_status: "agent-ready"
 repos:
   - schemahero/schemahero
 
+trigger_repos:
+  - schemahero/schemahero
+
 labels:
   - agent-ready
 
