@@ -18,7 +18,6 @@ const (
 	DefaultDispatchPollInterval = 10 * time.Second
 	DefaultDispatchTimeout      = 30 * time.Minute
 	defaultDepotBinary          = "depot"
-	defaultDepotRepo            = "replicatedhq/vandoor"
 	productionReleaseTagNeedle  = `release_tag="${PRODUCTION_RELEASE_TAG:-${{ inputs.tag || github.ref_name }}}"`
 	productionReleaseSHANeedle  = `release_sha="${PRODUCTION_RELEASE_SHA:-${{ inputs.sha || github.sha }}}"`
 	productionPreviousSHANeedle = `previous_sha="${PRODUCTION_PREVIOUS_SHA:-${{ inputs.previous-sha }}}"`
@@ -50,13 +49,9 @@ type DepotDispatcher struct {
 func NewDepotDispatcherFromEnv() (*DepotDispatcher, bool) {
 	token := os.Getenv("DEPOT_CI_DISPATCH_TOKEN")
 	workflowTemplatePath := os.Getenv("DEPOT_WORKFLOW_TEMPLATE_PATH")
-	if token == "" || workflowTemplatePath == "" {
-		return nil, false
-	}
-
 	repo := os.Getenv("DEPOT_REPO")
-	if repo == "" {
-		repo = defaultDepotRepo
+	if token == "" || workflowTemplatePath == "" || repo == "" {
+		return nil, false
 	}
 
 	depotBinary := os.Getenv("DEPOT_BINARY")
@@ -79,6 +74,9 @@ func (d *DepotDispatcher) Dispatch(ctx context.Context, release Release) error {
 	if d.WorkflowTemplatePath == "" {
 		return errors.New("depot workflow template path is required")
 	}
+	if d.Repo == "" {
+		return errors.New("depot repo is required")
+	}
 
 	renderedWorkflow, err := renderWorkflowTemplate(d.WorkflowTemplatePath, release)
 	if err != nil {
@@ -90,14 +88,9 @@ func (d *DepotDispatcher) Dispatch(ctx context.Context, release Release) error {
 	if depotBinary == "" {
 		depotBinary = defaultDepotBinary
 	}
-	repo := d.Repo
-	if repo == "" {
-		repo = defaultDepotRepo
-	}
-
 	cmd := exec.CommandContext(ctx, depotBinary,
 		"ci", "run",
-		"--repo", repo,
+		"--repo", d.Repo,
 		"--workflow", renderedWorkflow,
 		"--token", d.Token,
 	)

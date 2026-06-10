@@ -38,3 +38,25 @@ func TestRenderWorkflowTemplate(t *testing.T) {
 	require.Contains(t, string(rendered), `previous_sha="previous-sha"`)
 	require.Contains(t, string(rendered), `previous_tag_name="v2026.06.09-0"`)
 }
+
+func TestNewDepotDispatcherFromEnvRequiresRepo(t *testing.T) {
+	t.Setenv("DEPOT_CI_DISPATCH_TOKEN", "token")
+	t.Setenv("DEPOT_WORKFLOW_TEMPLATE_PATH", "/tmp/workflow.yml")
+	t.Setenv("DEPOT_REPO", "")
+
+	dispatcher, ok := NewDepotDispatcherFromEnv()
+
+	require.False(t, ok)
+	require.Nil(t, dispatcher)
+}
+
+func TestNewDepotDispatcherFromEnvUsesConfiguredRepo(t *testing.T) {
+	t.Setenv("DEPOT_CI_DISPATCH_TOKEN", "token")
+	t.Setenv("DEPOT_WORKFLOW_TEMPLATE_PATH", "/tmp/workflow.yml")
+	t.Setenv("DEPOT_REPO", "example/repo")
+
+	dispatcher, ok := NewDepotDispatcherFromEnv()
+
+	require.True(t, ok)
+	require.Equal(t, "example/repo", dispatcher.Repo)
+}

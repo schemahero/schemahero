@@ -2,6 +2,8 @@ package slackapp
 
 import (
 	"context"
+	stderrors "errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,6 +18,7 @@ type fakeSlackClient struct {
 	reactions    []Reaction
 	reactionsErr error
 	users        map[string]string
+	failPostText string
 }
 
 type fakeSlackMessage struct {
@@ -25,6 +28,9 @@ type fakeSlackMessage struct {
 }
 
 func (c *fakeSlackClient) PostMessage(_ context.Context, channel string, _ []map[string]interface{}, text string, threadTS string) (string, error) {
+	if c.failPostText != "" && strings.Contains(text, c.failPostText) {
+		return "", stderrors.New("post failed")
+	}
 	c.messages = append(c.messages, fakeSlackMessage{
 		channel:  channel,
 		text:     text,
@@ -60,6 +66,47 @@ func TestPollerPostsApprovalMessage(t *testing.T) {
 	updated, err := client.Migrations("default").Get(context.Background(), "approval-rehearsal", metav1.GetOptions{})
 	require.NoError(t, err)
 	require.Equal(t, "C123", updated.Annotations[SlackChannelAnnotation])
+	require.Equal(t, "123.456", updated.Annotations[SlackMessageTSAnnotation])
+}
+
+func TestPollerRepostsApprovalMessageWhenPlanHashChanges(t *testing.T) {
+	migration := plannedMigration("approval-rehearsal")
+	migration.Spec.GeneratedDDL = "select 2"
+	migration.Status.PlanHash = "old-plan"
+	migration.Annotations[SlackChannelAnnotation] = "C123"
+	migration.Annotations[SlackMessageTSAnnotation] = "old-ts"
+	migration.Annotations[SlackInvalidReactionUsers] = "eyes:U123"
+	client := testclient.NewSimpleClientset(migration).SchemasV1alpha4()
+	slack := &fakeSlackClient{
+		reactions: []Reaction{{Name: ApproveReaction, Users: []string{"U123"}}},
+	}
+	poller := NewPoller(client, slack, "C123", "default")
+
+	require.NoError(t, poller.Sync(context.Background()))
+
+	require.Len(t, slack.messages, 1)
+	updated, err := client.Migrations("default").Get(context.Background(), "approval-rehearsal", metav1.GetOptions{})
+	require.NoError(t, err)
+	require.Equal(t, schemasv1alpha4.Planned, updated.Status.Phase)
+	require.Equal(t, schemasv1alpha4.PlanHashForDDL("select 2"), updated.Status.PlanHash)
+	require.Equal(t, "123.456", updated.Annotations[SlackMessageTSAnnotation])
+	require.NotContains(t, updated.Annotations, SlackInvalidReactionUsers)
+}
+
+func TestPollerContinuesAfterMigrationError(t *testing.T) {
+	broken := plannedMigration("broken")
+	ok := plannedMigration("ok")
+	client := testclient.NewSimpleClientset(broken, ok).SchemasV1alpha4()
+	slack := &fakeSlackClient{failPostText: "broken"}
+	poller := NewPoller(client, slack, "C123", "default")
+
+	err := poller.Sync(context.Background())
+
+	require.Error(t, err)
+	require.Len(t, slack.messages, 1)
+	require.Contains(t, slack.messages[0].text, "ok")
+	updated, getErr := client.Migrations("default").Get(context.Background(), "ok", metav1.GetOptions{})
+	require.NoError(t, getErr)
 	require.Equal(t, "123.456", updated.Annotations[SlackMessageTSAnnotation])
 }
 

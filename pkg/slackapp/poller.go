@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -36,6 +37,7 @@ type Poller struct {
 	pendingInterval time.Duration
 	dispatchTimeout time.Duration
 	dispatched      map[string]bool
+	dispatchedMu    sync.Mutex
 	now             func() time.Time
 }
 
@@ -109,9 +111,10 @@ func (p *Poller) sync(ctx context.Context) (syncResult, error) {
 	result := syncResult{}
 	migrations, err := p.schemasClient.Migrations(p.namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return result, err
+		return result, errors.Wrap(err, "failed to list migrations")
 	}
 
+	var syncErr error
 	for i := range migrations.Items {
 		migration := &migrations.Items[i]
 		if migration.Status.Phase != schemasv1alpha4.Planned {
@@ -119,17 +122,27 @@ func (p *Poller) sync(ctx context.Context) (syncResult, error) {
 		}
 		result.pending = true
 
-		if err := p.ensureApprovalMessage(ctx, migration); err != nil {
-			result.retryAfter = retryAfter(err)
-			return result, err
+		updatedMessage, err := p.ensureApprovalMessage(ctx, migration)
+		if err != nil {
+			if result.retryAfter == 0 {
+				result.retryAfter = retryAfter(err)
+			}
+			syncErr = stderrors.Join(syncErr, errors.Wrapf(err, "failed to ensure approval message for migration %s/%s", migration.Namespace, migration.Name))
+			continue
+		}
+		if updatedMessage {
+			continue
 		}
 		if err := p.handleReactions(ctx, migration); err != nil {
-			result.retryAfter = retryAfter(err)
-			return result, err
+			if result.retryAfter == 0 {
+				result.retryAfter = retryAfter(err)
+			}
+			syncErr = stderrors.Join(syncErr, errors.Wrapf(err, "failed to handle reactions for migration %s/%s", migration.Namespace, migration.Name))
+			continue
 		}
 	}
 
-	return result, nil
+	return result, syncErr
 }
 
 func retryAfter(err error) time.Duration {
@@ -140,16 +153,11 @@ func retryAfter(err error) time.Duration {
 	return 0
 }
 
-func (p *Poller) ensureApprovalMessage(ctx context.Context, migration *schemasv1alpha4.Migration) error {
+func (p *Poller) ensureApprovalMessage(ctx context.Context, migration *schemasv1alpha4.Migration) (bool, error) {
 	annotations := migration.GetAnnotations()
-	if annotations[SlackMessageTSAnnotation] != "" {
-		return nil
-	}
-
-	planHash := migration.Status.PlanHash
-	if planHash == "" {
-		planHash = schemasv1alpha4.PlanHashForDDL(migration.Spec.GeneratedDDL)
-		migration.Status.PlanHash = planHash
+	planHash := schemasv1alpha4.PlanHashForDDL(migration.Spec.GeneratedDDL)
+	if annotations[SlackMessageTSAnnotation] != "" && migration.Status.PlanHash == planHash {
+		return false, nil
 	}
 
 	text := fmt.Sprintf("SchemaHero migration approval required for %s/%s", migration.Namespace, migration.Name)
@@ -171,7 +179,7 @@ func (p *Poller) ensureApprovalMessage(ctx context.Context, migration *schemasv1
 	}
 	ts, err := p.slackClient.PostMessage(ctx, p.channel, blocks, text, "")
 	if err != nil {
-		return err
+		return false, errors.Wrap(err, "failed to post slack approval message")
 	}
 
 	updated := migration.DeepCopy()
@@ -181,12 +189,13 @@ func (p *Poller) ensureApprovalMessage(ctx context.Context, migration *schemasv1
 	}
 	annotations[SlackChannelAnnotation] = p.channel
 	annotations[SlackMessageTSAnnotation] = ts
+	delete(annotations, SlackInvalidReactionUsers)
+	delete(annotations, SlackApprovalReplyUser)
+	delete(annotations, SlackRejectionReplyUser)
 	updated.SetAnnotations(annotations)
-	if updated.Status.PlanHash == "" {
-		updated.Status.PlanHash = planHash
-	}
+	updated.Status.PlanHash = planHash
 	_, err = p.schemasClient.Migrations(updated.Namespace).Update(ctx, updated, metav1.UpdateOptions{})
-	return err
+	return true, errors.Wrap(err, "failed to update migration slack approval annotations")
 }
 
 func (p *Poller) handleReactions(ctx context.Context, migration *schemasv1alpha4.Migration) error {
@@ -199,7 +208,7 @@ func (p *Poller) handleReactions(ctx context.Context, migration *schemasv1alpha4
 
 	reactions, err := p.slackClient.Reactions(ctx, channel, ts)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to fetch slack reactions")
 	}
 
 	for _, reaction := range reactions {
@@ -216,7 +225,7 @@ func (p *Poller) handleReactions(ctx context.Context, migration *schemasv1alpha4
 			return p.reject(ctx, migration, reaction.Users[0])
 		default:
 			if err := p.warnInvalidReaction(ctx, migration, reaction.Name, reaction.Users); err != nil {
-				return err
+				return errors.Wrapf(err, "failed to warn users for invalid slack reaction %q", reaction.Name)
 			}
 		}
 	}
@@ -243,14 +252,14 @@ func (p *Poller) approve(ctx context.Context, migration *schemasv1alpha4.Migrati
 	p.setAuditReplyAnnotation(updated, SlackApprovalReplyUser, userID)
 	updatedMigration, err := p.schemasClient.Migrations(updated.Namespace).Update(ctx, updated, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to update approved migration")
 	}
 	if err := p.postAuditReply(ctx, migration, SlackApprovalReplyUser, userID, fmt.Sprintf("<@%s> approved this migration at %s.", userID, p.now().UTC().Format(time.RFC3339))); err != nil {
-		return err
+		return errors.Wrap(err, "failed to post slack approval audit reply")
 	}
 
 	if release, ok := releaseFromMigration(updatedMigration); ok && p.dispatcher != nil {
-		go p.dispatchWhenReleaseExecuted(context.Background(), release, updatedMigration.Namespace)
+		go p.dispatchWhenReleaseExecuted(ctx, release, updatedMigration.Namespace)
 	}
 	return nil
 }
@@ -268,9 +277,9 @@ func (p *Poller) reject(ctx context.Context, migration *schemasv1alpha4.Migratio
 	p.setAuditReplyAnnotation(updated, SlackRejectionReplyUser, userID)
 	_, err = p.schemasClient.Migrations(updated.Namespace).Update(ctx, updated, metav1.UpdateOptions{})
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to update rejected migration")
 	}
-	return p.postAuditReply(ctx, migration, SlackRejectionReplyUser, userID, fmt.Sprintf("<@%s> denied this migration at %s.", userID, p.now().UTC().Format(time.RFC3339)))
+	return errors.Wrap(p.postAuditReply(ctx, migration, SlackRejectionReplyUser, userID, fmt.Sprintf("<@%s> denied this migration at %s.", userID, p.now().UTC().Format(time.RFC3339))), "failed to post slack rejection audit reply")
 }
 
 func (p *Poller) setAuditReplyAnnotation(migration *schemasv1alpha4.Migration, annotation string, userID string) {
@@ -293,7 +302,7 @@ func (p *Poller) postAuditReply(ctx context.Context, migration *schemasv1alpha4.
 		return nil
 	}
 	_, err := p.slackClient.PostMessage(ctx, channel, nil, text, ts)
-	return err
+	return errors.Wrap(err, "failed to post slack thread reply")
 }
 
 func (p *Poller) warnInvalidReaction(ctx context.Context, migration *schemasv1alpha4.Migration, reaction string, users []string) error {
@@ -325,7 +334,7 @@ func (p *Poller) warnInvalidReaction(ctx context.Context, migration *schemasv1al
 			annotations[SlackMessageTSAnnotation],
 		)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to post invalid reaction warning")
 		}
 	}
 
@@ -344,7 +353,7 @@ func (p *Poller) warnInvalidReaction(ctx context.Context, migration *schemasv1al
 	annotations[SlackInvalidReactionUsers] += strings.Join(newWarnings, ",")
 	updated.SetAnnotations(annotations)
 	_, err := p.schemasClient.Migrations(updated.Namespace).Update(ctx, updated, metav1.UpdateOptions{})
-	return err
+	return errors.Wrap(err, "failed to update invalid reaction warning annotations")
 }
 
 func (p *Poller) dispatchWhenReleaseExecuted(ctx context.Context, release Release, namespace string) {
@@ -364,12 +373,15 @@ func (p *Poller) dispatchWhenReleaseExecuted(ctx context.Context, release Releas
 	defer ticker.Stop()
 	for {
 		ready, err := releaseMigrationsExecuted(ctx, p.schemasClient, release, namespace)
-		if err == nil && ready {
-			if p.dispatched[release.DispatchKey()] {
+		if err != nil {
+			log.Printf("schemahero slack app release dispatch readiness failed: %v", err)
+			if releaseReadinessErrorIsTerminal(err) {
 				return
 			}
-			p.dispatched[release.DispatchKey()] = true
-			_ = p.dispatcher.Dispatch(ctx, release)
+		} else if ready {
+			if p.markDispatched(release.DispatchKey()) {
+				_ = p.dispatcher.Dispatch(ctx, release)
+			}
 			return
 		}
 
@@ -379,4 +391,14 @@ func (p *Poller) dispatchWhenReleaseExecuted(ctx context.Context, release Releas
 		case <-ticker.C:
 		}
 	}
+}
+
+func (p *Poller) markDispatched(key string) bool {
+	p.dispatchedMu.Lock()
+	defer p.dispatchedMu.Unlock()
+	if p.dispatched[key] {
+		return false
+	}
+	p.dispatched[key] = true
+	return true
 }
