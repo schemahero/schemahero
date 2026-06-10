@@ -82,10 +82,17 @@ func (r *ReconcileMigration) reconcileMigration(ctx context.Context, migration *
 }
 
 func shouldApplyMigration(migration *schemasv1alpha4.Migration) bool {
-	if migration.Status.ApprovedAt > 0 && migration.Status.ExecutedAt == 0 {
+	if migration.Status.ApprovedAt > 0 && migration.Status.ExecutedAt == 0 && approvedPlanHashMatches(migration) {
 		return true
 	}
 	return false
+}
+
+func approvedPlanHashMatches(migration *schemasv1alpha4.Migration) bool {
+	if migration.Status.PlanHash == "" {
+		return true
+	}
+	return migration.Status.ApprovedPlanHash == migration.Status.PlanHash
 }
 
 func getDatabaseFromMigration(ctx context.Context, migration *schemasv1alpha4.Migration) (*databasesv1alpha4.Database, error) {

@@ -3,6 +3,7 @@ package schemaherokubectlcli
 import (
 	"context"
 	"fmt"
+	"os/user"
 	"time"
 
 	"github.com/pkg/errors"
@@ -77,13 +78,33 @@ func RejectMigrationCmd() *cobra.Command {
 				}
 
 				if migration.Status.Phase == v1alpha4.Planned {
+					planHash := migration.Status.PlanHash
+					if planHash == "" {
+						planHash = v1alpha4.PlanHashForDDL(migration.Spec.GeneratedDDL)
+						migration.Status.PlanHash = planHash
+					}
+
+					expectedPlanHash := v.GetString("plan-hash")
+					if expectedPlanHash != "" && expectedPlanHash != planHash {
+						return errors.Errorf("migration %q plan hash changed: expected %s, current %s", migrationName, expectedPlanHash, planHash)
+					}
+
+					actor := v.GetString("actor")
+					if actor == "" {
+						currentUser, err := user.Current()
+						if err == nil {
+							actor = currentUser.Username
+						}
+					}
+
 					migration.Status.RejectedAt = time.Now().Unix()
+					migration.Status.RejectedBy = actor
 					migration.Status.Phase = v1alpha4.Rejected
 					if _, err := schemasClient.Migrations(namespaceName).Update(ctx, migration, metav1.UpdateOptions{}); err != nil {
 						return err
 					}
 
-					fmt.Printf("Migration %s rejected\n", migrationName)
+					fmt.Printf("Migration %s rejected for plan %s\n", migrationName, planHash)
 					return nil
 				} else {
 					fmt.Printf("Migration %s already %s\n", migrationName, migration.Status.Phase)
@@ -96,6 +117,8 @@ func RejectMigrationCmd() *cobra.Command {
 	}
 
 	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	cmd.Flags().String("plan-hash", "", "Expected migration plan hash to reject")
+	cmd.Flags().String("actor", "", "Actor rejecting the migration")
 
 	return cmd
 }

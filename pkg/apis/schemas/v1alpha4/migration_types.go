@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha4
 
 import (
+	"crypto/sha256"
+	"fmt"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -64,6 +67,19 @@ type MigrationStatus struct {
 	ApprovedAt int64 `json:"approvedAt,omitempty"`
 	RejectedAt int64 `json:"rejectedAt,omitempty"`
 	ExecutedAt int64 `json:"executedAt,omitempty"`
+
+	// PlanHash is a stable SHA-256 hash of the exact generated DDL in this plan.
+	PlanHash string `json:"planHash,omitempty"`
+
+	// ApprovedPlanHash is the plan hash that was approved. It must match PlanHash
+	// before the controller will execute the migration.
+	ApprovedPlanHash string `json:"approvedPlanHash,omitempty"`
+
+	// ApprovedBy records the actor that approved this migration.
+	ApprovedBy string `json:"approvedBy,omitempty"`
+
+	// RejectedBy records the actor that rejected this migration.
+	RejectedBy string `json:"rejectedBy,omitempty"`
 }
 
 // +genclient
@@ -95,4 +111,8 @@ type MigrationList struct {
 
 func init() {
 	SchemeBuilder.Register(&Migration{}, &MigrationList{})
+}
+
+func PlanHashForDDL(generatedDDL string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(generatedDDL)))
 }

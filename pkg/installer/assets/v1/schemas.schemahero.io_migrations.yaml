@@ -76,6 +76,13 @@ spec:
               approvedAt:
                 format: int64
                 type: integer
+              approvedBy:
+                description: ApprovedBy records the actor that approved this migration.
+                type: string
+              approvedPlanHash:
+                description: ApprovedPlanHash is the plan hash that was approved.
+                  It must match PlanHash before the controller will execute the migration.
+                type: string
               executedAt:
                 format: int64
                 type: integer
@@ -97,9 +104,16 @@ spec:
                   generated
                 format: int64
                 type: integer
+              planHash:
+                description: PlanHash is a stable SHA-256 hash of the exact generated
+                  DDL in this plan.
+                type: string
               rejectedAt:
                 format: int64
                 type: integer
+              rejectedBy:
+                description: RejectedBy records the actor that rejected this migration.
+                type: string
             type: object
         type: object
     served: true

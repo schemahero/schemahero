@@ -263,12 +263,14 @@ func (r *ReconcileTable) planBatch(ctx context.Context, databaseInstance *databa
 		},
 		Status: schemasv1alpha4.MigrationStatus{
 			PlannedAt: time.Now().Unix(),
+			PlanHash:  schemasv1alpha4.PlanHashForDDL(generatedDDL),
 			Phase:     schemasv1alpha4.Planned,
 		},
 	}
 
 	if databaseInstance.Spec.ImmediateDeploy {
 		migration.Status.ApprovedAt = time.Now().Unix()
+		migration.Status.ApprovedPlanHash = migration.Status.PlanHash
 		migration.Status.Phase = schemasv1alpha4.Planned
 	}
 

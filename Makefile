@@ -190,6 +190,15 @@ bin/kubectl-schemahero: ## Build kubectl-schemahero binary
 		./cmd/kubectl-schemahero
 	@echo "built bin/kubectl-schemahero"
 
+.PHONY: bin/schemahero-slack-app
+bin/schemahero-slack-app: ## Build schemahero-slack-app binary
+	go build \
+	  -tags netgo -installsuffix netgo \
+		${LDFLAGS} \
+		-o bin/schemahero-slack-app \
+		./cmd/schemahero-slack-app
+	@echo "built bin/schemahero-slack-app"
+
 .PHONY: local
 local: bin/kubectl-schemahero manager
 	docker build -t schemahero/schemahero-manager -f ./Dockerfile.multiarch --target manager .
@@ -287,6 +296,10 @@ build-manager:
 .PHONY: build-schemahero
 build-schemahero:
 	CGO_ENABLED=0 GOOS=linux make bin/kubectl-schemahero
+
+.PHONY: build-slack-app
+build-slack-app:
+	CGO_ENABLED=0 GOOS=linux make bin/schemahero-slack-app
 
 .PHONY: cosign-sign
 cosign-sign:

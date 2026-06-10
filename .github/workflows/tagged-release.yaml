@@ -531,6 +531,58 @@ jobs:
           tags: ${{ steps.meta-schemahero.outputs.tags }}
           labels: ${{ steps.meta-schemahero.outputs.labels }}
 
+  build-docker-slack-app:
+    runs-on: ubuntu-latest
+    needs:
+      - test-postgres
+      - test-mysql
+      - test-cockroach
+      - test-cassandra
+      - test-sqlite
+      - test-rqlite
+      - test-timescaledb
+    if: always() && !cancelled()
+    outputs:
+      digest: ${{ steps.release-slack-app.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - id: get_version
+        uses: battila7/get-version-action@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: schemaherodeploy
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Docker meta for slack app
+        id: meta-slack-app
+        uses: docker/metadata-action@v6
+        with:
+          images: index.docker.io/schemahero/slack-app
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ steps.get_version.outputs.prerelease == '' }}
+      - name: Build and push
+        id: release-slack-app
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deploy/Dockerfile.multiarch
+          target: slack-app
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-slack-app.outputs.tags }}
+          labels: ${{ steps.meta-slack-app.outputs.labels }}
+
   github-release-tarballs:
     runs-on: ubuntu-latest
     needs:

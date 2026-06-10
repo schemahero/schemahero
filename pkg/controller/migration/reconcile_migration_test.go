@@ -107,6 +107,30 @@ func Test_shouldApplyMigration(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "approved matching plan hash, should apply",
+			migration: &schemasv1alpha4.Migration{
+				Status: schemasv1alpha4.MigrationStatus{
+					ApprovedAt:       time.Now().Unix(),
+					ExecutedAt:       0,
+					PlanHash:         "current-plan",
+					ApprovedPlanHash: "current-plan",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "approved stale plan hash, should not apply",
+			migration: &schemasv1alpha4.Migration{
+				Status: schemasv1alpha4.MigrationStatus{
+					ApprovedAt:       time.Now().Unix(),
+					ExecutedAt:       0,
+					PlanHash:         "current-plan",
+					ApprovedPlanHash: "old-plan",
+				},
+			},
+			want: false,
+		},
+		{
 			name: "approved and executed, should not aply",
 			migration: &schemasv1alpha4.Migration{
 				Status: schemasv1alpha4.MigrationStatus{

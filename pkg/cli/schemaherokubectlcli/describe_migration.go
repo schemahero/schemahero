@@ -90,14 +90,28 @@ func DescribeMigrationCmd() *cobra.Command {
 
 				// Display status information
 				fmt.Printf("\nStatus: %s\n", foundMigration.Status.Phase)
+				planHash := foundMigration.Status.PlanHash
+				if planHash == "" {
+					planHash = schemasv1alpha4.PlanHashForDDL(foundMigration.Spec.GeneratedDDL)
+				}
+				fmt.Printf("Plan hash: %s\n", planHash)
 				if foundMigration.Status.ApprovedAt > 0 {
 					fmt.Printf("Approved at: %s\n", time.Unix(foundMigration.Status.ApprovedAt, 0).Format(time.RFC3339))
+				}
+				if foundMigration.Status.ApprovedBy != "" {
+					fmt.Printf("Approved by: %s\n", foundMigration.Status.ApprovedBy)
+				}
+				if foundMigration.Status.ApprovedPlanHash != "" {
+					fmt.Printf("Approved plan hash: %s\n", foundMigration.Status.ApprovedPlanHash)
 				}
 				if foundMigration.Status.ExecutedAt > 0 {
 					fmt.Printf("Applied at: %s\n", time.Unix(foundMigration.Status.ExecutedAt, 0).Format(time.RFC3339))
 				}
 				if foundMigration.Status.RejectedAt > 0 {
 					fmt.Printf("Rejected at: %s\n", time.Unix(foundMigration.Status.RejectedAt, 0).Format(time.RFC3339))
+				}
+				if foundMigration.Status.RejectedBy != "" {
+					fmt.Printf("Rejected by: %s\n", foundMigration.Status.RejectedBy)
 				}
 
 				// Only show approval/action commands for migrations that haven't been approved or applied

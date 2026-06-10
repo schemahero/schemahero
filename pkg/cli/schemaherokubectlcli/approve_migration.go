@@ -3,6 +3,7 @@ package schemaherokubectlcli
 import (
 	"context"
 	"fmt"
+	"os/user"
 	"time"
 
 	"github.com/pkg/errors"
@@ -80,13 +81,34 @@ func ApproveMigrationCmd() *cobra.Command {
 					return errors.Errorf("migration %q is not in the planned phase (current phase: %s)", migrationName, migration.Status.Phase)
 				}
 
+				planHash := migration.Status.PlanHash
+				if planHash == "" {
+					planHash = v1alpha4.PlanHashForDDL(migration.Spec.GeneratedDDL)
+					migration.Status.PlanHash = planHash
+				}
+
+				expectedPlanHash := v.GetString("plan-hash")
+				if expectedPlanHash != "" && expectedPlanHash != planHash {
+					return errors.Errorf("migration %q plan hash changed: expected %s, current %s", migrationName, expectedPlanHash, planHash)
+				}
+
+				actor := v.GetString("actor")
+				if actor == "" {
+					currentUser, err := user.Current()
+					if err == nil {
+						actor = currentUser.Username
+					}
+				}
+
 				migration.Status.ApprovedAt = time.Now().Unix()
+				migration.Status.ApprovedPlanHash = planHash
+				migration.Status.ApprovedBy = actor
 				migration.Status.Phase = v1alpha4.Approved
 				if _, err := schemasClient.Migrations(namespaceName).Update(ctx, migration, metav1.UpdateOptions{}); err != nil {
 					return err
 				}
 
-				fmt.Printf("Migration %s approved\n", migrationName)
+				fmt.Printf("Migration %s approved for plan %s\n", migrationName, planHash)
 				return nil
 			}
 
@@ -96,6 +118,8 @@ func ApproveMigrationCmd() *cobra.Command {
 	}
 
 	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+	cmd.Flags().String("plan-hash", "", "Expected migration plan hash to approve")
+	cmd.Flags().String("actor", "", "Actor approving the migration")
 
 	return cmd
 }

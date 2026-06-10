@@ -8,6 +8,9 @@ RUN make build-manager
 FROM build AS build-schemahero
 RUN make build-schemahero
 
+FROM build AS build-slack-app
+RUN make build-slack-app
+
 FROM ubuntu:latest AS base
 RUN apt-get update -y && apt-get install -y ca-certificates
 
@@ -26,3 +29,11 @@ RUN useradd -c 'schemahero user' -m -d /home/schemahero -s /bin/bash -u 1001 sch
 USER schemahero
 ENV HOME=/home/schemahero
 ENTRYPOINT ["/schemahero"]
+
+# Slack app
+FROM base AS slack-app
+COPY --from=build-slack-app /code/bin/schemahero-slack-app /schemahero-slack-app
+RUN useradd -c 'schemahero slack app user' -m -d /home/schemahero-slack-app -s /bin/bash -u 1001 schemahero-slack-app
+USER schemahero-slack-app
+ENV HOME=/home/schemahero-slack-app
+ENTRYPOINT ["/schemahero-slack-app"]

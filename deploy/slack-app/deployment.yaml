@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: schemahero-slack-app
+  namespace: schemahero-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: schemahero-slack-app
+  template:
+    metadata:
+      labels:
+        app: schemahero-slack-app
+    spec:
+      serviceAccountName: schemahero-slack-app
+      containers:
+        - name: schemahero-slack-app
+          image: schemahero/slack-app:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SLACK_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: schemahero-slack-app
+                  key: slack-bot-token
+            - name: SLACK_CHANNEL_ID
+              valueFrom:
+                secretKeyRef:
+                  name: schemahero-slack-app
+                  key: slack-channel-id
+            - name: SCHEMAHERO_NAMESPACE
+              value: default
+            - name: DEPOT_CI_DISPATCH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: schemahero-slack-app
+                  key: depot-ci-dispatch-token
+                  optional: true
