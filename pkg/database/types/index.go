@@ -11,6 +11,7 @@ type Index struct {
 	Columns  []string
 	Name     string
 	IsUnique bool
+	Method   string
 	With     map[string]string
 }
 
@@ -20,6 +21,10 @@ func (idx *Index) Equals(other *Index) bool {
 	}
 
 	if idx.IsUnique != other.IsUnique {
+		return false
+	}
+
+	if idx.Method != other.Method {
 		return false
 	}
 
@@ -57,6 +62,7 @@ func IndexToPostgresqlSchemaIndex(index *Index) *schemasv1alpha4.PostgresqlTable
 		Columns:  index.Columns,
 		Name:     index.Name,
 		IsUnique: index.IsUnique,
+		Type:     index.Method,
 	}
 
 	return &schemaIndex
@@ -97,6 +103,7 @@ func PostgresqlSchemaIndexToIndex(schemaIndex *schemasv1alpha4.PostgresqlTableIn
 		Columns:  schemaIndex.Columns,
 		Name:     schemaIndex.Name,
 		IsUnique: schemaIndex.IsUnique,
+		Method:   schemaIndex.Type,
 	}
 
 	return &index
