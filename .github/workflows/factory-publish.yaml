@@ -20,17 +20,17 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
       - name: Publish factory (schemahero-issues)
-        uses: elasticclaw/actions/publish-factory@main
+        uses: elasticclaw/actions/publish-factory@cac6be311a97b343108a3a1e4325e8063891c030
         with:
           hub-endpoint: https://factory.repldev.com
           token: ${{ secrets.ELASTICCLAW_TOKEN }}
           path: .elasticclaw/factories/schemahero-issues
 
       - name: Publish template (schemahero-developer)
-        uses: elasticclaw/actions/publish-template@main
+        uses: elasticclaw/actions/publish-template@cac6be311a97b343108a3a1e4325e8063891c030
         with:
           hub-endpoint: https://factory.repldev.com
           token: ${{ secrets.ELASTICCLAW_TOKEN }}
