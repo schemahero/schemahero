@@ -479,6 +479,8 @@ jobs:
           tags: ${{ steps.meta-manager.outputs.tags }}
           labels: ${{ steps.meta-manager.outputs.labels }}
 
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   build-docker-schemahero:
     runs-on: ubuntu-latest
     needs:
@@ -529,6 +531,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta-schemahero.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           labels: ${{ steps.meta-schemahero.outputs.labels }}
 
   build-docker-slack-app:
@@ -579,6 +583,8 @@ jobs:
           file: deploy/Dockerfile.multiarch
           target: slack-app
           platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
           tags: ${{ steps.meta-slack-app.outputs.tags }}
           labels: ${{ steps.meta-slack-app.outputs.labels }}
@@ -655,10 +661,19 @@ jobs:
     steps:
       - id: get_version
         uses: battila7/get-version-action@v2
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            homebrew-tap
+          permission-actions: write
       - name: Trigger homebrew-tap update
         uses: peter-evans/repository-dispatch@v4
         with:
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           repository: schemahero/homebrew-tap
           event-type: release
           client-payload: '{"version": "${{ steps.get_version.outputs.version-without-v }}"}'
