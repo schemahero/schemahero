@@ -655,10 +655,19 @@ jobs:
     steps:
       - id: get_version
         uses: battila7/get-version-action@v2
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            homebrew-tap
+          permission-actions: write
       - name: Trigger homebrew-tap update
         uses: peter-evans/repository-dispatch@v4
         with:
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
           repository: schemahero/homebrew-tap
           event-type: release
           client-payload: '{"version": "${{ steps.get_version.outputs.version-without-v }}"}'
