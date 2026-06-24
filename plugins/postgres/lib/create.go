@@ -116,13 +116,21 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Postgr
 		}
 	}
 
+	var tableIdentifier string
+	if tableSchema.Schema != "" && tableSchema.Schema != "public" {
+		tableIdentifier = pgx.Identifier{tableSchema.Schema, tableName}.Sanitize()
+	} else {
+		tableIdentifier = pgx.Identifier{tableName}.Sanitize()
+	}
+
+	// qualifiedTableName is the unquoted "schema.table" form used by trigger statements
 	qualifiedTableName := tableName
 	if tableSchema.Schema != "" && tableSchema.Schema != "public" {
 		qualifiedTableName = fmt.Sprintf("%s.%s", tableSchema.Schema, tableName)
 	}
 
 	queries := []string{
-		fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{qualifiedTableName}.Sanitize(), strings.Join(columns, ", ")),
+		fmt.Sprintf(`create table %s (%s)`, tableIdentifier, strings.Join(columns, ", ")),
 	}
 
 	var triggers []*v1alpha4.PostgresqlTableTrigger

@@ -21,7 +21,7 @@ func RemoveIndexStatement(tableName string, index *types.Index) string {
 	return fmt.Sprintf("drop index %s", pgx.Identifier{index.Name}.Sanitize())
 }
 
-func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
+func AddIndexStatement(tableName string, tableSchema string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
 	unique := ""
 	if schemaIndex.IsUnique {
 		unique = "unique "
@@ -32,10 +32,17 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.Postgresql
 		name = types.GeneratePostgresqlIndexName(tableName, schemaIndex)
 	}
 
+	var tableRef string
+	if tableSchema != "" && tableSchema != "public" {
+		tableRef = pgx.Identifier{tableSchema, tableName}.Sanitize()
+	} else {
+		tableRef = tableName
+	}
+
 	statement := fmt.Sprintf("create %sindex %s on %s (%s)",
 		unique,
 		name,
-		tableName,
+		tableRef,
 		strings.Join(schemaIndex.Columns, ", "))
 
 	if schemaIndex.With != nil && len(schemaIndex.With) > 0 {
