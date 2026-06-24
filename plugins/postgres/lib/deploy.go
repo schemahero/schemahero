@@ -453,7 +453,7 @@ DesiredIndexLoop:
 			indexStatements = append(indexStatements, statement)
 		}
 
-		statement = AddIndexStatement(tableName, index)
+		statement = AddIndexStatement(tableName, postgresTableSchema.Schema, index)
 		indexStatements = append(indexStatements, statement)
 	}
 
