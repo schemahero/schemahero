@@ -3,6 +3,7 @@ package postgres
 import (
 	"testing"
 
+	"github.com/jackc/pgx/v5"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		trigger           *schemasv1alpha4.PostgresqlTableTrigger
-		tableName         string
+		tableName         pgx.Identifier
 		expectedStatement string
 	}{
 		{
@@ -28,7 +29,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 				ForEachRow:       &trueValue,
 				ExecuteProcedure: "fn()",
 			},
-			tableName:         "a",
+			tableName:         pgx.Identifier{"a"},
 			expectedStatement: `create trigger "tt" after insert on "a" for each row execute procedure fn()`,
 		},
 		{
@@ -42,7 +43,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 				Condition:        &condition,
 				ExecuteProcedure: "fn()",
 			},
-			tableName:         "a",
+			tableName:         pgx.Identifier{"a"},
 			expectedStatement: `create trigger "tt" before update on "a" for each row when (OLD.balance IS DISTINCT FROM NEW.balance) execute procedure fn()`,
 		},
 		{
@@ -56,7 +57,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 				ForEachRow:       &trueValue,
 				ExecuteProcedure: "fn()",
 			},
-			tableName:         "a",
+			tableName:         pgx.Identifier{"a"},
 			expectedStatement: `create trigger "tt" after insert or update on "a" for each row execute procedure fn()`,
 		},
 		{
@@ -70,7 +71,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 				ForEachStatement: &trueValue,
 				ExecuteProcedure: "fn()",
 			},
-			tableName:         "a",
+			tableName:         pgx.Identifier{"a"},
 			expectedStatement: `create constraint trigger "tt" before insert on "a" for each statement execute procedure fn()`,
 		},
 		{
@@ -86,7 +87,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 					Name: "fn",
 				},
 			},
-			tableName:         "a",
+			tableName:         pgx.Identifier{"a"},
 			expectedStatement: `create trigger "tt" after insert on "a" for each row execute function fn()`,
 		},
 		{
@@ -108,7 +109,7 @@ func Test_triggerCreateStatement(t *testing.T) {
 					},
 				},
 			},
-			tableName:         "a",
+			tableName:         pgx.Identifier{"a"},
 			expectedStatement: `create trigger "tt" after insert on "a" for each row execute function fn(paramName int)`,
 		},
 	}

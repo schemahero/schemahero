@@ -19,6 +19,7 @@ build-postgres-plugin:
 	make -C column-unset-default run
 	make -C create-table run
 	make -C create-table-with-index run
+	make -C schema-qualified-tables run
 	make -C drop-table run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
@@ -50,6 +51,7 @@ build-postgres-plugin:
 	make -C create-function run
 	make -C create-table run
 	make -C create-table-with-index run
+	make -C schema-qualified-tables run
 	make -C drop-table run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
@@ -81,6 +83,7 @@ build-postgres-plugin:
 	make -C create-function run
 	make -C create-table run
 	make -C create-table-with-index run
+	make -C schema-qualified-tables run
 	make -C drop-table run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
@@ -112,6 +115,7 @@ build-postgres-plugin:
 	make -C create-function run
 	make -C create-table run
 	make -C create-table-with-index run
+	make -C schema-qualified-tables run
 	make -C drop-table run
 	make -C foreign-key-create run
 	make -C foreign-key-action run
@@ -143,6 +147,7 @@ build-postgres-plugin:
 	make -C create-function run
 	make -C create-table run
 	make -C create-table-with-index run
+	make -C schema-qualified-tables run
 	make -C drop-table run
 	make -C foreign-key-create run
 	make -C foreign-key-action run

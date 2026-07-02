@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/pkg/errors"
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
-func triggerCreateStatement(trigger *schemasv1alpha4.PostgresqlTableTrigger, tableName string) (string, error) {
+func triggerCreateStatement(trigger *schemasv1alpha4.PostgresqlTableTrigger, tableName pgx.Identifier) (string, error) {
 	triggerEventSyntax, err := triggerEvent(trigger)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create trigger event syntax")
@@ -19,7 +20,7 @@ func triggerCreateStatement(trigger *schemasv1alpha4.PostgresqlTableTrigger, tab
 		o = "constraint trigger"
 	}
 
-	stmt := fmt.Sprintf(`create %s %q %s on %q`, o, trigger.Name, triggerEventSyntax, tableName)
+	stmt := fmt.Sprintf(`create %s %q %s on %s`, o, trigger.Name, triggerEventSyntax, tableName.Sanitize())
 
 	forEachStatement := true // pg default
 	if trigger.ForEachRow != nil && *trigger.ForEachRow {

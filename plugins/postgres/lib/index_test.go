@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
+	"github.com/schemahero/schemahero/pkg/database/types"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -12,6 +13,7 @@ func Test_AddIndexStatement(t *testing.T) {
 	tests := []struct {
 		name              string
 		tableName         string
+		schema            string
 		schemaIndex       *schemasv1alpha4.PostgresqlTableIndex
 		expectedStatement string
 	}{
@@ -101,13 +103,103 @@ func Test_AddIndexStatement(t *testing.T) {
 			},
 			expectedStatement: `create unique index idx_t2_c1 on t2 (c1) with (fillfactor = 90)`,
 		},
+		{
+			name:      "schema-qualified table",
+			tableName: "t2",
+			schema:    "myschema",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{
+				Columns: []string{
+					"c1",
+				},
+				Name: "idx_name",
+			},
+			expectedStatement: `create index "idx_name" on "myschema"."t2" (c1)`,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			addIndexStatement := AddIndexStatement(test.tableName, test.schemaIndex)
+			addIndexStatement := AddIndexStatement(test.schema, test.tableName, test.schemaIndex)
 
 			assert.Equal(t, test.expectedStatement, addIndexStatement)
+		})
+	}
+}
+
+func Test_RemoveIndexStatement(t *testing.T) {
+	tests := []struct {
+		name              string
+		schema            string
+		tableName         string
+		index             *types.Index
+		expectedStatement string
+	}{
+		{
+			name:      "empty schema delegates to unqualified",
+			schema:    "",
+			tableName: "t2",
+			index:     &types.Index{Name: "idx_t2_c1"},
+			expectedStatement: `drop index "idx_t2_c1"`,
+		},
+		{
+			name:      "public schema delegates to unqualified",
+			schema:    "public",
+			tableName: "t2",
+			index:     &types.Index{Name: "idx_t2_c1"},
+			expectedStatement: `drop index "idx_t2_c1"`,
+		},
+		{
+			name:      "schema-qualified drop",
+			schema:    "myschema",
+			tableName: "t2",
+			index:     &types.Index{Name: "idx_t2_c1"},
+			expectedStatement: `drop index "myschema"."idx_t2_c1"`,
+		},
+		{
+			name:      "schema-qualified drop unique",
+			schema:    "myschema",
+			tableName: "t2",
+			index:     &types.Index{Name: "idx_t2_c1", IsUnique: true},
+			expectedStatement: `drop index if exists "myschema"."idx_t2_c1"`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			statement := RemoveIndexStatement(test.schema, test.tableName, test.index)
+			assert.Equal(t, test.expectedStatement, statement)
+		})
+	}
+}
+
+func Test_RemoveConstraintStatement(t *testing.T) {
+	tests := []struct {
+		name              string
+		schema            string
+		tableName         string
+		index             *types.Index
+		expectedStatement string
+	}{
+		{
+			name:      "empty schema delegates to unqualified",
+			schema:    "",
+			tableName: "t2",
+			index:     &types.Index{Name: "idx_t2_c1"},
+			expectedStatement: `alter table "t2" drop constraint "idx_t2_c1"`,
+		},
+		{
+			name:      "schema-qualified drop constraint",
+			schema:    "myschema",
+			tableName: "t2",
+			index:     &types.Index{Name: "idx_t2_c1"},
+			expectedStatement: `alter table "myschema"."t2" drop constraint "idx_t2_c1"`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			statement := RemoveConstraintStatement(test.schema, test.tableName, test.index)
+			assert.Equal(t, test.expectedStatement, statement)
 		})
 	}
 }

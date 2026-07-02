@@ -151,6 +151,25 @@ func Test_CreateTableStatement(t *testing.T) {
 				`create trigger "tgr" after insert on "simple" for each row execute procedure test()`,
 			},
 		},
+		{
+			name: "schema-qualified table name",
+			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
+				Schema: "alerts_events",
+				Columns: []*schemasv1alpha4.PostgresqlTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+						Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
+							NotNull: &trueValue,
+						},
+					},
+				},
+			},
+			tableName: "alert_events",
+			expectedStatements: []string{
+				`create table "alerts_events"."alert_events" ("id" integer not null)`,
+			},
+		},
 	}
 
 	for _, test := range tests {

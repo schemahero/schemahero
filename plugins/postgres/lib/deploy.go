@@ -52,6 +52,11 @@ func PlanPostgresTable(uri string, tableName string, postgresTableSchema *schema
 	}
 	defer p.Close()
 
+	// Use the schema from the table spec if specified, overriding the connection default
+	if postgresTableSchema.Schema != "" {
+		p.schema = postgresTableSchema.Schema
+	}
+
 	// determine if the table exists
 	tableExists, err := CheckIfTableExists(p, tableName)
 	if err != nil {
@@ -233,8 +238,9 @@ func BuildColumnStatements(p *PostgresConnection, tableName string, postgresTabl
 	query := `select
 column_name, column_default, is_nullable, data_type, udt_name, character_maximum_length
 from information_schema.columns
-where table_name = $1`
-	rows, err := p.conn.Query(context.Background(), query, tableName)
+where table_name = $1 and table_schema = $2
+order by ordinal_position`
+	rows, err := p.conn.Query(context.Background(), query, tableName, p.schema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to select from information_schema")
 	}
@@ -396,6 +402,7 @@ func BuildForeignKeyStatements(p *PostgresConnection, tableName string, postgres
 }
 
 func BuildIndexStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
+	schema := postgresTableSchema.Schema
 	indexStatements := []string{}
 	droppedIndexes := []string{}
 	currentIndexes, err := p.ListTableIndexes(p.databaseName, tableName)
@@ -445,15 +452,15 @@ DesiredIndexLoop:
 			}
 
 			if isConstraint {
-				statement = RemoveConstraintStatement(tableName, matchedIndex)
+				statement = RemoveConstraintStatement(schema, tableName, matchedIndex)
 			} else {
-				statement = RemoveIndexStatement(tableName, matchedIndex)
+				statement = RemoveIndexStatement(schema, tableName, matchedIndex)
 			}
 			droppedIndexes = append(droppedIndexes, matchedIndex.Name)
 			indexStatements = append(indexStatements, statement)
 		}
 
-		statement = AddIndexStatement(tableName, index)
+		statement = AddIndexStatement(schema, tableName, index)
 		indexStatements = append(indexStatements, statement)
 	}
 
@@ -481,9 +488,9 @@ ExistingIndexLoop:
 		}
 
 		if isConstraint {
-			statement = RemoveConstraintStatement(tableName, currentIndex)
+			statement = RemoveConstraintStatement(schema, tableName, currentIndex)
 		} else {
-			statement = RemoveIndexStatement(tableName, currentIndex)
+			statement = RemoveIndexStatement(schema, tableName, currentIndex)
 		}
 
 		indexStatements = append(indexStatements, statement)
@@ -494,8 +501,8 @@ ExistingIndexLoop:
 
 // CheckIfTableExists returns whether the specified table exists in the database
 func CheckIfTableExists(p *PostgresConnection, tableName string) (bool, error) {
-	query := `select count(1) from information_schema.tables where table_name = $1`
-	row := p.conn.QueryRow(context.Background(), query, tableName)
+	query := `select count(1) from information_schema.tables where table_name = $1 and table_schema = $2`
+	row := p.conn.QueryRow(context.Background(), query, tableName, p.schema)
 	tableExists := 0
 	if err := row.Scan(&tableExists); err != nil {
 		return false, errors.Wrap(err, "failed to scan")

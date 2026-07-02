@@ -10,18 +10,27 @@ import (
 	"github.com/schemahero/schemahero/pkg/database/types"
 )
 
-func RemoveConstraintStatement(tableName string, index *types.Index) string {
+func RemoveConstraintStatement(schema string, tableName string, index *types.Index) string {
+	if schema != "" && schema != "public" {
+		return fmt.Sprintf("alter table %s drop constraint %s", pgx.Identifier{schema, tableName}.Sanitize(), pgx.Identifier{index.Name}.Sanitize())
+	}
 	return fmt.Sprintf("alter table %s drop constraint %s", pgx.Identifier{tableName}.Sanitize(), pgx.Identifier{index.Name}.Sanitize())
 }
 
-func RemoveIndexStatement(tableName string, index *types.Index) string {
+func RemoveIndexStatement(schema string, tableName string, index *types.Index) string {
+	if schema != "" && schema != "public" {
+		if index.IsUnique {
+			return fmt.Sprintf("drop index if exists %s", pgx.Identifier{schema, index.Name}.Sanitize())
+		}
+		return fmt.Sprintf("drop index %s", pgx.Identifier{schema, index.Name}.Sanitize())
+	}
 	if index.IsUnique {
 		return fmt.Sprintf("drop index if exists %s", pgx.Identifier{index.Name}.Sanitize())
 	}
 	return fmt.Sprintf("drop index %s", pgx.Identifier{index.Name}.Sanitize())
 }
 
-func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
+func AddIndexStatement(schema string, tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
 	unique := ""
 	if schemaIndex.IsUnique {
 		unique = "unique "
@@ -32,6 +41,20 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.Postgresql
 		name = types.GeneratePostgresqlIndexName(tableName, schemaIndex)
 	}
 
+	if schema != "" && schema != "public" {
+		statement := fmt.Sprintf("create %sindex %s on %s (%s)",
+			unique,
+			pgx.Identifier{name}.Sanitize(),
+			pgx.Identifier{schema, tableName}.Sanitize(),
+			strings.Join(schemaIndex.Columns, ", "))
+
+		if schemaIndex.With != nil && len(schemaIndex.With) > 0 {
+			statement += buildWithClause(schemaIndex.With)
+		}
+
+		return statement
+	}
+
 	statement := fmt.Sprintf("create %sindex %s on %s (%s)",
 		unique,
 		name,
@@ -39,20 +62,24 @@ func AddIndexStatement(tableName string, schemaIndex *schemasv1alpha4.Postgresql
 		strings.Join(schemaIndex.Columns, ", "))
 
 	if schemaIndex.With != nil && len(schemaIndex.With) > 0 {
-		keys := make([]string, 0, len(schemaIndex.With))
-		for key := range schemaIndex.With {
-			keys = append(keys, key)
-		}
-		sort.Strings(keys)
-
-		withClauses := make([]string, 0, len(schemaIndex.With))
-		for _, key := range keys {
-			withClauses = append(withClauses, fmt.Sprintf("%s = %s", key, schemaIndex.With[key]))
-		}
-		statement += fmt.Sprintf(" with (%s)", strings.Join(withClauses, ", "))
+		statement += buildWithClause(schemaIndex.With)
 	}
 
 	return statement
+}
+
+func buildWithClause(with map[string]string) string {
+	keys := make([]string, 0, len(with))
+	for key := range with {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	withClauses := make([]string, 0, len(with))
+	for _, key := range keys {
+		withClauses = append(withClauses, fmt.Sprintf("%s = %s", key, with[key]))
+	}
+	return fmt.Sprintf(" with (%s)", strings.Join(withClauses, ", "))
 }
 
 func RenameIndexStatement(tableName string, index *types.Index, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {

@@ -16,6 +16,11 @@ import (
 func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.PostgresqlTableSchema, seedData *schemasv1alpha4.SeedData) ([]string, error) {
 	statements := []string{}
 
+	qualifiedTableName := tableName
+	if tableSchema.Schema != "" && tableSchema.Schema != "public" {
+		qualifiedTableName = pgx.Identifier{tableSchema.Schema, tableName}.Sanitize()
+	}
+
 	conflictInferenceSpec := findConflictInferenceSpec(tableName, tableSchema)
 	for _, row := range seedData.Rows {
 		cols := []string{}
@@ -35,9 +40,9 @@ func SeedDataStatements(tableName string, tableSchema *schemasv1alpha4.Postgresq
 
 		var statement string
 		if conflictInferenceSpec != "" {
-			statement = fmt.Sprintf(`insert into %s (%s) values (%s) on conflict (%s) do update set (%s) = (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "), conflictInferenceSpec, strings.Join(cols, ", "), strings.Join(updateVals, ", "))
+			statement = fmt.Sprintf(`insert into %s (%s) values (%s) on conflict (%s) do update set (%s) = (%s)`, qualifiedTableName, strings.Join(cols, ", "), strings.Join(vals, ", "), conflictInferenceSpec, strings.Join(cols, ", "), strings.Join(updateVals, ", "))
 		} else {
-			statement = fmt.Sprintf(`insert into %s (%s) values (%s)`, tableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
+			statement = fmt.Sprintf(`insert into %s (%s) values (%s)`, qualifiedTableName, strings.Join(cols, ", "), strings.Join(vals, ", "))
 		}
 		statements = append(statements, statement)
 	}
@@ -116,13 +121,13 @@ func CreateTableStatements(tableName string, tableSchema *schemasv1alpha4.Postgr
 		}
 	}
 
-	qualifiedTableName := tableName
+	qualifiedTableName := pgx.Identifier{tableName}
 	if tableSchema.Schema != "" && tableSchema.Schema != "public" {
-		qualifiedTableName = fmt.Sprintf("%s.%s", tableSchema.Schema, tableName)
+		qualifiedTableName = pgx.Identifier{tableSchema.Schema, tableName}
 	}
 
 	queries := []string{
-		fmt.Sprintf(`create table %s (%s)`, pgx.Identifier{qualifiedTableName}.Sanitize(), strings.Join(columns, ", ")),
+		fmt.Sprintf(`create table %s (%s)`, qualifiedTableName.Sanitize(), strings.Join(columns, ", ")),
 	}
 
 	var triggers []*v1alpha4.PostgresqlTableTrigger

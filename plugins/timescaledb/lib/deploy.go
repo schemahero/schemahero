@@ -329,6 +329,7 @@ func PlanTimescaleDBTable(uri string, tableName string, tableSchema *schemasv1al
 // This is slightly different than the postgres version because we need to handle indices created for hypertables
 func BuildIndexStatements(p *postgres.PostgresConnection, tableName string, tableSchema *schemasv1alpha4.TimescaleDBTableSchema) ([]string, error) {
 	postgresTableSchema := toPostgresTableSchema(tableSchema)
+	schema := postgresTableSchema.Schema
 
 	indexStatements := []string{}
 	droppedIndexes := []string{}
@@ -369,15 +370,15 @@ DesiredIndexLoop:
 			}
 
 			if isConstraint {
-				statement = postgres.RemoveConstraintStatement(tableName, matchedIndex)
+				statement = postgres.RemoveConstraintStatement(schema, tableName, matchedIndex)
 			} else {
-				statement = postgres.RemoveIndexStatement(tableName, matchedIndex)
+				statement = postgres.RemoveIndexStatement(schema, tableName, matchedIndex)
 			}
 			droppedIndexes = append(droppedIndexes, matchedIndex.Name)
 			indexStatements = append(indexStatements, statement)
 		}
 
-		statement = postgres.AddIndexStatement(tableName, index)
+		statement = postgres.AddIndexStatement(schema, tableName, index)
 		indexStatements = append(indexStatements, statement)
 	}
 
@@ -412,9 +413,9 @@ ExistingIndexLoop:
 		}
 
 		if isConstraint {
-			statement = postgres.RemoveConstraintStatement(tableName, currentIndex)
+			statement = postgres.RemoveConstraintStatement(schema, tableName, currentIndex)
 		} else {
-			statement = postgres.RemoveIndexStatement(tableName, currentIndex)
+			statement = postgres.RemoveIndexStatement(schema, tableName, currentIndex)
 		}
 
 		indexStatements = append(indexStatements, statement)
