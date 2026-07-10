@@ -61,6 +61,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -152,6 +176,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -242,6 +290,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -340,6 +412,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -430,6 +526,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -522,6 +642,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -612,6 +756,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -704,6 +872,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -795,6 +987,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -885,6 +1101,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -982,6 +1222,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1077,6 +1341,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1167,6 +1455,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -1259,6 +1571,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1350,6 +1686,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1440,6 +1800,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -1535,6 +1919,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1625,6 +2033,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -1717,6 +2149,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1807,6 +2263,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:
@@ -1899,6 +2379,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -1990,6 +2494,30 @@ spec:
                               - key
                               - name
                               type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
+                              type: object
                             ssm:
                               properties:
                                 accessKeyId:
@@ -2080,6 +2608,30 @@ spec:
                               required:
                               - key
                               - name
+                              type: object
+                            doppler:
+                              properties:
+                                config:
+                                  type: string
+                                name:
+                                  type: string
+                                project:
+                                  type: string
+                                tokenSecretRef:
+                                  properties:
+                                    key:
+                                      type: string
+                                    name:
+                                      type: string
+                                  required:
+                                  - key
+                                  - name
+                                  type: object
+                              required:
+                              - config
+                              - name
+                              - project
+                              - tokenSecretRef
                               type: object
                             ssm:
                               properties:

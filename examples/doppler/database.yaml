@@ -1,0 +1,17 @@
+apiVersion: databases.schemahero.io/v1alpha4
+kind: Database
+metadata:
+  name: app-db
+  namespace: production
+spec:
+  connection:
+    postgres:
+      uri:
+        valueFrom:
+          doppler:
+            project: payments-api
+            config: prd
+            name: DATABASE_URL
+            tokenSecretRef:
+              name: doppler-credentials
+              key: token

@@ -308,6 +308,28 @@ func (d *Database) getValueFromValueOrValueFrom(ctx context.Context, driver stri
 		return "", errors.New("valueOrValueFrom must not be nil")
 	}
 
+	sourceCount := 0
+	if valueOrValueFrom.Value != "" {
+		sourceCount++
+	}
+	if valueOrValueFrom.ValueFrom != nil {
+		if valueOrValueFrom.ValueFrom.SecretKeyRef != nil {
+			sourceCount++
+		}
+		if valueOrValueFrom.ValueFrom.Vault != nil {
+			sourceCount++
+		}
+		if valueOrValueFrom.ValueFrom.SSM != nil {
+			sourceCount++
+		}
+		if valueOrValueFrom.ValueFrom.Doppler != nil {
+			sourceCount++
+		}
+	}
+	if sourceCount != 1 {
+		return "", errors.New("exactly one of value, secretKeyRef, vault, ssm, or doppler must be configured")
+	}
+
 	// if the value is static, return it
 	if valueOrValueFrom.Value != "" {
 		return valueOrValueFrom.Value, nil
@@ -346,6 +368,11 @@ func (d *Database) getValueFromValueOrValueFrom(ctx context.Context, driver stri
 
 	if valueOrValueFrom.ValueFrom.SSM != nil {
 		_, value, err := d.getSSMConnection(ctx, clientset, driver, valueOrValueFrom)
+		return value, err
+	}
+
+	if valueOrValueFrom.ValueFrom.Doppler != nil {
+		_, value, err := d.getDopplerConnection(ctx, clientset, driver, valueOrValueFrom)
 		return value, err
 	}
 

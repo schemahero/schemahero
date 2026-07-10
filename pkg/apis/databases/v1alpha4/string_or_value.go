@@ -9,6 +9,7 @@ type ValueFrom struct {
 	SecretKeyRef *SecretKeyRef `json:"secretKeyRef,omitempty" yaml:"secretKeyRef,omitempty"`
 	Vault        *Vault        `json:"vault,omitempty" yaml:"vault,omitempty"`
 	SSM          *SSM          `json:"ssm,omitempty" yaml:"ssm,omitempty"`
+	Doppler      *Doppler      `json:"doppler,omitempty" yaml:"doppler,omitempty"`
 }
 
 type ValueFromSecret struct {
@@ -37,4 +38,11 @@ type SSM struct {
 	Region          string            `json:"region,omitempty" yaml:"region,omitempty"`
 	AccessKeyID     *ValueOrSecretRef `json:"accessKeyId,omitempty" yaml:"accessKeyId,omitempty"`
 	SecretAccessKey *ValueOrSecretRef `json:"secretAccessKey,omitempty" yaml:"secretAccessKey,omitempty"`
+}
+
+type Doppler struct {
+	Project        string        `json:"project" yaml:"project"`
+	Config         string        `json:"config" yaml:"config"`
+	Name           string        `json:"name" yaml:"name"`
+	TokenSecretRef *SecretKeyRef `json:"tokenSecretRef" yaml:"tokenSecretRef"`
 }

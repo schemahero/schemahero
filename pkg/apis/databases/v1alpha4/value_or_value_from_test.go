@@ -1,6 +1,7 @@
 package v1alpha4
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,4 +45,15 @@ func Test_IsEmpty(t *testing.T) {
 			assert.Equal(t, test.expect, actual)
 		})
 	}
+}
+
+func TestGetValueRejectsAmbiguousSources(t *testing.T) {
+	database := &Database{}
+	_, err := database.getValueFromValueOrValueFrom(context.Background(), "postgres", &ValueOrValueFrom{
+		Value: "postgres://literal",
+		ValueFrom: &ValueFrom{
+			Doppler: validDopplerConfig(),
+		},
+	})
+	assert.EqualError(t, err, "exactly one of value, secretKeyRef, vault, ssm, or doppler must be configured")
 }
