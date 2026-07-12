@@ -15,6 +15,8 @@ spec:
     plural: tables
     singular: table
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: Table is the Schema for the tables API
