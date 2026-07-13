@@ -101,6 +101,7 @@ func (r *ReconcileDatabase) reconcileRBACRoleBinding(ctx context.Context, databa
 
 func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInstance *databasesv1alpha4.Database) error {
 	roleName := fmt.Sprintf("schemahero-%s", databaseInstance.Name)
+	desiredRules := databaseManagerRoleRules()
 
 	existingRole := rbacv1.Role{}
 	err := r.Get(ctx, types.NamespacedName{
@@ -118,88 +119,7 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 				Name:      roleName,
 				Namespace: databaseInstance.Namespace,
 			},
-			Rules: []rbacv1.PolicyRule{
-				{
-					APIGroups: []string{""},
-					Resources: []string{"secrets", "serviceaccounts"},
-					Verbs:     metav1.Verbs{"get"},
-				},
-				{
-					APIGroups: []string{"apps"},
-					Resources: []string{"statefulsets"},
-					Verbs:     metav1.Verbs{"get", "list", "watch"},
-				},
-				{
-					APIGroups: []string{"databases.schemahero.io"},
-					Resources: []string{"databases"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"databases.schemahero.io"},
-					Resources: []string{"databases/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"migrations"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"migrations/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"tables"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"tables/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"views"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"views/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"functions"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"functions/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"databaseextensions"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"databaseextensions/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"datatypes"},
-					Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
-				},
-				{
-					APIGroups: []string{"schemas.schemahero.io"},
-					Resources: []string{"datatypes/status"},
-					Verbs:     metav1.Verbs{"get", "update", "patch"},
-				},
-			},
+			Rules: desiredRules,
 		}
 
 		if err := controllerutil.SetControllerReference(databaseInstance, &role, r.scheme); err != nil {
@@ -212,11 +132,99 @@ func (r *ReconcileDatabase) reconcileRBACRole(ctx context.Context, databaseInsta
 	} else if err != nil {
 		return errors.Wrap(err, "failed to get existing role")
 	} else {
-		// update
-		logger.Error(errors.New("updating role is not implemented"))
+		// update the role rules to ensure any newly added resources are reconciled
+		existingRole.Rules = desiredRules
+		if err := r.Update(ctx, &existingRole); err != nil {
+			return errors.Wrap(err, "failed to update role")
+		}
 	}
 
 	return nil
+}
+
+func databaseManagerRoleRules() []rbacv1.PolicyRule {
+	return []rbacv1.PolicyRule{
+		{
+			APIGroups: []string{""},
+			Resources: []string{"secrets", "serviceaccounts"},
+			Verbs:     metav1.Verbs{"get"},
+		},
+		{
+			APIGroups: []string{"apps"},
+			Resources: []string{"statefulsets"},
+			Verbs:     metav1.Verbs{"get", "list", "watch"},
+		},
+		{
+			APIGroups: []string{"databases.schemahero.io"},
+			Resources: []string{"databases"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"databases.schemahero.io"},
+			Resources: []string{"databases/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"migrations"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"migrations/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"tables"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"tables/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"views"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"views/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"functions"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"functions/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"databaseextensions"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"databaseextensions/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"datatypes"},
+			Verbs:     metav1.Verbs{"get", "list", "watch", "create", "update", "patch", "delete"},
+		},
+		{
+			APIGroups: []string{"schemas.schemahero.io"},
+			Resources: []string{"datatypes/status"},
+			Verbs:     metav1.Verbs{"get", "update", "patch"},
+		},
+	}
 }
 
 func (r *ReconcileDatabase) reconcileServiceAccount(ctx context.Context, databaseInstance *databasesv1alpha4.Database) error {
