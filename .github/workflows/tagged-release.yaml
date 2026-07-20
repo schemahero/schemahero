@@ -55,7 +55,7 @@ jobs:
         run: echo "VERSION=$(cat plugins/postgres/VERSION)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -85,7 +85,7 @@ jobs:
         run: echo "VERSION=$(cat plugins/mysql/VERSION)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -115,7 +115,7 @@ jobs:
         run: echo "VERSION=$(cat plugins/timescaledb/VERSION)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -145,7 +145,7 @@ jobs:
         run: echo "VERSION=$(cat plugins/sqlite/VERSION)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -175,7 +175,7 @@ jobs:
         run: echo "VERSION=$(cat plugins/rqlite/VERSION)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -205,7 +205,7 @@ jobs:
         run: echo "VERSION=$(cat plugins/cassandra/VERSION)" >> $GITHUB_OUTPUT
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -228,7 +228,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -255,7 +255,7 @@ jobs:
         postgres_version: ["14.20", "15.15", "16.11", "17.7", "18.1"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -280,7 +280,7 @@ jobs:
         mysql_version: ["8.0.45", "8.4.8", "9.5.2"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -305,7 +305,7 @@ jobs:
         cockroachdb_version: ["v24.3.25", "v25.2.11", "v25.4.3"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -330,7 +330,7 @@ jobs:
         cassandra_version: ["4.0.19", "4.1.10", "5.0.6"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -355,7 +355,7 @@ jobs:
         sqlite_version: ["3.51.2"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -380,7 +380,7 @@ jobs:
         rqlite_version: ["8.36.8", "9.3.18"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -405,7 +405,7 @@ jobs:
         timescaledb_version: ["2.25.0-pg17"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
       - name: Download kubectl-schemahero binary
@@ -534,7 +534,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
