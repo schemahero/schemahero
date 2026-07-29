@@ -1,0 +1,28 @@
+database: schemahero
+name: category_pages
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: category_id
+        type: integer
+        constraints:
+          notNull: true
+      - name: account_id
+        type: integer
+        constraints:
+          notNull: true
+    foreignKeys:
+      - columns:
+          - category_id
+          - account_id
+        references:
+          table: categories
+          columns:
+            - category_id
+            - account_id
+        onDelete: cascade
