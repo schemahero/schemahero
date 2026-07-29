@@ -1,5 +1,5 @@
 database: schemahero
-name: category_pages
+name: t2
 schema:
   postgres:
     primaryKey: [id]
@@ -8,21 +8,21 @@ schema:
         type: integer
         constraints:
           notNull: true
-      - name: category_id
+      - name: c2
         type: integer
         constraints:
           notNull: true
-      - name: account_id
+      - name: c22
         type: integer
         constraints:
           notNull: true
     foreignKeys:
       - columns:
-          - category_id
-          - account_id
+          - c2
+          - c22
         references:
-          table: categories
+          table: t1
           columns:
-            - category_id
-            - account_id
+            - c1
+            - c11
         onDelete: cascade

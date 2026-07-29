@@ -1,12 +1,12 @@
-create table categories (
-  category_id integer not null,
-  account_id integer not null,
-  primary key (category_id, account_id)
+create table t1 (
+  c1 integer not null,
+  c11 integer not null,
+  primary key (c1, c11)
 );
 
-create table category_pages (
+create table t2 (
   id integer primary key not null,
-  category_id integer not null,
-  account_id integer not null,
-  constraint category_pages_category_id_account_id_fkey foreign key (category_id, account_id) references categories (category_id, account_id) on delete cascade
+  c2 integer not null,
+  c22 integer not null,
+  constraint t2_c2_c22_fkey foreign key (c2, c22) references t1 (c1, c11) on delete cascade
 );
