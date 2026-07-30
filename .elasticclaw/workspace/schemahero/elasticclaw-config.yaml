@@ -1,0 +1,10 @@
+# ElasticClaw template configuration
+provider: replicated
+instance_type: r1.large
+ttl: 48h
+github:
+  repos:
+    - repo: schemahero/schemahero
+      permissions: write
+nix: true
+docker: true
