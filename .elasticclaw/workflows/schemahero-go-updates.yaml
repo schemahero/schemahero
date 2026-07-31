@@ -59,6 +59,7 @@ stages:
       dependency_updates:
         ecosystems: [go]
         paths: ["."]
+        exclude_paths: ["plugins"]
         output: dependency_updates
         timeout: 30m
         continue_on_error: true
@@ -104,7 +105,7 @@ stages:
           has no open PR, delete it and create a fresh branch/PR.
         Say [DONE] with the PR URL only when the PR is open and the local checks
         above pass, so the workflow can monitor the GitHub CI results.
-        
+
         If {{ .Outputs.dependency_updates.files_changed }} is empty and no PR is
         needed, say [NO_CHANGES] instead of [DONE].
 
