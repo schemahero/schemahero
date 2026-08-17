@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: views.schemas.schemahero.io
 spec:
   group: schemas.schemahero.io
@@ -83,6 +83,29 @@ spec:
                         type: boolean
                       query:
                         type: string
+                      refreshPolicy:
+                        properties:
+                          bucketsPerBatch:
+                            type: integer
+                          endOffset:
+                            type: string
+                          ifNotExists:
+                            type: boolean
+                          includeTieredData:
+                            type: boolean
+                          initialStart:
+                            type: string
+                          maxBatchesPerExecution:
+                            type: integer
+                          refreshNewestFirst:
+                            type: boolean
+                          scheduleInterval:
+                            type: string
+                          startOffset:
+                            type: string
+                          timezone:
+                            type: string
+                        type: object
                       withNoData:
                         type: boolean
                     type: object
