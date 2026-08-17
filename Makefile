@@ -66,7 +66,7 @@ envtest:
 
 .PHONY: test
 test: fmt vet manifests envtest ## Run tests
-	go test ./pkg/... ./cmd/...
+	CGO_ENABLED=0 go test ./pkg/... ./cmd/...
 
 .PHONY: plugins
 plugins: ## Build all database plugins
