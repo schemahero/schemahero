@@ -88,6 +88,11 @@ func Test_normalizePostgresDefault(t *testing.T) {
 			expected: "{}",
 		},
 		{
+			name:     "nextval keeps embedded cast",
+			value:    "nextval('seq'::regclass)",
+			expected: "nextval('seq'::regclass)",
+		},
+		{
 			name:     "function unchanged",
 			value:    "now()",
 			expected: "now()",
@@ -107,10 +112,14 @@ func Test_postgresDefaultsEqual(t *testing.T) {
 	jsonbCast := "'{}'::jsonb"
 	jsonb := "{}"
 	now := "now()"
+	nextval := "nextval('seq'::regclass)"
+	seq := "seq"
 
 	assert.True(t, postgresDefaultsEqual(&quotedPending, &pending))
 	assert.True(t, postgresDefaultsEqual(&jsonbCast, &jsonb))
 	assert.True(t, postgresDefaultsEqual(&now, &now))
+	assert.True(t, postgresDefaultsEqual(&nextval, &nextval))
+	assert.False(t, postgresDefaultsEqual(&nextval, &seq))
 	assert.False(t, postgresDefaultsEqual(&now, &pending))
 	assert.False(t, postgresDefaultsEqual(&now, nil))
 	assert.True(t, postgresDefaultsEqual(nil, nil))
