@@ -27,6 +27,7 @@ build-postgres-plugin:
 	make -C foreign-key-alter run
 	make -C foreign-key-idempotent run
 	make -C foreign-key-idempotent-composite run
+	make -C foreign-key-idempotent-duplicate-name run
 	make -C not-null run
 	make -C not-null-with-default run
 	make -C index-create run
@@ -60,6 +61,7 @@ build-postgres-plugin:
 	make -C foreign-key-alter run
 	make -C foreign-key-idempotent run
 	make -C foreign-key-idempotent-composite run
+	make -C foreign-key-idempotent-duplicate-name run
 	make -C not-null run
 	make -C not-null-with-default run
 	make -C index-create run
@@ -93,6 +95,7 @@ build-postgres-plugin:
 	make -C foreign-key-alter run
 	make -C foreign-key-idempotent run
 	make -C foreign-key-idempotent-composite run
+	make -C foreign-key-idempotent-duplicate-name run
 	make -C not-null run
 	make -C not-null-with-default run
 	make -C index-create run
@@ -126,6 +129,7 @@ build-postgres-plugin:
 	make -C foreign-key-alter run
 	make -C foreign-key-idempotent run
 	make -C foreign-key-idempotent-composite run
+	make -C foreign-key-idempotent-duplicate-name run
 	make -C not-null run
 	make -C not-null-with-default run
 	make -C index-create run
@@ -159,6 +163,7 @@ build-postgres-plugin:
 	make -C foreign-key-alter run
 	make -C foreign-key-idempotent run
 	make -C foreign-key-idempotent-composite run
+	make -C foreign-key-idempotent-duplicate-name run
 	make -C not-null run
 	make -C not-null-with-default run
 	make -C index-create run

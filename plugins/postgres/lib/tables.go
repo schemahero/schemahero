@@ -147,11 +147,24 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	}
 
 	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
+	//
+	// Read ON DELETE from pg_constraint.confdeltype instead of joining
+	// information_schema.referential_constraints on constraint_name alone.
+	// That join does not scope by schema, so identically named FKs in other
+	// schemas (e.g. public.t2_c2_fkey and other.t2_c2_fkey) duplicate rows and
+	// inflate ChildColumns/ParentColumns, causing perpetual drop/recreate drift.
 	query := `select
 	att2.attname as "child_column",
 	cl.relname as "parent_table",
 	att.attname as "parent_column",
-	rc.delete_rule,
+	case con.confdeltype
+		when 'a' then 'NO ACTION'
+		when 'r' then 'RESTRICT'
+		when 'c' then 'CASCADE'
+		when 'n' then 'SET NULL'
+		when 'd' then 'SET DEFAULT'
+		else ''
+	end as delete_rule,
 	con.conname,
 	ns2.nspname as "parent_schema"
     from
@@ -161,7 +174,8 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	    i as "ord",
 	    con1.confrelid,
 	    con1.conrelid,
-	    con1.conname
+	    con1.conname,
+	    con1.confdeltype
 	from
 	    pg_class cl
 	    join pg_namespace ns on cl.relnamespace = ns.oid
@@ -180,8 +194,6 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
        cl.relnamespace = ns2.oid
        join pg_attribute att2 on
 	   att2.attrelid = con.conrelid and att2.attnum = con.parent
-       join information_schema.referential_constraints rc on
-       rc.constraint_name = con.conname
     order by con.conname, con."ord"`
 
 	rows, err := p.conn.Query(context.Background(), query, actualTableName, schema)
