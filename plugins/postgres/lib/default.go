@@ -49,3 +49,28 @@ func shouldQuotePostgresDefault(value string) bool {
 
 	return true
 }
+
+// normalizePostgresDefault reduces a default to the form introspection stores
+// after stripOIDClass, so spec forms like "'pending'" and "'{}'::jsonb" compare
+// equal to introspected "pending" / "{}".
+func normalizePostgresDefault(value string) string {
+	value = strings.TrimSpace(value)
+	value = stripOIDClass(value)
+
+	if len(value) >= 2 && value[0] == '\'' && value[len(value)-1] == '\'' {
+		return strings.ReplaceAll(value[1:len(value)-1], "''", "'")
+	}
+
+	return value
+}
+
+func postgresDefaultsEqual(a *string, b *string) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+
+	return normalizePostgresDefault(*a) == normalizePostgresDefault(*b)
+}

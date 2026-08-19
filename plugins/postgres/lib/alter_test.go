@@ -43,6 +43,8 @@ func Test_AlterColumnStatments(t *testing.T) {
 	defaultEleven := "11"
 	defaultEmpty := ""
 	defaultNow := "now()"
+	defaultPending := "pending"
+	defaultQuotedPending := "'pending'"
 
 	tests := []struct {
 		name               string
@@ -280,6 +282,23 @@ func Test_AlterColumnStatments(t *testing.T) {
 				DataType: "timestamp without time zone",
 			},
 			expectedStatements: []string{`alter table "t" alter column "a" set default now()`},
+		},
+		{
+			name:      "quoted default matches stripped introspection",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name:    "a",
+					Type:    "text",
+					Default: &defaultQuotedPending,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:          "a",
+				DataType:      "text",
+				ColumnDefault: &defaultPending,
+			},
+			expectedStatements: []string{},
 		},
 		{
 			name:      "default unset",

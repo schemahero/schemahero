@@ -65,3 +65,53 @@ func Test_formatPostgresDefaultValue(t *testing.T) {
 		})
 	}
 }
+
+func Test_normalizePostgresDefault(t *testing.T) {
+	tests := []struct {
+		name     string
+		value    string
+		expected string
+	}{
+		{
+			name:     "plain literal",
+			value:    "pending",
+			expected: "pending",
+		},
+		{
+			name:     "quoted literal",
+			value:    "'pending'",
+			expected: "pending",
+		},
+		{
+			name:     "oid cast",
+			value:    "'{}'::jsonb",
+			expected: "{}",
+		},
+		{
+			name:     "function unchanged",
+			value:    "now()",
+			expected: "now()",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expected, normalizePostgresDefault(test.value))
+		})
+	}
+}
+
+func Test_postgresDefaultsEqual(t *testing.T) {
+	quotedPending := "'pending'"
+	pending := "pending"
+	jsonbCast := "'{}'::jsonb"
+	jsonb := "{}"
+	now := "now()"
+
+	assert.True(t, postgresDefaultsEqual(&quotedPending, &pending))
+	assert.True(t, postgresDefaultsEqual(&jsonbCast, &jsonb))
+	assert.True(t, postgresDefaultsEqual(&now, &now))
+	assert.False(t, postgresDefaultsEqual(&now, &pending))
+	assert.False(t, postgresDefaultsEqual(&now, nil))
+	assert.True(t, postgresDefaultsEqual(nil, nil))
+}
