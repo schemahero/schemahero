@@ -17,7 +17,7 @@ DEST="${TMPDIR}/kubebuilder/bin"
 # Install setup-envtest if not present
 if ! command -v setup-envtest &> /dev/null; then
     echo "Installing setup-envtest..."
-    go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+    CGO_ENABLED=0 go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 fi
 
 # Download envtest binaries directly to the expected location
