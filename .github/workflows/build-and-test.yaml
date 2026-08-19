@@ -56,6 +56,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: 0
     steps:
       - uses: actions/checkout@v6
 
@@ -77,6 +79,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      CGO_ENABLED: 0
     steps:
       - uses: actions/checkout@v6
 
@@ -148,6 +152,8 @@ jobs:
 
       - run: go test ${{ matrix.plugin.package }}
         working-directory: ${{ matrix.plugin.path }}
+        env:
+          CGO_ENABLED: 0
 
   # ── PostgreSQL ──────────────────────────────────────────────
   # PRs: latest version only. Main: full matrix.
