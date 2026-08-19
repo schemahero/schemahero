@@ -94,6 +94,35 @@ func Test_CreateTableStatement(t *testing.T) {
 			},
 		},
 		{
+			name: "unique index with explicit name",
+			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
+				PrimaryKey: []string{
+					"id",
+				},
+				Indexes: []*schemasv1alpha4.PostgresqlTableIndex{
+					{
+						Columns:  []string{"slug"},
+						Name:     "product_page_slugs_slug_idx",
+						IsUnique: true,
+					},
+				},
+				Columns: []*schemasv1alpha4.PostgresqlTableColumn{
+					{
+						Name: "id",
+						Type: "integer",
+					},
+					{
+						Name: "slug",
+						Type: "varchar(400)",
+					},
+				},
+			},
+			tableName: "product_page_slugs",
+			expectedStatements: []string{
+				`create table "product_page_slugs" ("id" integer, "slug" character varying (400), primary key ("id"), constraint "product_page_slugs_slug_idx" unique ("slug"))`,
+			},
+		},
+		{
 			name: "simple with trigger",
 			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
 				PrimaryKey: []string{

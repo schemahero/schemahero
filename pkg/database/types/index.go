@@ -131,6 +131,12 @@ func GenerateMysqlIndexName(tableName string, schemaIndex *schemasv1alpha4.Mysql
 }
 
 func GeneratePostgresqlIndexName(tableName string, schemaIndex *schemasv1alpha4.PostgresqlTableIndex) string {
+	// Honor an explicit name from the Table spec so CREATE TABLE unique
+	// constraints match later ALTER/plan index names (avoids perpetual
+	// drop-constraint / create-unique-index rename drift).
+	if schemaIndex.Name != "" {
+		return schemaIndex.Name
+	}
 	return fmt.Sprintf("idx_%s_%s", tableName, strings.Join(schemaIndex.Columns, "_"))
 }
 
