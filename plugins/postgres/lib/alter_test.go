@@ -42,6 +42,7 @@ func Test_ColumnsMatch(t *testing.T) {
 func Test_AlterColumnStatments(t *testing.T) {
 	defaultEleven := "11"
 	defaultEmpty := ""
+	defaultNow := "now()"
 
 	tests := []struct {
 		name               string
@@ -265,6 +266,22 @@ func Test_AlterColumnStatments(t *testing.T) {
 			expectedStatements: []string{`alter table "t" alter column "a" set default '11'`},
 		},
 		{
+			name:      "default set now function",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name:    "a",
+					Type:    "timestamp without time zone",
+					Default: &defaultNow,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "timestamp without time zone",
+			},
+			expectedStatements: []string{`alter table "t" alter column "a" set default now()`},
+		},
+		{
 			name:      "default unset",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
@@ -316,6 +333,29 @@ func Test_AlterColumnStatments(t *testing.T) {
 			expectedStatements: []string{
 				`alter table "t" alter column "a" set default '11'`,
 				`update "t" set "a"='11' where "a" is null`,
+				`alter table "t" alter column "a" set not null`,
+			},
+		},
+		{
+			name:      "add null and default now function",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name:    "a",
+					Type:    "timestamp without time zone",
+					Default: &defaultNow,
+					Constraints: &schemasv1alpha4.PostgresqlTableColumnConstraints{
+						NotNull: &trueValue,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "timestamp without time zone",
+			},
+			expectedStatements: []string{
+				`alter table "t" alter column "a" set default now()`,
+				`update "t" set "a"=now() where "a" is null`,
 				`alter table "t" alter column "a" set not null`,
 			},
 		},

@@ -47,20 +47,20 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 					// add default
 					if column.ColumnDefault != nil {
 						if existingColumn.ColumnDefault == nil || *existingColumn.ColumnDefault != *column.ColumnDefault {
-							localStatement := fmt.Sprintf("alter table %s alter column %s set default '%s'",
+							localStatement := fmt.Sprintf("alter table %s alter column %s set default %s",
 								pgx.Identifier{tableName}.Sanitize(),
 								pgx.Identifier{existingColumn.Name}.Sanitize(),
-								*column.ColumnDefault)
+								formatPostgresDefaultValue(*column.ColumnDefault))
 							statements = append(statements, localStatement)
 						}
 					}
 
 					// update existing values
 					if column.ColumnDefault != nil {
-						localStatement := fmt.Sprintf("update %s set %s='%s' where %s is null",
+						localStatement := fmt.Sprintf("update %s set %s=%s where %s is null",
 							pgx.Identifier{tableName}.Sanitize(),
 							pgx.Identifier{existingColumn.Name}.Sanitize(),
-							*column.ColumnDefault,
+							formatPostgresDefaultValue(*column.ColumnDefault),
 							pgx.Identifier{existingColumn.Name}.Sanitize())
 						statements = append(statements, localStatement)
 					}
@@ -87,7 +87,7 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 
 				if column.ColumnDefault != nil {
 					if existingColumn.ColumnDefault == nil || *column.ColumnDefault != *existingColumn.ColumnDefault {
-						changes = append(changes, fmt.Sprintf("%s set default '%s'", alterStatement, *column.ColumnDefault))
+						changes = append(changes, fmt.Sprintf("%s set default %s", alterStatement, formatPostgresDefaultValue(*column.ColumnDefault)))
 					}
 				} else if existingColumn.ColumnDefault != nil {
 					changes = append(changes, fmt.Sprintf("%s drop default", alterStatement))
