@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/pkg/errors"
@@ -182,17 +183,17 @@ func PlanPostgresTableSeedDataOnly(uri string, tableName string, seedData *schem
 			Name: col.Name,
 			Type: col.DataType,
 		}
-		
+
 		if col.Constraints != nil && col.Constraints.NotNull != nil {
 			postgresCol.Constraints = &schemasv1alpha4.PostgresqlTableColumnConstraints{
 				NotNull: col.Constraints.NotNull,
 			}
 		}
-		
+
 		if col.ColumnDefault != nil {
 			postgresCol.Default = col.ColumnDefault
 		}
-		
+
 		postgresSchema.Columns = append(postgresSchema.Columns, postgresCol)
 	}
 
@@ -236,10 +237,14 @@ func executeStatements(p *PostgresConnection, statements []string) error {
 
 func BuildColumnStatements(p *PostgresConnection, tableName string, postgresTableSchema *schemasv1alpha4.PostgresqlTableSchema) ([]string, error) {
 	query := `select
-column_name, column_default, is_nullable, data_type, udt_name, character_maximum_length
-from information_schema.columns
-where table_name = $1 and table_schema = $2
-order by ordinal_position`
+c.column_name, c.column_default, c.is_nullable, c.data_type, c.udt_name, c.character_maximum_length,
+format_type(a.atttypid, a.atttypmod) as formatted_type
+from information_schema.columns c
+left join pg_catalog.pg_namespace n on n.nspname = c.table_schema
+left join pg_catalog.pg_class rel on rel.relname = c.table_name and rel.relnamespace = n.oid
+left join pg_catalog.pg_attribute a on a.attrelid = rel.oid and a.attname = c.column_name and a.attnum > 0 and not a.attisdropped
+where c.table_name = $1 and c.table_schema = $2
+order by c.ordinal_position`
 	rows, err := p.conn.Query(context.Background(), query, tableName, p.schema)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to select from information_schema")
@@ -252,8 +257,9 @@ order by ordinal_position`
 		var columnName, dataType, udtName, isNullable string
 		var columnDefault sql.NullString
 		var charMaxLength sql.NullInt64
+		var formattedType sql.NullString
 
-		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &udtName, &charMaxLength); err != nil {
+		if err := rows.Scan(&columnName, &columnDefault, &isNullable, &dataType, &udtName, &charMaxLength, &formattedType); err != nil {
 			return nil, errors.Wrap(err, "failed to scan")
 		}
 
@@ -268,7 +274,15 @@ order by ordinal_position`
 		switch dataType {
 		case "ARRAY":
 			existingColumn.IsArray = true
-			existingColumn.DataType = UDTNameToDataType(udtName)
+			// information_schema does not expose an array element's length, so use
+			// pg_catalog's format_type (e.g. "character varying(255)[]") and normalize
+			// the element type the same way desired column types are normalized.
+			if formattedType.Valid {
+				elementType := strings.TrimSuffix(formattedType.String, "[]")
+				existingColumn.DataType = normalizePostgresColumnType(elementType)
+			} else {
+				existingColumn.DataType = UDTNameToDataType(udtName)
+			}
 		case "USER-DEFINED":
 			existingColumn.DataType = UDTNameToDataType(udtName)
 		}
