@@ -2,7 +2,10 @@ package postgres
 
 import "regexp"
 
-var oidClassRegexp = regexp.MustCompile(`'(.*)'::.+`)
+// oidClassRegexp matches a full-string typed literal like `'pending'::text` or
+// `'{}'::jsonb`. It is anchored so embedded casts inside expressions
+// (e.g. nextval('seq'::regclass)) are left unchanged.
+var oidClassRegexp = regexp.MustCompile(`^'(.*)'::.+$`)
 
 func stripOIDClass(value string) string {
 	matches := oidClassRegexp.FindStringSubmatch(value)
