@@ -1,0 +1,22 @@
+database: schemahero
+name: t2
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: c2
+        type: integer
+        constraints:
+          notNull: true
+    foreignKeys:
+      - columns:
+          - c2
+        references:
+          table: t1
+          columns:
+            - c1
+        onDelete: cascade

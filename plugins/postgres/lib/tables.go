@@ -147,24 +147,40 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 	}
 
 	// Starting with a query here: https://stackoverflow.com/questions/1152260/postgres-sql-to-list-table-foreign-keys
+	//
+	// Read ON DELETE from pg_constraint.confdeltype instead of joining
+	// information_schema.referential_constraints on constraint_name alone.
+	// That join does not scope by schema, so identically named FKs in other
+	// schemas (e.g. public.t2_c2_fkey and other.t2_c2_fkey) duplicate rows and
+	// inflate ChildColumns/ParentColumns, causing perpetual drop/recreate drift.
 	query := `select
 	att2.attname as "child_column",
 	cl.relname as "parent_table",
 	att.attname as "parent_column",
-  	rc.delete_rule,
-	conname,
+	case con.confdeltype
+		when 'a' then 'NO ACTION'
+		when 'r' then 'RESTRICT'
+		when 'c' then 'CASCADE'
+		when 'n' then 'SET NULL'
+		when 'd' then 'SET DEFAULT'
+		else ''
+	end as delete_rule,
+	con.conname,
 	ns2.nspname as "parent_schema"
     from
        (select
-	    unnest(con1.conkey) as "parent",
-	    unnest(con1.confkey) as "child",
+	    con1.conkey[i] as "parent",
+	    con1.confkey[i] as "child",
+	    i as "ord",
 	    con1.confrelid,
 	    con1.conrelid,
-	    con1.conname
+	    con1.conname,
+	    con1.confdeltype
 	from
 	    pg_class cl
 	    join pg_namespace ns on cl.relnamespace = ns.oid
 	    join pg_constraint con1 on con1.conrelid = cl.oid
+	    cross join lateral generate_subscripts(con1.conkey, 1) as i
 	where
 	    cl.relname = $1
 	    and ns.nspname = $2
@@ -178,8 +194,7 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
        cl.relnamespace = ns2.oid
        join pg_attribute att2 on
 	   att2.attrelid = con.conrelid and att2.attnum = con.parent
-       join information_schema.referential_constraints rc on
-       rc.constraint_name = conname`
+    order by con.conname, con."ord"`
 
 	rows, err := p.conn.Query(context.Background(), query, actualTableName, schema)
 	if err != nil {
@@ -210,8 +225,8 @@ func (p *PostgresConnection) ListTableForeignKeys(databaseName string, tableName
 
 		for _, foundFk := range foreignKeys {
 			if foundFk.Name == name {
-				foundFk.ChildColumns = append(foreignKey.ChildColumns, childColumn)
-				foundFk.ParentColumns = append(foreignKey.ParentColumns, parentColumn)
+				foundFk.ChildColumns = append(foundFk.ChildColumns, childColumn)
+				foundFk.ParentColumns = append(foundFk.ParentColumns, parentColumn)
 
 				goto Appended
 			}
