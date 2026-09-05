@@ -5,7 +5,7 @@ DRIVER := mysql
 USERNAME := schemahero
 PASSWORD := password
 DATABASE := schemahero
-URI := $(USERNAME):$(PASSWORD)@tcp(localhost:13306)/$(DATABASE)?tls=false
+URI := $(USERNAME):$(PASSWORD)@tcp(localhost:13306)/$(DATABASE)?tls=preferred
 
 .PHONY: run
 run:

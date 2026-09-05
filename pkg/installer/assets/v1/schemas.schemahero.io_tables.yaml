@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: tables.schemas.schemahero.io
 spec:
   group: schemas.schemahero.io
@@ -201,6 +201,10 @@ spec:
                               type: string
                             type:
                               type: string
+                            with:
+                              additionalProperties:
+                                type: string
+                              type: object
                           required:
                           - columns
                           type: object
@@ -241,6 +245,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -268,6 +273,12 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
+                        maxItems: 100
                         type: array
                       primaryKey:
                         items:
@@ -307,6 +318,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -334,6 +346,12 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
+                        maxItems: 100
                         type: array
                     type: object
                   mysql:
@@ -489,6 +507,10 @@ spec:
                               type: string
                             type:
                               type: string
+                            with:
+                              additionalProperties:
+                                type: string
+                              type: object
                           required:
                           - columns
                           type: object
@@ -529,6 +551,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -556,6 +579,12 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
+                        maxItems: 100
                         type: array
                       primaryKey:
                         items:
@@ -595,6 +624,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -622,6 +652,12 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
+                        maxItems: 100
                         type: array
                     type: object
                   rqlite:
@@ -899,6 +935,10 @@ spec:
                               type: string
                             type:
                               type: string
+                            with:
+                              additionalProperties:
+                                type: string
+                              type: object
                           required:
                           - columns
                           type: object
@@ -941,6 +981,7 @@ spec:
                                     required:
                                     - type
                                     type: object
+                                  maxItems: 100
                                   type: array
                                 schema:
                                   type: string
@@ -968,6 +1009,12 @@ spec:
                           required:
                           - events
                           type: object
+                          x-kubernetes-validations:
+                          - message: exactly one of the fields in [execute executeProcedure]
+                              must be set
+                            rule: '[has(self.execute),has(self.executeProcedure)].filter(x,x==true).size()
+                              == 1'
+                        maxItems: 100
                         type: array
                     type: object
                 type: object
