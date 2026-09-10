@@ -14,6 +14,8 @@ import (
 	kuberneteserrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
@@ -151,8 +153,14 @@ func secret(namespace string) *corev1.Secret {
 
 func managerYAML(namespace string) ([]byte, error) {
 	s := json.NewYAMLSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme)
+	managerObject, err := runtime.DefaultUnstructuredConverter.ToUnstructured(manager(namespace))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert manager to unstructured")
+	}
+	delete(managerObject, "status")
+
 	var result bytes.Buffer
-	if err := s.Encode(manager(namespace), &result); err != nil {
+	if err := s.Encode(&unstructured.Unstructured{Object: managerObject}, &result); err != nil {
 		return nil, errors.Wrap(err, "failed to marshal manager")
 	}
 
