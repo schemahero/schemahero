@@ -523,6 +523,8 @@ jobs:
 
   github-release-tarballs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs:
       - test-postgres
       - test-mysql
@@ -540,34 +542,24 @@ jobs:
           cache: true
           cache-dependency-path: ./go.sum
 
-      - id: get_version
-        uses: battila7/get-version-action@v2
-
-      - id: get_prerelease_flag
-        env:
-          PRERELEASE: ${{ steps.get_version.outputs.prerelease }}
-        run: |
-          if [ -z $PRERELEASE ]; then
-            echo "::set-output name=prerelease::false"
-          else
-            echo "::set-output name=prerelease::true"
-          fi
-
       - name: make release-tarballs
-        run: make release-tarballs VERSION=${{ steps.get_version.outputs.version-without-v }}
-        env:
-          GIT_TAG: ${{ steps.get_version.outputs.version-without-v }}
+        run: make release-tarballs VERSION="${GITHUB_REF_NAME#v}"
 
-      - name: create github release
-        id: create-github-release
-        uses: Hs1r1us/Release-AIO@v1.0
+      - name: Create or update GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          release_name: ${{ steps.get_version.outputs.version }}
-          tag_name: ${{ github.ref }}
-          asset_files: './release'
-          prerelease: ${{ steps.get_prerelease_flag.outputs.prerelease }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" ./release/* --clobber
+          else
+            args=(--title "$tag")
+            if [[ "$tag" == *-* ]]; then
+              args+=(--prerelease)
+            fi
+            gh release create "$tag" ./release/* "${args[@]}"
+          fi
 
   krew:
     if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta')
