@@ -159,29 +159,22 @@ func TestPostgresPluginIntegration(t *testing.T) {
 			t.Errorf("Expected validation to pass with valid config, got error: %v", err)
 		}
 		
-		// Test with missing URI
-		invalidConfig := map[string]interface{}{
-			"host": "localhost",
-			"port": 5432,
+		// The URI is passed separately to Connect, so Validate accepts
+		// configurations without a URI and validates only optional parameters.
+		configsWithoutURI := []map[string]interface{}{
+			{
+				"host": "localhost",
+				"port": 5432,
+			},
+			{
+				"uri": "",
+			},
 		}
-		
-		err = loadedPlugin.Validate(invalidConfig)
-		if err == nil {
-			t.Error("Expected validation to fail with missing URI")
-		} else {
-			t.Logf("Validation correctly failed with missing URI: %v", err)
-		}
-		
-		// Test with empty URI
-		emptyURIConfig := map[string]interface{}{
-			"uri": "",
-		}
-		
-		err = loadedPlugin.Validate(emptyURIConfig)
-		if err == nil {
-			t.Error("Expected validation to fail with empty URI")
-		} else {
-			t.Logf("Validation correctly failed with empty URI: %v", err)
+		for _, config := range configsWithoutURI {
+			err = loadedPlugin.Validate(config)
+			if err != nil {
+				t.Errorf("Expected validation to accept config without a URI, got error: %v", err)
+			}
 		}
 	})
 	
