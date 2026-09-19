@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: databases.databases.schemahero.io
 spec:
   group: databases.schemahero.io
@@ -50,6 +50,15 @@ spec:
             type: object
           spec:
             properties:
+              batchWindow:
+                description: |-
+                  BatchWindow specifies a duration to wait and collect table changes before
+                  planning and applying them together in a single migration. This improves
+                  performance when deploying many tables at once by reducing the number of
+                  database connections and migrations created.
+                  When set, tables are queued and processed together after the window expires.
+                  Example values: "5s", "10s", "30s"
+                type: string
               connection:
                 description: DatabaseConnection defines connection parameters for
                   the database driver
@@ -66,6 +75,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -157,6 +190,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -248,6 +305,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -345,6 +426,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -436,6 +541,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -527,6 +656,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -618,6 +771,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -709,6 +886,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -800,6 +1001,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -891,6 +1116,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -982,6 +1231,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1078,6 +1351,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1173,6 +1470,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1264,6 +1585,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1355,6 +1700,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1446,6 +1815,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1537,6 +1930,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1631,6 +2048,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1722,6 +2163,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1813,6 +2278,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1904,6 +2393,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -1995,6 +2508,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2086,6 +2623,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2177,6 +2738,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2268,6 +2853,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2364,6 +2973,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2455,6 +3088,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2546,6 +3203,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2637,6 +3318,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2728,6 +3433,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2829,6 +3558,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -2920,6 +3673,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -3011,6 +3788,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -3102,6 +3903,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -3193,6 +4018,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -3284,6 +4133,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -3375,6 +4248,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
@@ -3466,6 +4363,30 @@ spec:
                             type: string
                           valueFrom:
                             properties:
+                              doppler:
+                                properties:
+                                  config:
+                                    type: string
+                                  name:
+                                    type: string
+                                  project:
+                                    type: string
+                                  tokenSecretRef:
+                                    properties:
+                                      key:
+                                        type: string
+                                      name:
+                                        type: string
+                                    required:
+                                    - key
+                                    - name
+                                    type: object
+                                required:
+                                - config
+                                - name
+                                - project
+                                - tokenSecretRef
+                                type: object
                               secretKeyRef:
                                 properties:
                                   key:
