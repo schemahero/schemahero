@@ -6,6 +6,42 @@ import (
 	schemasv1alpha4 "github.com/schemahero/schemahero/pkg/apis/schemas/v1alpha4"
 )
 
+func Test_GeneratePostgresqlIndexName(t *testing.T) {
+	tests := []struct {
+		name        string
+		tableName   string
+		schemaIndex *schemasv1alpha4.PostgresqlTableIndex
+		want        string
+	}{
+		{
+			name:      "generated when name omitted",
+			tableName: "product_page_slugs",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{
+				Columns:  []string{"slug"},
+				IsUnique: true,
+			},
+			want: "idx_product_page_slugs_slug",
+		},
+		{
+			name:      "explicit name preferred",
+			tableName: "product_page_slugs",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{
+				Columns:  []string{"slug"},
+				Name:     "product_page_slugs_slug_idx",
+				IsUnique: true,
+			},
+			want: "product_page_slugs_slug_idx",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GeneratePostgresqlIndexName(tt.tableName, tt.schemaIndex); got != tt.want {
+				t.Errorf("GeneratePostgresqlIndexName() = %s, want %s", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_GenerateMysqlIndexName(t *testing.T) {
 	tests := []struct {
 		name        string
