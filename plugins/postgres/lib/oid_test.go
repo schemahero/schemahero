@@ -23,6 +23,16 @@ func Test_stripOIDClass(t *testing.T) {
 			value: `testing`,
 			want:  "testing",
 		},
+		{
+			name:  "embedded cast in nextval",
+			value: `nextval('seq'::regclass)`,
+			want:  `nextval('seq'::regclass)`,
+		},
+		{
+			name:  "jsonb cast",
+			value: `'{}'::jsonb`,
+			want:  "{}",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
