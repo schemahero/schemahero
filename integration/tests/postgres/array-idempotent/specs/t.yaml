@@ -1,0 +1,26 @@
+database: schemahero
+name: t
+schema:
+  postgres:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+        constraints:
+          notNull: true
+      - name: a
+        type: varchar(255)[]
+        constraints:
+          notNull: true
+      - name: b
+        type: integer[]
+        constraints:
+          notNull: true
+      - name: c
+        type: text[]
+        constraints:
+          notNull: true
+      - name: d
+        type: boolean[]
+        constraints:
+          notNull: true

@@ -18,6 +18,7 @@ build-postgres-plugin:
 	make -C column-set-default run
 	make -C column-unset-default run
 	make -C create-table run
+	make -C array-idempotent run
 	make -C create-table-with-index run
 	make -C schema-qualified-tables run
 	make -C drop-table run
@@ -50,6 +51,7 @@ build-postgres-plugin:
 	make -C column-unset-default run
 	make -C create-function run
 	make -C create-table run
+	make -C array-idempotent run
 	make -C create-table-with-index run
 	make -C schema-qualified-tables run
 	make -C drop-table run
@@ -82,6 +84,7 @@ build-postgres-plugin:
 	make -C column-unset-default run
 	make -C create-function run
 	make -C create-table run
+	make -C array-idempotent run
 	make -C create-table-with-index run
 	make -C schema-qualified-tables run
 	make -C drop-table run
@@ -114,6 +117,7 @@ build-postgres-plugin:
 	make -C column-unset-default run
 	make -C create-function run
 	make -C create-table run
+	make -C array-idempotent run
 	make -C create-table-with-index run
 	make -C schema-qualified-tables run
 	make -C drop-table run
@@ -146,6 +150,7 @@ build-postgres-plugin:
 	make -C column-unset-default run
 	make -C create-function run
 	make -C create-table run
+	make -C array-idempotent run
 	make -C create-table-with-index run
 	make -C schema-qualified-tables run
 	make -C drop-table run

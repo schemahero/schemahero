@@ -78,11 +78,13 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 			changes := []string{}
 			if column.DataType != "serial" && column.DataType != "bigserial" {
 				if existingColumn.DataType != column.DataType {
-					changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
-				} else if column.DataType == existingColumn.DataType {
-					if column.IsArray != existingColumn.IsArray {
-						changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pgx.Identifier{existingColumn.Name}.Sanitize(), column.DataType))
+					if column.IsArray {
+						changes = append(changes, fmt.Sprintf("%s type %s[]", alterStatement, column.DataType))
+					} else {
+						changes = append(changes, fmt.Sprintf("%s type %s", alterStatement, column.DataType))
 					}
+				} else if column.IsArray != existingColumn.IsArray {
+					changes = append(changes, fmt.Sprintf("%s type %s[] using %s::%s[]", alterStatement, column.DataType, pgx.Identifier{existingColumn.Name}.Sanitize(), column.DataType))
 				}
 
 				if column.ColumnDefault != nil {
