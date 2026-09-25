@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -140,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: '${{ matrix.plugin.path }}/go.mod'
           cache: true
@@ -164,7 +164,7 @@ jobs:
         postgres_version: ${{ github.ref == 'refs/heads/main' && fromJson('["14.20","15.15","16.11","17.7","18.1"]') || fromJson('["18.1"]') }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -197,7 +197,7 @@ jobs:
         mysql_version: ${{ github.ref == 'refs/heads/main' && fromJson('["8.0.45","8.4.8","9.5.2"]') || fromJson('["9.5.2"]') }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -230,7 +230,7 @@ jobs:
         cockroachdb_version: ${{ github.ref == 'refs/heads/main' && fromJson('["v24.3.25","v25.2.11","v25.4.3"]') || fromJson('["v25.4.3"]') }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -263,7 +263,7 @@ jobs:
         cassandra_version: ${{ github.ref == 'refs/heads/main' && fromJson('["4.0.19","4.1.10","5.0.6"]') || fromJson('["5.0.6"]') }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -296,7 +296,7 @@ jobs:
         sqlite_version: ["3.51.2"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -329,7 +329,7 @@ jobs:
         rqlite_version: ${{ github.ref == 'refs/heads/main' && fromJson('["8.36.8","9.3.18"]') || fromJson('["9.3.18"]') }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -362,7 +362,7 @@ jobs:
         timescaledb_version: ["2.25.0-pg17"]
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
           cache: true
