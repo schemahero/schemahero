@@ -6,7 +6,7 @@ replace github.com/schemahero/schemahero => ../..
 
 require (
 	github.com/hashicorp/go-plugin v1.8.0
-	github.com/jackc/pgx/v5 v5.9.2
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/pkg/errors v0.9.1
 	github.com/schemahero/schemahero v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.11.1
