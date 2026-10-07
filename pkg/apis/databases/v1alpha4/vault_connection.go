@@ -54,6 +54,10 @@ func (d *Database) getVaultConnection(ctx context.Context, clientset kubernetes.
 		return "", "", errors.Wrap(err, "failed to get vault service account")
 	}
 
+	if len(serviceAccount.Secrets) == 0 {
+		return "", "", errors.Errorf("vault service account %s has no secrets", valueOrValueFrom.ValueFrom.Vault.ServiceAccount)
+	}
+
 	vaultServiceAccountSecret := serviceAccount.Secrets[0]
 	vaultServiceAccountSecretNamespace := vaultServiceAccountSecret.Namespace
 	if vaultServiceAccountSecretNamespace == "" {
