@@ -32,13 +32,24 @@ func (r *ReconcileTable) reconcileTable(ctx context.Context, instance *schemasv1
 		zap.String("database", instance.Spec.Database),
 		zap.String("lastPlannedTableSpecSHA", instance.Status.LastPlannedTableSpecSHA))
 
-	// early exit if the sha of the spec hasn't changed
+	// early exit if the sha of the spec hasn't changed and the migration planned
+	// for it (if any) still exists. if the migration was deleted, plan again so it
+	// is regenerated instead of being silently lost.
 	currentTableSpecSHA, err := instance.GetSHA()
 	if err != nil {
 		return reconcile.Result{}, errors.Wrap(err, "failed to get instance sha")
 	}
 	if instance.Status.LastPlannedTableSpecSHA == currentTableSpecSHA {
-		return reconcile.Result{}, nil
+		exists, err := r.migrationExists(ctx, instance.Namespace, currentTableSpecSHA[:7])
+		if err != nil {
+			return reconcile.Result{}, errors.Wrap(err, "failed to check for existing migration")
+		}
+		if exists {
+			return reconcile.Result{}, nil
+		}
+		logger.Debug("migration for last planned table spec not found, planning again",
+			zap.String("name", instance.Name),
+			zap.String("namespace", instance.Namespace))
 	}
 
 	// get the full database spec from the api
@@ -163,6 +174,19 @@ func (r *ReconcileTable) getInstance(request reconcile.Request) (*schemasv1alpha
 	}
 
 	return v1alpha4instance, nil
+}
+
+// migrationExists returns true if a migration with the given name exists
+func (r *ReconcileTable) migrationExists(ctx context.Context, namespace string, name string) (bool, error) {
+	var migration schemasv1alpha4.Migration
+	err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &migration)
+	if kuberneteserrors.IsNotFound(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // getMigrationSpec will find a migration spec for this exact table object
