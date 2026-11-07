@@ -49,3 +49,33 @@ func Test_GenerateMysqlIndexName(t *testing.T) {
 		})
 	}
 }
+
+func Test_GeneratePostgresqlIndexName(t *testing.T) {
+	tests := []struct {
+		name        string
+		tableName   string
+		schemaIndex *schemasv1alpha4.PostgresqlTableIndex
+		want        string
+	}{
+		{
+			name:        "generated from columns",
+			tableName:   "t",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{Columns: []string{"a", "b"}},
+			want:        "idx_t_a_b",
+		},
+		{
+			name:        "explicit name wins",
+			tableName:   "t",
+			schemaIndex: &schemasv1alpha4.PostgresqlTableIndex{Name: "custom", Columns: []string{"a", "b"}},
+			want:        "custom",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GeneratePostgresqlIndexName(tt.tableName, tt.schemaIndex)
+			if got != tt.want {
+				t.Errorf("GeneratePostgresqlIndexName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
