@@ -94,6 +94,39 @@ func Test_CreateTableStatement(t *testing.T) {
 			},
 		},
 		{
+			name: "named unique index",
+			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
+				PrimaryKey: []string{
+					"one",
+				},
+				Indexes: []*schemasv1alpha4.PostgresqlTableIndex{
+					{
+						Name:     "my_unique_name",
+						Columns:  []string{"two", "three"},
+						IsUnique: true,
+					},
+				},
+				Columns: []*schemasv1alpha4.PostgresqlTableColumn{
+					{
+						Name: "one",
+						Type: "integer",
+					},
+					{
+						Name: "two",
+						Type: "integer",
+					},
+					{
+						Name: "three",
+						Type: "varchar(255)",
+					},
+				},
+			},
+			tableName: "named_unique_index",
+			expectedStatements: []string{
+				`create table "named_unique_index" ("one" integer, "two" integer, "three" character varying (255), primary key ("one"), constraint "my_unique_name" unique ("two", "three"))`,
+			},
+		},
+		{
 			name: "simple with trigger",
 			tableSchema: &schemasv1alpha4.PostgresqlTableSchema{
 				PrimaryKey: []string{
