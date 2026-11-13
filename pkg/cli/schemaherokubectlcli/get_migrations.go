@@ -34,6 +34,12 @@ func matchesMigrationStatus(migration schemasv1alpha4.Migration, status string) 
 	}
 }
 
+// isPendingMigration returns true if the migration has neither been executed nor rejected,
+// meaning it is still waiting to be applied
+func isPendingMigration(migration schemasv1alpha4.Migration) bool {
+	return migration.Status.ExecutedAt == 0 && migration.Status.RejectedAt == 0
+}
+
 // getMostRecentTimestamp returns the most recent timestamp from a migration
 func getMostRecentTimestamp(migration schemasv1alpha4.Migration) int64 {
 	timestamps := []int64{
@@ -68,6 +74,7 @@ func GetMigrationsCmd() *cobra.Command {
 
 			databaseNameFilter := v.GetString("database")
 			statusFilter := v.GetString("status")
+			includeApplied := v.GetBool("include-applied")
 
 			// Validate status filter
 			if statusFilter != "" {
@@ -136,6 +143,12 @@ func GetMigrationsCmd() *cobra.Command {
 						continue
 					}
 
+					// Only show pending migrations unless an explicit status filter
+					// or --include-applied was provided
+					if statusFilter == "" && !includeApplied && !isPendingMigration(m) {
+						continue
+					}
+
 					matchingMigrations = append(matchingMigrations, m)
 				}
 			}
@@ -184,6 +197,7 @@ func GetMigrationsCmd() *cobra.Command {
 	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
 
 	cmd.Flags().String("status", "", "status to filter results to (planned, executed, approved, rejected)")
+	cmd.Flags().Bool("include-applied", false, "If present, include executed and rejected migrations. By default only pending migrations are shown.")
 
 	return cmd
 }
