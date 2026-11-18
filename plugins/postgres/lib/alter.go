@@ -46,21 +46,21 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 
 					// add default
 					if column.ColumnDefault != nil {
-						if existingColumn.ColumnDefault == nil || *existingColumn.ColumnDefault != *column.ColumnDefault {
-							localStatement := fmt.Sprintf("alter table %s alter column %s set default '%s'",
+						if !postgresDefaultsEqual(existingColumn.ColumnDefault, column.ColumnDefault) {
+							localStatement := fmt.Sprintf("alter table %s alter column %s set default %s",
 								pgx.Identifier{tableName}.Sanitize(),
 								pgx.Identifier{existingColumn.Name}.Sanitize(),
-								*column.ColumnDefault)
+								formatPostgresDefaultValue(*column.ColumnDefault))
 							statements = append(statements, localStatement)
 						}
 					}
 
 					// update existing values
 					if column.ColumnDefault != nil {
-						localStatement := fmt.Sprintf("update %s set %s='%s' where %s is null",
+						localStatement := fmt.Sprintf("update %s set %s=%s where %s is null",
 							pgx.Identifier{tableName}.Sanitize(),
 							pgx.Identifier{existingColumn.Name}.Sanitize(),
-							*column.ColumnDefault,
+							formatPostgresDefaultValue(*column.ColumnDefault),
 							pgx.Identifier{existingColumn.Name}.Sanitize())
 						statements = append(statements, localStatement)
 					}
@@ -86,8 +86,8 @@ func AlterColumnStatements(tableName string, primaryKeys []string, desiredColumn
 				}
 
 				if column.ColumnDefault != nil {
-					if existingColumn.ColumnDefault == nil || *column.ColumnDefault != *existingColumn.ColumnDefault {
-						changes = append(changes, fmt.Sprintf("%s set default '%s'", alterStatement, *column.ColumnDefault))
+					if !postgresDefaultsEqual(existingColumn.ColumnDefault, column.ColumnDefault) {
+						changes = append(changes, fmt.Sprintf("%s set default %s", alterStatement, formatPostgresDefaultValue(*column.ColumnDefault)))
 					}
 				} else if existingColumn.ColumnDefault != nil {
 					changes = append(changes, fmt.Sprintf("%s drop default", alterStatement))
@@ -150,11 +150,7 @@ func columnsMatch(col1 types.Column, col2 types.Column) bool {
 		return false
 	}
 
-	if col1.ColumnDefault != nil && col2.ColumnDefault == nil {
-		return false
-	} else if col1.ColumnDefault == nil && col2.ColumnDefault != nil {
-		return false
-	} else if col1.ColumnDefault != nil && col2.ColumnDefault != nil && *col1.ColumnDefault != *col2.ColumnDefault {
+	if !postgresDefaultsEqual(col1.ColumnDefault, col2.ColumnDefault) {
 		return false
 	}
 

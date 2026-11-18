@@ -12,6 +12,9 @@ import (
 
 func Test_columnAsInsert(t *testing.T) {
 	default11 := "11"
+	defaultNow := "now()"
+	defaultPending := "'pending'"
+	defaultJSONB := "'{}'::jsonb"
 	tests := []struct {
 		name              string
 		column            *schemasv1alpha4.PostgresqlTableColumn
@@ -68,6 +71,33 @@ func Test_columnAsInsert(t *testing.T) {
 				Default: &default11,
 			},
 			expectedStatement: `"c" integer default '11'`,
+		},
+		{
+			name: "default now function",
+			column: &schemasv1alpha4.PostgresqlTableColumn{
+				Name:    "c",
+				Type:    "timestamp without time zone",
+				Default: &defaultNow,
+			},
+			expectedStatement: `"c" timestamp without time zone default now()`,
+		},
+		{
+			name: "default already quoted string",
+			column: &schemasv1alpha4.PostgresqlTableColumn{
+				Name:    "c",
+				Type:    "text",
+				Default: &defaultPending,
+			},
+			expectedStatement: `"c" text default 'pending'`,
+		},
+		{
+			name: "default jsonb cast",
+			column: &schemasv1alpha4.PostgresqlTableColumn{
+				Name:    "c",
+				Type:    "jsonb",
+				Default: &defaultJSONB,
+			},
+			expectedStatement: `"c" jsonb default '{}'::jsonb`,
 		},
 		{
 			name: "text[]",
