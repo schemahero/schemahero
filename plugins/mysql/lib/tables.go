@@ -197,7 +197,7 @@ order by kcu.ORDINAL_POSITION`
 }
 
 func (m *MysqlConnection) GetTableSchema(tableName string) ([]*types.Column, error) {
-	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE
+	query := `select COLUMN_NAME, COLUMN_DEFAULT, IS_NULLABLE, EXTRA, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, COLUMN_TYPE
 from information_schema.COLUMNS
 where TABLE_NAME = ?
 and TABLE_SCHEMA = ?
@@ -221,8 +221,9 @@ order by ORDINAL_POSITION`
 		var columnDefault sql.NullString
 		var numericPrecision sql.NullInt64
 		var numericScale sql.NullInt64
+		var columnType string
 
-		if err := rows.Scan(&column.Name, &columnDefault, &isNullable, &extra, &column.DataType, &maxLength, &numericPrecision, &numericScale); err != nil {
+		if err := rows.Scan(&column.Name, &columnDefault, &isNullable, &extra, &column.DataType, &maxLength, &numericPrecision, &numericScale, &columnType); err != nil {
 			return nil, err
 		}
 
@@ -240,6 +241,14 @@ order by ORDINAL_POSITION`
 
 		if columnDefault.Valid {
 			column.ColumnDefault = &columnDefault.String
+		}
+
+		// For enum types, use the full COLUMN_TYPE (e.g. enum('a','b','c'))
+		// instead of constructing from DATA_TYPE + modifiers
+		if column.DataType == "enum" {
+			column.DataType = columnType
+			columns = append(columns, &column)
+			continue
 		}
 
 		// max length should not be written for all types
