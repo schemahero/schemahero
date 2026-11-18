@@ -57,6 +57,27 @@ func schemaColumnToColumn(schemaColumn *schemasv1alpha4.PostgresqlTableColumn) (
 	return nil, fmt.Errorf("unknown column type. cannot validate column type %q", schemaColumn.Type)
 }
 
+// normalizePostgresColumnType resolves aliases and parameterized types the same
+// way schemaColumnToColumn does for desired columns, so an introspected type can
+// be compared against a desired type. It does not handle the array "[]" suffix and,
+// unlike schemaColumnToColumn, returns the input unchanged rather than erroring on
+// an unrecognized type.
+func normalizePostgresColumnType(requestedType string) string {
+	if unaliased := unaliasUnparameterizedColumnType(requestedType); unaliased != "" {
+		requestedType = unaliased
+	}
+	if unaliased := unaliasParameterizedColumnType(requestedType); unaliased != "" {
+		requestedType = unaliased
+	}
+	if !isParameterizedColumnType(requestedType) {
+		return requestedType
+	}
+	if columnType, err := maybeParseParameterizedColumnType(requestedType); err == nil && columnType != "" {
+		return columnType
+	}
+	return requestedType
+}
+
 func columnAsInsert(column *schemasv1alpha4.PostgresqlTableColumn) (string, error) {
 	// Note, we don't always quote the column type because of how pg handles these two statement very differently:
 

@@ -86,6 +86,38 @@ func Test_AlterColumnStatments(t *testing.T) {
 			expectedStatements: []string{},
 		},
 		{
+			name:      "no change varchar array",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name: "a",
+					Type: "varchar(255)[]",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "character varying (255)",
+				IsArray:  true,
+			},
+			expectedStatements: []string{},
+		},
+		{
+			name:      "change array element length",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
+				{
+					Name: "a",
+					Type: "varchar(500)[]",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "a",
+				DataType: "character varying (255)",
+				IsArray:  true,
+			},
+			expectedStatements: []string{`alter table "t" alter column "a" type character varying (500)[]`},
+		},
+		{
 			name:      "change data type",
 			tableName: "t",
 			desiredColumns: []*schemasv1alpha4.PostgresqlTableColumn{
