@@ -60,7 +60,7 @@ func GetDatabasesCmd() *cobra.Command {
 			}
 
 			if len(matchingDatabases) == 0 {
-				fmt.Println("No reosurces found.")
+				fmt.Println("No resources found.")
 				return nil
 			}
 
