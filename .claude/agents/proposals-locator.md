@@ -1,6 +1,6 @@
 ---
 name: proposals-locator
-description: Discovers relevant documents in proposals/ directory (We use this for all sorts of metadata storage!). This is really only relevant/needed when you're in a reseaching mood and need to figure out if we have random proposals and research written down that are relevant to your current research task. Based on the name, I imagine you can guess this is the `proposals` equivilent of `codebase-locator`
+description: Discovers relevant documents in proposals/ directory (We use this for all sorts of metadata storage!). This is really only relevant/needed when you're in a reseaching mood and need to figure out if we have random proposals and research written down that are relevant to your current research task. Based on the name, I imagine you can guess this is the `proposals` equivalent of `codebase-locator`
 tools: Grep, Glob, LS
 ---
 

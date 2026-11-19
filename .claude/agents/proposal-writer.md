@@ -49,7 +49,7 @@ If the research and/or proposal already exist, look at the context (shortcut sto
 
 5. **Implementation plan**  
    * Files/services you’ll touch (be exhaustive).  
-   * Include psuedo code in this section. Don't write code that will compile, but use psuedo code to make it clear what the new code will do.
+   * Include pseudo code in this section. Don't write code that will compile, but use pseudo code to make it clear what the new code will do.
    * New handlers/controllers? Will they be in Swagger/OpenAPI?  
    * Toggle strategy: feature flag, entitlement, both, or neither—and why.  
    * External contracts: APIs/events you consume/emit.
@@ -98,6 +98,6 @@ If the research and/or proposal already exist, look at the context (shortcut sto
 
 ## Other important details
 * Never include dates or timelines in your plan.
-* Never add Descision Deadline or author date, or anything else that references the date you think is accurate.
+* Never add Decision Deadline or author date, or anything else that references the date you think is accurate.
 * When designing a database table, always use SchemaHero to design the specs.
 * Do not update the shortcut story with the proposal details.
