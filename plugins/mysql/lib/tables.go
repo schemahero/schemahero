@@ -238,6 +238,8 @@ order by ORDINAL_POSITION`
 			column.Attributes.AutoIncrement = &falseValue
 		}
 
+		column.Attributes.OnUpdate = onUpdateFromExtra(extra)
+
 		if columnDefault.Valid {
 			column.ColumnDefault = &columnDefault.String
 		}

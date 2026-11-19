@@ -9,6 +9,7 @@ import (
 
 func TestAlterDDL(t *testing.T) {
 	default11 := "11"
+	currentTimestamp := "CURRENT_TIMESTAMP"
 	tests := []struct {
 		name           string
 		tableName      string
@@ -37,6 +38,26 @@ func TestAlterDDL(t *testing.T) {
 			},
 			expect: []string{
 				"alter table `t` modify column `col` datatype character set charset_new collate collation_new",
+			},
+		},
+		{
+			name:      "add on update to datetime with default",
+			tableName: "t",
+			existingColumn: types.Column{
+				Name:          "updated",
+				DataType:      "datetime",
+				ColumnDefault: &currentTimestamp,
+			},
+			column: types.Column{
+				Name:          "updated",
+				DataType:      "datetime",
+				ColumnDefault: &currentTimestamp,
+				Attributes: &types.ColumnAttributes{
+					OnUpdate: &currentTimestamp,
+				},
+			},
+			expect: []string{
+				"alter table `t` modify column `updated` datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP",
 			},
 		},
 	}

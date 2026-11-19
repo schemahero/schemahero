@@ -103,6 +103,10 @@ func columnsMatch(existingCol types.Column, specCol types.Column, defaultCharset
 		return false
 	}
 
+	if onUpdateOf(&existingCol) != onUpdateOf(&specCol) {
+		return false
+	}
+
 	return true
 }
 

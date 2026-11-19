@@ -234,6 +234,8 @@ spec:
                             properties:
                               autoIncrement:
                                 type: boolean
+                              onUpdate:
+                                type: string
                             type: object
                           charset:
                             type: string

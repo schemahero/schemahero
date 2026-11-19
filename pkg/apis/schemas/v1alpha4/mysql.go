@@ -22,6 +22,9 @@ type MysqlTableColumnConstraints struct {
 
 type MysqlTableColumnAttributes struct {
 	AutoIncrement *bool `json:"autoIncrement,omitempty" yaml:"autoIncrement,omitempty"`
+	// OnUpdate is the expression applied to the column whenever the row is updated,
+	// for example CURRENT_TIMESTAMP on a datetime or timestamp column.
+	OnUpdate *string `json:"onUpdate,omitempty" yaml:"onUpdate,omitempty"`
 }
 
 type MysqlTableForeignKeyReferences struct {
