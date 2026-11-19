@@ -1,0 +1,29 @@
+database: schemahero
+name: users
+requires: []
+schema:
+  mysql:
+    primaryKey: [id]
+    columns:
+      - name: id
+        type: integer
+      - name: email
+        type: varchar(255)
+        constraints:
+          notNull: true
+      - name: created_at
+        type: datetime
+        constraints:
+          notNull: true
+        default: CURRENT_TIMESTAMP
+      - name: updated_at
+        type: datetime
+        constraints:
+          notNull: true
+        attributes:
+          onUpdate: CURRENT_TIMESTAMP
+        default: CURRENT_TIMESTAMP
+      - name: modified_at
+        type: timestamp
+        attributes:
+          onUpdate: CURRENT_TIMESTAMP

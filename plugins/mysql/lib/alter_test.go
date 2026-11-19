@@ -13,6 +13,8 @@ import (
 func Test_AlterColumnStatment(t *testing.T) {
 	defaultEleven := "11"
 	defaultEmpty := ""
+	currentTimestamp := "CURRENT_TIMESTAMP"
+	currentTimestampLower := "current_timestamp()"
 
 	tests := []struct {
 		name               string
@@ -330,6 +332,69 @@ func Test_AlterColumnStatment(t *testing.T) {
 			},
 			expectedStatements: []string{
 				"alter table `t` modify column `c` int (11) not null",
+			},
+		},
+		{
+			name:      "add on update attribute",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.MysqlTableColumn{
+				{
+					Name: "updated",
+					Type: "datetime",
+					Attributes: &schemasv1alpha4.MysqlTableColumnAttributes{
+						OnUpdate: &currentTimestamp,
+					},
+					Default: &currentTimestamp,
+				},
+			},
+			existingColumn: &types.Column{
+				Name:          "updated",
+				DataType:      "datetime",
+				ColumnDefault: &currentTimestamp,
+			},
+			expectedStatements: []string{
+				"alter table `t` modify column `updated` datetime default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP",
+			},
+		},
+		{
+			name:      "on update attribute unchanged",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.MysqlTableColumn{
+				{
+					Name: "updated",
+					Type: "datetime",
+					Attributes: &schemasv1alpha4.MysqlTableColumnAttributes{
+						OnUpdate: &currentTimestamp,
+					},
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "updated",
+				DataType: "datetime",
+				Attributes: &types.ColumnAttributes{
+					OnUpdate: &currentTimestampLower,
+				},
+			},
+			expectedStatements: []string{},
+		},
+		{
+			name:      "drop on update attribute",
+			tableName: "t",
+			desiredColumns: []*schemasv1alpha4.MysqlTableColumn{
+				{
+					Name: "updated",
+					Type: "datetime",
+				},
+			},
+			existingColumn: &types.Column{
+				Name:     "updated",
+				DataType: "datetime",
+				Attributes: &types.ColumnAttributes{
+					OnUpdate: &currentTimestamp,
+				},
+			},
+			expectedStatements: []string{
+				"alter table `t` modify column `updated` datetime",
 			},
 		},
 	}

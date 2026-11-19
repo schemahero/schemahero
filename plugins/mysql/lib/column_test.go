@@ -12,6 +12,8 @@ import (
 
 func Test_mysqlColumnAsInsert(t *testing.T) {
 	default11 := "11"
+	currentTimestamp := "CURRENT_TIMESTAMP"
+	currentTimestampLower := "current_timestamp(6)"
 	tests := []struct {
 		name              string
 		column            *schemasv1alpha4.MysqlTableColumn
@@ -77,6 +79,32 @@ func Test_mysqlColumnAsInsert(t *testing.T) {
 				},
 			},
 			expectedStatement: "`obj` json not null",
+		},
+		{
+			name: "datetime with default and on update",
+			column: &schemasv1alpha4.MysqlTableColumn{
+				Name: "updated",
+				Type: "datetime",
+				Constraints: &schemasv1alpha4.MysqlTableColumnConstraints{
+					NotNull: &trueValue,
+				},
+				Attributes: &schemasv1alpha4.MysqlTableColumnAttributes{
+					OnUpdate: &currentTimestamp,
+				},
+				Default: &currentTimestamp,
+			},
+			expectedStatement: "`updated` datetime not null default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP",
+		},
+		{
+			name: "timestamp with fractional seconds on update lowercase",
+			column: &schemasv1alpha4.MysqlTableColumn{
+				Name: "updated",
+				Type: "timestamp",
+				Attributes: &schemasv1alpha4.MysqlTableColumnAttributes{
+					OnUpdate: &currentTimestampLower,
+				},
+			},
+			expectedStatement: "`updated` timestamp on update CURRENT_TIMESTAMP(6)",
 		},
 	}
 
@@ -238,4 +266,29 @@ func Test_schemaColumnToMysqlColumn(t *testing.T) {
 		})
 	}
 
+}
+
+func Test_onUpdateFromExtra(t *testing.T) {
+	tests := []struct {
+		extra    string
+		expected *string
+	}{
+		{extra: "", expected: nil},
+		{extra: "auto_increment", expected: nil},
+		{extra: "DEFAULT_GENERATED", expected: nil},
+		{extra: "on update CURRENT_TIMESTAMP", expected: strPtr("CURRENT_TIMESTAMP")},
+		{extra: "DEFAULT_GENERATED on update CURRENT_TIMESTAMP", expected: strPtr("CURRENT_TIMESTAMP")},
+		{extra: "on update CURRENT_TIMESTAMP(6)", expected: strPtr("CURRENT_TIMESTAMP(6)")},
+		{extra: "on update current_timestamp()", expected: strPtr("CURRENT_TIMESTAMP")},
+	}
+
+	for _, test := range tests {
+		t.Run(test.extra, func(t *testing.T) {
+			assert.Equal(t, test.expected, onUpdateFromExtra(test.extra))
+		})
+	}
+}
+
+func strPtr(s string) *string {
+	return &s
 }

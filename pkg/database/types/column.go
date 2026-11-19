@@ -10,6 +10,7 @@ type ColumnConstraints struct {
 
 type ColumnAttributes struct {
 	AutoIncrement *bool
+	OnUpdate      *string
 }
 
 func BoolsEqual(a, b *bool) bool {
@@ -46,6 +47,7 @@ func ColumnToMysqlSchemaColumn(column *Column) (*schemasv1alpha4.MysqlTableColum
 	if column.Attributes != nil {
 		schemaColumn.Attributes = &schemasv1alpha4.MysqlTableColumnAttributes{
 			AutoIncrement: column.Attributes.AutoIncrement,
+			OnUpdate:      column.Attributes.OnUpdate,
 		}
 	}
 

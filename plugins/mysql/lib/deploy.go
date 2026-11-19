@@ -383,6 +383,8 @@ AND TABLE_NAME = ?`
 			existingColumn.Attributes.AutoIncrement = &falseValue
 		}
 
+		existingColumn.Attributes.OnUpdate = onUpdateFromExtra(extra)
+
 		if columnDefault.Valid {
 			existingColumn.ColumnDefault = &columnDefault.String
 		}

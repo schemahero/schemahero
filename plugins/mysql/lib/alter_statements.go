@@ -81,7 +81,15 @@ func (s AlterModifyColumnStatement) ddl(useConstraintsFromExistingColumn bool) [
 	}
 
 	if s.Column.ColumnDefault != nil {
-		stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
+		if isCurrentTimestampDefault(s.Column.DataType, *s.Column.ColumnDefault) {
+			stmts = append(stmts, fmt.Sprintf("default %s", *s.Column.ColumnDefault))
+		} else {
+			stmts = append(stmts, fmt.Sprintf("default \"%s\"", *s.Column.ColumnDefault))
+		}
+	}
+
+	if onUpdate := onUpdateOf(&s.Column); onUpdate != "" {
+		stmts = append(stmts, fmt.Sprintf("on update %s", onUpdate))
 	}
 
 	return []string{strings.Join(stmts, " ")}
